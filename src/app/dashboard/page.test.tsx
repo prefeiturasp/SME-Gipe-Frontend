@@ -8,14 +8,6 @@ vi.mock("@/stores/useUserStore", () => {
     };
 });
 
-// Mock da Navbar
-vi.mock("@/components/ui/Navbar", () => ({
-    __esModule: true,
-    default: ({ user }: { user: { name: string } }) => (
-        <nav data-testid="navbar">Navbar - {user.name}</nav>
-    ),
-}));
-
 import { useUserStore } from "@/stores/useUserStore";
 
 describe("Dashboard page", () => {
@@ -41,8 +33,8 @@ describe("Dashboard page", () => {
 
     it("renderiza conteúdo protegido se user estiver presente", async () => {
         const fakeUser = {
-            name: "Guilherme",
-            email: "gui@email.com",
+            name: "Fake User",
+            email: "fakeuser@gmail.com",
             role: "Admin",
         };
 
@@ -55,10 +47,9 @@ describe("Dashboard page", () => {
         render(<Dashboard />);
 
         await waitFor(() => {
-            expect(screen.getByTestId("navbar")).toBeInTheDocument();
             expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-            expect(screen.getAllByText(/guilherme/i).length).toBeGreaterThan(0);
-            expect(screen.getByText(/gui@email.com/i)).toBeInTheDocument();
+            expect(screen.getAllByText(/fake user/i).length).toBeGreaterThan(0);
+            expect(screen.getByText(/fakeuser@gmail.com/i)).toBeInTheDocument();
             expect(screen.getByText(/admin/i)).toBeInTheDocument();
             expect(screen.getByText(/área protegida/i)).toBeInTheDocument();
         });

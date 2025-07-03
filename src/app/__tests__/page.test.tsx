@@ -19,7 +19,7 @@ vi.mock("next/image", () => ({
 }));
 
 describe("Página inicial (src/app/page.tsx)", () => {
-    it("renderiza Navbar e LoginForm corretamente", () => {
+    it("renderiza LoginForm corretamente", () => {
         render(<Page />);
 
         expect(screen.getByTestId("login-form")).toBeInTheDocument();
