@@ -15,11 +15,11 @@ export const useFakeLogin = () => {
     }): boolean => {
         if (rfOuCpf === "123456" && password === "senha123") {
             const user = {
-                name: "Guilherme Vilas Boas",
+                name: "Fake User",
                 role: "admin",
-                cpf: "12629586871",
-                email: "ollyverottoboni@gmail.com",
-                login: "12629586871",
+                cpf: "12345678901",
+                email: "fakeuser@gmail.com",
+                login: "12345678901",
                 situacaoUsuario: 1,
                 situacaoGrupo: 1,
                 visoes: ["UE", "DRE", "SME"],
