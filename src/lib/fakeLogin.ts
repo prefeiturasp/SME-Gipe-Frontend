@@ -1,4 +1,3 @@
-// lib/fakeLogin.ts
 import { useUserStore } from "@/stores/useUserStore";
 import { useQueryClient } from "@tanstack/react-query";
 
