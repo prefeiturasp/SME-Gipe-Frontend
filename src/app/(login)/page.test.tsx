@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import Page from "../page";
+import Page from "./page";
 
 // Mockando componentes usados na página
 vi.mock("@/components/login/LoginForm", () => ({
