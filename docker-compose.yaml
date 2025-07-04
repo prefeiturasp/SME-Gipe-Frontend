@@ -1,8 +1,8 @@
 services:
-  setup_inicial_app:
+  gipe_app:
     build: .
-    container_name: setup_inicial_app
-    image: setup_inicial:latest
+    container_name: gipe_app
+    image: gipe_front:latest
     ports:
       - 3000:3000
     volumes:
