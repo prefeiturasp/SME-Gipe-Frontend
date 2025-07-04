@@ -1,12 +1,13 @@
 import Image from "next/image";
+import LogoGipeImg from "@/assets/images/logo-gipe.webp"
 
 export default function LogoGipe({ className = "", ...props }) {
     return (
         <Image
-            src="/images/logo-gipe.webp"
+            src={LogoGipeImg}
             alt="Logo GIPE"
-            width={320}
-            height={260}
+            width={LogoGipeImg.width}
+            height={LogoGipeImg.height}
             className={`object-contain ${className}`}
             priority
             {...props}
