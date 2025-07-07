@@ -1,33 +1,54 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
 
-export const useLogin = () => {
-    const queryClient = useQueryClient();
-    const setUser = useUserStore((state) => state.setUser);
+export interface LoginRequest {
+    username: string;
+    password: string;
+}
 
-    return useMutation({
-        mutationFn: async ({
-            email,
-            password,
-        }: {
-            email: string;
-            password: string;
-        }) => {
-            const res = await fetch("/api/login", {
+export interface LoginSuccessResponse {
+    name: string;
+    email: string;
+    cpf: string;
+    login: string;
+    visoes: unknown[];
+    cargo: string;
+    token: string;
+}
+
+export interface LoginErrorResponse {
+    detail: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const useLogin = () => {
+    const setUser = useUserStore((state) => state.setUser);
+    return useMutation<LoginSuccessResponse, LoginErrorResponse, LoginRequest>({
+        mutationFn: async (credentials: LoginRequest) => {
+            const response = await fetch(`${API_URL}/users/login`, {
                 method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(credentials),
             });
 
-            if (!res.ok) throw new Error("Erro no login");
+            const data = await response.json();
 
-            const data = await res.json();
-            return data.user;
-        },
-        onSuccess: (user) => {
-            setUser(user);
-            queryClient.setQueryData(["user"], user);
+            if (!response.ok) {
+                throw new Error(data.detail || "Erro na autenticação");
+            }
+
+            setUser({
+                nome: data.name,
+                email: data.email,
+                cargo: data.cargo.nome,
+            });
+
+            return data;
         },
     });
 };
+
+export default useLogin;
