@@ -29,6 +29,7 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const loginMutation = useLogin();
+    const isLoading = loginMutation.status === "pending";
     const router = useRouter();
 
     const form = useForm<FormDataLogin>({
@@ -76,6 +77,7 @@ export default function LoginForm() {
                 <FormField
                     control={form.control}
                     name="username"
+                    disabled={isLoading}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
@@ -97,6 +99,7 @@ export default function LoginForm() {
                     <FormField
                         control={form.control}
                         name="password"
+                        disabled={isLoading}
                         render={({ field }) => (
                             <FormItem className="md:col-span-5">
                                 <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
@@ -134,6 +137,7 @@ export default function LoginForm() {
                 <Button
                     variant="secondary"
                     className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                    loading={isLoading}
                 >
                     Acessar
                 </Button>
