@@ -19,33 +19,47 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useFakeLogin } from "@/lib/fakeLogin";
+import useLogin from "@/hooks/useLogin";
+import type { LoginErrorResponse } from "@/hooks/useLogin";
 
 import formSchema, { FormDataLogin } from "./schema";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const fakeLogin = useFakeLogin();
+    const loginMutation = useLogin();
+    const router = useRouter();
 
     const form = useForm<FormDataLogin>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            rfOuCpf: "",
+            username: "",
             password: "",
         },
     });
 
-    async function handleFakeLogin(
-        values: FormDataLogin,
-        setError: (msg: string) => void
-    ) {
-        const ok = fakeLogin(values);
-
-        if (ok) {
-            window.location.href = "/dashboard";
-        } else {
-            setError("Credenciais inválidas");
+    async function handleLogin(values: FormDataLogin) {
+        setErrorMessage(null);
+        try {
+            await loginMutation.mutateAsync({
+                username: values.username,
+                password: values.password,
+            });
+            router.push("/dashboard");
+        } catch (error: unknown) {
+            console.log(error);
+            let message = "Erro ao autenticar";
+            if (error instanceof Error && error.message) {
+                message = error.message;
+            } else if (
+                error &&
+                typeof error === "object" &&
+                (error as LoginErrorResponse).detail
+            ) {
+                message = (error as LoginErrorResponse).detail;
+            }
+            setErrorMessage(message);
         }
     }
 
@@ -53,9 +67,7 @@ export default function LoginForm() {
         <Form {...form}>
             <form
                 className="space-y-4 md:space-y-3"
-                onSubmit={form.handleSubmit((values) =>
-                    handleFakeLogin(values, setErrorMessage)
-                )}
+                onSubmit={form.handleSubmit(handleLogin)}
             >
                 <div className="flex justify-center mb-6">
                     <LogoGipe />
@@ -63,7 +75,7 @@ export default function LoginForm() {
 
                 <FormField
                     control={form.control}
-                    name="rfOuCpf"
+                    name="username"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
