@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
+import { setEncryptedCookie } from "@/lib/cookieUtils";
 
 export interface LoginRequest {
     username: string;
@@ -45,6 +46,7 @@ const useLogin = () => {
                 email: data.email,
                 cargo: data.cargo.nome,
             });
+            setEncryptedCookie("auth_token", data.token);
 
             return data;
         },
