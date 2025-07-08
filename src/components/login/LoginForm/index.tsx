@@ -20,17 +20,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import useLogin from "@/hooks/useLogin";
-import type { LoginErrorResponse } from "@/hooks/useLogin";
 
 import formSchema, { FormDataLogin } from "./schema";
-import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const loginMutation = useLogin();
-    const isLoading = loginMutation.status === "pending";
-    const router = useRouter();
+    const { mutateAsync, isPending } = loginMutation;
+    const isLoading = isPending;
 
     const form = useForm<FormDataLogin>({
         resolver: zodResolver(formSchema),
@@ -42,26 +40,18 @@ export default function LoginForm() {
 
     async function handleLogin(values: FormDataLogin) {
         setErrorMessage(null);
-        try {
-            await loginMutation.mutateAsync({
-                username: values.username,
-                password: values.password,
-            });
-            router.push("/dashboard");
-        } catch (error: unknown) {
-            console.log(error);
-            let message = "Erro ao autenticar";
-            if (error instanceof Error && error.message) {
-                message = error.message;
-            } else if (
-                error &&
+
+        await mutateAsync(values).catch((error) => {
+            const message =
                 typeof error === "object" &&
-                (error as LoginErrorResponse).detail
-            ) {
-                message = (error as LoginErrorResponse).detail;
-            }
+                error !== null &&
+                "detail" in error &&
+                typeof error.detail === "string"
+                    ? error.detail
+                    : "Erro ao autenticar";
+
             setErrorMessage(message);
-        }
+        });
     }
 
     return (

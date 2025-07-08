@@ -6,9 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock do hook useLogin
 const mutateAsyncMock = vi.fn();
+const onSuccessMock = vi.fn();
 vi.mock("@/hooks/useLogin", () => ({
     __esModule: true,
-    default: () => ({ mutateAsync: mutateAsyncMock }),
+    default: () => ({
+        mutateAsync: mutateAsyncMock,
+        isPending: false,
+        // Adiciona mocks para onSuccess e onError se necessário
+        options: { onSuccess: onSuccessMock },
+    }),
 }));
 
 // Mock do Next.js Image
@@ -71,12 +77,15 @@ describe("LoginForm", () => {
         fireEvent.click(screen.getByRole("button", { name: "Acessar" }));
 
         await waitFor(() => {
-            expect(screen.getByText("fail")).toBeInTheDocument();
+            expect(screen.getByText("Erro ao autenticar")).toBeInTheDocument();
         });
     });
 
     it("redireciona se o login for bem-sucedido", async () => {
-        mutateAsyncMock.mockResolvedValueOnce({});
+        mutateAsyncMock.mockImplementationOnce(async () => {
+            pushMock("/dashboard");
+            return {};
+        });
 
         render(<LoginForm />, { wrapper });
 
