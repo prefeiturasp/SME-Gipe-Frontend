@@ -3,24 +3,24 @@ import {
     it,
     expect,
     beforeEach,
-    afterAll,
     vi,
+    afterAll,
     type Mock,
 } from "vitest";
-import { Login } from "./login";
-import axios from "@/lib/axios";
-import { AxiosError } from "axios";
+import { loginAction } from "@/actions/login";
+import axios from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
+import { cookies } from "next/headers";
 
-vi.mock("@/lib/axios", () => ({
-    __esModule: true,
-    default: {
-        post: vi.fn(),
-    },
+vi.mock("axios");
+vi.mock("next/headers", () => ({
+    cookies: vi.fn(),
 }));
 
-const axiosPostMock = axios.post as unknown as Mock;
+const axiosPostMock = axios.post as Mock;
+const cookiesMock = cookies as Mock;
 
-describe("Login action", () => {
+describe("loginAction", () => {
     const originalEnv = process.env;
 
     beforeEach(() => {
@@ -32,85 +32,74 @@ describe("Login action", () => {
         process.env = originalEnv;
     });
 
-    it("lança erro se AUTENTICA_CORESSO_API_URL não está definida", async () => {
-        delete process.env.AUTENTICA_CORESSO_API_URL;
-        process.env.AUTENTICA_CORESSO_API_TOKEN = "token";
-        await expect(Login({ login: "u", senha: "p" })).rejects.toThrow(
-            "AUTENTICA_CORESSO_API_URL não está definida"
-        );
-    });
+    it("retorna dados do usuário e seta o cookie com sucesso", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
-    it("lança erro se AUTENTICA_CORESSO_API_TOKEN não está definida", async () => {
-        process.env.AUTENTICA_CORESSO_API_URL = "https://api";
-        delete process.env.AUTENTICA_CORESSO_API_TOKEN;
-        await expect(Login({ login: "u", senha: "p" })).rejects.toThrow(
-            "AUTENTICA_CORESSO_API_TOKEN não está definida"
-        );
-    });
-
-    it("retorna dados do usuário quando axios.post resolve com sucesso", async () => {
-        process.env.AUTENTICA_CORESSO_API_URL = "https://api";
-        process.env.AUTENTICA_CORESSO_API_TOKEN = "token123";
-
-        const fakeResponse = {
-            data: {
-                nome: "Fulano",
-                cpf: "00011122233",
-                email: "f@d.com",
-                login: "fulano",
-                situacaoUsuario: 1,
-                situacaoGrupo: 2,
-                visoes: ["A", "B"],
-                perfis_por_sistema: [{ sistema: 1, perfis: ["X"] }],
-            },
+        const fakeUser = {
+            name: "Fulano",
+            email: "f@x.com",
+            cargo: { nome: "Dev" },
+            token: "jwt_token_top",
         };
-        axiosPostMock.mockResolvedValueOnce(fakeResponse);
 
-        const result = await Login({ login: "fulano", senha: "senha" });
+        const setMock = vi.fn();
+        cookiesMock.mockReturnValue({ set: setMock });
+
+        axiosPostMock.mockResolvedValueOnce({ data: fakeUser });
+
+        const result = await loginAction({
+            username: "fulano",
+            password: "1234",
+        });
 
         expect(axiosPostMock).toHaveBeenCalledWith(
-            "/autenticacao/",
-            { login: "fulano", senha: "senha" },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Token token123`,
-                },
-            }
+            "https://api.exemplo.com/users/login",
+            { username: "fulano", password: "1234" },
+            { withCredentials: true }
         );
-        expect(result).toEqual(fakeResponse.data);
+
+        expect(setMock).toHaveBeenCalledWith("auth_token", "jwt_token_top", {
+            httpOnly: true,
+            secure: true,
+            path: "/",
+            sameSite: "lax",
+        });
+
+        expect(result).toEqual(fakeUser);
     });
 
-    it("retorna objeto de erro quando axios.post rejeita com AxiosError com response", async () => {
-        process.env.AUTENTICA_CORESSO_API_URL = "https://api";
-        process.env.AUTENTICA_CORESSO_API_TOKEN = "token123";
+    it("lança erro com a mensagem do servidor se a requisição falhar", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
-        const axiosError = new AxiosError(
-            "fail",
-            undefined,
-            undefined,
-            undefined,
-            {
-                status: 401,
-                data: {
-                    detail: "Credenciais inválidas",
-                    operation_id: "op123",
-                },
-                headers: {},
-                config: {},
-                statusText: "",
-            } as unknown as import("axios").AxiosResponse<
-                { detail: string; operation_id: string },
-                unknown
-            >
-        );
+        const axiosError = new AxiosError("Request failed");
+        axiosError.response = {
+            status: 401,
+            data: {
+                detail: "Credenciais inválidas",
+            },
+            headers: {},
+            config: {},
+            statusText: "",
+        } as AxiosResponse;
+
         axiosPostMock.mockRejectedValueOnce(axiosError);
 
-        const result = await Login({ login: "u", senha: "p" });
-        expect(result).toEqual({
-            status: 401,
-            detail: "Credenciais inválidas",
-            operation_id: "op123",
-        });
+        await expect(
+            loginAction({
+                username: "fulano",
+                password: "errado",
+            })
+        ).rejects.toThrow("Credenciais inválidas");
+    });
+
+    it("lança erro genérico se não houver mensagem de erro no response", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
+
+        const axiosError = new AxiosError("Erro desconhecido");
+        axiosPostMock.mockRejectedValueOnce(axiosError);
+
+        await expect(
+            loginAction({ username: "foo", password: "bar" })
+        ).rejects.toThrow("Erro na autenticação");
     });
 });
