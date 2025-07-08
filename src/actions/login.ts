@@ -1,57 +1,36 @@
-import axios from "@/lib/axios";
-import { AxiosError } from "axios";
+"use server";
 
-type LoginData = {
-    login: string;
-    senha: string;
-};
+import axios, { AxiosError } from "axios";
+import { cookies } from "next/headers";
+import {
+    LoginRequest,
+    LoginSuccessResponse,
+    LoginErrorResponse,
+} from "@/types/login";
 
-type LoginResponse = {
-    // Campos de erro (presentes quando há falha)
-    status?: number;
-    detail?: string;
-    operation_id?: string;
-    // Dados do usuário (presentes quando login é bem-sucedido)
-    nome?: string;
-    cpf?: string;
-    email?: string;
-    login?: string;
-    situacaoUsuario?: number;
-    situacaoGrupo?: number;
-    visoes?: string[];
-    perfis_por_sistema?: {
-        sistema: number;
-        perfis: string[];
-    }[];
-};
-export async function Login(data: LoginData): Promise<LoginResponse> {
+export async function loginAction(
+    credentials: LoginRequest
+): Promise<LoginSuccessResponse> {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
     try {
-        if (!process.env.AUTENTICA_CORESSO_API_URL) {
-            throw new Error("AUTENTICA_CORESSO_API_URL não está definida");
-        }
+        const { data } = await axios.post<LoginSuccessResponse>(
+            `${API_URL}/users/login`,
+            credentials,
+            { withCredentials: true }
+        );
 
-        if (!process.env.AUTENTICA_CORESSO_API_TOKEN) {
-            throw new Error("AUTENTICA_CORESSO_API_TOKEN não está definida");
-        }
-
-        const token = process.env.AUTENTICA_CORESSO_API_TOKEN;
-        const headers = {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-        };
-
-        const response = await axios.post("/autenticacao/", data, {
-            headers: headers,
+        cookies().set("auth_token", data.token, {
+            httpOnly: true,
+            secure: true,
+            path: "/",
+            sameSite: "lax",
         });
-        return response.data;
-    } catch (e) {
-        if (e instanceof AxiosError && e.response) {
-            return {
-                status: e.response.status,
-                detail: e.response.data.detail,
-                operation_id: e.response.data.operation_id,
-            };
-        }
-        throw e;
+
+        return data;
+    } catch (err) {
+        const error = err as AxiosError<LoginErrorResponse>;
+        const message = error.response?.data?.detail || "Erro na autenticação";
+
+        throw new Error(message);
     }
 }
