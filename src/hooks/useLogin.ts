@@ -1,54 +1,30 @@
 import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
-import { setEncryptedCookie } from "@/lib/cookieUtils";
-
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
-
-export interface LoginSuccessResponse {
-    name: string;
-    email: string;
-    cpf: string;
-    login: string;
-    visoes: unknown[];
-    cargo: string;
-    token: string;
-}
-
-export interface LoginErrorResponse {
-    detail: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { useRouter } from "next/navigation";
+import { loginAction } from "@/actions/login";
+import type {
+    LoginRequest,
+    LoginSuccessResponse,
+    LoginErrorResponse,
+} from "@/types/login";
 
 const useLogin = () => {
     const setUser = useUserStore((state) => state.setUser);
+    const router = useRouter();
+
     return useMutation<LoginSuccessResponse, LoginErrorResponse, LoginRequest>({
-        mutationFn: async (credentials: LoginRequest) => {
-            const response = await fetch(`${API_URL}/users/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(credentials),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || "Erro na autenticação");
-            }
-
+        mutationFn: loginAction,
+        onSuccess: (data) => {
             setUser({
                 nome: data.name,
                 email: data.email,
                 cargo: data.cargo.nome,
             });
-            setEncryptedCookie("auth_token", data.token);
 
-            return data;
+            router.push("/dashboard");
+        },
+        onError: (error) => {
+            console.error("Erro no login:", error.detail);
         },
     });
 };
