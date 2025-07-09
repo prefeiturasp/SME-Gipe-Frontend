@@ -64,7 +64,7 @@ describe("LoginForm", () => {
     });
 
     it("exibe mensagem de erro ao submeter com credenciais inválidas", async () => {
-        mutateAsyncMock.mockRejectedValueOnce(new Error("fail"));
+        mutateAsyncMock.mockRejectedValueOnce(new Error("Erro ao autenticar"));
 
         render(<LoginForm />, { wrapper });
 
@@ -123,9 +123,9 @@ describe("LoginForm", () => {
 
     it("exibe mensagem de erro customizada quando o erro possui 'detail'", async () => {
         // Simula o hook retornando um erro com a propriedade 'detail'
-        mutateAsyncMock.mockRejectedValueOnce({
-            detail: "Mensagem detalhada de erro",
-        });
+        mutateAsyncMock.mockRejectedValueOnce(
+            new Error("Mensagem detalhada de erro")
+        );
 
         render(<LoginForm />, { wrapper });
 
