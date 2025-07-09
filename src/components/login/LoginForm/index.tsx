@@ -18,7 +18,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, InputMask } from "@/components/ui/input";
 import useLogin from "@/hooks/useLogin";
 
 import formSchema, { FormDataLogin } from "./schema";
@@ -41,19 +41,15 @@ export default function LoginForm() {
     async function handleLogin(values: FormDataLogin) {
         setErrorMessage(null);
 
-        await mutateAsync(values).catch((error) => {
+        try {
+            await mutateAsync(values);
+        } catch (error) {
+            // Acesse diretamente a mensagem do erro
             const message =
-                typeof error === "object" &&
-                error !== null &&
-                "detail" in error &&
-                typeof error.detail === "string"
-                    ? error.detail
-                    : "Erro ao autenticar";
-
+                error instanceof Error ? error.message : "Erro ao autenticar";
             setErrorMessage(message);
-        });
+        }
     }
-
     return (
         <Form {...form}>
             <form
@@ -74,11 +70,13 @@ export default function LoginForm() {
                                 RF ou CPF
                             </FormLabel>
                             <FormControl>
-                                <Input
+                                <InputMask
                                     {...field}
-                                    type="text"
+                                    inputMode="numeric"
                                     placeholder="Digite um RF ou CPF"
-                                    className="pr-[40px]"
+                                    maskProps={{
+                                        mask: "99999999999",
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage />
