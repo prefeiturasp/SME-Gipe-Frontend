@@ -5,14 +5,13 @@ import { loginAction } from "@/actions/login";
 import type {
     LoginRequest,
     LoginSuccessResponse,
-    LoginErrorResponse,
 } from "@/types/login";
 
 const useLogin = () => {
     const setUser = useUserStore((state) => state.setUser);
     const router = useRouter();
 
-    return useMutation<LoginSuccessResponse, LoginErrorResponse, LoginRequest>({
+    return useMutation<LoginSuccessResponse, Error, LoginRequest>({ // Alterado para Error
         mutationFn: loginAction,
         onSuccess: (data) => {
             setUser({
@@ -20,11 +19,7 @@ const useLogin = () => {
                 email: data.email,
                 cargo: data.cargo.nome,
             });
-
             router.push("/dashboard");
-        },
-        onError: (error) => {
-            console.error("Erro no login:", error.detail);
         },
     });
 };
