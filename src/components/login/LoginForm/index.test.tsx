@@ -69,7 +69,7 @@ describe("LoginForm", () => {
         render(<LoginForm />, { wrapper });
 
         fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
-            target: { value: "123456" },
+            target: { value: "1234567" },
         });
         fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
             target: { value: "senhaerrada" },
@@ -90,7 +90,7 @@ describe("LoginForm", () => {
         render(<LoginForm />, { wrapper });
 
         fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
-            target: { value: "123456" },
+            target: { value: "1234567" },
         });
         fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
             target: { value: "senha123" },
@@ -130,7 +130,7 @@ describe("LoginForm", () => {
         render(<LoginForm />, { wrapper });
 
         fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
-            target: { value: "123456" },
+            target: { value: "1234567" },
         });
 
         fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
@@ -143,6 +143,40 @@ describe("LoginForm", () => {
             expect(
                 screen.getByText("Mensagem detalhada de erro")
             ).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de erro ao submeter CPF inválido", async () => {
+        render(<LoginForm />, { wrapper });
+
+        fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
+            target: { value: "12345678900" }, // CPF inválido
+        });
+        fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
+            target: { value: "senha123" },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Acessar" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("CPF inválido")).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem padrão de erro ao autenticar", async () => {
+        mutateAsyncMock.mockRejectedValueOnce({}); // Erro sem message
+
+        render(<LoginForm />, { wrapper });
+
+        fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
+            target: { value: "1234567" },
+        });
+        fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
+            target: { value: "senhaerrada" },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Acessar" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Erro ao autenticar")).toBeInTheDocument();
         });
     });
 });
