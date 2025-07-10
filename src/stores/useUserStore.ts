@@ -8,9 +8,9 @@ import {
 const COOKIE_KEY = "user_data";
 
 interface User {
-    name: string;
+    nome: string;
     email: string;
-    role: string;
+    cargo: string;
 }
 
 interface UserState {

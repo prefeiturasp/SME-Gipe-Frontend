@@ -1,17 +1,17 @@
-# Setup Inicial NextJS e Autenticação com NextAuth. Testes com Vitest e React Testing Library
+# Frontend - Next.js SME - GIPE
 
 ## 🥞 Stack
 
-- [Next.js v14](https://nextjs.org/docs)
-- [NextAuth v5.0.0-beta.28](https://next-auth.js.org/)
-- [React v18](https://react.dev/reference/react)
-- [Tailwindcss v3](https://tailwindcss.com/docs/installation)
-- [Shadcn](https://ui.shadcn.com/docs)
-- [React hook form v7](https://react-hook-form.com/get-started)
-- [Zod v3](https://zod.dev/?id=basic-usage)
-- [TypeScript](https://www.typescriptlang.org/docs/)
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-- [Vitest](https://vitest.dev/guide/)
+-   [Next.js v14](https://nextjs.org/docs)
+-   [NextAuth v5.0.0-beta.28](https://next-auth.js.org/)
+-   [React v18](https://react.dev/reference/react)
+-   [Tailwindcss v3](https://tailwindcss.com/docs/installation)
+-   [Shadcn](https://ui.shadcn.com/docs)
+-   [React hook form v7](https://react-hook-form.com/get-started)
+-   [Zod v3](https://zod.dev/?id=basic-usage)
+-   [TypeScript](https://www.typescriptlang.org/docs/)
+-   [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+-   [Vitest](https://vitest.dev/guide/)
 
 ## 🚀 Executando o projeto com Docker
 

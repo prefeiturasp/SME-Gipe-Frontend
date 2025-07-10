@@ -1,12 +1,23 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useLogin } from "./useLogin";
-import { vi, type Mock } from "vitest";
+import useLogin from "./useLogin";
+import { vi } from "vitest";
+import { loginAction } from "@/actions/login";
 
 const setUserMock = vi.fn();
+const pushMock = vi.fn();
+
+type UserStoreState = { setUser: typeof setUserMock };
+
 vi.mock("@/stores/useUserStore", () => ({
-    useUserStore: (selector: (state: unknown) => unknown) =>
+    useUserStore: (selector: (state: UserStoreState) => unknown) =>
         selector({ setUser: setUserMock }),
+}));
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ push: pushMock }),
+}));
+vi.mock("@/actions/login", () => ({
+    loginAction: vi.fn(),
 }));
 
 describe("useLogin", () => {
@@ -19,43 +30,85 @@ describe("useLogin", () => {
 
     beforeEach(() => {
         setUserMock.mockClear();
+        pushMock.mockClear();
+        (loginAction as unknown as ReturnType<typeof vi.fn>).mockReset();
         queryClient = new QueryClient({
             defaultOptions: { queries: { retry: false } },
         });
-        global.fetch = vi.fn();
     });
 
-    it("faz login com sucesso e atualiza store + cache", async () => {
-        const fakeUser = { id: 1, name: "Fulano" };
-        (global.fetch as Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({ user: fakeUser }),
+    it("faz login com sucesso, atualiza store e redireciona", async () => {
+        const fakeResponse = {
+            name: "Fulano",
+            email: "a@b.com",
+            cpf: "12345678900",
+            login: "fulano",
+            visoes: [],
+            cargo: { nome: "admin" },
+            token: "fake-token",
+        };
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockResolvedValueOnce(fakeResponse);
+
+        const { result } = renderHook(() => useLogin(), { wrapper });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                username: "a@b.com",
+                password: "1234",
+            });
+        });
+
+        expect(setUserMock).toHaveBeenCalledWith({
+            nome: fakeResponse.name,
+            email: fakeResponse.email,
+            cargo: fakeResponse.cargo.nome,
+        });
+        expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    });
+
+    it("trata erro quando loginAction lança erro com detail", async () => {
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockRejectedValueOnce({
+            detail: "Erro de autenticação",
         });
 
         const { result } = renderHook(() => useLogin(), { wrapper });
 
-        act(() => {
-            result.current.mutate({ email: "a@b.com", password: "1234" });
+        await act(async () => {
+            try {
+                await result.current.mutateAsync({
+                    username: "x@y.com",
+                    password: "abcd",
+                });
+            } catch {}
         });
-
-        await waitFor(() => result.current.isSuccess);
-
-        expect(setUserMock).toHaveBeenCalledWith(fakeUser);
-        expect(queryClient.getQueryData(["user"])).toEqual(fakeUser);
+        await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+        });
+        expect(setUserMock).not.toHaveBeenCalled();
     });
 
-    it("trata erro quando fetch.ok é false", async () => {
-        (global.fetch as Mock).mockResolvedValue({ ok: false });
+    it("trata erro quando loginAction lança erro genérico", async () => {
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockRejectedValueOnce(new Error("Erro desconhecido"));
 
         const { result } = renderHook(() => useLogin(), { wrapper });
 
-        act(() => {
-            result.current.mutate({ email: "x@y.com", password: "abcd" });
+        await act(async () => {
+            try {
+                await result.current.mutateAsync({
+                    username: "foo",
+                    password: "bar",
+                });
+            } catch {}
         });
-
-        await waitFor(() => result.current.isError);
-
-        expect((result.current.error as Error).message).toBe("Erro no login");
+        await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+        });
         expect(setUserMock).not.toHaveBeenCalled();
     });
 });

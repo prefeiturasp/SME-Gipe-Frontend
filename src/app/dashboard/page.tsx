@@ -39,13 +39,13 @@ export default function Dashboard() {
                                 </h2>
                                 <div className="space-y-2 text-sm text-blue-800">
                                     <p>
-                                        <strong>Nome:</strong> {user.name}
+                                        <strong>Nome:</strong> {user.nome}
                                     </p>
                                     <p>
                                         <strong>Email:</strong> {user.email}
                                     </p>
                                     <p>
-                                        <strong>Cargo:</strong> {user.role}
+                                        <strong>Cargo:</strong> {user.cargo}
                                     </p>
                                 </div>
                             </div>

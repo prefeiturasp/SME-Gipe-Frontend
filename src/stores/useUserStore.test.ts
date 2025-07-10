@@ -12,7 +12,7 @@ import {
     removeCookie,
 } from "@/lib/cookieUtils";
 
-const user = { name: "Fulano", email: "fulano@email.com", role: "admin" };
+const user = { nome: "Fulano", email: "fulano@email.com", cargo: "admin" };
 
 describe("useUserStore", () => {
     beforeEach(() => {

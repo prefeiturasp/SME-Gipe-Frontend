@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const formSchema = z.object({
-    rfOuCpf: z.string().min(1, "RF ou CPF é obrigatório"),
+    username: z.string().min(1, "RF ou CPF é obrigatório").max(11, "RF ou CPF deve ter no máximo 11 caracteres"),
     password: z
         .string()
         .min(1, "Senha é obrigatória")

@@ -33,9 +33,9 @@ describe("Dashboard page", () => {
 
     it("renderiza conteúdo protegido se user estiver presente", async () => {
         const fakeUser = {
-            name: "Fake User",
+            nome: "Fake User",
             email: "fakeuser@gmail.com",
-            role: "Admin",
+            cargo: "Admin",
         };
 
         (

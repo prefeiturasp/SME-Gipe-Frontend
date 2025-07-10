@@ -1,33 +1,27 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
+import { useRouter } from "next/navigation";
+import { loginAction } from "@/actions/login";
+import type {
+    LoginRequest,
+    LoginSuccessResponse,
+} from "@/types/login";
 
-export const useLogin = () => {
-    const queryClient = useQueryClient();
+const useLogin = () => {
     const setUser = useUserStore((state) => state.setUser);
+    const router = useRouter();
 
-    return useMutation({
-        mutationFn: async ({
-            email,
-            password,
-        }: {
-            email: string;
-            password: string;
-        }) => {
-            const res = await fetch("/api/login", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+    return useMutation<LoginSuccessResponse, Error, LoginRequest>({ // Alterado para Error
+        mutationFn: loginAction,
+        onSuccess: (data) => {
+            setUser({
+                nome: data.name,
+                email: data.email,
+                cargo: data.cargo.nome,
             });
-
-            if (!res.ok) throw new Error("Erro no login");
-
-            const data = await res.json();
-            return data.user;
-        },
-        onSuccess: (user) => {
-            setUser(user);
-            queryClient.setQueryData(["user"], user);
+            router.push("/dashboard");
         },
     });
 };
+
+export default useLogin;

@@ -18,44 +18,43 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useFakeLogin } from "@/lib/fakeLogin";
+import { Input, InputMask } from "@/components/ui/input";
+import useLogin from "@/hooks/useLogin";
 
 import formSchema, { FormDataLogin } from "./schema";
 
 export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const fakeLogin = useFakeLogin();
+    const loginMutation = useLogin();
+    const { mutateAsync, isPending } = loginMutation;
+    const isLoading = isPending;
 
     const form = useForm<FormDataLogin>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            rfOuCpf: "",
+            username: "",
             password: "",
         },
     });
 
-    async function handleFakeLogin(
-        values: FormDataLogin,
-        setError: (msg: string) => void
-    ) {
-        const ok = fakeLogin(values);
+    async function handleLogin(values: FormDataLogin) {
+        setErrorMessage(null);
 
-        if (ok) {
-            window.location.href = "/dashboard";
-        } else {
-            setError("Credenciais inválidas");
+        try {
+            await mutateAsync(values);
+        } catch (error) {
+            // Acesse diretamente a mensagem do erro
+            const message =
+                error instanceof Error ? error.message : "Erro ao autenticar";
+            setErrorMessage(message);
         }
     }
-
     return (
         <Form {...form}>
             <form
                 className="space-y-4 md:space-y-3"
-                onSubmit={form.handleSubmit((values) =>
-                    handleFakeLogin(values, setErrorMessage)
-                )}
+                onSubmit={form.handleSubmit(handleLogin)}
             >
                 <div className="flex justify-center mb-6">
                     <LogoGipe />
@@ -63,18 +62,21 @@ export default function LoginForm() {
 
                 <FormField
                     control={form.control}
-                    name="rfOuCpf"
+                    name="username"
+                    disabled={isLoading}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
                                 RF ou CPF
                             </FormLabel>
                             <FormControl>
-                                <Input
+                                <InputMask
                                     {...field}
-                                    type="text"
+                                    inputMode="numeric"
                                     placeholder="Digite um RF ou CPF"
-                                    className="pr-[40px]"
+                                    maskProps={{
+                                        mask: "99999999999",
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -85,6 +87,7 @@ export default function LoginForm() {
                     <FormField
                         control={form.control}
                         name="password"
+                        disabled={isLoading}
                         render={({ field }) => (
                             <FormItem className="md:col-span-5">
                                 <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
@@ -122,6 +125,7 @@ export default function LoginForm() {
                 <Button
                     variant="secondary"
                     className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                    loading={isLoading}
                 >
                     Acessar
                 </Button>
