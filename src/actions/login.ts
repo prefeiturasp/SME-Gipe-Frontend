@@ -12,6 +12,9 @@ export async function loginAction(
     credentials: LoginRequest
 ): Promise<LoginSuccessResponse> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+    console.log("XXXXXXXXXXXXXXXX API_URL:", API_URL);
+
     try {
         const { data } = await axios.post<LoginSuccessResponse>(
             `${API_URL}/users/login`,
