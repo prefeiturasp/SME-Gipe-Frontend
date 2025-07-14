@@ -2,18 +2,17 @@ import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from "next/navigation";
 import { loginAction } from "@/actions/login";
-import type {
-    LoginRequest,
-    LoginSuccessResponse,
-} from "@/types/login";
+import type { LoginRequest, LoginSuccessResponse } from "@/types/login";
 
 const useLogin = () => {
     const setUser = useUserStore((state) => state.setUser);
     const router = useRouter();
 
-    return useMutation<LoginSuccessResponse, Error, LoginRequest>({ // Alterado para Error
+    return useMutation<LoginSuccessResponse, Error, LoginRequest>({
         mutationFn: loginAction,
         onSuccess: (data) => {
+            if (!data?.name || !data?.email || !data?.cargo?.nome) return;
+
             setUser({
                 nome: data.name,
                 email: data.email,
