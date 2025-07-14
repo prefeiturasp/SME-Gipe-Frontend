@@ -102,4 +102,42 @@ describe("loginAction", () => {
             loginAction({ username: "foo", password: "bar" })
         ).rejects.toThrow("Erro na autenticação");
     });
+
+    it("lança erro específico se status for 500", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
+
+        const axiosError = new AxiosError("Internal Server Error");
+        axiosError.response = {
+            status: 500,
+            data: {},
+            headers: {},
+            config: {},
+            statusText: "Internal Server Error",
+        } as AxiosResponse;
+
+        axiosPostMock.mockRejectedValueOnce(axiosError);
+
+        await expect(
+            loginAction({ username: "erro", password: "500" })
+        ).rejects.toThrow("Erro interno no servidor");
+    });
+    it("lança erro com a mensagem genérica do próprio erro", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
+
+        const axiosError = new AxiosError("Mensagem genérica");
+        axiosError.message = "Mensagem genérica";
+        axiosError.response = {
+            status: 418,
+            data: {},
+            headers: {},
+            config: {},
+            statusText: "I'm a teapot",
+        } as AxiosResponse;
+
+        axiosPostMock.mockRejectedValueOnce(axiosError);
+
+        await expect(
+            loginAction({ username: "genérico", password: "123" })
+        ).rejects.toThrow("Mensagem genérica");
+    });
 });

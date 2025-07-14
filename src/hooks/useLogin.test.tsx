@@ -111,4 +111,54 @@ describe("useLogin", () => {
         });
         expect(setUserMock).not.toHaveBeenCalled();
     });
+
+    it("trata erro 500 corretamente", async () => {
+        const error500 = new Error("Erro interno no servidor");
+
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockRejectedValueOnce(error500);
+
+        const { result } = renderHook(() => useLogin(), { wrapper });
+
+        await act(async () => {
+            try {
+                await result.current.mutateAsync({
+                    username: "foo",
+                    password: "bar",
+                });
+            } catch {}
+        });
+
+        await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+        });
+
+        expect(setUserMock).not.toHaveBeenCalled();
+        expect(pushMock).not.toHaveBeenCalled();
+    });
+
+    it("não atualiza store nem redireciona se dados do usuário estiverem incompletos", async () => {
+        const fakeResponse = {
+            name: undefined,
+            email: "a@b.com",
+            cargo: { nome: "admin" },
+            token: "fake-token",
+        };
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockResolvedValueOnce(fakeResponse);
+
+        const { result } = renderHook(() => useLogin(), { wrapper });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                username: "a@b.com",
+                password: "1234",
+            });
+        });
+
+        expect(setUserMock).not.toHaveBeenCalled();
+        expect(pushMock).not.toHaveBeenCalled();
+    });
 });
