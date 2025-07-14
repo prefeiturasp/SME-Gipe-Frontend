@@ -8,9 +8,13 @@ import {
     LoginErrorResponse,
 } from "@/types/login";
 
+type LoginResult =
+    | { success: true; data: LoginSuccessResponse }
+    | { success: false; error: string };
+
 export async function loginAction(
     credentials: LoginRequest
-): Promise<LoginSuccessResponse> {
+): Promise<LoginResult> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
     try {
@@ -32,7 +36,7 @@ export async function loginAction(
             data
         );
 
-        return data;
+        return { success: true, data };
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
 
@@ -40,14 +44,16 @@ export async function loginAction(
             "-----------------------------------Erro do login action:",
             error
         );
+        let message = "Erro na autenticação";
 
-        const message =
-            error.response?.status === 500
-                ? "Erro interno no servidor"
-                : error.response?.data?.detail ||
-                  error.message ||
-                  "Erro na autenticação";
+        if (error.response?.status === 500) {
+            message = "Erro interno no servidor";
+        } else if (error.response?.data?.detail) {
+            message = error.response.data.detail;
+        } else if (error.message) {
+            message = error.message;
+        }
 
-        throw new Error(message);
+        return { success: false, error: message };
     }
 }
