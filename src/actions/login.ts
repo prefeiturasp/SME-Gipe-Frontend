@@ -27,9 +27,19 @@ export async function loginAction(
             sameSite: "lax",
         });
 
+        console.log(
+            "-----------------------------------Resposta do login action:",
+            data
+        );
+
         return data;
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
+
+        console.log(
+            "-----------------------------------Erro do login action:",
+            error
+        );
 
         const message =
             error.response?.status === 500

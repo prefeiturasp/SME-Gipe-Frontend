@@ -45,6 +45,11 @@ export default function LoginForm() {
             await mutateAsync(values);
         } catch (error) {
             // Acesse diretamente a mensagem do erro
+
+            console.log(
+                "-----------------------------------Erro no login no loginForm:",
+                error
+            );
             const message =
                 error instanceof Error ? error.message : "Erro ao autenticar";
             setErrorMessage(message);

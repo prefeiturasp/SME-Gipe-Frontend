@@ -11,6 +11,10 @@ const useLogin = () => {
     return useMutation<LoginSuccessResponse, Error, LoginRequest>({
         mutationFn: loginAction,
         onSuccess: (data) => {
+            console.log(
+                "-----------------------------------Resposta do login hook useLogin:",
+                data
+            );
             if (!data?.name || !data?.email || !data?.cargo?.nome) return;
 
             setUser({
