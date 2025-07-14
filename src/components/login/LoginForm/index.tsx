@@ -41,15 +41,18 @@ export default function LoginForm() {
     async function handleLogin(values: FormDataLogin) {
         setErrorMessage(null);
 
-        try {
-            await mutateAsync(values);
-        } catch (error) {
-            // Acesse diretamente a mensagem do erro
-            const message =
-                error instanceof Error ? error.message : "Erro ao autenticar";
-            setErrorMessage(message);
+        const response = await mutateAsync(values);
+
+        console.log(
+            "-----------------------------------Resposta do login componente LoginForm:",
+            response
+        );
+
+        if (!response.success) {
+            setErrorMessage(response.error);
         }
     }
+
     return (
         <Form {...form}>
             <form
