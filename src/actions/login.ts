@@ -13,8 +13,6 @@ export async function loginAction(
 ): Promise<LoginSuccessResponse> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-    console.log("XXXXXXXXXXXXXXXX API_URL:", API_URL);
-
     try {
         const { data } = await axios.post<LoginSuccessResponse>(
             `${API_URL}/users/login`,
@@ -32,7 +30,13 @@ export async function loginAction(
         return data;
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
-        const message = error.response?.data?.detail || "Erro na autenticação";
+
+        const message =
+            error.response?.status === 500
+                ? "Erro interno no servidor"
+                : error.response?.data?.detail ||
+                  error.message ||
+                  "Erro na autenticação";
 
         throw new Error(message);
     }
