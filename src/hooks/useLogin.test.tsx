@@ -49,7 +49,7 @@ describe("useLogin", () => {
         };
         (
             loginAction as unknown as ReturnType<typeof vi.fn>
-        ).mockResolvedValueOnce(fakeResponse);
+        ).mockResolvedValueOnce({ success: true, data: fakeResponse });
 
         const { result } = renderHook(() => useLogin(), { wrapper });
 
@@ -147,7 +147,7 @@ describe("useLogin", () => {
         };
         (
             loginAction as unknown as ReturnType<typeof vi.fn>
-        ).mockResolvedValueOnce(fakeResponse);
+        ).mockResolvedValueOnce({ success: true, data: fakeResponse });
 
         const { result } = renderHook(() => useLogin(), { wrapper });
 
@@ -160,5 +160,25 @@ describe("useLogin", () => {
 
         expect(setUserMock).not.toHaveBeenCalled();
         expect(pushMock).not.toHaveBeenCalled();
+        expect(result.current.isError).toBe(false);
+    });
+
+    it("não atualiza store nem redireciona se response.success for false", async () => {
+        (
+            loginAction as unknown as ReturnType<typeof vi.fn>
+        ).mockResolvedValueOnce({ success: false, error: "Erro customizado" });
+
+        const { result } = renderHook(() => useLogin(), { wrapper });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                username: "erro@teste.com",
+                password: "1234",
+            });
+        });
+
+        expect(setUserMock).not.toHaveBeenCalled();
+        expect(pushMock).not.toHaveBeenCalled();
+        expect(result.current.isError).toBe(false);
     });
 });
