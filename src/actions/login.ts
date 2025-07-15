@@ -8,15 +8,10 @@ import {
     LoginErrorResponse,
 } from "@/types/login";
 
-type LoginResult =
-    | { success: true; data: LoginSuccessResponse }
-    | { success: false; error: string };
-
 export async function loginAction(
     credentials: LoginRequest
-): Promise<LoginResult> {
+): Promise<LoginSuccessResponse> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
-
     try {
         const { data } = await axios.post<LoginSuccessResponse>(
             `${API_URL}/users/login`,
@@ -31,29 +26,13 @@ export async function loginAction(
             sameSite: "lax",
         });
 
-        console.log(
-            "-----------------------------------Resposta do login action:",
-            data
-        );
+        console.log("Login realizado com sucesso:", data);
 
-        return { success: true, data };
+        return data;
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
+        const message = error.response?.data?.detail || "Erro na autenticação";
 
-        console.log(
-            "-----------------------------------Erro do login action:",
-            error
-        );
-        let message = "Erro na autenticação";
-
-        if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        return { success: false, error: message };
+        throw new Error(message);
     }
 }

@@ -1,34 +1,40 @@
-import { useMutation } from "@tanstack/react-query";
-import { useUserStore } from "@/stores/useUserStore";
-import { useRouter } from "next/navigation";
-import { loginAction } from "@/actions/login";
+import { useMutation } from '@tanstack/react-query';
+import { loginAction} from '@/actions/login';
+import {
+    LoginRequest,
+} from '@/types/login';
 
-const useLogin = () => {
-    const setUser = useUserStore((state) => state.setUser);
+import { useRouter } from 'next/navigation';
+import { useUserStore } from "@/stores/useUserStore";
+
+
+
+export default function useLogin() {
+        const setUser = useUserStore((state) => state.setUser);
     const router = useRouter();
 
-    return useMutation({
-        mutationFn: loginAction,
-        onSuccess: (response) => {
-            console.log(
-                "-----------------------------------Resposta do login hook useLogin:",
-                response
-            );
-            if (!response.success) return;
+    return useMutation<any, Error, LoginRequest>({
+        mutationFn: async (credentials: LoginRequest) => {
+            const response = await loginAction(credentials);
+            return response;
+        },
+        onSuccess: (data) => {
+            console.log('Login realizado com sucesso:', data);
 
-            const { name, email, cargo } = response.data;
+            // Aqui você pode armazenar o token/dados do usuário se necessário
+            // Por exemplo: localStorage.setItem('authToken', data.token);
 
-            if (!name || !email || !cargo?.nome) return;
-
+            // Redirecionar para dashboard ou página principal
             setUser({
-                nome: name,
-                email,
-                cargo: cargo.nome,
+                nome: data.nome,
+                email: data.email,
+                cargo: data.cargo.nome,
             });
 
             router.push("/dashboard");
         },
+        onError: (error) => {
+            console.error('Erro na mutação de login:', error);
+        },
     });
-};
-
-export default useLogin;
+}
