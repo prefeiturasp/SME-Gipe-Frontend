@@ -1,0 +1,10 @@
+services:
+  gipe_app:
+    build: .
+    container_name: gipe_app
+    image: gipe_front:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+      - /app/node_modules
