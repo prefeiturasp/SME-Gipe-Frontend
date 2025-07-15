@@ -43,11 +43,6 @@ export default function LoginForm() {
 
         const response = await mutateAsync(values);
 
-        console.log(
-            "-----------------------------------Erro no login no loginForm:",
-            response
-        );
-
         if (!response.success) {
             setErrorMessage(response.error);
         }
