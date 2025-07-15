@@ -1,22 +1,24 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation } from '@tanstack/react-query';
 import { useUserStore } from "@/stores/useUserStore";
-import { useRouter } from "next/navigation";
-import { loginAction } from "@/actions/login";
+import { loginAction, LoginRequest } from '@/actions/login';
+import { useRouter } from 'next/navigation';
 
-const useLogin = () => {
-    const setUser = useUserStore((state) => state.setUser);
-    const router = useRouter();
+export default function useLogin() {
+        const setUser = useUserStore((state) => state.setUser);
+        const router = useRouter();
 
-    return useMutation({
-        mutationFn: loginAction,
+    return useMutation<any, Error, LoginRequest>({
+        mutationFn: async (credentials: LoginRequest) => {
+            const response = await loginAction(credentials);
+            return response;
+        },
         onSuccess: (response) => {
             console.log(
                 "-----------------------------------Resposta do login hook useLogin:",
                 response
             );
-            if (!response.success) return;
 
-            const { name, email, cargo } = response.data;
+            const { name, email, cargo } = response;
 
             if (!name || !email || !cargo?.nome) return;
 
@@ -28,7 +30,8 @@ const useLogin = () => {
 
             router.push("/dashboard");
         },
+        onError: (error) => {
+            console.error('Erro na mutação de login:', error);
+        },
     });
-};
-
-export default useLogin;
+}
