@@ -38,24 +38,18 @@ export default function LoginForm() {
         },
     });
 
-        async function handleLogin(values: FormDataLogin) {
-        try {
-            setErrorMessage(null);
+    async function handleLogin(values: FormDataLogin) {
+        setErrorMessage(null);
 
-            await mutateAsync({
-                username: values.username,
-                password: values.password,
-            });
+        const response = await mutateAsync(values);
 
-            // Se chegou aqui, o login foi bem-sucedido
-            // O redirecionamento já acontece no onSuccess do hook
+        console.log(
+            "-----------------------------------Erro no login no loginForm:",
+            response
+        );
 
-        } catch (error) {
-            console.error('Erro no handleLogin:', error);
-
-            // O erro já vem tratado da server action
-            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-            setErrorMessage(errorMessage);
+        if (!response.success) {
+            setErrorMessage(response.error);
         }
     }
 
