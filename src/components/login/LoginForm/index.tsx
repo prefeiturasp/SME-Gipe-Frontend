@@ -133,7 +133,7 @@ export default function LoginForm() {
                     </span>
                 </div>
                 {errorMessage && (
-                    <div className="text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 px-3 mt-2">
+                    <div className="text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 px-3 mt-2 max-w-sm w-full mx-auto break-words">
                         {errorMessage}
                     </div>
                 )}
