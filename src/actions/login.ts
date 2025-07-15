@@ -30,20 +30,10 @@ export async function loginAction(
             path: "/",
             sameSite: "lax",
         });
-
-        console.log(
-            "-----------------------------------Resposta do login action:",
-            data
-        );
-
         return { success: true, data };
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
 
-        console.log(
-            "-----------------------------------Erro do login action:",
-            error
-        );
         let message = "Erro na autenticação";
 
         if (error.response?.status === 500) {

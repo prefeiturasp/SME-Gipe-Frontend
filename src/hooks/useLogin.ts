@@ -10,10 +10,6 @@ const useLogin = () => {
     return useMutation({
         mutationFn: loginAction,
         onSuccess: (response) => {
-            console.log(
-                "-----------------------------------Resposta do login hook useLogin:",
-                response
-            );
             if (!response.success) return;
 
             const { name, email, cargo } = response.data;

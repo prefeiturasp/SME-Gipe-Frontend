@@ -65,10 +65,10 @@ describe("loginAction", () => {
             sameSite: "lax",
         });
 
-        expect(result).toEqual(fakeUser);
+        expect(result).toEqual({ success: true, data: fakeUser });
     });
 
-    it("lança erro com a mensagem do servidor se a requisição falhar", async () => {
+    it("retorna erro com a mensagem do servidor se a requisição falhar", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         const axiosError = new AxiosError("Request failed");
@@ -84,26 +84,31 @@ describe("loginAction", () => {
 
         axiosPostMock.mockRejectedValueOnce(axiosError);
 
-        await expect(
-            loginAction({
-                username: "fulano",
-                password: "errado",
-            })
-        ).rejects.toThrow("Credenciais inválidas");
+        const result = await loginAction({
+            username: "fulano",
+            password: "errado",
+        });
+
+        expect(result).toEqual({
+            success: false,
+            error: "Credenciais inválidas",
+        });
     });
 
-    it("lança erro genérico se não houver mensagem de erro no response", async () => {
+    it("retorna erro genérico se não houver mensagem de erro no response", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         const axiosError = new AxiosError("Erro desconhecido");
         axiosPostMock.mockRejectedValueOnce(axiosError);
 
-        await expect(
-            loginAction({ username: "foo", password: "bar" })
-        ).rejects.toThrow("Erro na autenticação");
+        const result = await loginAction({ username: "foo", password: "bar" });
+        expect(result).toEqual({
+            success: false,
+            error: "Erro na autenticação",
+        });
     });
 
-    it("lança erro específico se status for 500", async () => {
+    it("retorna erro específico se status for 500", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         const axiosError = new AxiosError("Internal Server Error");
@@ -117,11 +122,14 @@ describe("loginAction", () => {
 
         axiosPostMock.mockRejectedValueOnce(axiosError);
 
-        await expect(
-            loginAction({ username: "erro", password: "500" })
-        ).rejects.toThrow("Erro interno no servidor");
+        const result = await loginAction({ username: "erro", password: "500" });
+        expect(result).toEqual({
+            success: false,
+            error: "Erro interno no servidor",
+        });
     });
-    it("lança erro com a mensagem genérica do próprio erro", async () => {
+
+    it("retorna erro com a mensagem genérica do próprio erro", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         const axiosError = new AxiosError("Mensagem genérica");
@@ -136,8 +144,10 @@ describe("loginAction", () => {
 
         axiosPostMock.mockRejectedValueOnce(axiosError);
 
-        await expect(
-            loginAction({ username: "genérico", password: "123" })
-        ).rejects.toThrow("Mensagem genérica");
+        const result = await loginAction({
+            username: "genérico",
+            password: "123",
+        });
+        expect(result).toEqual({ success: false, error: "Mensagem genérica" });
     });
 });

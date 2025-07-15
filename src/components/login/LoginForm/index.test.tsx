@@ -12,7 +12,6 @@ vi.mock("@/hooks/useLogin", () => ({
     default: () => ({
         mutateAsync: mutateAsyncMock,
         isPending: false,
-        // Adiciona mocks para onSuccess e onError se necessário
         options: { onSuccess: onSuccessMock },
     }),
 }));
@@ -64,7 +63,10 @@ describe("LoginForm", () => {
     });
 
     it("exibe mensagem de erro ao submeter com credenciais inválidas", async () => {
-        mutateAsyncMock.mockRejectedValueOnce(new Error("Erro ao autenticar"));
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "Erro ao autenticar",
+        });
 
         render(<LoginForm />, { wrapper });
 
@@ -122,10 +124,10 @@ describe("LoginForm", () => {
     });
 
     it("exibe mensagem de erro customizada quando o erro possui 'detail'", async () => {
-        // Simula o hook retornando um erro com a propriedade 'detail'
-        mutateAsyncMock.mockRejectedValueOnce(
-            new Error("Mensagem detalhada de erro")
-        );
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "Mensagem detalhada de erro",
+        });
 
         render(<LoginForm />, { wrapper });
 
@@ -150,7 +152,7 @@ describe("LoginForm", () => {
         render(<LoginForm />, { wrapper });
 
         fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
-            target: { value: "12345678900" }, // CPF inválido
+            target: { value: "12345678900" },
         });
         fireEvent.input(screen.getByPlaceholderText("Digite sua senha"), {
             target: { value: "senha123" },
@@ -163,7 +165,10 @@ describe("LoginForm", () => {
     });
 
     it("exibe mensagem padrão de erro ao autenticar", async () => {
-        mutateAsyncMock.mockRejectedValueOnce({}); // Erro sem message
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "Erro ao autenticar",
+        });
 
         render(<LoginForm />, { wrapper });
 
