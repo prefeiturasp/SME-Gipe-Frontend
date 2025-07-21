@@ -50,8 +50,8 @@ export const SidebarLink = React.forwardRef<
                 {...props}
             >
                 <Icon
-                    width={open ? 14 : 22}
-                    height={open ? 12 : 19}
+                    width={open ? 16 : 22}
+                    height={open ? 16 : 19}
                     className={iconColor}
                 />
 
@@ -71,11 +71,7 @@ export const SidebarLink = React.forwardRef<
                     <RightIcon
                         width={12}
                         height={12}
-                        className={cn(
-                            "absolute right-2",
-                            open ? "" : "top-[8px]",
-                            iconColor
-                        )}
+                        className={cn("absolute right-2 top-[8px]", iconColor)}
                     />
                 )}
             </a>
