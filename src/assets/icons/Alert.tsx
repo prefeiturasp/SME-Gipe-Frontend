@@ -4,6 +4,7 @@ export default function Alert(props: Readonly<React.SVGProps<SVGSVGElement>>) {
             width="22"
             xmlns="http://www.w3.org/2000/svg"
             height="19"
+            data-testid="icon-alert"
             id="screenshot-a27ebe5e-65f7-80eb-8006-54990463d0f6"
             viewBox="-124 1246 22 19"
             style={{ WebkitPrintColorAdjust: "exact" }}

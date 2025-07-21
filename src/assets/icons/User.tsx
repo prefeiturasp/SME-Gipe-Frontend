@@ -10,6 +10,7 @@ export default function User(props: Readonly<React.SVGProps<SVGSVGElement>>) {
             xmlnsXlink="http://www.w3.org/1999/xlink"
             fill="none"
             version="1.1"
+            data-testid="icon-user"
             {...props}
         >
             <g id="shape-a27ebe5e-65f7-80eb-8006-549538b41502">
