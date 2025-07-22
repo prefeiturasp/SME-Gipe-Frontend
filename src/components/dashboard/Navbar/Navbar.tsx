@@ -20,7 +20,7 @@ export function Navbar({}) {
 
             <div className="flex items-center gap-4">
                 <div
-                    className="rounded border border-gray-300 px-1 font-weight-[400] py-1 h-[59px] text-sm text-muted-foreground bg-white leading-tight bg-[#F5F6F8]"
+                    className="rounded border border-gray-300 px-1 font-weight-[400] py-1 h-[59px] text-sm text-muted-foreground bg-white leading-tight bg-[#f5f6f8]"
                     style={{
                         fontFamily: "Roboto, sans-serif",
                         color: "#42474a",
