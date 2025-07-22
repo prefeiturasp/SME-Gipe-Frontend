@@ -1,5 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import RootLayout from "../dashboard/layout";
+import DashboardLayout from "@/app/dashboard/layout";
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => "/dashboard",
+}));
 
 vi.mock("next/image", () => ({
     default: (props: Record<string, unknown>) => {
@@ -13,29 +22,32 @@ vi.mock("next/image", () => ({
 }));
 
 beforeAll(() => {
-    window.matchMedia = (query: string) =>
+    window.matchMedia = () =>
         ({
             matches: false,
-            media: query,
+            media: "",
             onchange: null,
             addEventListener: () => {},
             removeEventListener: () => {},
-            dispatchEvent: () => {},
+            dispatchEvent: () => false,
         } as unknown as MediaQueryList);
 });
 
-describe("Dashboard RootLayout", () => {
-    it("renderiza o children ao lado da sidebar", () => {
+describe("DashboardLayout (layout.tsx)", () => {
+    it("renderiza sidebar, navbar e conteúdo corretamente", async () => {
         render(
-            <RootLayout>
-                <div data-testid="child">Conteúdo Dashboard</div>
-            </RootLayout>
+            <DashboardLayout>
+                <div data-testid="child">Conteúdo de teste</div>
+            </DashboardLayout>
         );
-        const child = screen.getByTestId("child");
+
+        const child = await screen.findByTestId("child");
         expect(child).toBeInTheDocument();
-        const main = child.closest("main");
-        expect(main).toBeInTheDocument();
-        const flexDiv = main?.closest(".flex");
-        expect(flexDiv).toBeInTheDocument();
+
+        expect(screen.getByText(/sair/i)).toBeInTheDocument();
+
+        expect(
+            screen.getByText(/intercorrência institucional/i)
+        ).toBeInTheDocument();
     });
 });
