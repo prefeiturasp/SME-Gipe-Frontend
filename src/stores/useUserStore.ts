@@ -12,6 +12,8 @@ interface User {
     identificador: string | number;
     perfil_acesso: string;
     unidade: string;
+    email: string;
+    cpf: string;
 }
 
 interface UserState {
