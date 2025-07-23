@@ -39,6 +39,12 @@ export default function Dashboard() {
                                         <strong>Unidade educacional:</strong>{" "}
                                         {user.unidade}
                                     </p>
+                                    <p>
+                                        <strong>Email:</strong> {user.email}
+                                    </p>
+                                    <p>
+                                        <strong>CPF:</strong> {user.cpf}
+                                    </p>
                                 </div>
                             </div>
 
