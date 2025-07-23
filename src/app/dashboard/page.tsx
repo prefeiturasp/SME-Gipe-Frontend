@@ -1,19 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 
 export default function Dashboard() {
     const user = useUserStore((state) => state.user);
-    const [isHydrated, setIsHydrated] = useState(false);
-
-    useEffect(() => {
-        setIsHydrated(true);
-    }, []);
-
-    if (!isHydrated) {
-        return null;
-    }
 
     if (!user) {
         return (
@@ -42,10 +32,12 @@ export default function Dashboard() {
                                         <strong>Nome:</strong> {user.nome}
                                     </p>
                                     <p>
-                                        <strong>Email:</strong> {user.email}
+                                        <strong>Perfil de acesso:</strong>{" "}
+                                        {user.perfil_acesso}
                                     </p>
                                     <p>
-                                        <strong>Cargo:</strong> {user.cargo}
+                                        <strong>Unidade educacional:</strong>{" "}
+                                        {user.unidade}
                                     </p>
                                 </div>
                             </div>

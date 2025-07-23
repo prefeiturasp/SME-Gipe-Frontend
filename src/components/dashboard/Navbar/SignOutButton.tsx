@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import Logout from "@/assets/icons/Logout";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/stores/useUserStore";
 
@@ -11,18 +12,18 @@ export default function SignOutButton() {
 
     const handleLogout = () => {
         clearUser();
-
         Cookies.remove("user_data", { path: "/" });
-
         router.push("/login");
     };
 
     return (
         <Button
-            variant="destructive"
-            className="w-full rounded-full text-primary text-[16px] font-[700] md:h-[45px] md:pb-0 inline-block align-middle"
             onClick={handleLogout}
+            variant="ghost"
+            className="flex h-[80px] flex-col items-center text-xs"
+            style={{ color: "#929494" }}
         >
+            <Logout width={28} height={28} />
             Sair
         </Button>
     );
