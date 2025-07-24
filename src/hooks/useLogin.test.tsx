@@ -67,6 +67,8 @@ describe("useLogin", () => {
             identificador: fakeResponse.login,
             perfil_acesso: fakeResponse.perfil_acesso.nome,
             unidade: fakeResponse.unidade_lotacao.nomeUnidade,
+            email: fakeResponse.email,
+            cpf: fakeResponse.cpf,
         });
         expect(pushMock).toHaveBeenCalledWith("/dashboard");
     });

@@ -12,16 +12,26 @@ const useLogin = () => {
         onSuccess: (response) => {
             if (!response.success) return;
 
-            const { name, login, perfil_acesso, unidade_lotacao } =
+            const { name, login, perfil_acesso, unidade_lotacao, email, cpf } =
                 response.data;
 
-            if (!name || !login || !perfil_acesso || !unidade_lotacao) return;
+            if (
+                !name ||
+                !login ||
+                !perfil_acesso ||
+                !unidade_lotacao ||
+                !email ||
+                !cpf
+            )
+                return;
 
             setUser({
                 nome: name,
                 identificador: login,
                 perfil_acesso: perfil_acesso.nome,
                 unidade: unidade_lotacao.nomeUnidade,
+                email,
+                cpf,
             });
 
             router.push("/dashboard");
