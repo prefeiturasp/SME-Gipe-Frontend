@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
 import LogoGipe from "@/components/login/LogoGipe";
@@ -29,6 +30,8 @@ export default function LoginForm() {
     const loginMutation = useLogin();
     const { mutateAsync, isPending } = loginMutation;
     const isLoading = isPending;
+
+    const router = useRouter();
 
     const form = useForm<FormDataLogin>({
         resolver: zodResolver(formSchema),
@@ -147,6 +150,7 @@ export default function LoginForm() {
                     <button
                         type="button"
                         className="w-full max-w-xs border border-[#717FC7] bg-white text-[#717FC7] font-bold rounded-md py-2 transition-colors hover:bg-[#f3f4fa] hover:border-[#5a65a8]"
+                        onClick={() => router.push("/cadastro")}
                     >
                         Cadastre-se
                     </button>
