@@ -1,9 +1,9 @@
-import SignupForm from "@/components/login/FormCadastro";
+import FormCadastro from "@/components/login/FormCadastro";
 
 export default function Login() {
     return (
         <>
-            <SignupForm />
+            <FormCadastro />
         </>
     );
 }
