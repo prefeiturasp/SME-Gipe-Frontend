@@ -2,7 +2,7 @@ import Banner from "@/components/login/Banner";
 import React from "react";
 
 interface AuthLayoutProps {
-    children: React.ReactNode;
+    readonly children: React.ReactNode;
 }
 
 export default function LoginLayout({ children }: AuthLayoutProps) {
