@@ -2,7 +2,7 @@ import LogoGipe from "@/components/login/LogoGipe";
 import { Button } from "@/components/ui/button";
 
 interface FinalizadoFormProps {
-    aoConfirmar?: () => void;
+    readonly aoConfirmar?: () => void;
 }
 
 export default function Finalizado({ aoConfirmar }: FinalizadoFormProps) {

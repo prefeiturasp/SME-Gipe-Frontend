@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import AlertSmall from "@/assets/icons/AlertSmall";
 
 interface AvisoProps {
-    children: ReactNode;
+    readonly children: ReactNode;
 }
 
 export default function Aviso({ children }: AvisoProps) {
