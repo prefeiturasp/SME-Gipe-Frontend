@@ -184,4 +184,14 @@ describe("LoginForm", () => {
             expect(screen.getByText("Erro ao autenticar")).toBeInTheDocument();
         });
     });
+
+    it("chama router.push ao clicar em Cadastre-se", async () => {
+        render(<LoginForm />);
+
+        const cadastreSeButton = screen.getByRole("button", {
+            name: "Cadastre-se",
+        });
+        fireEvent.click(cadastreSeButton);
+        expect(pushMock).toHaveBeenCalledWith("/cadastro");
+    });
 });
