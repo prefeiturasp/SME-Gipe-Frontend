@@ -33,17 +33,12 @@ const FormDados: React.FC = () => {
         },
     });
 
-    function handleSubmit(values: FormDataMeusDados) {
-        // lógica de envio
-        console.log(values);
-    }
-
     return (
         <div className="w-full md:w-1/2 flex flex-col h-full flex-1">
             <Form {...form}>
                 <form
                     className="flex flex-col h-full flex-1"
-                    onSubmit={form.handleSubmit(handleSubmit)}
+                    onSubmit={form.handleSubmit(() => {})}
                 >
                     <div className="flex flex-col gap-4">
                         <FormField
