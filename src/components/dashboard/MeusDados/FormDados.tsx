@@ -28,7 +28,9 @@ const FormDados: React.FC = () => {
             senha: "111111111111",
             cpf: user?.cpf,
             dre: user?.perfil_acesso,
-            unidade: user?.unidade,
+            unidade: user?.unidade
+                .map((unidade) => unidade.nomeUnidade)
+                .join(", "),
             perfil: user?.perfil_acesso,
         },
     });

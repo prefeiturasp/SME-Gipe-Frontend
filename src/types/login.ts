@@ -13,10 +13,12 @@ export interface LoginSuccessResponse {
         nome: string;
         codigo: string;
     };
-    unidade_lotacao: {
-        nomeUnidade: string;
-        codigo: string;
-    };
+    unidade_lotacao: [
+        {
+            nomeUnidade: string;
+            codigo: string;
+        }
+    ];
     token: string;
 }
 

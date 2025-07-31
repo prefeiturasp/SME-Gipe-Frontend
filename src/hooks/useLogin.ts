@@ -21,7 +21,7 @@ const useLogin = () => {
                 nome: name,
                 identificador: login,
                 perfil_acesso: perfil_acesso.nome,
-                unidade: unidade_lotacao.nomeUnidade,
+                unidade: unidade_lotacao,
                 email,
                 cpf,
             });

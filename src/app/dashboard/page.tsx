@@ -36,7 +36,9 @@ export default function Dashboard() {
                                 </p>
                                 <p>
                                     <strong>Unidade educacional:</strong>{" "}
-                                    {user.unidade}
+                                    {user.unidade
+                                        .map((unidade) => unidade.nomeUnidade)
+                                        .join(", ")}
                                 </p>
                                 <p>
                                     <strong>Email:</strong> {user.email}
