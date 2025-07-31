@@ -15,15 +15,7 @@ const useLogin = () => {
             const { name, login, perfil_acesso, unidade_lotacao, email, cpf } =
                 response.data;
 
-            if (
-                !name ||
-                !login ||
-                !perfil_acesso ||
-                !unidade_lotacao ||
-                !email ||
-                !cpf
-            )
-                return;
+            if (!name || !login || !perfil_acesso) return;
 
             setUser({
                 nome: name,
