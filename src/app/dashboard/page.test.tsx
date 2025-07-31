@@ -35,7 +35,7 @@ describe("Dashboard page", () => {
         const fakeUser = {
             nome: "Fake User",
             perfil_acesso: "Assistente de diretor",
-            unidade: "Escola Fake",
+            unidade: [{ nomeUnidade: "Escola Fake" }],
         };
 
         (

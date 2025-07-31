@@ -11,7 +11,12 @@ interface User {
     nome: string;
     identificador: string | number;
     perfil_acesso: string;
-    unidade: string;
+    unidade: [
+        {
+            nomeUnidade: string;
+            codigo: string;
+        }
+    ];
     email: string;
     cpf: string;
 }

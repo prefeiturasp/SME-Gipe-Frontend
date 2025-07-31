@@ -7,14 +7,14 @@ const mockUser: MockUser = {
     email: "joao@email.com",
     cpf: "123.456.789-00",
     perfil_acesso: "Administrador",
-    unidade: "Escola XPTO",
+    unidade: [{ nomeUnidade: "Escola XPTO" }],
 };
 
 interface MockUser {
     nome: string;
     perfil_acesso: string;
     cpf: string;
-    unidade: string;
+    unidade: { nomeUnidade: string }[];
     email: string;
 }
 
