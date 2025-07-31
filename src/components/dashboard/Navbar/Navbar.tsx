@@ -9,7 +9,13 @@ function capitalizeWords(str: string) {
     return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function Navbar({}) {
+export function Navbar() {
+    function isCPF(value: string | number) {
+        const strValue = String(value);
+        const cpf = strValue.replace(/\D/g, "");
+        return cpf.length === 11;
+    }
+
     const user = useUserStore((state) => state.user);
 
     return (
@@ -30,7 +36,8 @@ export function Navbar({}) {
                         <>
                             <div>
                                 <span className="font-bold">
-                                    RF: {user.identificador}
+                                    {isCPF(user.identificador) ? "CPF" : "RF"}:{" "}
+                                    {user.identificador}
                                 </span>
                             </div>
                             <div>{capitalizeWords(user.nome)}</div>
