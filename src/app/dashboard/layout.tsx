@@ -6,7 +6,7 @@ import { HydrationGuard } from "@/components/dashboard/HydrationGuard";
 export default function DashboardLayout({
     children,
 }: {
-    children: React.ReactNode;
+    readonly children: React.ReactNode;
 }) {
     return (
         <HydrationGuard>
