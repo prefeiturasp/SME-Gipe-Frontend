@@ -40,9 +40,26 @@ describe("Navbar", () => {
         expect(screen.getByAltText("Logo GIPE")).toBeInTheDocument();
     });
 
-    it("deve exibir o identificador do usuário", () => {
+    it("deve exibir RF quando identificador não for CPF", () => {
         render(<Navbar />);
         expect(screen.getByText(/RF: 12345/i)).toBeInTheDocument();
+    });
+
+    it("deve exibir CPF quando identificador for um CPF válido", async () => {
+        const mockUserCPF = {
+            identificador: "12345678901",
+            nome: "MARIA DA SILVA",
+            perfil_acesso: "DIRETOR",
+        };
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (
+                selector: (state: { user: typeof mockUserCPF }) => unknown
+            ) => selector({ user: mockUserCPF }),
+        }));
+        vi.resetModules();
+        const { Navbar: NavbarCPF } = await import("./Navbar");
+        render(<NavbarCPF />);
+        expect(screen.getByText(/CPF: 12345678901/i)).toBeInTheDocument();
     });
 
     it("deve exibir o nome do usuário capitalizado", () => {
