@@ -31,7 +31,7 @@ const items = [
     },
     {
         title: "Meus dados",
-        url: "/meus-dados",
+        url: "/dashboard/meus-dados",
         icon: User,
     },
 ];

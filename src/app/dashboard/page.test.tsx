@@ -34,8 +34,8 @@ describe("Dashboard page", () => {
     it("renderiza conteúdo protegido se user estiver presente", async () => {
         const fakeUser = {
             nome: "Fake User",
-            email: "fakeuser@gmail.com",
-            cargo: "Admin",
+            perfil_acesso: "Assistente de diretor",
+            unidade: [{ nomeUnidade: "Escola Fake" }],
         };
 
         (
@@ -49,8 +49,10 @@ describe("Dashboard page", () => {
         await waitFor(() => {
             expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
             expect(screen.getAllByText(/fake user/i).length).toBeGreaterThan(0);
-            expect(screen.getByText(/fakeuser@gmail.com/i)).toBeInTheDocument();
-            expect(screen.getByText(/admin/i)).toBeInTheDocument();
+            expect(screen.getByText(/escola fake/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(/assistente de diretor/i)
+            ).toBeInTheDocument();
             expect(screen.getByText(/área protegida/i)).toBeInTheDocument();
         });
     });

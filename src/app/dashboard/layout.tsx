@@ -1,17 +1,26 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/Sidebar/app-sidebar";
+import { Navbar } from "@/components/dashboard/Navbar/Navbar";
+import { HydrationGuard } from "@/components/dashboard/HydrationGuard";
 
-export default function RootLayout({
+export default function DashboardLayout({
     children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
+}: {
+    readonly children: React.ReactNode;
+}) {
     return (
-        <div className="flex h-screen">
-            <SidebarProvider>
-                <AppSidebar />
-                <main>{children}</main>
-            </SidebarProvider>
-        </div>
+        <HydrationGuard>
+            <div className="flex h-screen">
+                <SidebarProvider>
+                    <AppSidebar />
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                        <Navbar />
+                        <main className="flex-1 overflow-auto bg-muted p-4">
+                            {children}
+                        </main>
+                    </div>
+                </SidebarProvider>
+            </div>
+        </HydrationGuard>
     );
 }

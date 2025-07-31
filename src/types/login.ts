@@ -9,10 +9,16 @@ export interface LoginSuccessResponse {
     cpf: string;
     login: string;
     visoes: unknown[];
-    cargo: {
+    perfil_acesso: {
         nome: string;
-        id: string;
+        codigo: string;
     };
+    unidade_lotacao: [
+        {
+            nomeUnidade: string;
+            codigo: string;
+        }
+    ];
     token: string;
 }
 

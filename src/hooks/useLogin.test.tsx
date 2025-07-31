@@ -45,6 +45,8 @@ describe("useLogin", () => {
             login: "fulano",
             visoes: [],
             cargo: { nome: "admin" },
+            perfil_acesso: { nome: "Gestor" },
+            unidade_lotacao: [{ nomeUnidade: "EMEF Teste" }],
             token: "fake-token",
         };
         (
@@ -62,8 +64,11 @@ describe("useLogin", () => {
 
         expect(setUserMock).toHaveBeenCalledWith({
             nome: fakeResponse.name,
+            identificador: fakeResponse.login,
+            perfil_acesso: fakeResponse.perfil_acesso.nome,
+            unidade: fakeResponse.unidade_lotacao,
             email: fakeResponse.email,
-            cargo: fakeResponse.cargo.nome,
+            cpf: fakeResponse.cpf,
         });
         expect(pushMock).toHaveBeenCalledWith("/dashboard");
     });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/"];
+const PUBLIC_ROUTES = ["/", "/cadastro"];
 
 function isPublicRoute(pathname: string) {
     return PUBLIC_ROUTES.includes(pathname);
@@ -23,4 +23,3 @@ export function middleware(request: NextRequest) {
 export const config = {
     matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-

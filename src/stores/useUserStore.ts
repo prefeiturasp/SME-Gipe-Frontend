@@ -9,8 +9,16 @@ const COOKIE_KEY = "user_data";
 
 interface User {
     nome: string;
+    identificador: string | number;
+    perfil_acesso: string;
+    unidade: [
+        {
+            nomeUnidade: string;
+            codigo: string;
+        }
+    ];
     email: string;
-    cargo: string;
+    cpf: string;
 }
 
 interface UserState {

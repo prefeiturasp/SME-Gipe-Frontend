@@ -12,14 +12,18 @@ const useLogin = () => {
         onSuccess: (response) => {
             if (!response.success) return;
 
-            const { name, email, cargo } = response.data;
+            const { name, login, perfil_acesso, unidade_lotacao, email, cpf } =
+                response.data;
 
-            if (!name || !email || !cargo?.nome) return;
+            if (!name || !login || !perfil_acesso) return;
 
             setUser({
                 nome: name,
+                identificador: login,
+                perfil_acesso: perfil_acesso.nome,
+                unidade: unidade_lotacao,
                 email,
-                cargo: cargo.nome,
+                cpf,
             });
 
             router.push("/dashboard");

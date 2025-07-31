@@ -10,11 +10,10 @@ describe("LoginLayout", () => {
         );
         const child = screen.getByTestId("child");
         expect(child).toBeInTheDocument();
-        const main = child.closest("main");
-        expect(main).toHaveClass("min-h-screen");
-        expect(main).toHaveClass("flex");
-        expect(main).toHaveClass("items-center");
-        expect(main).toHaveClass("justify-center");
-        expect(main).toHaveClass("bg-background");
+        const container = child.closest(
+            ".flex.flex-col.items-center.flex-shrink-0.px-4.py-8"
+        );
+        expect(container).toBeInTheDocument();
+        expect(container).toHaveClass("w-full");
     });
 });
