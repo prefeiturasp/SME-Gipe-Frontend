@@ -104,11 +104,6 @@ export default function FormCadastro() {
     async function tratarCadastro() {
         setErrorMessage(null);
 
-        if (confirmPassword !== form.getValues("password")) {
-            setErrorMessage("As senhas não coincidem");
-            return;
-        }
-
         const response = await mutateAsync(values);
 
         if (response.success) {
@@ -266,7 +261,10 @@ export default function FormCadastro() {
                             type="button"
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                            disabled={!isStep1Filled}
+                            disabled={
+                                !isStep1Filled ||
+                                Object.keys(form.formState.errors).length > 0
+                            }
                             onClick={async () => {
                                 const valid = await form.trigger([
                                     "dre",
@@ -336,7 +334,13 @@ export default function FormCadastro() {
                             type="submit"
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-2"
-                            disabled={!isStep2Filled || isLoading}
+                            disabled={
+                                !isStep2Filled ||
+                                isLoading ||
+                                Object.keys(form.formState.errors).length > 0 ||
+                                (!!confirmPassword &&
+                                    confirmPassword !== values.password)
+                            }
                             loading={isLoading}
                         >
                             Cadastrar agora

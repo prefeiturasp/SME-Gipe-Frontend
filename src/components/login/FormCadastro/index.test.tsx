@@ -128,7 +128,7 @@ describe("FormCadastro", () => {
         expect(pushMock).toHaveBeenCalledWith("/");
     });
 
-    it("mostra erro quando senhas não coincidem", async () => {
+    it("mostra erro quando senhas não coincidem e mantém botão desabilitado", async () => {
         render(<FormCadastro />, { wrapper });
 
         await preencherStep1();
@@ -136,17 +136,16 @@ describe("FormCadastro", () => {
 
         await preencherStep2("admin@example.com", "Senha123!", "OutraSenha!");
 
-        const cadastrarButton = screen.getByRole("button", {
-            name: "Cadastrar agora",
-        });
-        await waitFor(() => expect(cadastrarButton).toBeEnabled());
-        fireEvent.click(cadastrarButton);
-
         await waitFor(() =>
             expect(
                 screen.getByText("As senhas não coincidem")
             ).toBeInTheDocument()
         );
+
+        const cadastrarButton = screen.getByRole("button", {
+            name: "Cadastrar agora",
+        });
+        await waitFor(() => expect(cadastrarButton).toBeDisabled());
     });
 
     it("mostra mensagem de erro quando cadastro falha", async () => {
