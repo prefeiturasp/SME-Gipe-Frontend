@@ -336,11 +336,7 @@ export default function FormCadastro() {
                             type="submit"
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-2"
-                            disabled={
-                                !isStep2Filled ||
-                                isLoading ||
-                                !form.formState.isValid
-                            }
+                            disabled={!isStep2Filled || isLoading}
                             loading={isLoading}
                         >
                             Cadastrar agora
