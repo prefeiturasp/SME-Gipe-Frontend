@@ -16,17 +16,6 @@ vi.mock("@/hooks/useLogin", () => ({
     }),
 }));
 
-// Mock do Next.js Image
-vi.mock("next/image", () => ({
-    default: (props: Record<string, unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { priority, ...rest } = props || {};
-        return (
-            <img alt={typeof rest.alt === "string" ? rest.alt : ""} {...rest} />
-        );
-    },
-}));
-
 // Mock do useRouter do Next.js (next/navigation)
 const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({

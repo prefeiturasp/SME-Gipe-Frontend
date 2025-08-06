@@ -38,17 +38,6 @@ beforeAll(() => {
         } as unknown as MediaQueryList);
 });
 
-// Mock do Next.js Image
-vi.mock("next/image", () => ({
-    default: (props: Record<string, unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { priority, ...rest } = props || {};
-        return (
-            <img alt={typeof rest.alt === "string" ? rest.alt : ""} {...rest} />
-        );
-    },
-}));
-
 describe("AppSidebar", () => {
     beforeEach(() => {
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(

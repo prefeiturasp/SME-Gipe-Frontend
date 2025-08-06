@@ -18,14 +18,6 @@ vi.mock("@/stores/useUserStore", () => ({
         selector({ user: mockUser }),
 }));
 
-vi.mock("next/image", () => ({
-    __esModule: true,
-    default: (props: React.ComponentProps<"img">) => {
-        // eslint-disable-next-line jsx-a11y/alt-text
-        return <img {...props} />;
-    },
-}));
-
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn() }),
 }));
