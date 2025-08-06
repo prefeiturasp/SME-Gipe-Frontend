@@ -131,6 +131,7 @@ export default function FormCadastro() {
                 {step === 2 && (
                     <div className="flex justify-end mb-2">
                         <Button
+                            type="button"
                             variant="customOutline"
                             onClick={() => setStep(1)}
                             className="w-[88px] h-[35px] flex items-center justify-center px-2"
@@ -276,7 +277,7 @@ export default function FormCadastro() {
                                 if (valid) setStep(2);
                             }}
                         >
-                            Próxima etapa
+                            Avançar
                         </Button>
                         <button
                             type="button"
@@ -322,9 +323,6 @@ export default function FormCadastro() {
                                     onConfirmPasswordChange={setConfirmPassword}
                                     criteria={passwordCriteria}
                                     passwordStatus={passwordStatus}
-                                    error={
-                                        form.formState.errors.password?.message
-                                    }
                                     confirmError={
                                         confirmPassword &&
                                         confirmPassword !== field.value
@@ -351,9 +349,9 @@ export default function FormCadastro() {
                             type="button"
                             variant="outline"
                             className="w-full mt-2"
-                            onClick={() => setStep(1)}
+                            onClick={() => router.push("/")}
                         >
-                            Voltar
+                            Cancelar
                         </Button>
                     </>
                 )}
