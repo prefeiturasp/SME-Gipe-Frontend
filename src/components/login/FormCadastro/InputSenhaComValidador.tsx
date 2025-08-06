@@ -16,7 +16,6 @@ interface InputSenhaComValidadorProps {
         test: (v: string) => boolean;
     }[];
     readonly passwordStatus: readonly boolean[];
-    readonly error?: string;
     readonly confirmError?: string;
 }
 
