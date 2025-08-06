@@ -1,11 +1,8 @@
 import { useState } from "react";
-import {
-    FormControl,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { FormControl, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import Check from "@/assets/icons/Check";
+import CloseCheck from "@/assets/icons/CloseCheck";
 import OpenEye from "@/assets/icons/OpenEye";
 import CloseEye from "@/assets/icons/CloseEye";
 
@@ -19,7 +16,6 @@ interface InputSenhaComValidadorProps {
         test: (v: string) => boolean;
     }[];
     readonly passwordStatus: readonly boolean[];
-    readonly error?: string;
     readonly confirmError?: string;
 }
 
@@ -30,16 +26,15 @@ export default function InputSenhaComValidador({
     onConfirmPasswordChange,
     criteria,
     passwordStatus,
-    error,
     confirmError,
 }: InputSenhaComValidadorProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
     return (
-        <FormItem className="mb-6">
-            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                Crie uma senha
+        <div className="mb-6">
+            <FormLabel className="required text-[#42474a] text-[14px] font-[700] mb-2 block">
+                Nova senha
             </FormLabel>
             <FormControl>
                 <div className="relative mb-2">
@@ -60,26 +55,32 @@ export default function InputSenhaComValidador({
                     </button>
                 </div>
             </FormControl>
-            <div className="mt-2 mb-2">
-                {criteria.map((c, idx) => (
-                    <div
-                        key={c.label}
-                        className={`flex items-center text-[13px] gap-2 ${
-                            passwordStatus[idx]
-                                ? "text-green-600"
-                                : "text-gray-400"
-                        }`}
-                    >
-                        {passwordStatus[idx] ? "✔️" : "❌"} {c.label}
-                    </div>
-                ))}
+            <div className="mt-4 mb-4 flex flex-col bg-[#F5F5F5] rounded-[4px] p-4 gap-4 ">
+                <span className="text-[14px] font-[700] text-[#42474a] leading-[1.2]">
+                    Por questões de segurança, a senha deve seguir os seguintes
+                    critérios:
+                </span>
+                <div>
+                    {criteria.map((c, idx) => (
+                        <div
+                            key={c.label}
+                            className={`flex items-center text-sm gap-1 mb-1 last:mb-0 ${
+                                passwordStatus[idx]
+                                    ? "text-[#297805]"
+                                    : "text-[#b40c31]"
+                            }`}
+                        >
+                            {passwordStatus[idx] ? <Check /> : <CloseCheck />}{" "}
+                            {c.label}
+                        </div>
+                    ))}
+                </div>
             </div>
-            {error && <FormMessage>{error}</FormMessage>}
-            <FormLabel className="required text-[#42474a] text-[14px] font-[700] mt-4">
-                Confirmar senha
+            <FormLabel className="required text-[#42474a] text-[14px] font-[700] mt-4 mb-2 block">
+                Confirmação da nova senha
             </FormLabel>
             <FormControl>
-                <div className="relative">
+                <div className="relative mb-2">
                     <Input
                         type={showConfirm ? "text" : "password"}
                         value={confirmPassword}
@@ -100,6 +101,6 @@ export default function InputSenhaComValidador({
                 </div>
             </FormControl>
             {confirmError && <FormMessage>{confirmError}</FormMessage>}
-        </FormItem>
+        </div>
     );
 }

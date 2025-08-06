@@ -77,8 +77,10 @@ describe("InputSenhaComValidador", () => {
         expect(screen.getByText(/Mínimo 8 caracteres/i)).toBeInTheDocument();
         expect(screen.getByText(/Contém letra maiúscula/i)).toBeInTheDocument();
 
-        expect(screen.getByText(/✔️/)).toBeInTheDocument();
-        expect(screen.getByText(/❌/)).toBeInTheDocument();
+        const checkIcon = screen.getByTestId("check-icon");
+        const closeCheckIcon = screen.getByTestId("close-check-icon");
+        expect(checkIcon).toBeInTheDocument();
+        expect(closeCheckIcon).toBeInTheDocument();
     });
 
     it("chama callback ao digitar senha e envia valor final corretamente", async () => {
@@ -162,12 +164,10 @@ describe("InputSenhaComValidador", () => {
                 onConfirmPasswordChange={mockOnConfirmPasswordChange}
                 criteria={criteria}
                 passwordStatus={[false, false]}
-                error="Erro de senha"
                 confirmError="Erro de confirmação"
             />
         );
 
-        expect(screen.getByText("Erro de senha")).toBeInTheDocument();
         expect(screen.getByText("Erro de confirmação")).toBeInTheDocument();
     });
 });

@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import {
     render,
     screen,
@@ -25,17 +23,6 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: pushMock }),
 }));
 
-// Mock do Next.js Image
-vi.mock("next/image", () => ({
-    default: (props: Record<string, unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { priority, ...rest } = props || {};
-        return (
-            <img alt={typeof rest.alt === "string" ? rest.alt : ""} {...rest} />
-        );
-    },
-}));
-
 describe("FormCadastro", () => {
     let queryClient: QueryClient;
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -55,58 +42,7 @@ describe("FormCadastro", () => {
         window.HTMLElement.prototype.scrollIntoView = vi.fn();
     });
 
-    it("renderiza todos os campos do formulário", async () => {
-        render(<FormCadastro />, { wrapper });
-
-        expect(
-            await screen.findByText("Faça o seu cadastro")
-        ).toBeInTheDocument();
-        expect(
-            screen.getByPlaceholderText(
-                "nome.sobrenome@sme.prefeitura.sp.gov.br"
-            )
-        ).toBeInTheDocument();
-        expect(screen.getByText("Selecione a DRE")).toBeInTheDocument();
-        expect(screen.getByText("Digite o nome da UE")).toBeInTheDocument();
-        expect(screen.getByText("Qual o seu CPF?")).toBeInTheDocument();
-    });
-
-    it("desabilita o botão cadastrar quando campos estão vazios", async () => {
-        render(<FormCadastro />, { wrapper });
-        const button = screen.getByRole("button", { name: "Cadastrar agora" });
-        expect(button).toBeDisabled();
-    });
-
-    it("habilita o combobox de UE somente após selecionar DRE", async () => {
-        window.HTMLElement.prototype.scrollIntoView = vi.fn();
-
-        render(<FormCadastro />, { wrapper });
-
-        const [dreCombobox, ueCombobox] = screen.getAllByRole("combobox");
-
-        expect(ueCombobox).toBeDisabled();
-
-        fireEvent.click(dreCombobox);
-
-        const dreOption = await waitFor(() =>
-            within(document.body).getByRole("option", { name: "DRE Butantã" })
-        );
-        fireEvent.click(dreOption);
-
-        expect(ueCombobox).not.toBeDisabled();
-    });
-
-    it("realiza cadastro com sucesso e mostra componente Finalizado", async () => {
-        mutateAsyncMock.mockResolvedValueOnce({ success: true });
-
-        render(<FormCadastro />, { wrapper });
-
-        const fillField = (placeholder: string, value: string) => {
-            const input = screen.getByPlaceholderText(placeholder);
-            fireEvent.change(input, { target: { value } });
-            fireEvent.blur(input);
-        };
-
+    const preencherStep1 = async () => {
         const selectOption = async (
             comboboxIndex: number,
             optionName: string
@@ -123,14 +59,61 @@ describe("FormCadastro", () => {
 
         await selectOption(0, "DRE Butantã");
         await selectOption(1, "EMEF João da Silva");
-        fillField("Exemplo: Maria Clara Medeiros", "Maria Teste");
-        fillField("123.456.789-10", "128.088.888-13");
-        fillField(
-            "nome.sobrenome@sme.prefeitura.sp.gov.br",
-            "admin@example.com"
+
+        fireEvent.change(
+            screen.getByPlaceholderText("Exemplo: Maria Clara Medeiros"),
+            { target: { value: "Maria Teste" } }
         );
 
-        const cadastrarButton = await screen.findByRole("button", {
+        fireEvent.change(screen.getByPlaceholderText("123.456.789-10"), {
+            target: { value: "128.088.888-13" },
+        });
+    };
+
+    const irParaStep2 = async () => {
+        const proximoBtn = screen.getByRole("button", {
+            name: "Avançar",
+        });
+        await waitFor(() => expect(proximoBtn).toBeEnabled());
+        fireEvent.click(proximoBtn);
+    };
+
+    const preencherStep2 = async (
+        email: string,
+        password: string,
+        confirmPassword: string
+    ) => {
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText("Qual o seu e-mail?")
+            ).toBeInTheDocument()
+        );
+        fireEvent.change(
+            screen.getByPlaceholderText(
+                "nome.sobrenome@sme.prefeitura.sp.gov.br"
+            ),
+            { target: { value: email } }
+        );
+
+        fireEvent.change(screen.getByPlaceholderText("Digite sua senha"), {
+            target: { value: password },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Confirme sua senha"), {
+            target: { value: confirmPassword },
+        });
+    };
+
+    it("fluxo completo de cadastro com sucesso", async () => {
+        mutateAsyncMock.mockResolvedValueOnce({ success: true });
+
+        render(<FormCadastro />, { wrapper });
+
+        await preencherStep1();
+        await irParaStep2();
+
+        await preencherStep2("admin@example.com", "Senha123!", "Senha123!");
+
+        const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
         });
         await waitFor(() => expect(cadastrarButton).toBeEnabled());
@@ -140,10 +123,29 @@ describe("FormCadastro", () => {
         const finalizarButton = await screen.findByRole("button", {
             name: /finalizar/i,
         });
-        expect(finalizarButton).toBeInTheDocument();
-
         fireEvent.click(finalizarButton);
+
         expect(pushMock).toHaveBeenCalledWith("/");
+    });
+
+    it("mostra erro quando senhas não coincidem e mantém botão desabilitado", async () => {
+        render(<FormCadastro />, { wrapper });
+
+        await preencherStep1();
+        await irParaStep2();
+
+        await preencherStep2("admin@example.com", "Senha123!", "OutraSenha!");
+
+        await waitFor(() =>
+            expect(
+                screen.getByText("As senhas não coincidem")
+            ).toBeInTheDocument()
+        );
+
+        const cadastrarButton = screen.getByRole("button", {
+            name: "Cadastrar agora",
+        });
+        await waitFor(() => expect(cadastrarButton).toBeDisabled());
     });
 
     it("mostra mensagem de erro quando cadastro falha", async () => {
@@ -154,50 +156,66 @@ describe("FormCadastro", () => {
 
         render(<FormCadastro />, { wrapper });
 
-        const fillField = (placeholder: string, value: string) => {
-            const input = screen.getByPlaceholderText(placeholder);
-            fireEvent.change(input, { target: { value } });
-            fireEvent.blur(input);
-        };
+        await preencherStep1();
+        await irParaStep2();
 
-        const selectOption = async (
-            comboboxIndex: number,
-            optionName: string
-        ) => {
-            const combobox = screen.getAllByRole("combobox")[comboboxIndex];
-            fireEvent.click(combobox);
-            const option = await within(document.body).findByRole("option", {
-                name: optionName,
-            });
-            fireEvent.click(option);
-            await waitFor(() => expect(option).not.toBeInTheDocument());
-            fireEvent.blur(combobox);
-        };
+        await preencherStep2("admin@example.com", "Senha123!", "Senha123!");
 
-        await selectOption(0, "DRE Butantã");
-        await selectOption(1, "EMEF João da Silva");
-        fillField("Exemplo: Maria Clara Medeiros", "Maria Teste");
-        fillField("123.456.789-10", "128.088.888-13");
-        fillField(
-            "nome.sobrenome@sme.prefeitura.sp.gov.br",
-            "admin@example.com"
-        );
-
-        const cadastrarButton = await screen.findByRole("button", {
+        const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
         });
         await waitFor(() => expect(cadastrarButton).toBeEnabled());
         fireEvent.click(cadastrarButton);
 
-        await waitFor(() => {
-            expect(screen.getByText("Erro no cadastro")).toBeInTheDocument();
-        });
+        await waitFor(() =>
+            expect(screen.getByText("Erro no cadastro")).toBeInTheDocument()
+        );
     });
 
-    it("chama router.push ao clicar em Cancelar", async () => {
+    it("botão voltar leva para a etapa 1", async () => {
         render(<FormCadastro />, { wrapper });
 
-        fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+        await preencherStep1();
+        await irParaStep2();
+
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText("Qual o seu e-mail?")
+            ).toBeInTheDocument()
+        );
+
+        const btn = screen.getByRole("button", { name: /voltar/i });
+
+        await waitFor(() => expect(btn).toBeInTheDocument());
+        fireEvent.click(btn);
+        await waitFor(() =>
+            expect(screen.getByText("Selecione a DRE")).toBeInTheDocument()
+        );
+    });
+
+    it("botão cancelar leva para a home", async () => {
+        render(<FormCadastro />, { wrapper });
+
+        const cancelarButton = screen.getByRole("button", { name: "Cancelar" });
+        fireEvent.click(cancelarButton);
+
+        expect(pushMock).toHaveBeenCalledWith("/");
+    });
+
+    it("botão cancelar na etapa 2 leva para a home", async () => {
+        render(<FormCadastro />, { wrapper });
+
+        await preencherStep1();
+        await irParaStep2();
+
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText("Qual o seu e-mail?")
+            ).toBeInTheDocument()
+        );
+        const cancelarButton = screen.getByRole("button", { name: "Cancelar" });
+        fireEvent.click(cancelarButton);
+
         expect(pushMock).toHaveBeenCalledWith("/");
     });
 });
