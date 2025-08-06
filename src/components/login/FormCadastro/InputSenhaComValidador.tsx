@@ -27,7 +27,6 @@ export default function InputSenhaComValidador({
     onConfirmPasswordChange,
     criteria,
     passwordStatus,
-    error,
     confirmError,
 }: InputSenhaComValidadorProps) {
     const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +77,6 @@ export default function InputSenhaComValidador({
                     ))}
                 </div>
             </div>
-            {error && <FormMessage>{error}</FormMessage>}
             <FormLabel className="required text-[#42474a] text-[14px] font-[700] mt-4 mb-2 block">
                 Confirmação da nova senha
             </FormLabel>
