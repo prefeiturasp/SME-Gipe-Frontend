@@ -8,6 +8,7 @@ export default function Check(props: Readonly<React.SVGProps<SVGSVGElement>>) {
             height="16"
             viewBox="0 0 48 48"
             fill="none"
+            data-testid="check-icon"
             xmlns="http://www.w3.org/2000/svg"
             {...props}
         >
