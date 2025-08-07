@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FormControl, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import Check from "@/assets/icons/Check";
 import CloseCheck from "@/assets/icons/CloseCheck";
 import OpenEye from "@/assets/icons/OpenEye";
@@ -19,6 +20,8 @@ interface InputSenhaComValidadorProps {
     readonly confirmError?: string;
 }
 
+type StatusType = "idle" | "ok" | "error";
+
 export default function InputSenhaComValidador({
     password,
     confirmPassword,
@@ -30,6 +33,24 @@ export default function InputSenhaComValidador({
 }: InputSenhaComValidadorProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+
+    const STATUS_STYLES: Record<StatusType, string> = {
+        idle: "text-[#42474a]",
+        ok: "text-[#297805]",
+        error: "text-[#b40c31]",
+    };
+
+    const getStatus = (hasPassword: boolean, pass: boolean): StatusType => {
+        let status: StatusType;
+        if (!hasPassword) {
+            status = "idle";
+        } else if (pass) {
+            status = "ok";
+        } else {
+            status = "error";
+        }
+        return status;
+    };
 
     return (
         <div className="mb-6">
@@ -61,19 +82,26 @@ export default function InputSenhaComValidador({
                     critérios:
                 </span>
                 <div>
-                    {criteria.map((c, idx) => (
-                        <div
-                            key={c.label}
-                            className={`flex items-center text-sm gap-1 mb-1 last:mb-0 ${
-                                passwordStatus[idx]
-                                    ? "text-[#297805]"
-                                    : "text-[#b40c31]"
-                            }`}
-                        >
-                            {passwordStatus[idx] ? <Check /> : <CloseCheck />}{" "}
-                            {c.label}
-                        </div>
-                    ))}
+                    {criteria.map((c, idx) => {
+                        const status = getStatus(
+                            !!password,
+                            passwordStatus[idx]
+                        );
+
+                        return (
+                            <div
+                                key={c.label}
+                                className={cn(
+                                    "flex items-center text-sm gap-1 mb-1 last:mb-0",
+                                    STATUS_STYLES[status]
+                                )}
+                            >
+                                {status === "ok" && <Check />}
+                                {status === "error" && <CloseCheck />}
+                                {c.label}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
             <FormLabel className="required text-[#42474a] text-[14px] font-[700] mt-4 mb-2 block">
