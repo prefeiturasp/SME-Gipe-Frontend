@@ -23,6 +23,22 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: pushMock }),
 }));
 
+vi.mock("@/actions/unidades", () => ({
+    getDREs: vi.fn().mockResolvedValue([
+        { uuid: "dre-1", nome: "DRE Norte" },
+        { uuid: "dre-2", nome: "DRE Sul" },
+    ]),
+    getUEs: vi.fn().mockImplementation((dreUuid: string) => {
+        if (dreUuid === "dre-1") {
+            return Promise.resolve([
+                { uuid: "ue-1", nome: "EMEF João da Silva" },
+                { uuid: "ue-2", nome: "EMEF Maria das Dores" },
+            ]);
+        }
+        return Promise.resolve([]);
+    }),
+}));
+
 describe("FormCadastro", () => {
     let queryClient: QueryClient;
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -57,7 +73,7 @@ describe("FormCadastro", () => {
             fireEvent.blur(combobox);
         };
 
-        await selectOption(0, "DRE Butantã");
+        await selectOption(0, "DRE Norte");
         await selectOption(1, "EMEF João da Silva");
 
         fireEvent.change(
@@ -89,9 +105,7 @@ describe("FormCadastro", () => {
             ).toBeInTheDocument()
         );
         fireEvent.change(
-            screen.getByPlaceholderText(
-                "nome.sobrenome@sme.prefeitura.sp.gov.br"
-            ),
+            screen.getByPlaceholderText("Digite o seu e-mail corporativo"),
             { target: { value: email } }
         );
 
