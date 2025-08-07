@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoGipe from "@/components/login/LogoGipe";
@@ -31,13 +32,21 @@ import formSchema, { FormDataSignup } from "./schema";
 import Aviso from "./Aviso";
 import Finalizado from "./Finalizado";
 
-import { DRE_OPTIONS, UE_OPTIONS } from "@/constants/cadastro";
 import { Stepper } from "./Stepper";
 import { ArrowLeft } from "lucide-react";
+import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [cadastroFinalizado, setCadastroFinalizado] = useState(false);
+    const [dreOptions, setDreOptions] = useState<
+        { uuid: string; nome: string }[]
+    >([]);
+    const [ueOptions, setUeOptions] = useState<
+        { uuid: string; nome: string }[]
+    >([]);
     const [step, setStep] = useState(1);
+    const { mutate: fetchDREs } = useFetchDREs(setDreOptions);
     const [confirmPassword, setConfirmPassword] = useState("");
     const router = useRouter();
     const cadastroMutation = useCadastro();
@@ -59,9 +68,22 @@ export default function FormCadastro() {
     });
 
     const values = form.watch();
+
+    const { mutate: fetchUEs } = useFetchUEs(values.dre, setUeOptions);
+
     const isStep1Filled =
         values.dre && values.ue && values.fullName && values.cpf;
     const isStep2Filled = values.email && values.password && confirmPassword;
+    useEffect(() => {
+        fetchDREs();
+    }, []);
+
+    useEffect(() => {
+        if (values.dre) {
+            form.setValue("ue", "");
+            fetchUEs();
+        }
+    }, [values.dre]);
 
     const passwordCriteria = useMemo(
         () => [
@@ -176,12 +198,12 @@ export default function FormCadastro() {
                                                 <SelectValue placeholder="Selecione" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {DRE_OPTIONS.map((dre) => (
+                                                {dreOptions.map((dre) => (
                                                     <SelectItem
-                                                        key={dre}
-                                                        value={dre}
+                                                        key={dre.uuid}
+                                                        value={dre.uuid}
                                                     >
-                                                        {dre}
+                                                        {dre.nome}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -201,9 +223,9 @@ export default function FormCadastro() {
                                     </FormLabel>
                                     <FormControl>
                                         <Combobox
-                                            options={UE_OPTIONS.map((ue) => ({
-                                                label: ue,
-                                                value: ue,
+                                            options={ueOptions.map((ue) => ({
+                                                label: ue.nome,
+                                                value: ue.uuid,
                                             }))}
                                             value={field.value}
                                             onChange={field.onChange}
@@ -300,7 +322,7 @@ export default function FormCadastro() {
                                         <Input
                                             {...field}
                                             type="email"
-                                            placeholder="nome.sobrenome@sme.prefeitura.sp.gov.br"
+                                            placeholder="Digite o seu e-mail corporativo"
                                             className="font-normal"
                                         />
                                     </FormControl>
