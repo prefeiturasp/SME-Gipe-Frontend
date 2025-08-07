@@ -47,7 +47,10 @@ export function Combobox({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("w-full justify-between", className)}
+                    className={cn(
+                        "w-full justify-between text-[14px] text-[#42474A] font-[400]",
+                        className
+                    )}
                     disabled={disabled}
                 >
                     {selected ? (
