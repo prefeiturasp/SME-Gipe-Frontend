@@ -1,12 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoGipe from "@/components/login/LogoGipe";
-
 import { Button } from "@/components/ui/button";
 import useCadastro from "@/hooks/useCadastro";
 import {
@@ -31,7 +29,6 @@ import {
 import formSchema, { FormDataSignup } from "./schema";
 import Aviso from "./Aviso";
 import Finalizado from "./Finalizado";
-
 import { Stepper } from "./Stepper";
 import { ArrowLeft } from "lucide-react";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
@@ -39,14 +36,9 @@ import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [cadastroFinalizado, setCadastroFinalizado] = useState(false);
-    const [dreOptions, setDreOptions] = useState<
-        { uuid: string; nome: string }[]
-    >([]);
-    const [ueOptions, setUeOptions] = useState<
-        { uuid: string; nome: string }[]
-    >([]);
+    const { data: dreOptions = [] } = useFetchDREs();
+
     const [step, setStep] = useState(1);
-    const { mutate: fetchDREs } = useFetchDREs(setDreOptions);
     const [confirmPassword, setConfirmPassword] = useState("");
     const router = useRouter();
     const cadastroMutation = useCadastro();
@@ -69,21 +61,11 @@ export default function FormCadastro() {
 
     const values = form.watch();
 
-    const { mutate: fetchUEs } = useFetchUEs(values.dre, setUeOptions);
+    const { data: ueOptions = [] } = useFetchUEs(values.dre);
 
     const isStep1Filled =
         values.dre && values.ue && values.fullName && values.cpf;
     const isStep2Filled = values.email && values.password && confirmPassword;
-    useEffect(() => {
-        fetchDREs();
-    }, []);
-
-    useEffect(() => {
-        if (values.dre) {
-            form.setValue("ue", "");
-            fetchUEs();
-        }
-    }, [values.dre]);
 
     const passwordCriteria = useMemo(
         () => [
@@ -198,14 +180,19 @@ export default function FormCadastro() {
                                                 <SelectValue placeholder="Selecione" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {dreOptions.map((dre) => (
-                                                    <SelectItem
-                                                        key={dre.uuid}
-                                                        value={dre.uuid}
-                                                    >
-                                                        {dre.nome}
-                                                    </SelectItem>
-                                                ))}
+                                                {dreOptions.map(
+                                                    (dre: {
+                                                        uuid: string;
+                                                        nome: string;
+                                                    }) => (
+                                                        <SelectItem
+                                                            key={dre.uuid}
+                                                            value={dre.uuid}
+                                                        >
+                                                            {dre.nome}
+                                                        </SelectItem>
+                                                    )
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     </FormControl>
@@ -223,10 +210,15 @@ export default function FormCadastro() {
                                     </FormLabel>
                                     <FormControl>
                                         <Combobox
-                                            options={ueOptions.map((ue) => ({
-                                                label: ue.nome,
-                                                value: ue.uuid,
-                                            }))}
+                                            options={ueOptions.map(
+                                                (ue: {
+                                                    nome: string;
+                                                    uuid: string;
+                                                }) => ({
+                                                    label: ue.nome,
+                                                    value: ue.uuid,
+                                                })
+                                            )}
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Exemplo: EMEF João da Silva"
