@@ -5,7 +5,6 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoGipe from "@/components/login/LogoGipe";
-
 import { Button } from "@/components/ui/button";
 import useCadastro from "@/hooks/useCadastro";
 import {
@@ -30,13 +29,15 @@ import {
 import formSchema, { FormDataSignup } from "./schema";
 import Aviso from "./Aviso";
 import Finalizado from "./Finalizado";
-
-import { DRE_OPTIONS, UE_OPTIONS } from "@/constants/cadastro";
 import { Stepper } from "./Stepper";
 import { ArrowLeft } from "lucide-react";
+import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [cadastroFinalizado, setCadastroFinalizado] = useState(false);
+    const { data: dreOptions = [] } = useFetchDREs();
+
     const [step, setStep] = useState(1);
     const [confirmPassword, setConfirmPassword] = useState("");
     const router = useRouter();
@@ -59,6 +60,9 @@ export default function FormCadastro() {
     });
 
     const values = form.watch();
+
+    const { data: ueOptions = [] } = useFetchUEs(values.dre);
+
     const isStep1Filled =
         values.dre && values.ue && values.fullName && values.cpf;
     const isStep2Filled = values.email && values.password && confirmPassword;
@@ -176,14 +180,19 @@ export default function FormCadastro() {
                                                 <SelectValue placeholder="Selecione" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {DRE_OPTIONS.map((dre) => (
-                                                    <SelectItem
-                                                        key={dre}
-                                                        value={dre}
-                                                    >
-                                                        {dre}
-                                                    </SelectItem>
-                                                ))}
+                                                {dreOptions.map(
+                                                    (dre: {
+                                                        uuid: string;
+                                                        nome: string;
+                                                    }) => (
+                                                        <SelectItem
+                                                            key={dre.uuid}
+                                                            value={dre.uuid}
+                                                        >
+                                                            {dre.nome}
+                                                        </SelectItem>
+                                                    )
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     </FormControl>
@@ -201,10 +210,15 @@ export default function FormCadastro() {
                                     </FormLabel>
                                     <FormControl>
                                         <Combobox
-                                            options={UE_OPTIONS.map((ue) => ({
-                                                label: ue,
-                                                value: ue,
-                                            }))}
+                                            options={ueOptions.map(
+                                                (ue: {
+                                                    nome: string;
+                                                    uuid: string;
+                                                }) => ({
+                                                    label: ue.nome,
+                                                    value: ue.uuid,
+                                                })
+                                            )}
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Exemplo: EMEF João da Silva"
@@ -300,7 +314,7 @@ export default function FormCadastro() {
                                         <Input
                                             {...field}
                                             type="email"
-                                            placeholder="nome.sobrenome@sme.prefeitura.sp.gov.br"
+                                            placeholder="Digite o seu e-mail corporativo"
                                             className="font-normal"
                                         />
                                     </FormControl>
