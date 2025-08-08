@@ -52,4 +52,18 @@ describe("unidades actions", () => {
         );
         expect(result).toEqual(fakeUEs);
     });
+
+    it("getDREs lança erro se a API falhar", async () => {
+        axiosGetMock.mockRejectedValueOnce(new Error("API error"));
+        await expect(getDREs()).rejects.toThrow(
+            "Não foi possível buscar as DREs"
+        );
+    });
+
+    it("getUEs lança erro se a API falhar", async () => {
+        axiosGetMock.mockRejectedValueOnce(new Error("API error"));
+        await expect(getUEs("dre-uuid")).rejects.toThrow(
+            "Não foi possível buscar as UEs"
+        );
+    });
 });
