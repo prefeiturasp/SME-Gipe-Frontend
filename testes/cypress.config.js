@@ -1,19 +1,17 @@
-const { defineConfig } = require("cypress")
-const allureWriter = require('@shelex/cypress-allure-plugin/writer')
-const { cloudPlugin } = require('cypress-cloud/plugin')
-const dotenv = require('dotenv')
-const cucumber = require('cypress-cucumber-preprocessor').default
-const postgreSQL = require('cypress-postgresql')
-const pg = require('pg')
+const { defineConfig } = require("cypress");
+const allureWriter = require('@shelex/cypress-allure-plugin/writer');
+const { cloudPlugin } = require('cypress-cloud/plugin');
+const dotenv = require('dotenv');
+const cucumber = require('cypress-cucumber-preprocessor').default;
 
-dotenv.config()
+dotenv.config();
 
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE
-}
+};
 
 module.exports = defineConfig({
   e2e: {
@@ -41,18 +39,18 @@ module.exports = defineConfig({
 
     async setupNodeEvents(on, config) {
       // Allure
-      allureWriter(on, config)
+      allureWriter(on, config);
 
       // Cucumber
-      on('file:preprocessor', cucumber())
+      on('file:preprocessor', cucumber());
 
-      // PostgreSQL
-      postgreSQL.loadDBCommands(on, config, dbConfig)
+      // Cypress Cloud (opcional, se estiver usando)
+      const enhancedConfig = await cloudPlugin(on, config);
 
-      // Cypress Cloud
-      const enhancedConfig = await cloudPlugin(on, config)
+      // Passa as configs do banco para o support
+      config.env.db = dbConfig;
 
-      return enhancedConfig
+      return enhancedConfig;
     }
   }
-})
+});
