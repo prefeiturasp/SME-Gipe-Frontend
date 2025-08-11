@@ -15,8 +15,8 @@ pipeline {
     }
 
     environment {
-        TEST_DIR = 'tests/api/ui'
-        ALLURE_PATH = 'tests/api/ui/allure-results'
+        //TEST_DIR = 'tests/api/ui'
+        ALLURE_PATH = 'testes/ui/allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
