@@ -26,7 +26,7 @@ pipeline {
             }
         }
 
-        stage('Executar Testes Cypress') {
+        stage('Executar') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
@@ -54,7 +54,7 @@ pipeline {
                                        chmod 777 * -R"
                         '''
                     }
-                    echo "✅ Testes Cypress finalizados."
+                    echo "FIM DOS TESTES!"
                 }
             }
         }
@@ -66,7 +66,7 @@ pipeline {
                         def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
                         if (hasResults) {
-                            echo "📊 Gerando relatório Allure..."
+                            echo "Gerando relatório Allure..."
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -101,7 +101,7 @@ pipeline {
             }
         }
 
-        /*
+        
         success {
             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
         }
@@ -117,11 +117,11 @@ pipeline {
         aborted {
             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
         }
-        */
+        
     }
 }
 
-/*
+
 def sendTelegram(message) {
     def encodedMessage = URLEncoder.encode(message, "UTF-8")
     withCredentials([
@@ -138,4 +138,4 @@ def sendTelegram(message) {
         return response
     }
 }
-*/
+
