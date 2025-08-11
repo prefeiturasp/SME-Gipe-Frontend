@@ -35,7 +35,7 @@ pipeline {
                             docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
                             docker run \
                                 --rm \
-                                -v "$WORKSPACE/testes/api/ui:/app" \
+                                -v "$WORKSPACE/testes/ui:/app" \
                                 -w /app \
                                 registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
                                 sh -c "npm install && npm install cypress@14.5.2 cypress-cloud@beta && \
