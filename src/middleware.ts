@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/cadastro"];
+const PUBLIC_ROUTES = ["/", "/cadastro", "/recuperar-senha"];
 
 function isPublicRoute(pathname: string) {
     return PUBLIC_ROUTES.includes(pathname);
