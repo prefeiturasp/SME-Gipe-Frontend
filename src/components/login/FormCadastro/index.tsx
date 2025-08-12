@@ -361,7 +361,7 @@ export default function FormCadastro() {
                         </Button>
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="customOutline"
                             className="w-full mt-2"
                             onClick={() => router.push("/")}
                         >
