@@ -65,4 +65,21 @@ describe("FormRecuperarSenha", () => {
         fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
         expect(pushMock).toHaveBeenCalledWith("/");
     });
+
+    it("redireciona para / na ultima etapa", async () => {
+        render(<LoginForm />, { wrapper });
+        fireEvent.input(screen.getByPlaceholderText("Digite um RF ou CPF"), {
+            target: { value: "47198005055" },
+        });
+        fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    /Seu link de recuperação de senha foi enviado/i
+                )
+            ).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
+        expect(pushMock).toHaveBeenCalledWith("/");
+    });
 });

@@ -101,23 +101,34 @@ export default function LoginForm() {
                     </Alert>
                 )}
 
-                <Button
-                    type="submit"
-                    variant="secondary"
-                    className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
-                    disabled={false}
-                    loading={isLoading}
-                >
-                    Continuar
-                </Button>
-                {!returnMessage && (
+                {!returnMessage ? (
+                    <>
+                        <Button
+                            type="submit"
+                            variant="secondary"
+                            className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
+                            disabled={false}
+                            loading={isLoading}
+                        >
+                            Continuar
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="customOutline"
+                            className="w-full mt-2"
+                            onClick={() => router.push("/")}
+                        >
+                            Voltar
+                        </Button>
+                    </>
+                ) : (
                     <Button
                         type="button"
-                        variant="customOutline"
-                        className="w-full mt-2"
+                        className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
+                        variant="secondary"
                         onClick={() => router.push("/")}
                     >
-                        Voltar
+                        Continuar
                     </Button>
                 )}
                 <div className="flex justify-center mt-4 py-2">
