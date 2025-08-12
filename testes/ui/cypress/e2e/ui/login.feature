@@ -15,5 +15,5 @@ Funcionalidade: Login
       | Login válido padrão  | 7210418  | Sgp@12345  |
       | Login inválido       | 7210418  | Sgp@123    |
       | Senha em branco      | 7210418  |            |
-      | RF em branco         |          |            |
+      | RF em branco         |          | Sgp@123    |
 
