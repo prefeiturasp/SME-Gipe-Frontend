@@ -131,9 +131,13 @@ export default function LoginForm() {
                     Acessar
                 </Button>
                 <div className="flex justify-center mt-2">
-                    <span className="text-[#717FC7] text-sm font-semibold cursor-pointer hover:underline">
+                    <button
+                        type="button"
+                        onClick={() => router.push("/recuperar-senha")}
+                        className="text-[#717FC7] text-sm font-semibold cursor-pointer hover:underline bg-transparent border-none p-0 m-0"
+                    >
                         Esqueci minha senha
-                    </span>
+                    </button>
                 </div>
                 {errorMessage && (
                     <div className="text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 px-3 mt-2 max-w-sm w-full mx-auto break-words">
