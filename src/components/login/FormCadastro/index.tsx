@@ -108,7 +108,18 @@ export default function FormCadastro() {
     async function tratarCadastro() {
         setErrorMessage(null);
 
-        const response = await mutateAsync(values);
+        const payload = {
+            username: values.cpf.replace(/\D/g, ""),
+            password: values.password,
+            name: values.fullName,
+            cpf: values.cpf.replace(/\D/g, ""),
+            email: values.email,
+            cargo: 3360,
+            rede: "INDIRETA",
+            unidades: [values.ue],
+        };
+
+        const response = await mutateAsync(payload);
 
         if (response.success) {
             setCadastroFinalizado(true);
