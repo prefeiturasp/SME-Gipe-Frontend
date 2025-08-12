@@ -1,4 +1,5 @@
 # language: pt
+
 Funcionalidade: Login
 
   Contexto:
@@ -10,6 +11,9 @@ Funcionalidade: Login
     Então o resultado esperado para "<cenario>" deve ser exibido
 
     Exemplos:
-      | cenario             | rf       | senha      |
-      | Login válido padrão | 7210418  | Sgp@12345  |
-      | Login inválido      | 7210418  | Sgp@123    |
+      | cenario              | rf       | senha      |
+      | Login válido padrão  | 7210418  | Sgp@12345  |
+      | Login inválido       | 7210418  | Sgp@123    |
+      | Senha em branco      | 7210418  |            |
+      | RF em branco         |          |            |
+
