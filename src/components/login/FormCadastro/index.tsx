@@ -186,6 +186,7 @@ export default function FormCadastro() {
                                             value={field.value}
                                             onValueChange={field.onChange}
                                             disabled={field.disabled}
+                                            data-testid="select-dre"
                                         >
                                             <SelectTrigger className="w-full border rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#717FC7]">
                                                 <SelectValue placeholder="Selecione" />
@@ -221,6 +222,7 @@ export default function FormCadastro() {
                                     </FormLabel>
                                     <FormControl>
                                         <Combobox
+                                            data-testid="select-ue"
                                             options={ueOptions.map(
                                                 (ue: {
                                                     nome: string;
@@ -253,6 +255,7 @@ export default function FormCadastro() {
                                             {...field}
                                             placeholder="Exemplo: Maria Clara Medeiros"
                                             className="font-normal"
+                                            data-testid="input-fullName"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -276,6 +279,7 @@ export default function FormCadastro() {
                                                 mask: "999.999.999-99",
                                             }}
                                             className="font-normal"
+                                            data-testid="input-cpf"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -299,6 +303,7 @@ export default function FormCadastro() {
                                 ]);
                                 if (valid) setStep(2);
                             }}
+                            data-testid="button-avancar"
                         >
                             Avançar
                         </Button>
@@ -306,6 +311,7 @@ export default function FormCadastro() {
                             type="button"
                             className="w-full border border-[#717FC7] bg-white text-[#717FC7] font-bold rounded-md py-2 transition-colors hover:bg-[#f3f4fa] hover:border-[#5a65a8] mt-2"
                             onClick={() => router.push("/")}
+                            data-testid="button-cancelar"
                         >
                             Cancelar
                         </button>
@@ -327,6 +333,7 @@ export default function FormCadastro() {
                                             type="email"
                                             placeholder="Digite o seu e-mail corporativo"
                                             className="font-normal"
+                                            data-testid="input-email"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -367,6 +374,7 @@ export default function FormCadastro() {
                                     confirmPassword !== values.password)
                             }
                             loading={isLoading}
+                            data-testid="button-cadastrar"
                         >
                             Cadastrar agora
                         </Button>

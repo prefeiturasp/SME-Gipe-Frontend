@@ -65,6 +65,7 @@ export default function InputSenhaComValidador({
                         onChange={(e) => onPasswordChange(e.target.value)}
                         placeholder="Digite sua senha"
                         className="font-normal pr-10"
+                        data-testid="input-password"
                     />
                     <button
                         type="button"
@@ -116,6 +117,7 @@ export default function InputSenhaComValidador({
                             onConfirmPasswordChange(e.target.value)
                         }
                         placeholder="Confirme sua senha"
+                        data-testid="input-confirm-password"
                         className="font-normal pr-10"
                     />
                     <button
