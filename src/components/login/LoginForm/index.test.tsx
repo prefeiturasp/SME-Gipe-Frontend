@@ -183,4 +183,14 @@ describe("LoginForm", () => {
         fireEvent.click(cadastreSeButton);
         expect(pushMock).toHaveBeenCalledWith("/cadastro");
     });
+
+    it("chama router.push ao clicar em Esqueci minha senha", async () => {
+        render(<LoginForm />);
+
+        const esqueciSenhaButton = screen.getByRole("button", {
+            name: /esqueci minha senha/i,
+        });
+        fireEvent.click(esqueciSenhaButton);
+        expect(pushMock).toHaveBeenCalledWith("/recuperar-senha");
+    });
 });
