@@ -50,8 +50,9 @@ pipeline {
                                             --reporter mocha-allure-reporter \
                                             --reporter-options reportDir=allure-results \
                                             --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                       chown 1001:1001 * -R && \
-                                       chmod 777 * -R"
+                                       # Ajusta permissões para o usuário do Jenkins (1000:1000 é o padrão)
+                                       chown -R 1000:1000 allure-results && \
+                                       chmod -R 777 allure-results"
                         '''
                     }
                     echo "FIM DOS TESTES!"
@@ -67,6 +68,8 @@ pipeline {
 
                         if (hasResults) {
                             echo "Gerando relatório Allure..."
+                            // Garante que Jenkins tenha permissão antes de gerar
+                            sh "chmod -R 777 ${ALLURE_PATH}"
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -101,7 +104,6 @@ pipeline {
             }
         }
 
-        
         success {
             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
         }
@@ -117,10 +119,8 @@ pipeline {
         aborted {
             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
         }
-        
     }
 }
-
 
 def sendTelegram(message) {
     def encodedMessage = URLEncoder.encode(message, "UTF-8")
@@ -138,4 +138,3 @@ def sendTelegram(message) {
         return response
     }
 }
-
