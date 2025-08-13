@@ -29,6 +29,7 @@ export default defineConfig({
                 "vitest.config.ts",
                 "eslint.config.mjs",
                 "*/.next/*", // Pode ser redundante, mas não atrapalha
+                "testes/**", // Exclui a pasta de testes de QA
             ],
         },
     },

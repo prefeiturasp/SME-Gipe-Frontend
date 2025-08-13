@@ -1,5 +1,5 @@
 import FormCadastro from "@/components/login/FormCadastro";
 
-export default function Login() {
+export default function Cadastro() {
     return <FormCadastro />;
 }
