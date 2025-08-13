@@ -1,10 +1,19 @@
 import { z } from "zod";
 import { isValidCPF } from "@/lib/utils";
 
+const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
+const fullName = z
+    .string()
+    .transform(normalize)
+    .refine((v) => !/\d/.test(v), { message: "Não use números no nome" })
+    .refine((v) => v.split(" ").filter(Boolean).length >= 2, {
+        message: "Informe nome e sobrenome",
+    });
+
 const formSchema = z.object({
     dre: z.string().min(1, "DRE é obrigatória"),
     ue: z.string().min(1, "UE é obrigatória"),
-    fullName: z.string().min(3, "Nome completo é obrigatório"),
+    fullName: fullName,
     cpf: z
         .string()
         .min(11, "CPF é obrigatório")

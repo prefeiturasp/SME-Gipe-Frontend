@@ -75,6 +75,7 @@ export default function LoginForm() {
                                     {...field}
                                     inputMode="numeric"
                                     placeholder="Digite um RF ou CPF"
+                                    data-testid="input-username"
                                     maskProps={{
                                         mask: "99999999999",
                                     }}
@@ -103,6 +104,7 @@ export default function LoginForm() {
                                         placeholder="Digite sua senha"
                                         autoComplete="password"
                                         className="pr-[40px]"
+                                        data-testid="input-password"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -127,6 +129,7 @@ export default function LoginForm() {
                     variant="secondary"
                     className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8]"
                     loading={isLoading}
+                    data-testid="button-acessar"
                 >
                     Acessar
                 </Button>
