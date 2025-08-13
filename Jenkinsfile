@@ -17,6 +17,7 @@ pipeline {
         TEST_DIR = 'cypress'
         ALLURE_PATH = 'allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
+        CURRENTS_PROJECT_ID = 'SME-GIPE' // necessário para sorry-cypress
     }
 
     stages {
