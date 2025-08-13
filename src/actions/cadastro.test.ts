@@ -69,7 +69,7 @@ describe("cadastroAction", () => {
     it("deve retornar erro com detail da API", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         axiosPostMock.mockRejectedValueOnce({
-            response: { data: { detail: "E-mail já cadastrado" } },
+            response: { data: { mensagem: "E-mail já cadastrado" } },
             message: "Erro genérico",
         });
         const result = await cadastroAction(dadosCadastro);
