@@ -125,7 +125,11 @@ describe("FormCadastro", () => {
         await preencherStep1();
         await irParaStep2();
 
-        await preencherStep2("admin@example.com", "Senha123!", "Senha123!");
+        await preencherStep2(
+            "admin@sme.prefeitura.sp.gov.br",
+            "Senha123!",
+            "Senha123!"
+        );
 
         const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
@@ -148,7 +152,11 @@ describe("FormCadastro", () => {
         await preencherStep1();
         await irParaStep2();
 
-        await preencherStep2("admin@example.com", "Senha123!", "OutraSenha!");
+        await preencherStep2(
+            "admin@sme.prefeitura.sp.gov.br",
+            "Senha123!",
+            "OutraSenha!"
+        );
 
         await waitFor(() =>
             expect(
@@ -173,7 +181,11 @@ describe("FormCadastro", () => {
         await preencherStep1();
         await irParaStep2();
 
-        await preencherStep2("admin@example.com", "Senha123!", "Senha123!");
+        await preencherStep2(
+            "admin@sme.prefeitura.sp.gov.br",
+            "Senha123!",
+            "Senha123!"
+        );
 
         const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
