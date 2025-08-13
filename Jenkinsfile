@@ -29,7 +29,8 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    // Captura falhas mas deixa o pipeline continuar para o post
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                         withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
                             sh '''
                                 docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
@@ -65,8 +66,10 @@ pipeline {
     post {
         always {
             script {
+                echo "📊 Gerando relatório Allure mesmo com falha..."
+                sh 'chmod -R 777 ${ALLURE_PATH} || true'
+
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-                    echo "📊 Gerando relatório Allure..."
                     sh """
                         export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                         export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -82,37 +85,37 @@ pipeline {
             }
         }
 
-        success {
-            sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
-        }
+//         success {
+//             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
+//         }
 
-        unstable {
-            sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
-        }
+//         unstable {
+//             sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
+//         }
 
-        failure {
-            sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
-        }
+//         failure {
+//             sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
+//         }
 
-        aborted {
-            sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
-        }
-    }
-}
+//         aborted {
+//             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
+//         }
+//     }
+// }
 
-def sendTelegram(message) {
-    def encodedMessage = URLEncoder.encode(message, "UTF-8")
-    withCredentials([
-        string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
-        string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
-    ]) {
-        response = httpRequest (
-            consoleLogResponseBody: true,
-            contentType: 'APPLICATION_JSON',
-            httpMode: 'GET',
-            url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
-            validResponseCodes: '200'
-        )
-        return response
-    }
+// def sendTelegram(message) {
+//     def encodedMessage = URLEncoder.encode(message, "UTF-8")
+//     withCredentials([
+//         string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
+//         string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
+//     ]) {
+//         response = httpRequest (
+//             consoleLogResponseBody: true,
+//             contentType: 'APPLICATION_JSON',
+//             httpMode: 'GET',
+//             url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
+//             validResponseCodes: '200'
+//         )
+//         return response
+//     }
 }
