@@ -24,8 +24,8 @@ export async function cadastroAction(
 
         if (error.response?.status === 500) {
             message = "Erro interno no servidor";
-        } else if (error.response?.data?.mensagem) {
-            message = error.response.data.mensagem;
+        } else if (error.response?.data?.detail) {
+            message = error.response.data.detail;
         } else if (error.message) {
             message = error.message;
         }

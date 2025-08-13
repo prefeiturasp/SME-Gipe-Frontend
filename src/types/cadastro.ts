@@ -12,5 +12,5 @@ export interface CadastroRequest {
 }
 
 export interface CadastroErrorResponse {
-    mensagem: string;
+    detail: string;
 }
