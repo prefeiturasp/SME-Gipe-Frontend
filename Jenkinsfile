@@ -44,7 +44,7 @@ pipeline {
                                     --record \
                                     --key somekey \
                                     --reporter mocha-allure-reporter \
-                                    --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                    --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
                                 chown -R 1001:1001 * || true && \
                                 chmod -R 777 * || true"
                         """
