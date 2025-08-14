@@ -17,11 +17,12 @@ const axiosPostMock = axios.post as Mock;
 describe("cadastroAction", () => {
     const originalEnv = process.env;
     const dadosCadastro: CadastroRequest = {
-        dre: "01",
-        ue: "001",
-        fullName: "Usuário Teste",
+        unidades: ["45c839b6-2ae3-4e83-98b1-4eb40f27554c"],
+        name: "Usuário Teste",
+        username: "12345678900",
         cpf: "12345678900",
         email: "teste@email.com",
+        password: "pastel",
     };
 
     beforeEach(() => {
@@ -38,8 +39,15 @@ describe("cadastroAction", () => {
         axiosPostMock.mockResolvedValueOnce({});
         const result = await cadastroAction(dadosCadastro);
         expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/cadastro",
-            dadosCadastro,
+            "https://api.exemplo.com/users/registrar",
+            {
+                username: "12345678900",
+                password: "pastel",
+                name: "Usuário Teste",
+                cpf: "12345678900",
+                email: "teste@email.com",
+                unidades: ["45c839b6-2ae3-4e83-98b1-4eb40f27554c"],
+            },
             { withCredentials: true }
         );
         expect(result).toEqual({ success: true });

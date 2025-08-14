@@ -3,11 +3,12 @@ export type CadastroResult =
     | { success: false; error: string };
 
 export interface CadastroRequest {
-    dre: string;
-    ue: string;
-    fullName: string;
+    username: string;
+    password: string;
+    name: string;
     cpf: string;
     email: string;
+    unidades: string[];
 }
 
 export interface CadastroErrorResponse {

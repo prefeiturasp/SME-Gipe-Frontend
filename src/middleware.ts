@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/cadastro"];
+const PUBLIC_ROUTES = ["/", "/cadastro", "/recuperar-senha"];
 
 function isPublicRoute(pathname: string) {
     return PUBLIC_ROUTES.includes(pathname);
@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
     if (!isAuthenticated && !isPublic) {
         return NextResponse.redirect(new URL("/", request.url));
     }
-    if (isAuthenticated && pathname === "/") {
+    if (isAuthenticated && isPublic) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();

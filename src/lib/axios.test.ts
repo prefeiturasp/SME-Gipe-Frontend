@@ -3,7 +3,7 @@ import axiosInstance from "./axios";
 
 describe("axiosInstance", () => {
     it("deve ter a baseURL igual à variável de ambiente", async () => {
-        process.env.AUTENTICA_CORESSO_API_URL = "https://api.exemplo.com";
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         vi.resetModules();
         const instance = (await import("./axios")).default;
         expect(instance.defaults.baseURL).toBe("https://api.exemplo.com");

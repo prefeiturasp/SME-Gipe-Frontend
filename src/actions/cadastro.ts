@@ -12,7 +12,7 @@ export async function cadastroAction(
 ): Promise<CadastroResult> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
     try {
-        await axios.post(`${API_URL}/users/cadastro`, dadosCadastro, {
+        await axios.post(`${API_URL}/users/registrar`, dadosCadastro, {
             withCredentials: true,
         });
 
