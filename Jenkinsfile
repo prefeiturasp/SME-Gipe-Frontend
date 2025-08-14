@@ -83,23 +83,23 @@ pipeline {
         }
     }
 
-//     post {
-//         always {
-//             script {
-//                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-//                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
-//                 } else {
-//                     echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin não será acionado."
-//                 }
+    post {
+        always {
+            script {
+                if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
+                    allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+                } else {
+                    echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin não será acionado."
+                }
 
-//                 def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
-//                 if (zipExists) {
-//                     archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
-//                 } else {
-//                     echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
-//                 }
-//             }
-//         }
+                def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+                if (zipExists) {
+                    archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
+                } else {
+                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
+                }
+            }
+        }
 
         
 //         success {
@@ -136,5 +136,5 @@ pipeline {
 //             validResponseCodes: '200'
 //         )
 //         return response
-//     }
+    }
 }
