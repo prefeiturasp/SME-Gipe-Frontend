@@ -50,8 +50,8 @@ pipeline {
                                             --reporter mocha-allure-reporter \
                                             --reporter-options reportDir=allure-results \
                                             --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                       chown 1001:1001 * -R && \
-                                       chmod 777 * -R"
+                                        chown 1001:1001 * -R
+                                        chmod 777 * -R"
                         '''
                     }
                     echo "Testes Cypress finalizados."
@@ -86,6 +86,18 @@ pipeline {
     post {
         always {
             script {
+                withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                    sh '''
+                        docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                        docker run \
+                            --rm \
+                            -v "$WORKSPACE:/app" \
+                            -w /app \
+                            registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                            sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
+                    '''
+                }
+                
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
                 } else {
