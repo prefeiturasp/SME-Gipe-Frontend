@@ -28,7 +28,6 @@ function selecionarDropdownUE(botaoXPath, valor) {
     });
 }
 
-// Digita com segurança em um seletor CSS
 function digitaCSS(selector, valor, timeout = 30000) {
   cy.get(selector, { timeout })
     .should('exist')
@@ -38,7 +37,6 @@ function digitaCSS(selector, valor, timeout = 30000) {
     .type(valor, { delay: 0 });
 }
 
-// Digita com segurança em um seletor XPath
 function digitaXPath(xpath, valor, timeout = 30000) {
   cy.xpath(xpath, { timeout })
     .should('exist')
@@ -48,7 +46,6 @@ function digitaXPath(xpath, valor, timeout = 30000) {
     .type(valor, { delay: 0 });
 }
 
-// ---------- Steps ----------
 Given('que o usuário está na página de cadastro', () => {
   cy.cadastro_gipe({ timeout: 15000 });
 });
@@ -94,16 +91,13 @@ When('o usuário preenche o campo {string} com {string}', (campo, valor) => {
 });
 
 When('o usuário clica no botão Avançar', () => {
-  // Clica para ir à próxima etapa
   cy.xpath(loc.proxima_etapa_form(), { timeout: 20000 })
     .should('be.visible')
     .click({ force: true });
 
-  // Garante que a etapa com e-mail/senha carregou
   cy.get(loc.input_email(), { timeout: 45000 }).should('exist');
 });
 
 Then('o sistema deve mostrar a próxima tela para continuar o cadastro', () => {
-  // Ajuste conforme a rota real da 2ª etapa
   cy.url({ timeout: 30000 }).should('include', '/cadastro');
 });
