@@ -1,25 +1,40 @@
 class Cadastro_Localizadores {
-  // Botão para abrir o dropdown da DRE
+  // Dropdown DRE (XPath)
   select_dre() {
     return '//div[label[contains(text(),"Selecione a DRE")]]//button[@role="combobox"]';
   }
 
-  // Botão para abrir o dropdown da UE
+  // Dropdown UE (XPath)
   select_ue() {
     return '//div[label[contains(text(),"Digite o nome da UE")]]//button[@role="combobox"]';
   }
 
-  // Input do nome completo pelo placeholder
+  // Nome completo (CSS)
   input_nome_completo() {
     return 'input[placeholder="Exemplo: Maria Clara Medeiros"]';
   }
 
-  // Input do CPF usando a label associada
+  // CPF (XPath)
   input_cpf() {
     return '//div[label[contains(text(),"Qual o seu CPF")]]//input';
   }
 
-  // Botão avançar no formulário (dentro do form atual)
+  // E-mail (CSS) — cobre placeholder e possíveis data-testids
+  input_email() {
+    return 'input[placeholder="Digite o seu e-mail corporativo"], input[type="email"][data-testid], input[data-testid="input-email"]';
+  }
+
+  // Nova senha (CSS)
+  input_nova_senha() {
+    return 'input[placeholder="Digite sua senha"], input[data-testid="input-password"]';
+  }
+
+  // Confirmação de senha (CSS) — cobre variações
+  input_confirmacao_senha() {
+    return 'input[placeholder="Confirme sua senha"], input[data-testid="input-password-confirmation"], input[data-testid="input-confirm-password"]';
+  }
+
+  // Botão Avançar (XPath)
   proxima_etapa_form() {
     return '//form//button[contains(text(), "Avançar")]';
   }

@@ -3,32 +3,21 @@ import Cadastro_Localizadores from '../locators/cadastro_locators';
 
 const loc = new Cadastro_Localizadores();
 
-// ------------------------
-// DRE (mantido igual)
-// ------------------------
+// ---------- Funções de apoio ----------
 function selecionarDropdownDRE(botaoXPath, valor) {
   cy.xpath(botaoXPath).click({ force: true });
-
-  cy.xpath(botaoXPath)
-    .type(valor.charAt(0), { force: true });
+  cy.xpath(botaoXPath).type(valor.charAt(0), { force: true });
 
   cy.get('body')
     .contains('option', valor, { timeout: 15000 })
     .then($opt => {
-      if ($opt.length) {
-        cy.wrap($opt).click({ force: true });
-      } else {
-        throw new Error(`Opção "${valor}" não encontrada no dropdown DRE.`);
-      }
+      if ($opt.length) cy.wrap($opt).click({ force: true });
+      else throw new Error(`Opção "${valor}" não encontrada no dropdown DRE.`);
     });
 }
 
-// ------------------------
-// UE (nova lógica usando data-value)
-// ------------------------
 function selecionarDropdownUE(botaoXPath, valor) {
   cy.xpath(botaoXPath).click({ force: true });
-
   cy.get('div[data-state="open"]', { timeout: 15000 })
     .should('be.visible')
     .within(() => {
@@ -39,11 +28,29 @@ function selecionarDropdownUE(botaoXPath, valor) {
     });
 }
 
-// ------------------------
-// Steps do Cucumber
-// ------------------------
+// Digita com segurança em um seletor CSS
+function digitaCSS(selector, valor, timeout = 30000) {
+  cy.get(selector, { timeout })
+    .should('exist')
+    .should('be.visible')
+    .scrollIntoView()
+    .clear({ force: true })
+    .type(valor, { delay: 0 });
+}
+
+// Digita com segurança em um seletor XPath
+function digitaXPath(xpath, valor, timeout = 30000) {
+  cy.xpath(xpath, { timeout })
+    .should('exist')
+    .should('be.visible')
+    .scrollIntoView()
+    .clear({ force: true })
+    .type(valor, { delay: 0 });
+}
+
+// ---------- Steps ----------
 Given('que o usuário está na página de cadastro', () => {
-  cy.cadastro_gipe();
+  cy.cadastro_gipe({ timeout: 15000 });
 });
 
 When('o usuário seleciona o campo {string} com {string}', (campo, valor) => {
@@ -62,19 +69,23 @@ When('o usuário seleciona o campo {string} com {string}', (campo, valor) => {
 When('o usuário preenche o campo {string} com {string}', (campo, valor) => {
   switch (campo) {
     case 'Qual o seu nome completo':
-      cy.get(loc.input_nome_completo())
-        .scrollIntoView()
-        .should('be.visible')
-        .clear()
-        .type(valor);
+      digitaCSS(loc.input_nome_completo(), valor);
       break;
 
     case 'Qual o seu CPF':
-      cy.xpath(loc.input_cpf())
-        .scrollIntoView()
-        .should('be.visible')
-        .clear()
-        .type(valor, { delay: 50 });
+      digitaXPath(loc.input_cpf(), valor, 30000);
+      break;
+
+    case 'Qual o seu e-mail?':
+      digitaCSS(loc.input_email(), valor, 45000);
+      break;
+
+    case 'Nova Senha':
+      digitaCSS(loc.input_nova_senha(), valor, 45000);
+      break;
+
+    case 'Confirmação da nova senha':
+      digitaCSS(loc.input_confirmacao_senha(), valor, 45000);
       break;
 
     default:
@@ -83,12 +94,16 @@ When('o usuário preenche o campo {string} com {string}', (campo, valor) => {
 });
 
 When('o usuário clica no botão Avançar', () => {
-  cy.xpath(loc.proxima_etapa_form())
-    .scrollIntoView()
+  // Clica para ir à próxima etapa
+  cy.xpath(loc.proxima_etapa_form(), { timeout: 20000 })
     .should('be.visible')
     .click({ force: true });
+
+  // Garante que a etapa com e-mail/senha carregou
+  cy.get(loc.input_email(), { timeout: 45000 }).should('exist');
 });
 
 Then('o sistema deve mostrar a próxima tela para continuar o cadastro', () => {
-  cy.url().should('include', '/cadastro');
+  // Ajuste conforme a rota real da 2ª etapa
+  cy.url({ timeout: 30000 }).should('include', '/cadastro');
 });
