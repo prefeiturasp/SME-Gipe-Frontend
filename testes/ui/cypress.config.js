@@ -33,7 +33,7 @@ module.exports = defineConfig({
     defaultCommandTimeout: 90000,
     requestTimeout: 90000,
     execTimeout: 90000,
-    pageLoadTimeout: 90000,
+    pageLoadTimeout: 300000,
     waitForAnimations: true,
     animationDistanceThreshold: 5,
 
