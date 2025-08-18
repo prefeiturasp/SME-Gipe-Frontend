@@ -8,6 +8,7 @@ import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
 import LogoGipe from "@/components/login/LogoGipe";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Check from "@/assets/icons/Check";
+import CloseCheck from "@/assets/icons/CloseCheck";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,33 +20,38 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { InputMask } from "@/components/ui/input";
+import useRecuperarSenha from "@/hooks/useRecuperarSenha";
 
 import formSchema, { FormRecuperarSenha } from "./schema";
 
-export default function LoginForm() {
+export default function RecuperarSenha() {
     const [returnMessage, setReturnMessage] = useState<{
         success: boolean;
         message: string;
     } | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-
     const router = useRouter();
-
     const form = useForm<FormRecuperarSenha>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "",
         },
     });
+    const { mutateAsync, isPending } = useRecuperarSenha();
 
     async function handleLogin(values: FormRecuperarSenha) {
-        setIsLoading(false);
-        console.log(values);
-        setReturnMessage({
-            success: true,
-            message: `Seu link de recuperação de senha foi enviado para ama***********@prefeitura.sme.gov.br
-            Verifique sua caixa de entrada ou lixo eletrônico!`,
-        });
+        setReturnMessage(null);
+        const response = await mutateAsync({ username: values.username });
+        if (response.success) {
+            setReturnMessage({
+                success: true,
+                message: response.message,
+            });
+        } else {
+            setReturnMessage({
+                success: false,
+                message: response.error,
+            });
+        }
     }
 
     return (
@@ -71,7 +77,7 @@ export default function LoginForm() {
                         <FormField
                             control={form.control}
                             name="username"
-                            disabled={isLoading}
+                            disabled={isPending}
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
@@ -93,8 +99,15 @@ export default function LoginForm() {
                         />
                     </>
                 ) : (
-                    <Alert className="mt-4">
-                        <Check height={20} width={20} />
+                    <Alert
+                        className="mt-4"
+                        variant={returnMessage.success ? "aviso" : "error"}
+                    >
+                        {returnMessage.success ? (
+                            <Check height={20} width={20} />
+                        ) : (
+                            <CloseCheck height={20} width={20} />
+                        )}
                         <AlertDescription>
                             {returnMessage.message}
                         </AlertDescription>
@@ -108,7 +121,7 @@ export default function LoginForm() {
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
                             disabled={false}
-                            loading={isLoading}
+                            loading={isPending}
                         >
                             Continuar
                         </Button>
