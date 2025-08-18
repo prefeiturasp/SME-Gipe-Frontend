@@ -2,11 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
 import LogoGipe from "@/components/login/LogoGipe";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 import Check from "@/assets/icons/Check";
 import CloseCheck from "@/assets/icons/CloseCheck";
 
@@ -29,7 +29,6 @@ export default function RecuperarSenha() {
         success: boolean;
         message: string;
     } | null>(null);
-    const router = useRouter();
     const form = useForm<FormRecuperarSenha>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -41,6 +40,7 @@ export default function RecuperarSenha() {
     async function handleLogin(values: FormRecuperarSenha) {
         setReturnMessage(null);
         const response = await mutateAsync({ username: values.username });
+
         if (response.success) {
             setReturnMessage({
                 success: true,
@@ -126,22 +126,22 @@ export default function RecuperarSenha() {
                             Continuar
                         </Button>
                         <Button
-                            type="button"
+                            asChild
                             variant="customOutline"
                             className="w-full mt-2"
-                            onClick={() => router.push("/")}
                         >
-                            Voltar
+                            <Link href="/">Voltar</Link>
                         </Button>
                     </>
                 ) : (
                     <Button
-                        type="button"
-                        className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
+                        asChild
                         variant="secondary"
-                        onClick={() => router.push("/")}
+                        className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
                     >
-                        Continuar
+                        <Link href="/" replace>
+                            Continuar
+                        </Link>
                     </Button>
                 )}
                 <div className="flex justify-center mt-4 py-2">

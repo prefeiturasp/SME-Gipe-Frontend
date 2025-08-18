@@ -177,20 +177,22 @@ describe("LoginForm", () => {
     it("chama router.push ao clicar em Cadastre-se", async () => {
         render(<LoginForm />);
 
-        const cadastreSeButton = screen.getByRole("button", {
+        const cadastreSeButton = screen.getByRole("link", {
             name: "Cadastre-se",
         });
         fireEvent.click(cadastreSeButton);
-        expect(pushMock).toHaveBeenCalledWith("/cadastro");
+
+        expect(cadastreSeButton).toHaveAttribute("href", "/cadastro");
     });
 
     it("chama router.push ao clicar em Esqueci minha senha", async () => {
         render(<LoginForm />);
 
-        const esqueciSenhaButton = screen.getByRole("button", {
+        const esqueciSenhaButton = screen.getByRole("link", {
             name: /esqueci minha senha/i,
         });
         fireEvent.click(esqueciSenhaButton);
-        expect(pushMock).toHaveBeenCalledWith("/recuperar-senha");
+
+        expect(esqueciSenhaButton).toHaveAttribute("href", "/recuperar-senha");
     });
 });

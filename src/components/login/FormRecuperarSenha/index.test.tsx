@@ -95,8 +95,10 @@ describe("FormRecuperarSenha", () => {
 
     it("redireciona ao clicar em Voltar", async () => {
         render(<LoginForm />, { wrapper });
-        fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
-        expect(pushMock).toHaveBeenCalledWith("/");
+        const backButton = screen.getByRole("link", { name: /voltar/i });
+
+        fireEvent.click(backButton);
+        expect(backButton).toHaveAttribute("href", "/");
     });
 
     it("redireciona para / na ultima etapa", async () => {
@@ -116,7 +118,8 @@ describe("FormRecuperarSenha", () => {
                 )
             ).toBeInTheDocument();
         });
-        fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
-        expect(pushMock).toHaveBeenCalledWith("/");
+        const finishButton = screen.getByRole("link", { name: /continuar/i });
+        fireEvent.click(finishButton);
+        expect(finishButton).toHaveAttribute("href", "/");
     });
 });
