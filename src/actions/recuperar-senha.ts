@@ -24,7 +24,7 @@ export async function recuperarSenhaAction(
     try {
         const { data } = await axios.post<RecuperarSenhaSuccessResponse>(
             `${API_URL}/users/esqueci-senha`,
-            { username }
+            username
         );
         return { success: true, message: data.detail };
     } catch (err) {
