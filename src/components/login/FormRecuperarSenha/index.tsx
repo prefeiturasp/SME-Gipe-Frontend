@@ -20,7 +20,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { InputMask } from "@/components/ui/input";
-import useRecuperarSenha from "@/hooks/useRecuperarSenha";
+import useSolicitarRedefinicaoSenha from "@/hooks/useSolicitarRedefinicaoSenha";
 
 import formSchema, { FormRecuperarSenha } from "./schema";
 
@@ -35,7 +35,7 @@ export default function RecuperarSenha() {
             username: "",
         },
     });
-    const { mutateAsync, isPending } = useRecuperarSenha();
+    const { mutateAsync, isPending } = useSolicitarRedefinicaoSenha();
 
     async function handleLogin(values: FormRecuperarSenha) {
         setReturnMessage(null);
