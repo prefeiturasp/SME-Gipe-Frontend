@@ -138,12 +138,12 @@ describe("FormCadastro", () => {
         fireEvent.click(cadastrarButton);
 
         await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
-        const finalizarButton = await screen.findByRole("button", {
+
+        const finalizarButton = screen.getByRole("link", {
             name: /finalizar/i,
         });
         fireEvent.click(finalizarButton);
-
-        expect(pushMock).toHaveBeenCalledWith("/");
+        expect(finalizarButton).toHaveAttribute("href", "/");
     });
 
     it("mostra erro quando senhas não coincidem e mantém botão desabilitado", async () => {
