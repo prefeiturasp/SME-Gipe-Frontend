@@ -1,6 +1,6 @@
 export type CadastroResult =
     | { success: true }
-    | { success: false; error: string };
+    | { success: false; error: string; field?: string };
 
 export interface CadastroRequest {
     username: string;
@@ -13,4 +13,5 @@ export interface CadastroRequest {
 
 export interface CadastroErrorResponse {
     detail: string;
+    field?: string;
 }

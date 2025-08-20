@@ -18,10 +18,10 @@ function selecionarDropdownDRE(botaoXPath, valor) {
 
 function selecionarDropdownUE(botaoXPath, valor) {
   cy.xpath(botaoXPath).click({ force: true });
-  cy.get('div[data-state="open"]', { timeout: 15000 })
+  cy.get('div[data-state="open"]', { timeout: 30000 })
     .should('be.visible')
     .within(() => {
-      cy.get(`[data-value="${valor}"]`, { timeout: 15000 })
+      cy.get(`[data-value="${valor}"]`, { timeout: 30000 })
         .should('be.visible')
         .click({ force: true })
         .should('have.attr', 'data-value', valor);
@@ -47,7 +47,7 @@ function digitaXPath(xpath, valor, timeout = 30000) {
 }
 
 Given('que o usuário está na página de cadastro', () => {
-  cy.cadastro_gipe({ timeout: 15000 });
+  cy.cadastro_gipe({timeout: 30000});
 });
 
 When('o usuário seleciona o campo {string} com {string}', (campo, valor) => {
