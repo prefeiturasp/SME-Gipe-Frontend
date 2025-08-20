@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import useSolicitarRedefinicaoSenha from "./useSolicitarRedefinicaoSenha";
 
-vi.mock("@/actions/recuperar-senha", () => ({
+vi.mock("@/actions/esqueci-senha", () => ({
     esqueciSenhaAction: vi.fn(),
 }));
 
