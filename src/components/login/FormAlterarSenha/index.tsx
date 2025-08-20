@@ -56,8 +56,7 @@ export default function AlterarSenha({
         } else {
             setReturnMessage({
                 success: false,
-                message:
-                    "Por segurança, o link de redefinição expira em 5 minutos. Solicite um novo para redefinir sua senha.",
+                message: response.error,
             });
         }
     }
