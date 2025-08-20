@@ -120,7 +120,7 @@ export default function RecuperarSenha() {
                             type="submit"
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
-                            disabled={false}
+                            disabled={isPending}
                             loading={isPending}
                         >
                             Continuar
