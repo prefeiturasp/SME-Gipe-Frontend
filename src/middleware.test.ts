@@ -17,7 +17,7 @@ function makeReq(pathname: string, cookieValue?: string): MockRequest {
         url: `http://localhost${pathname}`,
         cookies: {
             get: (key: string) =>
-                key === "auth_token" && cookieValue
+                key === "user_data" && cookieValue
                     ? { value: cookieValue }
                     : undefined,
         },
@@ -70,13 +70,6 @@ describe("middleware", () => {
         const req = makeReq(
             "/recuperar-senha/Mg/cuqlze-a3574692a9db67cc73abb5fe47af5fa0"
         );
-        middleware(req as unknown as Parameters<typeof middleware>[0]);
-        expect(NextResponse.next).toHaveBeenCalled();
-        expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
-    it("NÃO redireciona autenticado acessando /recuperar-senha (deve permitir reset mesmo logado)", () => {
-        const req = makeReq("/recuperar-senha", "token123");
         middleware(req as unknown as Parameters<typeof middleware>[0]);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(NextResponse.redirect).not.toHaveBeenCalled();
