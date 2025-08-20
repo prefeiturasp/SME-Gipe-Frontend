@@ -13,7 +13,7 @@ export default function SignOutButton() {
     const handleLogout = () => {
         clearUser();
         Cookies.remove("user_data", { path: "/" });
-        router.push("/login");
+        router.push("/");
     };
 
     return (

@@ -41,6 +41,6 @@ describe("SignOutButton", () => {
 
         expect(clearUserMock).toHaveBeenCalled();
         expect(Cookies.remove).toHaveBeenCalledWith("user_data", { path: "/" });
-        expect(pushMock).toHaveBeenCalledWith("/login");
+        expect(pushMock).toHaveBeenCalledWith("/");
     });
 });
