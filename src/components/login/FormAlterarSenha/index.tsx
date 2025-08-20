@@ -17,7 +17,7 @@ import formSchema, { FormAlterarSenha } from "./schema";
 import InputSenhaComValidador from "../FormCadastro/InputSenhaComValidador";
 import LogoPrefeituraSP from "../LogoPrefeituraSP";
 
-export default function RecuperarSenha({
+export default function AlterarSenha({
     code,
     token,
 }: {
