@@ -47,7 +47,8 @@ function digitaXPath(xpath, valor, timeout = 30000) {
 }
 
 Given('que o usuário está na página de cadastro', () => {
-  cy.cadastro_gipe({ timeout: 15000 });
+  cy.cadastro_gipe();
+  cy.timeout(30000);
 });
 
 When('o usuário seleciona o campo {string} com {string}', (campo, valor) => {
