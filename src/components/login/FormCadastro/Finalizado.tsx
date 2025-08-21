@@ -1,11 +1,8 @@
 import LogoGipe from "@/components/login/LogoGipe";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-interface FinalizadoFormProps {
-    readonly aoConfirmar?: () => void;
-}
-
-export default function Finalizado({ aoConfirmar }: FinalizadoFormProps) {
+export default function Finalizado() {
     return (
         <div className="min-h-[80vh] flex flex-col justify-between items-center w-full max-w-md mx-auto px-4 py-8">
             <div className="w-full flex flex-col items-center">
@@ -26,9 +23,11 @@ export default function Finalizado({ aoConfirmar }: FinalizadoFormProps) {
                 <Button
                     variant="secondary"
                     className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                    onClick={aoConfirmar}
+                    asChild
                 >
-                    Finalizar
+                    <Link href="/" replace>
+                        Finalizar
+                    </Link>
                 </Button>
             </div>
         </div>

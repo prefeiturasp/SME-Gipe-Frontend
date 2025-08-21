@@ -20,7 +20,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { InputMask } from "@/components/ui/input";
-import useRecuperarSenha from "@/hooks/useRecuperarSenha";
+import useSolicitarRedefinicaoSenha from "@/hooks/useSolicitarRedefinicaoSenha";
 
 import formSchema, { FormRecuperarSenha } from "./schema";
 
@@ -35,7 +35,7 @@ export default function RecuperarSenha() {
             username: "",
         },
     });
-    const { mutateAsync, isPending } = useRecuperarSenha();
+    const { mutateAsync, isPending } = useSolicitarRedefinicaoSenha();
 
     async function handleLogin(values: FormRecuperarSenha) {
         setReturnMessage(null);
@@ -120,7 +120,7 @@ export default function RecuperarSenha() {
                             type="submit"
                             variant="secondary"
                             className="w-full text-center rounded-md text-[16px] font-[700] md:h-[45px] inline-block align-middle bg-[#717FC7] text-white hover:bg-[#5a65a8] mt-6"
-                            disabled={false}
+                            disabled={isPending}
                             loading={isPending}
                         >
                             Continuar

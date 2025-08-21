@@ -9,10 +9,10 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: pushMock }),
 }));
 
-// Mock do hook useRecuperarSenha
+// Mock do hook useSolicitarRedefinicaoSenha
 const mutateAsyncMock = vi.fn();
 const isPendingMock = false;
-vi.mock("@/hooks/useRecuperarSenha", () => ({
+vi.mock("@/hooks/useSolicitarRedefinicaoSenha", () => ({
     __esModule: true,
     default: () => ({ mutateAsync: mutateAsyncMock, isPending: isPendingMock }),
 }));
