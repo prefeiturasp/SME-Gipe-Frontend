@@ -19,7 +19,7 @@ class Cadastro_Localizadores {
     return '//div[label[contains(text(),"Qual o seu CPF")]]//input';
   }
 
-  // E-mail (CSS) — cobre placeholder e possíveis data-testids
+  // E-mail (CSS)
   input_email() {
     return 'input[placeholder="Digite o seu e-mail corporativo"], input[type="email"][data-testid], input[data-testid="input-email"]';
   }
@@ -29,7 +29,7 @@ class Cadastro_Localizadores {
     return 'input[placeholder="Digite sua senha"], input[data-testid="input-password"]';
   }
 
-  // Confirmação de senha (CSS) — cobre variações
+  // Confirmação de senha (CSS)
   input_confirmacao_senha() {
     return 'input[placeholder="Confirme sua senha"], input[data-testid="input-password-confirmation"], input[data-testid="input-confirm-password"]';
   }
@@ -37,6 +37,19 @@ class Cadastro_Localizadores {
   // Botão Avançar (XPath)
   proxima_etapa_form() {
     return '//form//button[contains(text(), "Avançar")]';
+  }
+
+  // Botão Cadastrar agora (XPath)
+  cadastrar_agora_form() {
+    return '//form//button[contains(text(), "Cadastrar agora")]';
+  }
+
+  mensagem_email_ja_cadastrado() {
+    return '/html/body/div/div[2]/div/form/div[7]';
+  }
+
+    CPF_ja_cadastrado() {
+    return '/html/body/div/div[2]/div/form/div[7]';
   }
 }
 

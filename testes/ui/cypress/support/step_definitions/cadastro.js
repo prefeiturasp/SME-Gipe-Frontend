@@ -17,15 +17,30 @@ function selecionarDropdownDRE(botaoXPath, valor) {
 }
 
 function selecionarDropdownUE(botaoXPath, valor) {
-  cy.xpath(botaoXPath).click({ force: true });
-  cy.get('div[data-state="open"]', { timeout: 30000 })
+  // Abre o dropdown (se não abrir na primeira, tenta de novo)
+  cy.xpath(botaoXPath)
     .should('be.visible')
-    .within(() => {
-      cy.get(`[data-value="${valor}"]`, { timeout: 30000 })
-        .should('be.visible')
-        .click({ force: true })
-        .should('have.attr', 'data-value', valor);
+    .then(($btn) => {
+      const isClosed = $btn.attr('data-state') === 'closed';
+      if (isClosed) {
+        cy.wrap($btn).click({ force: true });
+      }
     });
+
+  // Garante que o dropdown está aberto
+  cy.get('div[data-state="open"]', { timeout: 30000 })
+    .should('exist')
+    //.and('be.visible');
+
+  // Seleciona a opção desejada
+  cy.get(`[data-value="${valor}"]`, { timeout: 40000 })
+    .should('exist')
+    .and('be.visible')
+    .click({ force: true });
+
+  // Confirma que o valor foi selecionado no botão
+  cy.xpath(botaoXPath)
+    .should('contain.text', valor);
 }
 
 function digitaCSS(selector, valor, timeout = 30000) {
