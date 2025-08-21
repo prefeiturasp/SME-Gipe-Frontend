@@ -137,6 +137,33 @@ When('o usuário clica no botão Avançar', () => {
   cy.get(loc.input_email(), { timeout: 60000 }).should('exist');
 });
 
+When('o usuário clica no botão Avançar', () => {
+  cy.xpath(loc.proxima_etapa_form(), { timeout: 60000 })
+    .should('be.visible')
+    .click({ force: true });
+
+  cy.get(loc.input_email(), { timeout: 60000 }).should('exist');
+});
+
+When('clica no botão "Cadastrar agora" na tela de cadastro', () => {
+  cy.xpath(loc.cadastrar_agora_form(), { timeout: 60000 })
+    .should('be.visible')
+    .click({ force: true });
+
+  cy.get(loc.input_email(), { timeout: 60000 }).should('exist');
+});
+
 Then('o sistema deve mostrar a próxima tela para continuar o cadastro', () => {
   cy.url({ timeout: 60000 }).should('include', '/cadastro');
+});
+
+// -------- Validações --------
+Then('o sistema deve exibir a mensagem {string}', (mensagem) => {
+  if (mensagem === 'Já existe uma conta com este CPF.') {
+    cy.xpath(loc.CPF_ja_cadastrado()).should('be.visible');
+  } else if (mensagem === 'Este e-mail já está cadastrado.') {
+    cy.xpath(loc.mensagem_email_ja_cadastrado()).should('be.visible');
+  } else {
+    throw new Error(`Mensagem não tratada: ${mensagem}`);
+  }
 });
