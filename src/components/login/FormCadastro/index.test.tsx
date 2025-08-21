@@ -170,10 +170,11 @@ describe("FormCadastro", () => {
         await waitFor(() => expect(cadastrarButton).toBeDisabled());
     });
 
-    it("mostra mensagem de erro quando cadastro falha", async () => {
+    it("mostra mensagem de erro quando cadastro falha (username)", async () => {
         mutateAsyncMock.mockResolvedValueOnce({
             success: false,
-            error: "Erro no cadastro",
+            error: "Já existe uma conta com este CPF.",
+            field: "username",
         });
 
         render(<FormCadastro />, { wrapper });
@@ -194,8 +195,28 @@ describe("FormCadastro", () => {
         fireEvent.click(cadastrarButton);
 
         await waitFor(() =>
-            expect(screen.getByText("Erro no cadastro")).toBeInTheDocument()
+            expect(screen.getByText("Já existe uma conta com este CPF.")).toBeInTheDocument()
         );
+    });
+
+    it("mostra mensagem de erro quando cadastro falha (outro campo)", async () => {
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "Este e-mail já está cadastrado.",
+            field: "email",
+        });
+
+        render(<FormCadastro />, { wrapper });
+
+        await preencherStep1();
+        await irParaStep2();
+        await preencherStep2("admin@sme.prefeitura.sp.gov.br", "Senha123!", "Senha123!");
+
+        const cadastrarButton = screen.getByRole("button", { name: "Cadastrar agora" });
+        await waitFor(() => expect(cadastrarButton).toBeEnabled());
+        fireEvent.click(cadastrarButton);
+
+        await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
     });
 
     it("botão voltar leva para a etapa 1", async () => {

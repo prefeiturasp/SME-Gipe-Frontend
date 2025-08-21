@@ -2,11 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
 import LogoGipe from "@/components/login/LogoGipe";
-
+import Link from "next/link";
 import ClosedEye from "@/assets/icons/CloseEye";
 import OpenEye from "@/assets/icons/OpenEye";
 
@@ -30,8 +29,6 @@ export default function LoginForm() {
     const loginMutation = useLogin();
     const { mutateAsync, isPending } = loginMutation;
     const isLoading = isPending;
-
-    const router = useRouter();
 
     const form = useForm<FormDataLogin>({
         resolver: zodResolver(formSchema),
@@ -134,13 +131,12 @@ export default function LoginForm() {
                     Acessar
                 </Button>
                 <div className="flex justify-center mt-2">
-                    <button
-                        type="button"
-                        onClick={() => router.push("/recuperar-senha")}
-                        className="text-[#717FC7] text-sm font-semibold cursor-pointer hover:underline bg-transparent border-none p-0 m-0"
+                    <Link
+                        href="/recuperar-senha"
+                        className="text-[#717FC7] text-sm font-semibold hover:underline"
                     >
                         Esqueci minha senha
-                    </button>
+                    </Link>
                 </div>
                 {errorMessage && (
                     <div className="text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 px-3 mt-2 max-w-sm w-full mx-auto break-words">
@@ -154,13 +150,13 @@ export default function LoginForm() {
                     <span className="text-gray-700 text-sm font-medium mb-2">
                         Ainda não possui cadastro?
                     </span>
-                    <button
-                        type="button"
-                        className="w-full max-w-xs border border-[#717FC7] bg-white text-[#717FC7] font-bold rounded-md py-2 transition-colors hover:bg-[#f3f4fa] hover:border-[#5a65a8]"
-                        onClick={() => router.push("/cadastro")}
+                    <Link
+                        href="/cadastro"
+                        replace
+                        className="block w-full max-w-xs border border-[#717FC7] bg-white text-[#717FC7] font-bold rounded-md py-2 transition-colors hover:bg-[#f3f4fa] hover:border-[#5a65a8] text-center"
                     >
                         Cadastre-se
-                    </button>
+                    </Link>
                     <span className="text-[#42474a] text-[12px] font-normal mt-3 text-center py-6">
                         - Sistema homologado para navegadores: Google Chrome e
                         Firefox

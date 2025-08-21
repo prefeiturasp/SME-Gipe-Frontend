@@ -75,14 +75,15 @@ describe("FormDados", () => {
         expect(btnSalvar).toBeEnabled();
     });
 
-    it("chama router.push('/dashboard') ao clicar em 'Cancelar'", async () => {
+    it("chama navegação para /dashboard ao clicar em 'Cancelar'", async () => {
         const user = userEvent.setup();
         render(<FormDados />);
 
-        const btnCancelar = screen.getByRole("button", { name: /cancelar/i });
+        // Busca o link com nome 'Cancelar' (pode ser role 'link' ou 'button' dependendo do componente)
+        const btnCancelar = screen.getByRole("link", { name: /cancelar/i });
         await user.click(btnCancelar);
 
-        expect(pushSpy).toHaveBeenCalledWith("/dashboard");
+        expect(btnCancelar).toHaveAttribute("href", "/dashboard");
     });
 
     it("mostra erro se nome tiver menos de 3 caracteres ao submeter", async () => {

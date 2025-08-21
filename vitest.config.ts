@@ -30,6 +30,8 @@ export default defineConfig({
                 "eslint.config.mjs",
                 "*/.next/*", // Pode ser redundante, mas não atrapalha
                 "testes/**", // Exclui a pasta de testes de QA
+                "cypress.config.js", // Exclui config do Cypress
+                "cypress/support/**", // Exclui arquivos de suporte do Cypress
             ],
         },
     },

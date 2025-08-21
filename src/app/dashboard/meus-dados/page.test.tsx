@@ -56,7 +56,7 @@ describe("MeusDadosPage", () => {
     it("deve exibir o botão Cancelar", () => {
         render(<MeusDadosPage />);
         expect(
-            screen.getByRole("button", { name: /cancelar/i })
+            screen.getByRole("link", { name: /cancelar/i })
         ).toBeInTheDocument();
     });
 });

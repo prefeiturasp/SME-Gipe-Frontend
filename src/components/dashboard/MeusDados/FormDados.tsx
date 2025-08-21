@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,13 +12,13 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormDataMeusDados } from "./schema";
 import { useUserStore } from "@/stores/useUserStore";
 
 const FormDados: React.FC = () => {
     const user = useUserStore((state) => state.user);
-    const router = useRouter();
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -190,12 +189,10 @@ const FormDados: React.FC = () => {
                         />
                     </div>
                     <div className="flex justify-end gap-4 mt-8">
-                        <Button
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => router.push("/dashboard")}
-                        >
-                            Cancelar
+                        <Button asChild variant="customOutline">
+                            <Link href="/dashboard" replace>
+                                Cancelar
+                            </Link>
                         </Button>
                         <Button
                             variant="submit"

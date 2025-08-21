@@ -87,4 +87,30 @@ describe("cadastroAction", () => {
         const result = await cadastroAction(dadosCadastro);
         expect(result).toEqual({ success: false, error: "Erro desconhecido" });
     });
+
+    it("deve retornar field quando a API envia o campo que causou erro", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
+        axiosPostMock.mockRejectedValueOnce({
+            response: { data: { detail: "CPF já cadastrado", field: "cpf" } },
+        });
+        const result = await cadastroAction(dadosCadastro);
+        expect(result).toEqual({
+            success: false,
+            error: "CPF já cadastrado",
+            field: "cpf",
+        });
+    });
+
+    it("deve retornar field undefined quando não há campo específico no erro", async () => {
+        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
+        axiosPostMock.mockRejectedValueOnce({
+            response: { data: { detail: "Erro desconhecido" } },
+        });
+        const result = await cadastroAction(dadosCadastro);
+        expect(result).toEqual({
+            success: false,
+            error: "Erro desconhecido",
+            field: undefined,
+        });
+    });
 });
