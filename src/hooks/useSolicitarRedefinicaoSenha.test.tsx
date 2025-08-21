@@ -1,15 +1,15 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
-import useRecuperarSenha from "./useRecuperarSenha";
+import useSolicitarRedefinicaoSenha from "./useSolicitarRedefinicaoSenha";
 
-vi.mock("@/actions/recuperar-senha", () => ({
-    recuperarSenhaAction: vi.fn(),
+vi.mock("@/actions/esqueci-senha", () => ({
+    esqueciSenhaAction: vi.fn(),
 }));
 
-import { recuperarSenhaAction } from "@/actions/recuperar-senha";
+import { esqueciSenhaAction } from "@/actions/esqueci-senha";
 
-describe("useRecuperarSenha", () => {
+describe("useSolicitarRedefinicaoSenha", () => {
     let queryClient: QueryClient;
     const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>
@@ -21,22 +21,24 @@ describe("useRecuperarSenha", () => {
         queryClient = new QueryClient({
             defaultOptions: { queries: { retry: false } },
         });
-        vi.mocked(recuperarSenhaAction).mockReset();
+        vi.mocked(esqueciSenhaAction).mockReset();
     });
 
     it("faz request de recuperação de senha com sucesso", async () => {
-        vi.mocked(recuperarSenhaAction).mockResolvedValueOnce({
+        vi.mocked(esqueciSenhaAction).mockResolvedValueOnce({
             success: true,
             message: "Link enviado!",
         });
 
-        const { result } = renderHook(() => useRecuperarSenha(), { wrapper });
+        const { result } = renderHook(() => useSolicitarRedefinicaoSenha(), {
+            wrapper,
+        });
 
         await act(async () => {
             await result.current.mutateAsync({ username: "47198005055" });
         });
 
-        expect(recuperarSenhaAction).toHaveBeenCalledWith({
+        expect(esqueciSenhaAction).toHaveBeenCalledWith({
             username: "47198005055",
         });
         await waitFor(() => {
@@ -49,18 +51,20 @@ describe("useRecuperarSenha", () => {
     });
 
     it("trata erro ao recuperar senha (resposta de API com success=false)", async () => {
-        vi.mocked(recuperarSenhaAction).mockResolvedValueOnce({
+        vi.mocked(esqueciSenhaAction).mockResolvedValueOnce({
             success: false,
             error: "Usuário não encontrado",
         });
 
-        const { result } = renderHook(() => useRecuperarSenha(), { wrapper });
+        const { result } = renderHook(() => useSolicitarRedefinicaoSenha(), {
+            wrapper,
+        });
 
         await act(async () => {
             await result.current.mutateAsync({ username: "00000000000" });
         });
 
-        expect(recuperarSenhaAction).toHaveBeenCalledWith({
+        expect(esqueciSenhaAction).toHaveBeenCalledWith({
             username: "00000000000",
         });
         await waitFor(() => {
@@ -73,11 +77,13 @@ describe("useRecuperarSenha", () => {
     });
 
     it("trata erro inesperado (rejected)", async () => {
-        vi.mocked(recuperarSenhaAction).mockRejectedValueOnce(
+        vi.mocked(esqueciSenhaAction).mockRejectedValueOnce(
             new Error("Erro inesperado")
         );
 
-        const { result } = renderHook(() => useRecuperarSenha(), { wrapper });
+        const { result } = renderHook(() => useSolicitarRedefinicaoSenha(), {
+            wrapper,
+        });
 
         await act(async () => {
             await expect(
@@ -91,7 +97,9 @@ describe("useRecuperarSenha", () => {
     });
 
     it("não chama a action se payload estiver vazio", async () => {
-        const { result } = renderHook(() => useRecuperarSenha(), { wrapper });
+        const { result } = renderHook(() => useSolicitarRedefinicaoSenha(), {
+            wrapper,
+        });
 
         await act(async () => {
             try {
@@ -99,6 +107,6 @@ describe("useRecuperarSenha", () => {
             } catch {}
         });
 
-        expect(recuperarSenhaAction).toHaveBeenCalledWith({ username: "" });
+        expect(esqueciSenhaAction).toHaveBeenCalledWith({ username: "" });
     });
 });

@@ -2,12 +2,12 @@
 
 import axios, { AxiosError } from "axios";
 import {
-    RecuperarSenhaRequest,
-    RecuperarSenhaErrorResponse,
-    RecuperarSenhaSuccessResponse,
-} from "@/types/recuperar-senha";
+    EsqueciSenhaRequest,
+    EsqueciSenhaErrorResponse,
+    EsqueciSenhaSuccessResponse,
+} from "@/types/esqueci-senha";
 
-export type RecuperarSenhaResult =
+export type EsqueciSenhaResult =
     | {
           success: true;
           message: string;
@@ -17,18 +17,18 @@ export type RecuperarSenhaResult =
           error: string;
       };
 
-export async function recuperarSenhaAction(
-    username: RecuperarSenhaRequest
-): Promise<RecuperarSenhaResult> {
+export async function esqueciSenhaAction(
+    username: EsqueciSenhaRequest
+): Promise<EsqueciSenhaResult> {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
     try {
-        const { data } = await axios.post<RecuperarSenhaSuccessResponse>(
+        const { data } = await axios.post<EsqueciSenhaSuccessResponse>(
             `${API_URL}/users/esqueci-senha`,
             username
         );
         return { success: true, message: data.detail };
     } catch (err) {
-        const error = err as AxiosError<RecuperarSenhaErrorResponse>;
+        const error = err as AxiosError<EsqueciSenhaErrorResponse>;
         let message = "Erro ao recuperar senha";
         if (error.response?.status === 500) {
             message = "Erro interno no servidor";

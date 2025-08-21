@@ -1,8 +1,8 @@
-import { recuperarSenhaAction } from "./recuperar-senha";
+import { esqueciSenhaAction } from "./esqueci-senha";
 import axios from "axios";
 import { vi } from "vitest";
 
-describe("recuperarSenhaAction", () => {
+describe("esqueciSenhaAction", () => {
     beforeEach(() => {
         vi.resetAllMocks();
     });
@@ -11,7 +11,7 @@ describe("recuperarSenhaAction", () => {
         vi.spyOn(axios, "post").mockResolvedValueOnce({
             data: { detail: "Link enviado!" },
         });
-        const result = await recuperarSenhaAction({ username: "47198005055" });
+        const result = await esqueciSenhaAction({ username: "47198005055" });
         expect(result).toEqual({ success: true, message: "Link enviado!" });
     });
 
@@ -20,7 +20,7 @@ describe("recuperarSenhaAction", () => {
             response: { data: { detail: "Usuário não encontrado" } },
             message: "Erro customizado",
         });
-        const result = await recuperarSenhaAction({ username: "00000000000" });
+        const result = await esqueciSenhaAction({ username: "00000000000" });
         expect(result).toEqual({
             success: false,
             error: "Usuário não encontrado",
@@ -32,7 +32,7 @@ describe("recuperarSenhaAction", () => {
             response: { status: 500 },
             message: "Erro interno no servidor",
         });
-        const result = await recuperarSenhaAction({ username: "47198005055" });
+        const result = await esqueciSenhaAction({ username: "47198005055" });
         expect(result).toEqual({
             success: false,
             error: "Erro interno no servidor",
@@ -43,7 +43,7 @@ describe("recuperarSenhaAction", () => {
         vi.spyOn(axios, "post").mockRejectedValueOnce({
             message: "Erro desconhecido",
         });
-        const result = await recuperarSenhaAction({ username: "47198005055" });
+        const result = await esqueciSenhaAction({ username: "47198005055" });
         expect(result).toEqual({ success: false, error: "Erro desconhecido" });
     });
 });

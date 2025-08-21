@@ -141,7 +141,7 @@ export default function FormCadastro() {
     }
 
     if (cadastroFinalizado) {
-        return <Finalizado aoConfirmar={() => router.push("/")} />;
+        return <Finalizado />;
     }
 
     return (
