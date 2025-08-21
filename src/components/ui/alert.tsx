@@ -52,13 +52,28 @@ AlertTitle.displayName = "AlertTitle";
 const AlertDescription = React.forwardRef<
     HTMLParagraphElement,
     React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-    <div
-        ref={ref}
-        className={cn("text-sm [&_p]:leading-relaxed", className)}
-        {...props}
-    />
-));
+>(({ className, children, ...props }, ref) => {
+    const mergedClassName = cn("text-sm [&_p]:leading-relaxed mt-1", className);
+    if (typeof children === "string") {
+        // Quebra o texto por <br /> ou <br>
+        const parts = children.split(/<br\s*\/?>/i);
+        return (
+            <div ref={ref} className={mergedClassName} {...props}>
+                {parts.map((part, idx) => (
+                    <React.Fragment key={idx}>
+                        {idx > 0 && <div style={{ height: 16 }} />}
+                        <span>{part}</span>
+                    </React.Fragment>
+                ))}
+            </div>
+        );
+    }
+    return (
+        <div ref={ref} className={mergedClassName} {...props}>
+            {children}
+        </div>
+    );
+});
 AlertDescription.displayName = "AlertDescription";
 
 export { Alert, AlertTitle, AlertDescription };

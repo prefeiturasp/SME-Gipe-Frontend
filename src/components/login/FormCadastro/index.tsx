@@ -29,9 +29,11 @@ import {
 import formSchema, { FormDataSignup } from "./schema";
 import Aviso from "./Aviso";
 import Finalizado from "./Finalizado";
+import ErrorMessage from "./ErrorMessage";
 import { Stepper } from "./Stepper";
 import { ArrowLeft } from "lucide-react";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+
 
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -124,12 +126,22 @@ export default function FormCadastro() {
         if (response.success) {
             setCadastroFinalizado(true);
         } else {
+
+            if (response.field && response.error) {
+
+                const formField = response.field === "username" ? "cpf" : (response.field as keyof FormDataSignup);
+                form.setError(formField, {
+                    type: "server",
+                    message: "",
+                });
+            }
+                
             setErrorMessage(response.error);
         }
     }
 
     if (cadastroFinalizado) {
-        return <Finalizado aoConfirmar={() => router.push("/")} />;
+        return <Finalizado />;
     }
 
     return (
@@ -266,7 +278,7 @@ export default function FormCadastro() {
                             control={form.control}
                             name="cpf"
                             render={({ field }) => (
-                                <FormItem className="mb-10">
+                                <FormItem className="mb-4">
                                     <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
                                         Qual o seu CPF?
                                     </FormLabel>
@@ -286,6 +298,9 @@ export default function FormCadastro() {
                                 </FormItem>
                             )}
                         />
+                        
+                        <ErrorMessage message={errorMessage} />
+
                         <Button
                             type="button"
                             variant="secondary"
@@ -362,6 +377,9 @@ export default function FormCadastro() {
                                 />
                             )}
                         />
+                        
+                        <ErrorMessage message={errorMessage} />
+
                         <Button
                             type="submit"
                             variant="secondary"
@@ -387,11 +405,6 @@ export default function FormCadastro() {
                             Cancelar
                         </Button>
                     </>
-                )}
-                {errorMessage && (
-                    <div className="text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 px-3 mt-2 max-w-sm w-full mx-auto break-words">
-                        {errorMessage}
-                    </div>
                 )}
             </form>
         </Form>

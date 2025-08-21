@@ -1,4 +1,4 @@
-import Cadastro_Localizadores from '../locators/login_locators'  // parece que o arquivo está errado, deveria ser cadastro_locators
+import Cadastro_Localizadores from '../locators/login_locators'
 
 const cadastroLocalizadores = new Cadastro_Localizadores()
 

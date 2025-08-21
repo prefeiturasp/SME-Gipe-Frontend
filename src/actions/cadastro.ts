@@ -21,6 +21,7 @@ export async function cadastroAction(
         const error = err as AxiosError<CadastroErrorResponse>;
 
         let message = "Erro na autenticação";
+        let field: string | undefined;
 
         if (error.response?.status === 500) {
             message = "Erro interno no servidor";
@@ -30,6 +31,10 @@ export async function cadastroAction(
             message = error.message;
         }
 
-        return { success: false, error: message };
+        if (error.response?.data?.field) {
+            field = error.response.data.field;
+        }
+
+        return { success: false, error: message, field };
     }
 }
