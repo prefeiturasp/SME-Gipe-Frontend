@@ -143,4 +143,16 @@ describe("FormDados", () => {
             )
         ).toBeInTheDocument();
     });
+
+    it("abre o modal de nova senha ao clicar em 'Alterar senha'", async () => {
+        const user = userEvent.setup();
+        render(<FormDados />);
+        const btnAlterarSenha = screen.getByRole("button", {
+            name: /alterar senha/i,
+        });
+        await user.click(btnAlterarSenha);
+        expect(
+            await screen.findByRole("heading", { name: /nova senha/i })
+        ).toBeInTheDocument();
+    });
 });
