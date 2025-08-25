@@ -262,9 +262,9 @@ export default function ModalNovaSenha({
                         </div>
 
                         {erroGeral && (
-                            <p className="text-[12px] text-[#b40c31] mt-3">
+                            <div className="w-full text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 mt-8 mx-auto break-words">
                                 {erroGeral}
-                            </p>
+                            </div>
                         )}
 
                         <DialogFooter className="mt-6">
