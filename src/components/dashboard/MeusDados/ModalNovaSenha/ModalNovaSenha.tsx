@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,16 +26,12 @@ import Check from "@/assets/icons/Check";
 import CloseCheck from "@/assets/icons/CloseCheck";
 
 import formSchema, { FormAlterarSenha } from "./schema";
+import ErrorMessage from "@/components/login/FormCadastro/ErrorMessage";
+import useAtualizarSenha from "@/hooks/useAtualizarSenha";
 
 type ModalNovaSenhaProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-    onSalvar?: (payload: {
-        senhaAtual: string;
-        novaSenha: string;
-    }) => Promise<void> | void;
-    loading?: boolean;
-    erroGeral?: string | null;
 };
 
 type StatusType = "idle" | "ok" | "error";
@@ -43,9 +39,6 @@ type StatusType = "idle" | "ok" | "error";
 export default function ModalNovaSenha({
     open,
     onOpenChange,
-    onSalvar,
-    loading,
-    erroGeral,
 }: Readonly<ModalNovaSenhaProps>) {
     const form = useForm<FormAlterarSenha>({
         resolver: zodResolver(formSchema),
@@ -57,10 +50,13 @@ export default function ModalNovaSenha({
         },
     });
 
+    const { mutateAsync, isPending } = useAtualizarSenha();
+
     const { watch, formState } = form;
     const password = watch("password");
     const confirmPassword = watch("confirmPassword");
     const oldPassword = watch("oldPassword");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const STATUS_STYLES: Record<StatusType, string> = {
         idle: "text-[#42474a]",
@@ -123,11 +119,22 @@ export default function ModalNovaSenha({
         !!confirmPassword &&
         todosCriteriosOk &&
         formState.isValid &&
-        !loading;
+        !isPending;
 
-    const onSubmit = form.handleSubmit(async ({ oldPassword, password }) => {
-        await onSalvar?.({ senhaAtual: oldPassword, novaSenha: password });
-    });
+    async function handleChangePassword(values: FormAlterarSenha) {
+        setErrorMessage(null);
+        const response = await mutateAsync({
+            senha_atual: values.oldPassword,
+            nova_senha: values.password,
+            confirmacao_nova_senha: values.confirmPassword,
+        });
+
+        if (response.success) {
+            onOpenChange(false);
+        } else {
+            setErrorMessage(response.error);
+        }
+    }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,7 +147,7 @@ export default function ModalNovaSenha({
                 </DialogDescription>
 
                 <Form {...form}>
-                    <form onSubmit={onSubmit}>
+                    <form onSubmit={form.handleSubmit(handleChangePassword)}>
                         <div className="flex flex-col md:flex-row gap-6 mt-3">
                             <div className="w-full md:w-[40%]">
                                 <span className="text-[14px] font-[700] text-[#42474a] leading-[1.2]">
@@ -261,11 +268,7 @@ export default function ModalNovaSenha({
                             </div>
                         </div>
 
-                        {erroGeral && (
-                            <div className="w-full text-center border border-[#B40C31] text-[#B40C31] text-[14px] font-bold rounded-[4px] py-2 mt-8 mx-auto break-words">
-                                {erroGeral}
-                            </div>
-                        )}
+                        <ErrorMessage message={errorMessage} />
 
                         <DialogFooter className="mt-6">
                             <Button
@@ -273,7 +276,7 @@ export default function ModalNovaSenha({
                                 size="sm"
                                 variant="customOutline"
                                 onClick={() => onOpenChange(false)}
-                                disabled={loading}
+                                disabled={isPending}
                             >
                                 Cancelar
                             </Button>
@@ -282,7 +285,6 @@ export default function ModalNovaSenha({
                                 size="sm"
                                 className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
                                 disabled={!podeSalvar}
-                                loading={!!loading}
                             >
                                 Salvar senha
                             </Button>
