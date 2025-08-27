@@ -130,14 +130,22 @@ export default function ModalNovaSenha({
         });
 
         if (response.success) {
-            onOpenChange(false);
+            handleOpenChange(false);
         } else {
             setErrorMessage(response.error);
         }
     }
 
+    function handleOpenChange(v: boolean) {
+        onOpenChange(v);
+        if (!v) {
+            form.reset();
+            setErrorMessage(null);
+        }
+    }
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-[660px] p-8 rounded-none rounded-0">
                 <DialogHeader>
                     <DialogTitle>Nova senha</DialogTitle>
@@ -275,7 +283,7 @@ export default function ModalNovaSenha({
                                 type="button"
                                 size="sm"
                                 variant="customOutline"
-                                onClick={() => onOpenChange(false)}
+                                onClick={() => handleOpenChange(false)}
                                 disabled={isPending}
                             >
                                 Cancelar
