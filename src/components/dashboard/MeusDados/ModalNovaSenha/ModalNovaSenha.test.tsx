@@ -2,6 +2,23 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import ModalNovaSenha from "./ModalNovaSenha";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const mockMutateAsync = vi.fn();
+
+vi.mock("@/hooks/useAtualizarSenha", () => ({
+    default: () => ({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+    }),
+}));
+
+function renderWithQueryProvider(ui: React.ReactElement) {
+    const queryClient = new QueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+}
 
 describe("ModalNovaSenha", () => {
     const defaultProps = {
@@ -12,8 +29,12 @@ describe("ModalNovaSenha", () => {
         erroGeral: null,
     };
 
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     it("renderiza os campos de senha na ordem correta", () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         expect(
             screen.getByPlaceholderText("Digite a senha atual")
         ).toBeInTheDocument();
@@ -26,7 +47,7 @@ describe("ModalNovaSenha", () => {
     });
 
     it("exibe critérios de senha e separa os de 'NÃO deve conter'", () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         expect(
             screen.getByText(/a nova senha deve conter/i)
         ).toBeInTheDocument();
@@ -38,7 +59,7 @@ describe("ModalNovaSenha", () => {
     });
 
     it("habilita botão Salvar senha apenas quando todos critérios estão ok", async () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         const user = userEvent.setup();
         await user.type(
             screen.getByPlaceholderText("Digite a senha atual"),
@@ -58,7 +79,7 @@ describe("ModalNovaSenha", () => {
     });
 
     it("exibe erro de confirmação quando as senhas não coincidem", async () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         const user = userEvent.setup();
         await user.type(
             screen.getByPlaceholderText("Digite a nova senha"),
@@ -73,38 +94,8 @@ describe("ModalNovaSenha", () => {
         ).toBeInTheDocument();
     });
 
-    it("chama onSalvar ao submeter o formulário com dados válidos", async () => {
-        const onSalvar = vi.fn();
-        render(<ModalNovaSenha {...defaultProps} onSalvar={onSalvar} />);
-        const user = userEvent.setup();
-        await user.type(
-            screen.getByPlaceholderText("Digite a senha atual"),
-            "Senha@123"
-        );
-        await user.type(
-            screen.getByPlaceholderText("Digite a nova senha"),
-            "Senha@123"
-        );
-        await user.type(
-            screen.getByPlaceholderText("Digite a nova senha novamente"),
-            "Senha@123"
-        );
-        await user.click(screen.getByRole("button", { name: /salvar senha/i }));
-        await waitFor(() => {
-            expect(onSalvar).toHaveBeenCalledWith({
-                senhaAtual: "Senha@123",
-                novaSenha: "Senha@123",
-            });
-        });
-    });
-
-    it("exibe erro geral quando passado via prop", () => {
-        render(<ModalNovaSenha {...defaultProps} erroGeral="Erro ao salvar" />);
-        expect(screen.getByText(/erro ao salvar/i)).toBeInTheDocument();
-    });
-
     it("exibe o ícone de erro (CloseCheck) quando algum critério não é atendido", async () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         const user = userEvent.setup();
         await user.type(
             screen.getByPlaceholderText("Digite a senha atual"),
@@ -123,7 +114,7 @@ describe("ModalNovaSenha", () => {
     });
 
     it("alterna visibilidade da senha ao clicar no botão de exibir senha", async () => {
-        render(<ModalNovaSenha {...defaultProps} />);
+        renderWithQueryProvider(<ModalNovaSenha {...defaultProps} />);
         const user = userEvent.setup();
         // Botão de exibir senha atual
         const btnShowOld = screen
@@ -139,12 +130,88 @@ describe("ModalNovaSenha", () => {
 
     it("chama onOpenChange ao clicar no botão Cancelar", async () => {
         const onOpenChange = vi.fn();
-        render(
+        renderWithQueryProvider(
             <ModalNovaSenha {...defaultProps} onOpenChange={onOpenChange} />
         );
         const user = userEvent.setup();
         const btnCancelar = screen.getByRole("button", { name: /cancelar/i });
         await user.click(btnCancelar);
         expect(onOpenChange).toHaveBeenCalled();
+    });
+
+    it("preenche o form e realiza a troca de senha exibindo a mensagem de sucesso", async () => {
+        const user = userEvent.setup();
+        const mockOnOpenChange = vi.fn();
+
+        mockMutateAsync.mockResolvedValue({ success: true });
+
+        renderWithQueryProvider(
+            <ModalNovaSenha {...defaultProps} onOpenChange={mockOnOpenChange} />
+        );
+
+        const senhaValida = "Senha123!";
+        await user.type(
+            screen.getByPlaceholderText("Digite a senha atual"),
+            "SenhaAntiga123"
+        );
+        await user.type(
+            screen.getByPlaceholderText("Digite a nova senha"),
+            senhaValida
+        );
+        await user.type(
+            screen.getByPlaceholderText("Digite a nova senha novamente"),
+            senhaValida
+        );
+
+        const salvarBtn = screen.getByRole("button", { name: /salvar senha/i });
+        expect(salvarBtn).toBeEnabled();
+        await user.click(salvarBtn);
+
+        await waitFor(() => {
+            expect(mockMutateAsync).toHaveBeenCalledWith({
+                senha_atual: "SenhaAntiga123",
+                nova_senha: senhaValida,
+                confirmacao_nova_senha: senhaValida,
+            });
+            expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+        });
+    });
+
+    it("realiza o submit e exibe a mensagem de erro retornada pela api", async () => {
+        const user = userEvent.setup();
+        const mockOnOpenChange = vi.fn();
+        const mensagemDeErroAPI = "A senha atual está incorreta.";
+
+        mockMutateAsync.mockResolvedValue({
+            success: false,
+            error: mensagemDeErroAPI,
+        });
+
+        renderWithQueryProvider(
+            <ModalNovaSenha {...defaultProps} onOpenChange={mockOnOpenChange} />
+        );
+
+        const senhaValida = "Senha123!";
+        await user.type(
+            screen.getByPlaceholderText("Digite a senha atual"),
+            "senha-errada"
+        );
+        await user.type(
+            screen.getByPlaceholderText("Digite a nova senha"),
+            senhaValida
+        );
+        await user.type(
+            screen.getByPlaceholderText("Digite a nova senha novamente"),
+            senhaValida
+        );
+
+        const salvarBtn = screen.getByRole("button", { name: /salvar senha/i });
+        await user.click(salvarBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText(mensagemDeErroAPI)).toBeInTheDocument();
+        });
+
+        expect(mockOnOpenChange).not.toHaveBeenCalled();
     });
 });

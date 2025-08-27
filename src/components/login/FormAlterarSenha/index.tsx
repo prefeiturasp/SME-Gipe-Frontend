@@ -39,7 +39,7 @@ export default function AlterarSenha({
     const [confirmPassword, setConfirmPassword] = useState("");
     const { mutateAsync, isPending } = useRedefinirSenha();
 
-    async function handleLogin(values: FormAlterarSenha) {
+    async function handleChangePassword(values: FormAlterarSenha) {
         setReturnMessage(null);
         const response = await mutateAsync({
             password: values.password,
@@ -160,7 +160,7 @@ export default function AlterarSenha({
         <Form {...form}>
             <form
                 className="w-full max-w-sm"
-                onSubmit={form.handleSubmit(handleLogin)}
+                onSubmit={form.handleSubmit(handleChangePassword)}
             >
                 <div className="flex justify-start mb-6">
                     <LogoGipe />
