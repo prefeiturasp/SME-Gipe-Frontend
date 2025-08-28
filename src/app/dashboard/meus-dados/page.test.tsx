@@ -1,4 +1,22 @@
 import { vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useUserStore } from "@/stores/useUserStore";
+
+import { render, screen } from "@testing-library/react";
+import MeusDadosPage from "./page";
+
+vi.mock("@/stores/useUserStore", () => {
+    return {
+        useUserStore: vi.fn(),
+    };
+});
+
+function renderWithQueryProvider(ui: React.ReactElement) {
+    const queryClient = new QueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+}
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -12,19 +30,9 @@ vi.mock("next/navigation", () => ({
     useParams: () => ({}),
 }));
 
-import { render, screen } from "@testing-library/react";
-import MeusDadosPage from "./page";
-
-vi.mock("@/stores/useUserStore", () => {
-    return {
-        useUserStore: vi.fn(),
-    };
-});
-
-import { useUserStore } from "@/stores/useUserStore";
 describe("MeusDadosPage", () => {
     it("deve renderizar o componente MeusDados", () => {
-        render(<MeusDadosPage />);
+        renderWithQueryProvider(<MeusDadosPage />);
         expect(
             screen.getByText(/esses são os seus dados cadastrados/i)
         ).toBeInTheDocument();
@@ -42,19 +50,19 @@ describe("MeusDadosPage", () => {
                 mockImplementation: (fn: () => unknown) => void;
             }
         ).mockImplementation(() => fakeUser);
-        render(<MeusDadosPage />);
+        renderWithQueryProvider(<MeusDadosPage />);
         expect(screen.getByText(/fake user/i)).toBeInTheDocument();
     });
 
     it("deve exibir o botão Salvar alterações", () => {
-        render(<MeusDadosPage />);
+        renderWithQueryProvider(<MeusDadosPage />);
         expect(
             screen.getByRole("button", { name: /salvar alterações/i })
         ).toBeInTheDocument();
     });
 
     it("deve exibir o botão Cancelar", () => {
-        render(<MeusDadosPage />);
+        renderWithQueryProvider(<MeusDadosPage />);
         expect(
             screen.getByRole("link", { name: /cancelar/i })
         ).toBeInTheDocument();

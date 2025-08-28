@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,8 +16,10 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormDataMeusDados } from "./schema";
 import { useUserStore } from "@/stores/useUserStore";
+import ModalNovaSenha from "./ModalNovaSenha/ModalNovaSenha";
 
 const FormDados: React.FC = () => {
+    const [openModalNovaSenha, setOpenModalNovaSenha] = useState(false);
     const user = useUserStore((state) => state.user);
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
@@ -99,6 +101,9 @@ const FormDados: React.FC = () => {
                                             variant="customOutline"
                                             type="button"
                                             className="rounded-[4px]"
+                                            onClick={() =>
+                                                setOpenModalNovaSenha(true)
+                                            }
                                         >
                                             Alterar senha
                                         </Button>
@@ -204,6 +209,11 @@ const FormDados: React.FC = () => {
                     </div>
                 </form>
             </Form>
+
+            <ModalNovaSenha
+                open={openModalNovaSenha}
+                onOpenChange={setOpenModalNovaSenha}
+            />
         </div>
     );
 };

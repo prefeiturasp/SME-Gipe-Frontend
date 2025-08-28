@@ -15,6 +15,8 @@ export default defineConfig({
             "src/**/*.test.tsx",
         ],
         coverage: {
+            reporter: ['text', 'lcov'],
+            reportsDirectory: './coverage',
             exclude: [
                 "**/.next/**", // 👈 Exclui TUDO dentro de .next/
                 "src/components/ui/**", // 👈 Exclui apenas a pasta 'ui' dentro de components
