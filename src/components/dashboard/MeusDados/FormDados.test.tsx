@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
+import FormDados from "./FormDados";
 
 const mockUser: MockUser = {
     nome: "João da Silva",
@@ -33,7 +35,12 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
-import FormDados from "./FormDados";
+function renderWithQueryProvider(ui: React.ReactElement) {
+    const queryClient = new QueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+}
 
 describe("FormDados", () => {
     beforeEach(() => {
@@ -41,7 +48,7 @@ describe("FormDados", () => {
     });
 
     it("renderiza os campos com valores do usuário", () => {
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         expect(screen.getByLabelText(/nome completo/i)).toHaveValue(
             mockUser.nome
@@ -54,7 +61,7 @@ describe("FormDados", () => {
     });
 
     it("botão 'Salvar alterações' começa desabilitado", () => {
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
         const btnSalvar = screen.getByRole("button", {
             name: /salvar alterações/i,
         });
@@ -63,7 +70,7 @@ describe("FormDados", () => {
 
     it("habilita o botão 'Salvar alterações' ao alterar um campo", async () => {
         const user = userEvent.setup();
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
         await user.clear(inputNome);
@@ -77,7 +84,7 @@ describe("FormDados", () => {
 
     it("chama navegação para /dashboard ao clicar em 'Cancelar'", async () => {
         const user = userEvent.setup();
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         // Busca o link com nome 'Cancelar' (pode ser role 'link' ou 'button' dependendo do componente)
         const btnCancelar = screen.getByRole("link", { name: /cancelar/i });
@@ -88,7 +95,7 @@ describe("FormDados", () => {
 
     it("mostra erro se nome tiver menos de 3 caracteres ao submeter", async () => {
         const user = userEvent.setup();
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
         await user.clear(inputNome);
@@ -106,7 +113,7 @@ describe("FormDados", () => {
 
     it("mostra erro se nome tiver números ou caracteres especiais ao submeter", async () => {
         const user = userEvent.setup();
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
         await user.clear(inputNome);
@@ -126,7 +133,7 @@ describe("FormDados", () => {
 
     it("mostra erro se nome não tiver sobrenome (sem espaço) ao submeter", async () => {
         const user = userEvent.setup();
-        render(<FormDados />);
+        renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
         await user.clear(inputNome);
@@ -141,6 +148,18 @@ describe("FormDados", () => {
             await screen.findByText(
                 "Informe o nome completo (nome e sobrenome)"
             )
+        ).toBeInTheDocument();
+    });
+
+    it("abre o modal de nova senha ao clicar em 'Alterar senha'", async () => {
+        const user = userEvent.setup();
+        renderWithQueryProvider(<FormDados />);
+        const btnAlterarSenha = screen.getByRole("button", {
+            name: /alterar senha/i,
+        });
+        await user.click(btnAlterarSenha);
+        expect(
+            await screen.findByRole("heading", { name: /nova senha/i })
         ).toBeInTheDocument();
     });
 });
