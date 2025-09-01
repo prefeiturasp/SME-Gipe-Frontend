@@ -7,7 +7,7 @@ const locators_alterar_senha = new Alterar_Senha_Localizadores()
 
 Given("que o usuário realizou o login com sucesso", () => {
   cy.login_gipe()
-  cy.get(locators.campo_usuario()).type('13720668029')
+  cy.get(locators.campo_usuario()).type('50423501011')
   cy.get(locators.campo_senha()).type('Ruby@142107')
   cy.get('button').filter((_, el) => el.innerText.trim() === 'Acessar').click()
   cy.url().should("include", "/dashboard");

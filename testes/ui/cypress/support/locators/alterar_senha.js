@@ -1,10 +1,11 @@
 class Alterar_Senha_Localizadores {
   link_alterar_senha() {
-    return '/html/body/div/div/div[1]/div[2]/div/div[2]/div/div/ul/li[2]/a';
+    return "/html/body/div/div/div[1]/div[2]/div/div[2]/div/div/ul/li[2]/a";
+    
   }
 
   botao_alterar_senha() {
-    return '/html/body/div/div/div[2]/main/div[2]/div/div[2]/form/div[1]/div[3]/div/button';
+    return "//button[contains(normalize-space(text()), 'Alterar senha')]";
   }
 
   imput_senha_atual() {
