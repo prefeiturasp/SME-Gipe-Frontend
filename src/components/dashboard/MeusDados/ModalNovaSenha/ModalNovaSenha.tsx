@@ -19,6 +19,7 @@ import {
     DialogFooter,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/headless-toast";
 import { Button } from "@/components/ui/button";
 import InputSenhaComToggle from "../../../InputSenhaComToggle/InputSenhaComToggle";
 import { cn } from "@/lib/utils";
@@ -130,6 +131,11 @@ export default function ModalNovaSenha({
         });
 
         if (response.success) {
+            toast({
+                variant: "success",
+                title: "Tudo certo por aqui!",
+                description: "Sua senha foi atualizada.",
+            });
             handleOpenChange(false);
         } else {
             setErrorMessage(response.error);
