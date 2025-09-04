@@ -162,4 +162,16 @@ describe("FormDados", () => {
             await screen.findByRole("heading", { name: /nova senha/i })
         ).toBeInTheDocument();
     });
+
+    it("abre o modal de nova senha ao clicar em 'Alterar email'", async () => {
+        const user = userEvent.setup();
+        renderWithQueryProvider(<FormDados />);
+        const btnAlterarEmail = screen.getByRole("button", {
+            name: /alterar e-mail/i,
+        });
+        await user.click(btnAlterarEmail);
+        expect(
+            await screen.findByRole("heading", { name: /Alteração de e-mail/i })
+        ).toBeInTheDocument();
+    });
 });
