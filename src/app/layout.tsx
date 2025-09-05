@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
+import { Toaster } from "sonner";
 
 import "@/styles/globals.scss";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <html lang="pt-br">
             <body className={`${roboto.className} mx-auto !px-0`}>
                 <ReactQueryProvider>{children}</ReactQueryProvider>
+                <Toaster position="top-right" closeButton />
             </body>
         </html>
     );

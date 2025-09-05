@@ -17,9 +17,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormDataMeusDados } from "./schema";
 import { useUserStore } from "@/stores/useUserStore";
 import ModalNovaSenha from "./ModalNovaSenha/ModalNovaSenha";
+import ModalAlterarEmail from "./ModalAlterarEmail/ModalAlterarEmail";
 
 const FormDados: React.FC = () => {
     const [openModalNovaSenha, setOpenModalNovaSenha] = useState(false);
+    const [openModalAlterarEmail, setOpenModalAlterarEmail] = useState(false);
     const user = useUserStore((state) => state.user);
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
@@ -75,6 +77,9 @@ const FormDados: React.FC = () => {
                                             variant="customOutline"
                                             type="button"
                                             className="rounded-[4px]"
+                                            onClick={() =>
+                                                setOpenModalAlterarEmail(true)
+                                            }
                                         >
                                             Alterar e-mail
                                         </Button>
@@ -213,6 +218,12 @@ const FormDados: React.FC = () => {
             <ModalNovaSenha
                 open={openModalNovaSenha}
                 onOpenChange={setOpenModalNovaSenha}
+            />
+
+            <ModalAlterarEmail
+                open={openModalAlterarEmail}
+                onOpenChange={setOpenModalAlterarEmail}
+                currentMail={user?.email || ""}
             />
         </div>
     );
