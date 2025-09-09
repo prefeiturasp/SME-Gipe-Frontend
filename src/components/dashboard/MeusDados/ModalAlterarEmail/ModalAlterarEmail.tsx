@@ -55,7 +55,7 @@ export default function ModalAlterarEmail({
     async function handleChangeEmail(values: FormDataChangeEmail) {
         setErrorMessage(null);
         const response = await mutateAsync({
-            email: values.email,
+            new_email: values.email,
         });
 
         if (response.success) {

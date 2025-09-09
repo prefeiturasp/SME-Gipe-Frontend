@@ -4,6 +4,8 @@ import * as React from "react";
 export default function Check(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     return (
         <svg
+            width="16"
+            height="16"
             viewBox="0 0 48 48"
             fill="none"
             data-testid="check-icon"

@@ -24,7 +24,7 @@ export async function atualizarEmailAction(
             };
         }
 
-        await axios.post(`${API_URL}/users/atualizar-email`, dados, {
+        await axios.post(`${API_URL}/alteracao-email/solicitar/`, dados, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
             },
