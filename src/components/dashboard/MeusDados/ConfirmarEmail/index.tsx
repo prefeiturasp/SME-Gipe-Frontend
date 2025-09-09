@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import Check from "@/assets/icons/Check";
 import CloseCheck from "@/assets/icons/CloseCheck";
-
+import useConfirmarEmail from "@/hooks/useConfirmarEmail";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -14,7 +14,7 @@ import Cookies from "js-cookie";
 
 import LogoPrefeituraSP from "../../../login/LogoPrefeituraSP";
 
-export default function ConfirmarEmail() {
+export default function ConfirmarEmail({ code }: { readonly code: string }) {
     const [returnMessage, setReturnMessage] = useState<{
         success: boolean;
         message: string;
@@ -22,14 +22,31 @@ export default function ConfirmarEmail() {
 
     const router = useRouter();
     const clearUser = useUserStore((state) => state.clearUser);
+    const { mutateAsync, isPending } = useConfirmarEmail();
 
     useEffect(() => {
-        setReturnMessage({
-            success: true,
-            message:
-                "Agora você já possui acesso ao GIPE com o novo endereço de e-mail cadastrado.",
-        });
-    }, []);
+        const sendChangeEmail = async () => {
+            const response = await mutateAsync({
+                code: code,
+            });
+
+            console.log(response);
+
+            if (response.success) {
+                setReturnMessage({
+                    success: true,
+                    message:
+                        "Agora você já possui acesso ao GIPE com o novo endereço de e-mail cadastrado.",
+                });
+            } else {
+                setReturnMessage({
+                    success: false,
+                    message: response.error,
+                });
+            }
+        };
+        sendChangeEmail();
+    }, [code]);
 
     const handleLogout = () => {
         clearUser();
@@ -44,7 +61,7 @@ export default function ConfirmarEmail() {
             </div>
 
             <div className="flex-1 flex items-center justify-center">
-                {!returnMessage ? (
+                {!returnMessage || isPending ? (
                     <div className="flex flex-col items-center">
                         <svg
                             className="animate-spin origin-center"
@@ -96,7 +113,7 @@ export default function ConfirmarEmail() {
                         </p>
                     </div>
                 ) : (
-                    <div className="flex flex-col py-6">
+                    <div className="flex flex-col py-6 w-full">
                         <h1 className="font-bold text-gray-900 text-[20px]">
                             {returnMessage.success
                                 ? "E-mail confirmado!"
