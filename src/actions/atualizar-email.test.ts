@@ -23,7 +23,7 @@ const cookiesMock = cookies as Mock;
 describe("atualizarEmailAction", () => {
     const originalEnv = process.env;
     const dados: AtualizarEmailRequest = {
-        email: "novo@exemplo.com.br",
+        new_email: "novo@exemplo.com.br",
     };
     const mockAuthToken = "mock-auth-token";
 
@@ -46,7 +46,7 @@ describe("atualizarEmailAction", () => {
         const result = await atualizarEmailAction(dados);
 
         expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/atualizar-email",
+            "https://api.exemplo.com/alteracao-email/solicitar/",
             dados,
             {
                 headers: {

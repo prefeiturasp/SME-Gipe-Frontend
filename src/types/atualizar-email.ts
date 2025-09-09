@@ -1,5 +1,5 @@
 export type AtualizarEmailRequest = {
-    email: string;
+    new_email: string;
 };
 
 export type AtualizarEmailErrorResponse = {

@@ -26,17 +26,17 @@ When("clica no botão {string}", () => {
 });
 
 When("o usuário preenche o campo Senha atual com {string}", (valor) => {
-  cy.xpath(locators_alterar_senha.imput_senha_atual(valor))
+  cy.get(locators_alterar_senha.input_senha_atual(valor))
     .type(valor, { delay: 0 });
 });
 
 When("o usuário preenche o campo Nova senha com {string}", (valor) => {
-  cy.xpath(locators_alterar_senha.imput_nova_senha(valor))
+  cy.get(locators_alterar_senha.input_nova_senha(valor))
     .type(valor, { delay: 0 });
 });
 
 When("o usuário preenche o campo Confirmação da nova senha com {string}", (valor) => {
-  cy.xpath(locators_alterar_senha.imput_confirmar_nova_senha(valor))
+  cy.get(locators_alterar_senha.input_confirmar_nova_senha(valor))
     .type(valor, { delay: 0 });
 });
 

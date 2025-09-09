@@ -8,16 +8,16 @@ class Alterar_Senha_Localizadores {
     return "//button[contains(normalize-space(text()), 'Alterar senha')]";
   }
 
-  imput_senha_atual() {
-    return '//*[@id=":ra:-form-item"]';
+  input_senha_atual() {
+    return 'input[placeholder="Digite a senha atual"]';
   }
 
-    imput_nova_senha() {
-    return '//*[@id=":rb:-form-item"]';
+    input_nova_senha() {
+    return 'input[placeholder="Digite a nova senha"]';
   }
 
-    imput_confirmar_nova_senha() {
-    return '//*[@id=":rc:-form-item"]';
+    input_confirmar_nova_senha() {
+    return 'input[placeholder="Digite a nova senha novamente"]';
   }
   
     button_salvar_senha() {
