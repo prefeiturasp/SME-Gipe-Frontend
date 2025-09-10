@@ -181,13 +181,13 @@ export default function ModalAlterarEmail({
                                     <Button
                                         type="submit"
                                         size="sm"
-                                        className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                                        className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8] min-w-[103px]"
                                         disabled={
-                                            isPending ||
                                             !form.formState.isValid ||
                                             form.getValues("email") ===
                                                 currentMail
                                         }
+                                        loading={isPending}
                                     >
                                         Salvar e-mail
                                     </Button>
