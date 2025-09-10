@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import LogoGipe from "@/components/login/LogoGipe";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
@@ -22,31 +22,36 @@ export default function ConfirmarEmail({ code }: { readonly code: string }) {
 
     const router = useRouter();
     const clearUser = useUserStore((state) => state.clearUser);
-    const { mutateAsync, isPending } = useConfirmarEmail();
+    const { mutateAsync } = useConfirmarEmail();
+
+    const calledRef = useRef(false);
+
+    const handleUpdateEmail = useCallback(async () => {
+        const response = await mutateAsync({ code });
+
+        if (response.success) {
+            setReturnMessage({
+                success: true,
+                message:
+                    "Agora você já possui acesso ao GIPE com o novo endereço de e-mail cadastrado.",
+            });
+        } else {
+            setReturnMessage({
+                success: false,
+                message: response.error,
+            });
+        }
+    }, [mutateAsync, code]);
 
     useEffect(() => {
-        const sendChangeEmail = async () => {
-            const response = await mutateAsync({
-                code: code,
-            });
+        if (!code) return;
+        if (calledRef.current) return;
+        calledRef.current = true;
 
-            console.log(response);
-
-            if (response.success) {
-                setReturnMessage({
-                    success: true,
-                    message:
-                        "Agora você já possui acesso ao GIPE com o novo endereço de e-mail cadastrado.",
-                });
-            } else {
-                setReturnMessage({
-                    success: false,
-                    message: response.error,
-                });
-            }
-        };
-        sendChangeEmail();
-    }, [code]);
+        (async () => {
+            await handleUpdateEmail();
+        })();
+    }, [code, handleUpdateEmail]);
 
     const handleLogout = () => {
         clearUser();
@@ -61,7 +66,7 @@ export default function ConfirmarEmail({ code }: { readonly code: string }) {
             </div>
 
             <div className="flex-1 flex items-center justify-center">
-                {!returnMessage || isPending ? (
+                {!returnMessage ? (
                     <div className="flex flex-col items-center">
                         <svg
                             className="animate-spin origin-center"
