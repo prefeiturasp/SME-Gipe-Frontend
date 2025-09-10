@@ -24,8 +24,8 @@ export async function confirmarEmailAction(
             };
         }
 
-        await axios.put(
-            `${API_URL}/alteracao-email/validar/${code.code}`,
+        const response = await axios.put(
+            `${API_URL}/alteracao-email/validar/${code.code}/`,
             null,
             {
                 headers: {
@@ -34,7 +34,7 @@ export async function confirmarEmailAction(
             }
         );
 
-        return { success: true };
+        return { success: true, new_mail: response.data.email };
     } catch (err) {
         const error = err as AxiosError<ConfirmarEmailErrorResponse>;
 
