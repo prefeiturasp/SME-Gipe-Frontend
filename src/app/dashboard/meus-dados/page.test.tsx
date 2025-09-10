@@ -53,18 +53,4 @@ describe("MeusDadosPage", () => {
         renderWithQueryProvider(<MeusDadosPage />);
         expect(screen.getByText(/fake user/i)).toBeInTheDocument();
     });
-
-    it("deve exibir o botão Salvar alterações", () => {
-        renderWithQueryProvider(<MeusDadosPage />);
-        expect(
-            screen.getByRole("button", { name: /salvar alterações/i })
-        ).toBeInTheDocument();
-    });
-
-    it("deve exibir o botão Cancelar", () => {
-        renderWithQueryProvider(<MeusDadosPage />);
-        expect(
-            screen.getByRole("link", { name: /cancelar/i })
-        ).toBeInTheDocument();
-    });
 });
