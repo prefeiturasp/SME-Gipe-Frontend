@@ -8,5 +8,5 @@ export type ConfirmarEmailErrorResponse = {
 };
 
 export type ConfirmarEmailResult =
-    | { success: true }
+    | { success: true; new_mail: string }
     | { success: false; error: string; field?: string };
