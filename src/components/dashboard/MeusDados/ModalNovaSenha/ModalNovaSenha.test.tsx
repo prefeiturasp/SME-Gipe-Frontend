@@ -1,17 +1,37 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 import userEvent from "@testing-library/user-event";
 import ModalNovaSenha from "./ModalNovaSenha";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const mockMutateAsync = vi.fn();
+import * as useAtualizarSenhaModule from "@/hooks/useAtualizarSenha";
+import * as headlessToastModule from "@/components/ui/headless-toast";
 
-vi.mock("@/hooks/useAtualizarSenha", () => ({
-    default: () => ({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-    }),
-}));
+vi.mock("@/hooks/useAtualizarSenha", () => {
+    const __mutateAsync = vi.fn();
+    return {
+        default: () => ({
+            mutateAsync: __mutateAsync,
+            isPending: false,
+        }),
+        __mutateAsync,
+    };
+});
+
+vi.mock("@/components/ui/headless-toast", () => {
+    const __toast = vi.fn();
+    return {
+        toast: __toast,
+        __toast,
+    };
+});
+
+const mockMutateAsync = (
+    useAtualizarSenhaModule as unknown as {
+        __mutateAsync: Mock;
+    }
+).__mutateAsync;
+const toastMock = (headlessToastModule as unknown as { __toast: Mock }).__toast;
 
 function renderWithQueryProvider(ui: React.ReactElement) {
     const queryClient = new QueryClient();
@@ -174,6 +194,13 @@ describe("ModalNovaSenha", () => {
                 confirmacao_nova_senha: senhaValida,
             });
             expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+            expect(toastMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "success",
+                    title: "Tudo certo por aqui!",
+                    description: "Sua senha foi atualizada.",
+                })
+            );
         });
     });
 

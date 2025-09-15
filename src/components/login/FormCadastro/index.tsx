@@ -33,7 +33,7 @@ import ErrorMessage from "./ErrorMessage";
 import { Stepper } from "./Stepper";
 import { ArrowLeft } from "lucide-react";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
-
+import AlertSmall from "@/assets/icons/AlertSmall";
 
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -126,16 +126,17 @@ export default function FormCadastro() {
         if (response.success) {
             setCadastroFinalizado(true);
         } else {
-
             if (response.field && response.error) {
-
-                const formField = response.field === "username" ? "cpf" : (response.field as keyof FormDataSignup);
+                const formField =
+                    response.field === "username"
+                        ? "cpf"
+                        : (response.field as keyof FormDataSignup);
                 form.setError(formField, {
                     type: "server",
                     message: "",
                 });
             }
-                
+
             setErrorMessage(response.error);
         }
     }
@@ -172,7 +173,7 @@ export default function FormCadastro() {
                 <p className="text-sm text-gray-600 mb-10">
                     Preencha os dados para solicitar acesso ao GIPE.
                 </p>
-                <Aviso>
+                <Aviso icon={<AlertSmall className="w-[22px]" />}>
                     O cadastro de novos usuários é permitido apenas para
                     diretores escolares.
                 </Aviso>
@@ -298,7 +299,7 @@ export default function FormCadastro() {
                                 </FormItem>
                             )}
                         />
-                        
+
                         <ErrorMessage message={errorMessage} />
 
                         <Button
@@ -377,7 +378,7 @@ export default function FormCadastro() {
                                 />
                             )}
                         />
-                        
+
                         <ErrorMessage message={errorMessage} />
 
                         <Button

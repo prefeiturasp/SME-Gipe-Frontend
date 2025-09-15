@@ -62,9 +62,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         className={cn(
                                             isActive
                                                 ? "bg-[--sidebar-accent]"
-                                                : "bg-[--sidebar-accent-foreground]",
+                                                : "bg-[--sidebar-accent-foreground] mb-1",
                                             open
-                                                ? "w-[--sidebar-item-width]"
+                                                ? "w-[--sidebar-item-width] h-[--sidebar-item-height] flex flex-col items-center"
                                                 : "h-[--sidebar-item-height-collapsed] w-[--sidebar-item-width-collapsed] flex flex-col items-center justify-center"
                                         )}
                                     >

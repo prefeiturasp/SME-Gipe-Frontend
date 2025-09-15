@@ -57,11 +57,11 @@ export const SidebarLink = React.forwardRef<
 
                 <div
                     className={cn(
-                        "flex flex-col gap-0.5 text-[10px] font-semibold",
+                        "flex flex-col gap-0.5 font-semibold",
                         textColor,
                         open
-                            ? ""
-                            : "items-center mt-1 text-center break-words whitespace-normal w-[80px] leading-[1.1]"
+                            ? " text-[14px]"
+                            : "items-center mt-1  text-[10px] text-center break-words whitespace-normal w-[80px] leading-[1.1]"
                     )}
                 >
                     <span>{title}</span>

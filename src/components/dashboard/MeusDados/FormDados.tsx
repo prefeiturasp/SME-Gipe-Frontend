@@ -2,7 +2,12 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmCancelButtons } from "@/components/ui/ConfirmCancelButtons";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/headless-toast";
+
+import useAtualizarNome from "@/hooks/useAtualizarNome";
+
 import {
     Form,
     FormField,
@@ -12,17 +17,23 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormDataMeusDados } from "./schema";
 import { useUserStore } from "@/stores/useUserStore";
 import ModalNovaSenha from "./ModalNovaSenha/ModalNovaSenha";
+import ModalAlterarEmail from "./ModalAlterarEmail/ModalAlterarEmail";
+
 
 const FormDados: React.FC = () => {
+    const { mutateAsync, isPending } = useAtualizarNome();
     const [openModalNovaSenha, setOpenModalNovaSenha] = useState(false);
+    const [openModalAlterarEmail, setOpenModalAlterarEmail] = useState(false);
     const user = useUserStore((state) => state.user);
+    const [originalName, setOriginalName] = useState(user?.nome || "");
+    const [editingName, setEditingName] = useState(false);
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
+        mode: "onChange",
         defaultValues: {
             nome: user?.nome,
             email: user?.email,
@@ -35,6 +46,45 @@ const FormDados: React.FC = () => {
             perfil: user?.perfil_acesso,
         },
     });
+
+  const handleCancelEdit = () => {
+    form.setValue("nome", originalName, { shouldDirty: false });
+    form.reset();
+
+    setEditingName(false);
+  };
+
+  const handleConfirmEdit = async () => {
+    const values = form.getValues();
+
+    const response = await mutateAsync({
+      name: values.nome,
+    });
+
+
+    if (response.success) {
+      toast({
+        variant: "success",
+        title: "Tudo certo por aqui!",
+        description: "Seu nome foi atualizado.",
+      });
+
+      useUserStore.getState().setUser({
+        ...user!,
+        nome: values.nome,
+      });
+
+      setOriginalName(values.nome);
+      setEditingName(false);
+      form.reset(values);
+    } else {
+      toast({
+        variant: "error",
+        title: "Erro ao salvar",
+        description: response.error,
+      });
+    }
+  };
 
     return (
         <div className="w-full md:w-1/2 flex flex-col h-full flex-1">
@@ -49,14 +99,46 @@ const FormDados: React.FC = () => {
                             name="nome"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nome completo</FormLabel>
+                                <FormLabel>Nome completo</FormLabel>
+                                <div className="flex items-center gap-2">
                                     <FormControl>
-                                        <Input {...field} type="text" />
+                                    <Input
+                                        {...field}
+                                        type="text"
+                                        disabled={!editingName}
+                                        onFocus={() => setEditingName(true)}
+                                    />
                                     </FormControl>
-                                    <FormMessage />
+
+                                    {editingName ? (
+                                    <ConfirmCancelButtons
+                                        onCancel={handleCancelEdit}
+                                        onConfirm={handleConfirmEdit}
+                                        disabled={
+                                            form.watch("nome") === originalName ||
+                                            !!form.formState.errors.nome
+                                        }
+                                        loading={isPending}
+                                    />
+                                    ) : (
+                                    form.watch("nome") === user?.nome && (
+                                        <Button
+                                        variant="customOutline"
+                                        type="button"
+                                        className="rounded-[4px]"
+                                        onClick={() => setEditingName(true)}
+                                        >
+                                        Alterar nome
+                                        </Button>
+                                    )
+                                    )}
+
+                                </div>
+                                <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        
                         <FormField
                             control={form.control}
                             name="email"
@@ -75,6 +157,9 @@ const FormDados: React.FC = () => {
                                             variant="customOutline"
                                             type="button"
                                             className="rounded-[4px]"
+                                            onClick={() =>
+                                                setOpenModalAlterarEmail(true)
+                                            }
                                         >
                                             Alterar e-mail
                                         </Button>
@@ -193,26 +278,18 @@ const FormDados: React.FC = () => {
                             )}
                         />
                     </div>
-                    <div className="flex justify-end gap-4 mt-8">
-                        <Button asChild variant="customOutline">
-                            <Link href="/dashboard" replace>
-                                Cancelar
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="submit"
-                            type="submit"
-                            disabled={!form.formState.isDirty}
-                        >
-                            Salvar alterações
-                        </Button>
-                    </div>
                 </form>
             </Form>
 
             <ModalNovaSenha
                 open={openModalNovaSenha}
                 onOpenChange={setOpenModalNovaSenha}
+            />
+
+            <ModalAlterarEmail
+                open={openModalAlterarEmail}
+                onOpenChange={setOpenModalAlterarEmail}
+                currentMail={user?.email || ""}
             />
         </div>
     );

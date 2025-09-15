@@ -22,6 +22,7 @@ import { Input, InputMask } from "@/components/ui/input";
 import useLogin from "@/hooks/useLogin";
 
 import formSchema, { FormDataLogin } from "./schema";
+import InfoTooltip from "../InfoTooltip";
 
 export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -65,7 +66,19 @@ export default function LoginForm() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
-                                RF ou CPF
+                                RF ou CPF{" "}
+                                <InfoTooltip
+                                    side="top"
+                                    align="start"
+                                    content={
+                                        <>
+                                            Se você é de uma EMEF ou EMEI,
+                                            utilize seu RF. Se você é de um
+                                            CEMEI ou CEI, use o seu CPF para
+                                            realizar o login.
+                                        </>
+                                    }
+                                />
                             </FormLabel>
                             <FormControl>
                                 <InputMask
@@ -90,7 +103,22 @@ export default function LoginForm() {
                         render={({ field }) => (
                             <FormItem className="md:col-span-5">
                                 <FormLabel className="required text-[#42474a] text-[14px] font-[400]">
-                                    Senha
+                                    Senha{" "}
+                                    <InfoTooltip
+                                        side="top"
+                                        align="start"
+                                        content={
+                                            <>
+                                                Se você é de uma EMEF ou EMEI,
+                                                utilize sua senha institucional.{" "}
+                                                <br />
+                                                Se você é de um CEMEI ou CEI,
+                                                clique em
+                                                &quot;Cadastre-se&quot; para
+                                                criar sua senha.
+                                            </>
+                                        }
+                                    />
                                 </FormLabel>
                                 <FormControl>
                                     <Input

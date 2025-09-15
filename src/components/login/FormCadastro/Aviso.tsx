@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
-import AlertSmall from "@/assets/icons/AlertSmall";
 
 interface AvisoProps {
-    readonly children: ReactNode;
+    children: ReactNode;
+    icon?: ReactNode;
 }
 
-export default function Aviso({ children }: AvisoProps) {
+export default function Aviso({ children, icon }: Readonly<AvisoProps>) {
     return (
         <div className="flex items-start gap-2 p-4 rounded-md bg-[#F5F5F5] text-[#42474a]">
-            <AlertSmall className="w-[22px]" />
+            {icon && <>{icon}</>}
             <span
                 className="text-[14px] font-normal"
                 style={{ lineHeight: 1.2 }}

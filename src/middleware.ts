@@ -18,6 +18,10 @@ export function middleware(request: NextRequest) {
 
     const isAuthenticated = !!request.cookies.get("user_data");
 
+    if (pathname.startsWith("/confirmar-email/")) {
+        return NextResponse.next();
+    }
+
     if (!isAuthenticated && !isPublic(pathname)) {
         return NextResponse.redirect(new URL("/", request.url));
     }
