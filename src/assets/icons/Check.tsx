@@ -1,6 +1,5 @@
 import * as React from "react";
 
-// SVG baseado em icon-park-outline_check-one
 export default function Check(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     return (
         <svg

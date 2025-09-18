@@ -3,7 +3,7 @@ import { z } from "zod";
 const formSchema = z.object({
     email: z
         .string()
-        .email("E-mail inválido")
+        .email("Digite um e-mail válido!")
         .refine(
             (val) =>
                 /^([a-zA-Z0-9_.+-]+)@sme\.prefeitura\.sp\.gov\.br$/.test(val),

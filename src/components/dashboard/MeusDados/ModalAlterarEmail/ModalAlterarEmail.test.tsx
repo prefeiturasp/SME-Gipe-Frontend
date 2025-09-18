@@ -47,7 +47,7 @@ describe("ModalAlterarEmail", () => {
             />
         );
 
-        const input = screen.getByTestId("input-email") as HTMLInputElement;
+        const input = screen.getByTestId("input-email");
         expect(input).toBeInTheDocument();
         expect(input).toHaveValue(currentMail);
 
@@ -84,7 +84,7 @@ describe("ModalAlterarEmail", () => {
         );
 
         const user = userEvent.setup();
-        const input = screen.getByTestId("input-email") as HTMLInputElement;
+        const input = screen.getByTestId("input-email");
         await user.clear(input);
         await user.type(input, "novo@sme.prefeitura.sp.gov.br");
 
@@ -104,7 +104,7 @@ describe("ModalAlterarEmail", () => {
         );
 
         const user = userEvent.setup();
-        const input = screen.getByTestId("input-email") as HTMLInputElement;
+        const input = screen.getByTestId("input-email");
         await user.clear(input);
         await user.type(input, "email-invalido");
 
@@ -126,7 +126,7 @@ describe("ModalAlterarEmail", () => {
         );
 
         const user = userEvent.setup();
-        const input = screen.getByTestId("input-email") as HTMLInputElement;
+        const input = screen.getByTestId("input-email");
         await user.clear(input);
         await user.type(input, "novo@sme.prefeitura.sp.gov.br");
 
@@ -165,7 +165,7 @@ describe("ModalAlterarEmail", () => {
         );
 
         const user = userEvent.setup();
-        const input = screen.getByTestId("input-email") as HTMLInputElement;
+        const input = screen.getByTestId("input-email");
         await user.clear(input);
         await user.type(input, "novo@sme.prefeitura.sp.gov.br");
 

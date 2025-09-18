@@ -43,7 +43,6 @@ describe("useLogin", () => {
             email: "a@b.com",
             cpf: "12345678900",
             login: "fulano",
-            visoes: [],
             cargo: { nome: "admin" },
             perfil_acesso: { nome: "Gestor" },
             unidade_lotacao: [{ nomeUnidade: "EMEF Teste" }],

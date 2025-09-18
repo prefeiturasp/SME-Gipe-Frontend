@@ -4,6 +4,7 @@ import {
     getDecryptedCookie,
     removeCookie,
 } from "@/lib/cookieUtils";
+import { logoutAction } from "@/actions/logout";
 
 const COOKIE_KEY = "user_data";
 
@@ -39,6 +40,7 @@ export const useUserStore = create<UserState>((set) => ({
     },
     clearUser: () => {
         removeCookie(COOKIE_KEY);
+        logoutAction();
         set({ user: null });
     },
 }));

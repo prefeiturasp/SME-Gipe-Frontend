@@ -4,6 +4,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import FormDados from "./FormDados";
 
+interface MockUser {
+    nome: string;
+    perfil_acesso: string;
+    cpf: string;
+    unidade: { nomeUnidade: string }[];
+    email: string;
+}
 const mockUser: MockUser = {
     nome: "João da Silva",
     email: "joao@email.com",
@@ -12,20 +19,50 @@ const mockUser: MockUser = {
     unidade: [{ nomeUnidade: "Escola XPTO" }],
 };
 
-interface MockUser {
-    nome: string;
-    perfil_acesso: string;
-    cpf: string;
-    unidade: { nomeUnidade: string }[];
-    email: string;
-}
+const mutateAsyncMock = vi.fn();
+const toastMock = vi.fn();
 
-vi.mock("@/stores/useUserStore", () => ({
-    useUserStore: (selector: (state: { user: MockUser }) => unknown) =>
-        selector({
-            user: mockUser,
-        }),
+vi.mock("@/stores/useUserStore", () => {
+  const mockUser = {
+    nome: "João da Silva",
+    email: "joao@email.com",
+    cpf: "123.456.789-00",
+    perfil_acesso: "Administrador",
+    unidade: [{ nomeUnidade: "Escola XPTO" }],
+  };
+
+  const mockSetUser = vi.fn();
+
+  const mockUserStore = {
+    user: mockUser,
+    setUser: mockSetUser,
+  };
+
+  const mockedHook = (selector: (state: typeof mockUserStore) => unknown) =>
+    selector(mockUserStore);
+
+  return {
+    useUserStore: Object.assign(mockedHook, {
+      getState: () => mockUserStore,
+    }),
+    // 👇 exporta se precisar usar nos expects
+    __mockUser: mockUser,
+    __mockSetUser: mockSetUser,
+  };
+});
+
+
+vi.mock("@/hooks/useAtualizarNome", () => ({
+    default: () => ({
+        mutateAsync: mutateAsyncMock,
+        isPending: false,
+    }),
 }));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: (args: any) => toastMock(args),
+}));
+
 const pushSpy = vi.fn();
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -45,6 +82,8 @@ function renderWithQueryProvider(ui: React.ReactElement) {
 describe("FormDados", () => {
     beforeEach(() => {
         pushSpy.mockClear();
+        mutateAsyncMock.mockReset();
+        toastMock.mockReset();
     });
 
     it("renderiza os campos com valores do usuário", () => {
@@ -60,69 +99,38 @@ describe("FormDados", () => {
         );
     });
 
-    it("botão 'Salvar alterações' começa desabilitado", () => {
-        renderWithQueryProvider(<FormDados />);
-        const btnSalvar = screen.getByRole("button", {
-            name: /salvar alterações/i,
-        });
-        expect(btnSalvar).toBeDisabled();
-    });
-
-    it("habilita o botão 'Salvar alterações' ao alterar um campo", async () => {
+    it("mostra erro se nome tiver menos de 3 caracteres ao confirmar edição", async () => {
         const user = userEvent.setup();
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        await user.clear(inputNome);
-        await user.type(inputNome, "Novo Nome");
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
 
-        const btnSalvar = screen.getByRole("button", {
-            name: /salvar alterações/i,
-        });
-        expect(btnSalvar).toBeEnabled();
-    });
-
-    it("chama navegação para /dashboard ao clicar em 'Cancelar'", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        // Busca o link com nome 'Cancelar' (pode ser role 'link' ou 'button' dependendo do componente)
-        const btnCancelar = screen.getByRole("link", { name: /cancelar/i });
-        await user.click(btnCancelar);
-
-        expect(btnCancelar).toHaveAttribute("href", "/dashboard");
-    });
-
-    it("mostra erro se nome tiver menos de 3 caracteres ao submeter", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
         await user.clear(inputNome);
         await user.type(inputNome, "Jo");
 
-        const btnSalvar = screen.getByRole("button", {
-            name: /salvar alterações/i,
-        });
-        await user.click(btnSalvar);
+        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
+        await user.click(btnConfirmar);
 
         expect(
             await screen.findByText("Informe o nome completo")
         ).toBeInTheDocument();
     });
 
-    it("mostra erro se nome tiver números ou caracteres especiais ao submeter", async () => {
+    it("mostra erro se nome tiver números ou caracteres especiais ao confirmar edição", async () => {
         const user = userEvent.setup();
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
+
         await user.clear(inputNome);
         await user.type(inputNome, "João123");
 
-        const btnSalvar = screen.getByRole("button", {
-            name: /salvar alterações/i,
-        });
-        await user.click(btnSalvar);
+        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
+        await user.click(btnConfirmar);
 
         expect(
             await screen.findByText(
@@ -131,24 +139,92 @@ describe("FormDados", () => {
         ).toBeInTheDocument();
     });
 
-    it("mostra erro se nome não tiver sobrenome (sem espaço) ao submeter", async () => {
+    it("mostra erro se nome não tiver sobrenome (sem espaço) ao confirmar edição", async () => {
         const user = userEvent.setup();
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
+
         await user.clear(inputNome);
         await user.type(inputNome, "Joao");
 
-        const btnSalvar = screen.getByRole("button", {
-            name: /salvar alterações/i,
-        });
-        await user.click(btnSalvar);
+        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
+        await user.click(btnConfirmar);
 
         expect(
             await screen.findByText(
                 "Informe o nome completo (nome e sobrenome)"
             )
         ).toBeInTheDocument();
+    });
+
+    it("restaura o nome original ao clicar em Cancelar na edição", async () => {
+        const user = userEvent.setup();
+        renderWithQueryProvider(<FormDados />);
+
+        const inputNome = screen.getByLabelText(/nome completo/i);
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
+
+        await user.clear(inputNome);
+        await user.type(inputNome, "Novo Nome");
+        expect(inputNome).toHaveValue("Novo Nome");
+
+        const btnCancelar = screen.getByRole("button", { name: /cancelar/i });
+        await user.click(btnCancelar);
+
+        expect(inputNome).toHaveValue(mockUser.nome);
+    });
+
+    it("atualiza o nome com sucesso ao confirmar edição", async () => {
+        mutateAsyncMock.mockResolvedValue({ success: true });
+        const user = userEvent.setup();
+        renderWithQueryProvider(<FormDados />);
+
+        const inputNome = screen.getByLabelText(/nome completo/i);
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
+
+        await user.clear(inputNome);
+        await user.type(inputNome, "Maria Souza");
+
+        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
+        await user.click(btnConfirmar);
+
+        expect(mutateAsyncMock).toHaveBeenCalledWith({ name: "Maria Souza" });
+        expect(toastMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                variant: "success",
+                title: expect.any(String),
+            })
+        );
+    });
+
+    it("mostra erro ao confirmar edição se mutateAsync falhar", async () => {
+        mutateAsyncMock.mockResolvedValue({ success: false, error: "Erro fake" });
+        const user = userEvent.setup();
+        renderWithQueryProvider(<FormDados />);
+
+        const inputNome = screen.getByLabelText(/nome completo/i);
+        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        await user.click(btnAlterarNome);
+
+        await user.clear(inputNome);
+        await user.type(inputNome, "Maria Souza");
+
+        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
+        await user.click(btnConfirmar);
+
+        expect(mutateAsyncMock).toHaveBeenCalledWith({ name: "Maria Souza" });
+        expect(toastMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                variant: "error",
+                title: expect.any(String),
+                description: "Erro fake",
+            })
+        );
     });
 
     it("abre o modal de nova senha ao clicar em 'Alterar senha'", async () => {

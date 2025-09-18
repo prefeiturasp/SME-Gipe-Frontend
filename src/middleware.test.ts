@@ -90,4 +90,36 @@ describe("middleware", () => {
         expect(NextResponse.next).toHaveBeenCalled();
         expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
+
+    it("deixa rota de confirmação passar quando token está no path sem cookie", () => {
+        const req = makeReq("/confirmar-email/token123");
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("redireciona se rota de confirmação não tiver o token no path", () => {
+        const req = makeReq("/confirmar-email");
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+
+    it("redireciona se outra rota tiver um token no path", () => {
+        const req = makeReq("/alterar-senha/token123");
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+
+    it("deixa rota de confirmação passar mesmo se o usuário já estiver autenticado", () => {
+        const req = makeReq("/confirmar-email/token123", "token_cookie_123");
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
 });
