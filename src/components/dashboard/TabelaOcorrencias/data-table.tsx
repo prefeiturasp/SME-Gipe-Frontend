@@ -1,12 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { cn } from "@/lib/utils";
 import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
     useReactTable,
     getPaginationRowModel,
+    Header,
+    Cell,
 } from "@tanstack/react-table";
 
 import {
@@ -23,6 +26,18 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+}
+
+export function resolveColId<TData, TValue>(
+    node: Header<TData, TValue> | Cell<TData, TValue>
+) {
+    return node?.column?.id ?? node?.id;
+}
+
+export function hasColumnFlag<TData, TValue>(
+    node: Header<TData, TValue> | Cell<TData, TValue>
+) {
+    return node?.column ? "true" : "false";
 }
 
 export function DataTable<TData, TValue>({
@@ -49,18 +64,27 @@ export function DataTable<TData, TValue>({
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
+                                    const colId = resolveColId(header);
+                                    const isAction = colId === "acao";
+
                                     return (
                                         <TableHead
                                             key={header.id}
-                                            className="px-3 text-[#42474a] text-left"
+                                            data-testid={`th-${colId}`}
+                                            data-has-column={hasColumnFlag(
+                                                header
+                                            )}
+                                            className={cn(
+                                                "px-3 text-[#42474a] text-left",
+                                                isAction
+                                                    ? "w-[49px] min-w-[49px] max-w-[49px] whitespace-nowrap"
+                                                    : ""
+                                            )}
                                         >
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef
-                                                          .header,
-                                                      header.getContext()
-                                                  )}
+                                            {flexRender(
+                                                header.column?.columnDef.header,
+                                                header.getContext()
+                                            )}
                                         </TableHead>
                                     );
                                 })}
@@ -72,19 +96,32 @@ export function DataTable<TData, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    data-state={
-                                        row.getIsSelected() && "selected"
-                                    }
                                     className="border-b border-gray-200 hover:bg-gray-100"
                                 >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
+                                    {row.getVisibleCells().map((cell) => {
+                                        const colId = resolveColId(cell);
+                                        const isAction = colId === "acao";
+
+                                        return (
+                                            <TableCell
+                                                key={cell.id}
+                                                data-testid={`td-${colId}`}
+                                                data-has-column={hasColumnFlag(
+                                                    cell
+                                                )}
+                                                className={cn(
+                                                    isAction
+                                                        ? "w-[49px] min-w-[49px] max-w-[49px] px-0"
+                                                        : ""
+                                                )}
+                                            >
+                                                {flexRender(
+                                                    cell.column?.columnDef.cell,
+                                                    cell.getContext()
+                                                )}
+                                            </TableCell>
+                                        );
+                                    })}
                                 </TableRow>
                             ))
                         ) : (
@@ -108,6 +145,7 @@ export function DataTable<TData, TValue>({
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
                     className="w-[32px] h-[32px]"
+                    data-testid="prev-page-button"
                 >
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -138,6 +176,7 @@ export function DataTable<TData, TValue>({
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
                     className="w-[32px] h-[32px]"
+                    data-testid="next-page-button"
                 >
                     <ChevronRight className="h-4 w-4" />
                 </Button>
