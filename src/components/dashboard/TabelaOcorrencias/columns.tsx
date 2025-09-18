@@ -1,5 +1,3 @@
-// app/ocorrencias/columns.tsx
-
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
