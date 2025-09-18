@@ -64,9 +64,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                 case "Em andamento":
                     className = "bg-[#086397] hover:bg-[#086397]";
                     break;
-                default:
-                    className = "bg-gray-500 hover:bg-gray-500";
-                    break;
             }
 
             return <Badge className={className}>{status as string}</Badge>;
