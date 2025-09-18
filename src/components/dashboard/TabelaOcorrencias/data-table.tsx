@@ -75,7 +75,7 @@ export function DataTable<TData, TValue>({
                                                 header
                                             )}
                                             className={cn(
-                                                "px-3 text-[#42474a] text-left",
+                                                "px-2 text-[#42474a] text-left",
                                                 isAction
                                                     ? "w-[49px] min-w-[49px] max-w-[49px] whitespace-nowrap"
                                                     : ""

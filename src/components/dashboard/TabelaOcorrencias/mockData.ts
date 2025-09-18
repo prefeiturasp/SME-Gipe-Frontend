@@ -15,13 +15,15 @@ export async function getData(): Promise<Ocorrencia[]> {
     for (let i = 1; i <= 50; i++) {
         const id = Math.random().toString(36).slice(2, 10);
         const protocolo = `PRT-${String(i).padStart(3, "0")}-2023`;
-        const dataHora = `2023-10-${String(30 - (i % 30)).padStart(
-            2,
-            "0"
-        )} ${String(8 + (i % 10)).padStart(2, "0")}:00`;
+        const day = String(30 - (i % 30)).padStart(2, "0");
+        const month = String(10).padStart(2, "0");
+        const year = "2023";
+        const hour = String(8 + (i % 10)).padStart(2, "0");
+        const minutes = "00";
+        const dataHora = `${day}/${month}/${year} - ${hour}:${minutes}`;
         const codigoEol = String(10000 + i);
         const tipoViolencia = randomFrom(tipos);
-        const status = randomFrom(statuses) as Ocorrencia["status"];
+        const status = randomFrom(statuses);
 
         items.push({
             id,
