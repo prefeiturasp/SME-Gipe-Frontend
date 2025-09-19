@@ -10,6 +10,7 @@ import {
     getPaginationRowModel,
     Header,
     Cell,
+    getSortedRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -47,6 +48,7 @@ export function DataTable<TData, TValue>({
     const table = useReactTable({
         data,
         columns,
+        getSortedRowModel: getSortedRowModel(),
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         initialState: {
