@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useMemo } from "react";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -8,6 +8,7 @@ import {
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import ChevronUpDown from "@/assets/icons/ChevronUpDown";
 
 type SortOption = {
     id: string | number;
@@ -26,7 +27,7 @@ export default function SortMenu({
     selectedId?: string;
     children?: React.ReactNode;
 }>) {
-    const opts = React.useMemo(
+    const opts = useMemo(
         () => options.map((o) => ({ ...o, id: String(o.id) })),
         [options]
     );
@@ -39,8 +40,11 @@ export default function SortMenu({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <div className="inline-flex items-center cursor-pointer">
-                    {children}
+                <div className="flex items-center justify-between w-full cursor-pointer">
+                    <div>{children}</div>
+                    <span className="flex flex-col items-center gap-0 ml-1">
+                        <ChevronUpDown />
+                    </span>
                 </div>
             </DropdownMenuTrigger>
 
