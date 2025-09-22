@@ -66,8 +66,6 @@ export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
         case "Em andamento":
             className = "bg-[#086397] hover:bg-[#086397]";
             break;
-        default:
-            className = "bg-muted";
     }
 
     return <Badge className={className}>{status}</Badge>;
