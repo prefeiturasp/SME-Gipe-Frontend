@@ -12,7 +12,7 @@ Funcionalidade: Login
 
     Exemplos:
       | cenario              | rf           | senha          |
-      | Login válido padrão  | 50423501011  | Ruby@142107    |
+      | Login válido padrão  | 7210418      | Sgp0418        |
       | Login inválido       | 6913261      | Sgp326         |
       | Senha em branco      | 6913261      |                |
       | RF em branco         |              | Sgp3261        |
