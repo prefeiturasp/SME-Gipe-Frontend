@@ -132,8 +132,8 @@ export const columns: ColumnDef<Ocorrencia>[] = [
             const a = String(rowA.getValue(columnId));
             const b = String(rowB.getValue(columnId));
             const priority = getStatusPriority();
-            const va = priority[a] ?? 0;
-            const vb = priority[b] ?? 0;
+            const va = priority[a];
+            const vb = priority[b];
             return va - vb;
         },
         cell: ({ row }) => {
