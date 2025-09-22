@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SortMenu from "./SortMenu";
-import { Search, ChevronUp, ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
@@ -21,6 +21,14 @@ export type Ocorrencia = {
     id: string;
 };
 
+let statusPriority: Record<string, number> = {
+    Incompleta: 0,
+    "Em andamento": 1,
+    Finalizada: 2,
+};
+
+let statusSelectedId: string | undefined = undefined;
+
 export const columns: ColumnDef<Ocorrencia>[] = [
     {
         accessorKey: "protocolo",
@@ -31,22 +39,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
             let selectedId: string | undefined = undefined;
             if (sortState) {
                 selectedId = sortState.desc ? "desc" : "asc";
-            }
-
-            let chevronElement: React.ReactNode;
-            if (sortState) {
-                chevronElement = sortState.desc ? (
-                    <ChevronDown className="h-4 w-4 text-[#42474a]" />
-                ) : (
-                    <ChevronUp className="h-4 w-4 text-[#42474a]" />
-                );
-            } else {
-                chevronElement = (
-                    <span className="flex flex-col items-center gap-0">
-                        <ChevronUp className="h-3 w-3 text-[#42474a] opacity-40" />
-                        <ChevronDown className="h-3 w-3 text-[#42474a] opacity-40" />
-                    </span>
-                );
             }
 
             return (
@@ -73,7 +65,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                     >
                         <div className="text-[14px] text-[#42474a] flex items-center gap-2">
                             <span>Protocolo</span>
-                            {chevronElement}
                         </div>
                     </SortMenu>
                 </div>
@@ -88,23 +79,7 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                 .sorting.find((s) => s.id === column.id);
             let selectedId: string | undefined = undefined;
             if (sortState) {
-                selectedId = sortState.desc ? "recent" : "oldest";
-            }
-
-            let chevronElement: React.ReactNode;
-            if (sortState) {
-                chevronElement = sortState.desc ? (
-                    <ChevronDown className="h-4 w-4 text-[#42474a]" />
-                ) : (
-                    <ChevronUp className="h-4 w-4 text-[#42474a]" />
-                );
-            } else {
-                chevronElement = (
-                    <span className="flex flex-col items-center gap-0">
-                        <ChevronUp className="h-3 w-3 text-[#42474a] opacity-40" />
-                        <ChevronDown className="h-3 w-3 text-[#42474a] opacity-40" />
-                    </span>
-                );
+                selectedId = sortState.desc ? "oldest" : "recent";
             }
 
             return (
@@ -114,12 +89,12 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                             {
                                 id: "recent",
                                 label: "Do mais recente ao mais antigo",
-                                desc: true,
+                                desc: false,
                             },
                             {
                                 id: "oldest",
                                 label: "Do mais antigo ao mais recente",
-                                desc: false,
+                                desc: true,
                             },
                         ]}
                         selectedId={selectedId}
@@ -131,7 +106,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                     >
                         <div className="text-[14px] text-[#42474a] flex items-center gap-2">
                             <span>Data/Hora</span>
-                            {chevronElement}
                         </div>
                     </SortMenu>
                 </div>
@@ -147,22 +121,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
             let selectedId: string | undefined = undefined;
             if (sortState) {
                 selectedId = sortState.desc ? "desc" : "asc";
-            }
-
-            let chevronElement2: React.ReactNode;
-            if (sortState) {
-                chevronElement2 = sortState.desc ? (
-                    <ChevronDown className="h-4 w-4 text-[#42474a]" />
-                ) : (
-                    <ChevronUp className="h-4 w-4 text-[#42474a]" />
-                );
-            } else {
-                chevronElement2 = (
-                    <span className="flex flex-col items-center gap-0">
-                        <ChevronUp className="h-3 w-3 text-[#42474a] opacity-40" />
-                        <ChevronDown className="h-3 w-3 text-[#42474a] opacity-40" />
-                    </span>
-                );
             }
 
             return (
@@ -189,7 +147,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                     >
                         <div className="text-[14px] text-[#42474a] flex items-center gap-2">
                             <span>Código EOL</span>
-                            {chevronElement2}
                         </div>
                     </SortMenu>
                 </div>
@@ -205,22 +162,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
             let selectedId: string | undefined = undefined;
             if (sortState) {
                 selectedId = sortState.desc ? "alphaInv" : "alpha";
-            }
-
-            let chevronElement: React.ReactNode;
-            if (sortState) {
-                chevronElement = sortState.desc ? (
-                    <ChevronDown className="h-4 w-4 text-[#42474a]" />
-                ) : (
-                    <ChevronUp className="h-4 w-4 text-[#42474a]" />
-                );
-            } else {
-                chevronElement = (
-                    <span className="flex flex-col items-center gap-0">
-                        <ChevronUp className="h-3 w-3 text-[#42474a] opacity-40" />
-                        <ChevronDown className="h-3 w-3 text-[#42474a] opacity-40" />
-                    </span>
-                );
             }
 
             return (
@@ -247,7 +188,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                     >
                         <div className="text-[14px] text-[#42474a] flex items-center gap-2">
                             <span>Tipo de violência</span>
-                            {chevronElement}
                         </div>
                     </SortMenu>
                 </div>
@@ -262,30 +202,6 @@ export const columns: ColumnDef<Ocorrencia>[] = [
     {
         accessorKey: "status",
         header: ({ column, table }) => {
-            const sortState = table
-                .getState()
-                .sorting.find((s) => s.id === column.id);
-            let selectedId: string | undefined = undefined;
-            if (sortState) {
-                selectedId = sortState.desc ? "finalizada" : "incompleta";
-            }
-
-            let chevronElement: React.ReactNode;
-            if (sortState) {
-                chevronElement = sortState.desc ? (
-                    <ChevronDown className="h-4 w-4 text-[#42474a]" />
-                ) : (
-                    <ChevronUp className="h-4 w-4 text-[#42474a]" />
-                );
-            } else {
-                chevronElement = (
-                    <span className="flex flex-col items-center gap-0">
-                        <ChevronUp className="h-3 w-3 text-[#42474a] opacity-40" />
-                        <ChevronDown className="h-3 w-3 text-[#42474a] opacity-40" />
-                    </span>
-                );
-            }
-
             return (
                 <div className="flex items-center justify-between">
                     <SortMenu
@@ -303,11 +219,32 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                             {
                                 id: "finalizada",
                                 label: "Finalizada",
-                                desc: true,
+                                desc: false,
                             },
                         ]}
-                        selectedId={selectedId}
+                        selectedId={statusSelectedId}
                         onSelect={(opt) => {
+                            statusSelectedId = String(opt.id);
+                            if (opt.id === "incompleta") {
+                                statusPriority = {
+                                    Incompleta: 0,
+                                    "Em andamento": 1,
+                                    Finalizada: 2,
+                                };
+                            } else if (opt.id === "em-andamento") {
+                                statusPriority = {
+                                    "Em andamento": 0,
+                                    Incompleta: 1,
+                                    Finalizada: 2,
+                                };
+                            } else if (opt.id === "finalizada") {
+                                statusPriority = {
+                                    Finalizada: 0,
+                                    "Em andamento": 1,
+                                    Incompleta: 2,
+                                };
+                            }
+
                             table.setSorting([
                                 { id: column.id, desc: Boolean(opt.desc) },
                             ]);
@@ -315,22 +252,16 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                     >
                         <div className="text-[14px] text-[#42474a] flex items-center gap-2">
                             <span>Status</span>
-                            {chevronElement}
                         </div>
                     </SortMenu>
                 </div>
             );
         },
         sortingFn: (rowA, rowB, columnId) => {
-            const order: Record<string, number> = {
-                Incompleta: 0,
-                "Em andamento": 1,
-                Finalizada: 2,
-            };
             const a = String(rowA.getValue(columnId));
             const b = String(rowB.getValue(columnId));
-            const va = order[a] ?? 0;
-            const vb = order[b] ?? 0;
+            const va = statusPriority[a] ?? 0;
+            const vb = statusPriority[b] ?? 0;
             return va - vb;
         },
         cell: ({ row }) => {
