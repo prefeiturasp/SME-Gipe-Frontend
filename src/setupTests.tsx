@@ -22,6 +22,18 @@ vi.mock("next/image", () => ({
     },
 }));
 
+if (typeof window !== "undefined") {
+    window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+    window.HTMLElement.prototype.releasePointerCapture = vi.fn();
+    // jsdom não implementa scrollIntoView; Radix Select usa ao abrir conteúdo
+    // Mock para evitar erros durante os testes
+    (
+        window.HTMLElement.prototype as unknown as {
+            scrollIntoView: () => void;
+        }
+    ).scrollIntoView = vi.fn();
+}
+
 // Limpa o estado após cada teste
 afterEach(() => {
     cleanup();
