@@ -4,7 +4,6 @@ export type CadastroResult =
 
 export interface CadastroRequest {
     username: string;
-    password: string;
     name: string;
     cpf: string;
     email: string;

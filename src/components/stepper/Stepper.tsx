@@ -39,7 +39,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                     >
                         <div className={stepCircleClass}>
                             {isCompleted ? (
-                                <Check width={20} height={20} color="#717FC7" />
+                                <Check width={20} height={20} color="#717FC7" data-testid="check-icon"/>
                             ) : (
                                 index + 1
                             )}
