@@ -9,7 +9,11 @@ vi.mock("./mockData", () => ({
 }));
 
 import { getData } from "./mockData";
-import TabelaOcorrencias from "../TabelaOcorrencias";
+import TabelaOcorrencias, {
+    parseDataHora,
+    mapStatusFilter,
+    matchPeriodo,
+} from "../TabelaOcorrencias";
 
 const sampleData = [
     {
@@ -80,5 +84,147 @@ describe("TabelaOcorrencias", () => {
                 screen.getByText("Nenhum resultado encontrado.")
             ).toBeInTheDocument();
         });
+    });
+
+    it("parseDataHora retorna Date esperado (DD/MM/YYYY - HH:mm)", () => {
+        const d1 = parseDataHora("01/09/2025 - 10:00");
+        expect(d1.getFullYear()).toBe(2025);
+        expect(d1.getMonth()).toBe(8);
+        expect(d1.getDate()).toBe(1);
+
+        const d2 = parseDataHora("15/01/2024");
+        expect(d2.getFullYear()).toBe(2024);
+        expect(d2.getMonth()).toBe(0);
+        expect(d2.getDate()).toBe(15);
+    });
+
+    it("mapStatusFilter mapeia corretamente e faz fallback com ??", () => {
+        expect(mapStatusFilter("")).toBe("");
+        expect(mapStatusFilter("incompleta")).toBe("Incompleta");
+        expect(mapStatusFilter("em-andamento")).toBe("Em andamento");
+        expect(mapStatusFilter("finalizada")).toBe("Finalizada");
+        expect(mapStatusFilter("em_analise")).toBe("em_analise");
+    });
+
+    it("matchPeriodo retorna true/false conforme intervalo e inclui limites", () => {
+        const dataDentro = "15/09/2025 - 08:00";
+        const inicio = "2025-09-01";
+        const fim = "2025-09-30";
+
+        expect(matchPeriodo(dataDentro, inicio, fim)).toBe(true);
+        expect(matchPeriodo("01/09/2025 - 00:00", inicio, fim)).toBe(true);
+        expect(matchPeriodo("30/09/2025 - 23:59", inicio, fim)).toBe(true);
+
+        expect(matchPeriodo("31/08/2025 - 23:59", inicio, fim)).toBe(false);
+        expect(matchPeriodo("01/10/2025 - 00:00", inicio, fim)).toBe(false);
+
+        expect(matchPeriodo("10/09/2025 - 12:00", undefined, fim)).toBe(true);
+        expect(matchPeriodo("02/10/2025 - 12:00", undefined, fim)).toBe(false);
+        expect(matchPeriodo("10/09/2025 - 12:00", inicio)).toBe(true);
+        expect(matchPeriodo("31/08/2025 - 12:00", inicio)).toBe(false);
+
+        expect(matchPeriodo("10/09/2025 - 12:00")).toBe(true);
+    });
+
+    it("matchPeriodo suporta limites parciais YYYY e YYYY-MM", () => {
+        expect(matchPeriodo("01/01/2025 - 00:00", "2025")).toBe(true);
+        expect(matchPeriodo("31/12/2024 - 23:59", "2025")).toBe(false);
+
+        expect(matchPeriodo("01/09/2025 - 00:00", "2025-09")).toBe(true);
+        expect(matchPeriodo("31/08/2025 - 23:59", "2025-09")).toBe(false);
+
+        expect(matchPeriodo("01/01/2025 - 10:00", undefined, "2025")).toBe(
+            true
+        );
+        expect(matchPeriodo("02/01/2025 - 00:00", undefined, "2025")).toBe(
+            false
+        );
+
+        expect(matchPeriodo("01/09/2025 - 00:00", undefined, "2025-09")).toBe(
+            true
+        );
+        expect(matchPeriodo("02/09/2025 - 00:00", undefined, "2025-09")).toBe(
+            false
+        );
+    });
+
+    it("filtra por Código EOL e permite limpar para ver todos novamente", async () => {
+        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        const user = userEvent.setup();
+        render(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+        });
+
+        await user.click(screen.getByRole("button", { name: /Filtrar/i }));
+
+        const codigoInput = screen.getByLabelText(/Código EOL/i);
+        await user.type(codigoInput, "EOL2");
+
+        const botoesFiltrar = screen.getAllByRole("button", {
+            name: /Filtrar/i,
+        });
+        const botaoFiltrarDoPainel = botoesFiltrar[botoesFiltrar.length - 1];
+        await user.click(botaoFiltrarDoPainel);
+
+        await waitFor(() => {
+            expect(screen.queryByText("P0001")).not.toBeInTheDocument();
+            expect(screen.getByText("P0002")).toBeInTheDocument();
+        });
+
+        const botaoLimpar = screen.getByRole("button", { name: /Limpar/i });
+        await user.click(botaoLimpar);
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+            expect(screen.getByText("P0002")).toBeInTheDocument();
+        });
+    });
+
+    it("filtra por Tipo de violência e Status", async () => {
+        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        const user = userEvent.setup();
+        render(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+        });
+
+        await user.click(screen.getByRole("button", { name: /Filtrar/i }));
+
+        await user.click(
+            screen.getByRole("combobox", { name: /Tipo de violência/i })
+        );
+        const tvListbox = await screen.findByRole("listbox");
+        const tvOption = await within(tvListbox).findByRole("option", {
+            name: /Psicológica/i,
+        });
+        await user.click(tvOption);
+
+        await user.click(screen.getByRole("combobox", { name: /Status/i }));
+        const statusListbox = await screen.findByRole("listbox");
+        const statusOption = await within(statusListbox).findByRole("option", {
+            name: /Finalizada/i,
+        });
+        await user.click(statusOption);
+
+        const botoesFiltrar2 = screen.getAllByRole("button", {
+            name: /Filtrar/i,
+        });
+        const botaoFiltrarDoPainel2 = botoesFiltrar2[botoesFiltrar2.length - 1];
+        await user.click(botaoFiltrarDoPainel2);
+
+        await waitFor(() => {
+            expect(screen.queryByText("P0001")).not.toBeInTheDocument();
+            expect(screen.getByText("P0002")).toBeInTheDocument();
+        });
+
+        const allRows = screen.getAllByRole("row");
+        const rowP2 = allRows.find((r) => within(r).queryByText("P0002"));
+        expect(rowP2).toBeTruthy();
+        const statusCell = within(rowP2 as HTMLElement).getByTestId(
+            "td-status"
+        );
+        expect(within(statusCell).getByText("Finalizada")).toBeInTheDocument();
     });
 });
