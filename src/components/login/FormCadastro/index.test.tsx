@@ -58,7 +58,7 @@ describe("FormCadastro", () => {
         window.HTMLElement.prototype.scrollIntoView = vi.fn();
     });
 
-    const preencherStep1 = async () => {
+    const preencherFormulario = async () => {
         const selectOption = async (
             comboboxIndex: number,
             optionName: string
@@ -84,37 +84,11 @@ describe("FormCadastro", () => {
         fireEvent.change(screen.getByPlaceholderText("123.456.789-10"), {
             target: { value: "128.088.888-13" },
         });
-    };
 
-    const irParaStep2 = async () => {
-        const proximoBtn = screen.getByRole("button", {
-            name: "Avançar",
-        });
-        await waitFor(() => expect(proximoBtn).toBeEnabled());
-        fireEvent.click(proximoBtn);
-    };
-
-    const preencherStep2 = async (
-        email: string,
-        password: string,
-        confirmPassword: string
-    ) => {
-        await waitFor(() =>
-            expect(
-                screen.getByLabelText("Qual o seu e-mail?")
-            ).toBeInTheDocument()
-        );
         fireEvent.change(
             screen.getByPlaceholderText("Digite o seu e-mail corporativo"),
-            { target: { value: email } }
+            { target: { value: "admin@sme.prefeitura.sp.gov.br" } }
         );
-
-        fireEvent.change(screen.getByPlaceholderText("Digite sua senha"), {
-            target: { value: password },
-        });
-        fireEvent.change(screen.getByPlaceholderText("Confirme sua senha"), {
-            target: { value: confirmPassword },
-        });
     };
 
     it("fluxo completo de cadastro com sucesso", async () => {
@@ -122,14 +96,7 @@ describe("FormCadastro", () => {
 
         render(<FormCadastro />, { wrapper });
 
-        await preencherStep1();
-        await irParaStep2();
-
-        await preencherStep2(
-            "admin@sme.prefeitura.sp.gov.br",
-            "Senha123!",
-            "Senha123!"
-        );
+        await preencherFormulario();
 
         const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
@@ -146,30 +113,6 @@ describe("FormCadastro", () => {
         expect(finalizarButton).toHaveAttribute("href", "/");
     });
 
-    it("mostra erro quando senhas não coincidem e mantém botão desabilitado", async () => {
-        render(<FormCadastro />, { wrapper });
-
-        await preencherStep1();
-        await irParaStep2();
-
-        await preencherStep2(
-            "admin@sme.prefeitura.sp.gov.br",
-            "Senha123!",
-            "OutraSenha!"
-        );
-
-        await waitFor(() =>
-            expect(
-                screen.getByText("As senhas não coincidem")
-            ).toBeInTheDocument()
-        );
-
-        const cadastrarButton = screen.getByRole("button", {
-            name: "Cadastrar agora",
-        });
-        await waitFor(() => expect(cadastrarButton).toBeDisabled());
-    });
-
     it("mostra mensagem de erro quando cadastro falha (username)", async () => {
         mutateAsyncMock.mockResolvedValueOnce({
             success: false,
@@ -179,14 +122,7 @@ describe("FormCadastro", () => {
 
         render(<FormCadastro />, { wrapper });
 
-        await preencherStep1();
-        await irParaStep2();
-
-        await preencherStep2(
-            "admin@sme.prefeitura.sp.gov.br",
-            "Senha123!",
-            "Senha123!"
-        );
+        await preencherFormulario();
 
         const cadastrarButton = screen.getByRole("button", {
             name: "Cadastrar agora",
@@ -195,7 +131,9 @@ describe("FormCadastro", () => {
         fireEvent.click(cadastrarButton);
 
         await waitFor(() =>
-            expect(screen.getByText("Já existe uma conta com este CPF.")).toBeInTheDocument()
+            expect(
+                screen.getByText("Já existe uma conta com este CPF.")
+            ).toBeInTheDocument()
         );
     });
 
@@ -208,58 +146,20 @@ describe("FormCadastro", () => {
 
         render(<FormCadastro />, { wrapper });
 
-        await preencherStep1();
-        await irParaStep2();
-        await preencherStep2("admin@sme.prefeitura.sp.gov.br", "Senha123!", "Senha123!");
+        await preencherFormulario();
 
-        const cadastrarButton = screen.getByRole("button", { name: "Cadastrar agora" });
+        const cadastrarButton = screen.getByRole("button", {
+            name: "Cadastrar agora",
+        });
         await waitFor(() => expect(cadastrarButton).toBeEnabled());
         fireEvent.click(cadastrarButton);
 
         await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
     });
 
-    it("botão voltar leva para a etapa 1", async () => {
-        render(<FormCadastro />, { wrapper });
-
-        await preencherStep1();
-        await irParaStep2();
-
-        await waitFor(() =>
-            expect(
-                screen.getByLabelText("Qual o seu e-mail?")
-            ).toBeInTheDocument()
-        );
-
-        const btn = screen.getByRole("button", { name: /voltar/i });
-
-        await waitFor(() => expect(btn).toBeInTheDocument());
-        fireEvent.click(btn);
-        await waitFor(() =>
-            expect(screen.getByText("Selecione a DRE")).toBeInTheDocument()
-        );
-    });
-
     it("botão cancelar leva para a home", async () => {
         render(<FormCadastro />, { wrapper });
 
-        const cancelarButton = screen.getByRole("button", { name: "Cancelar" });
-        fireEvent.click(cancelarButton);
-
-        expect(pushMock).toHaveBeenCalledWith("/");
-    });
-
-    it("botão cancelar na etapa 2 leva para a home", async () => {
-        render(<FormCadastro />, { wrapper });
-
-        await preencherStep1();
-        await irParaStep2();
-
-        await waitFor(() =>
-            expect(
-                screen.getByLabelText("Qual o seu e-mail?")
-            ).toBeInTheDocument()
-        );
         const cancelarButton = screen.getByRole("button", { name: "Cancelar" });
         fireEvent.click(cancelarButton);
 
