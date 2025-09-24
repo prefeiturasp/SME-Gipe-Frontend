@@ -41,7 +41,9 @@ export function Navbar() {
                                 </span>
                             </div>
                             <div>{capitalizeWords(user.nome)}</div>
-                            <div>{capitalizeWords(user.perfil_acesso)}</div>
+                            <div>
+                                {capitalizeWords(user.perfil_acesso.nome)}
+                            </div>
                         </>
                     )}
                 </div>
