@@ -306,13 +306,16 @@ const SidebarTrigger = React.forwardRef<HTMLDivElement, SidebarTriggerProps>(
                 {open ? (
                     <div className="flex items-center justify-between w-full px-4">
                         <div className="flex items-center justify-start w-full">
-                            <Image
-                                src={logo}
-                                alt="Logo"
-                                width={60}
-                                height={19}
-                                className="object-contain"
-                            />
+                            <div className="relative w-[60px] h-[19px]">
+                                <Image
+                                    src={logo}
+                                    alt="Logo"
+                                    fill
+                                    sizes="60px"
+                                    priority
+                                    className="object-contain"
+                                />
+                            </div>
                         </div>
                         <button onClick={toggleSidebar}>
                             <X size={24} className="text-white" />
