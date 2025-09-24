@@ -137,7 +137,7 @@ export default function Filtros({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
-                <div className="min-w-0 max-w-[420px]">
+                <div className="min-w-0 w-full">
                     <fieldset>
                         <legend className="text-[14px] text-[#42474a] block mb-1">
                             Período
