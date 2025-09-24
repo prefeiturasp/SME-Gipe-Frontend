@@ -140,79 +140,6 @@ export default function Filtros({
         </div>
     );
 
-    const renderPeriodo = () => (
-        <div className="min-w-0 w-full">
-            <fieldset>
-                <legend className="text-[14px] text-[#42474a] block mb-1">
-                    Período
-                </legend>
-                <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border">
-                    <input
-                        id="periodo-inicial"
-                        type="date"
-                        value={periodoInicial}
-                        onChange={(e) => setPeriodoInicial(e.target.value)}
-                        placeholder="Data inicial"
-                        className="h-10 px-2 text-sm font-medium outline-none border-0 bg-transparent text-[#42474a] flex-1 min-w-0"
-                    />
-                    <span className="px-2 text-sm text-[#86858d]">Até</span>
-                    <input
-                        id="periodo-final"
-                        type="date"
-                        value={periodoFinal}
-                        onChange={(e) => setPeriodoFinal(e.target.value)}
-                        placeholder="Data final"
-                        className="h-10 px-2 text-sm font-medium outline-none border-0 bg-transparent text-[#42474a] flex-1 min-w-0"
-                    />
-                </div>
-            </fieldset>
-        </div>
-    );
-
-    const renderTipoViolencia = () => (
-        <div className="min-w-0">
-            <label
-                htmlFor="tipo-violencia"
-                className="text-[14px] text-[#42474a] block mb-1"
-            >
-                Tipo de violência
-            </label>
-            <Select
-                value={tipoViolencia}
-                onValueChange={(v) => setTipoViolencia(v)}
-            >
-                <SelectTrigger id="tipo-violencia">
-                    <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="fisica">Física</SelectItem>
-                    <SelectItem value="psicologica">Psicológica</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-    );
-
-    const renderStatus = () => (
-        <div className="min-w-0">
-            <label
-                htmlFor="status"
-                className="text-[14px] text-[#42474a] block mb-1"
-            >
-                Status
-            </label>
-            <Select value={status} onValueChange={(v) => setStatus(v)}>
-                <SelectTrigger id="status">
-                    <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="incompleta">Incompleta</SelectItem>
-                    <SelectItem value="em-andamento">Em andamento</SelectItem>
-                    <SelectItem value="finalizada">Finalizada</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-    );
-
     return (
         <div className="my-[44px]">
             {isGipe && (
@@ -231,9 +158,86 @@ export default function Filtros({
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
-                {renderPeriodo()}
-                {renderTipoViolencia()}
-                {renderStatus()}
+                <div className="min-w-0 w-full">
+                    <fieldset>
+                        <legend className="text-[14px] text-[#42474a] block mb-1">
+                            Período
+                        </legend>
+                        <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border">
+                            <input
+                                id="periodo-inicial"
+                                type="date"
+                                value={periodoInicial}
+                                onChange={(e) =>
+                                    setPeriodoInicial(e.target.value)
+                                }
+                                placeholder="Data inicial"
+                                className="h-10 px-2 text-sm font-medium outline-none border-0 bg-transparent text-[#42474a] flex-1 min-w-0"
+                            />
+                            <span className="px-2 text-sm text-[#86858d]">
+                                Até
+                            </span>
+                            <input
+                                id="periodo-final"
+                                type="date"
+                                value={periodoFinal}
+                                onChange={(e) =>
+                                    setPeriodoFinal(e.target.value)
+                                }
+                                placeholder="Data final"
+                                className="h-10 px-2 text-sm font-medium outline-none border-0 bg-transparent text-[#42474a] flex-1 min-w-0"
+                            />
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div className="min-w-0">
+                    <label
+                        htmlFor="tipo-violencia"
+                        className="text-[14px] text-[#42474a] block mb-1"
+                    >
+                        Tipo de violência
+                    </label>
+                    <Select
+                        value={tipoViolencia}
+                        onValueChange={(v) => setTipoViolencia(v)}
+                    >
+                        <SelectTrigger id="tipo-violencia">
+                            <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="fisica">Física</SelectItem>
+                            <SelectItem value="psicologica">
+                                Psicológica
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="min-w-0">
+                    <label
+                        htmlFor="status"
+                        className="text-[14px] text-[#42474a] block mb-1"
+                    >
+                        Status
+                    </label>
+                    <Select value={status} onValueChange={(v) => setStatus(v)}>
+                        <SelectTrigger id="status">
+                            <SelectValue placeholder="Selecione o status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="incompleta">
+                                Incompleta
+                            </SelectItem>
+                            <SelectItem value="em-andamento">
+                                Em andamento
+                            </SelectItem>
+                            <SelectItem value="finalizada">
+                                Finalizada
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="flex justify-end space-x-2 mt-4">
