@@ -1,8 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    SortHeader,
+    StatusBadge,
+    handleStatusSelect,
+    getStatusSelectedId,
+    getStatusPriority,
+} from "./helpers";
 import { Search } from "lucide-react";
 import {
     Tooltip,
@@ -23,48 +29,116 @@ export type Ocorrencia = {
 export const columns: ColumnDef<Ocorrencia>[] = [
     {
         accessorKey: "protocolo",
-        header: () => (
-            <div className="text-[14px] text-[#42474a]">Protocolo</div>
+        header: ({ column, table }) => (
+            <SortHeader
+                column={column}
+                table={table}
+                title="Protocolo"
+                options={[
+                    { id: "asc", label: "Crescente (0 - 10)", desc: false },
+                    { id: "desc", label: "Decrescente (10 - 0)", desc: true },
+                ]}
+            />
         ),
     },
     {
         accessorKey: "dataHora",
-        header: () => (
-            <div className="text-[14px] text-[#42474a]">Data/Hora</div>
+        header: ({ column, table }) => (
+            <SortHeader
+                column={column}
+                table={table}
+                title="Data/Hora"
+                options={[
+                    {
+                        id: "recent",
+                        label: "Do mais recente ao mais antigo",
+                        desc: false,
+                    },
+                    {
+                        id: "oldest",
+                        label: "Do mais antigo ao mais recente",
+                        desc: true,
+                    },
+                ]}
+                selectedIdMapper={(sortState) => {
+                    if (!sortState) return undefined;
+                    return sortState.desc ? "oldest" : "recent";
+                }}
+            />
         ),
     },
     {
         accessorKey: "codigoEol",
-        header: () => (
-            <div className="text-[14px] text-[#42474a]">Código EOL</div>
+        header: ({ column, table }) => (
+            <SortHeader
+                column={column}
+                table={table}
+                title="Código EOL"
+                options={[
+                    { id: "asc", label: "Crescente (0 - 10)", desc: false },
+                    { id: "desc", label: "Decrescente (10 - 0)", desc: true },
+                ]}
+            />
         ),
     },
     {
         accessorKey: "tipoViolencia",
-        header: () => (
-            <div className="text-[14px] text-[#42474a]">Tipo de violência</div>
+        header: ({ column, table }) => (
+            <SortHeader
+                column={column}
+                table={table}
+                title="Tipo de violência"
+                options={[
+                    {
+                        id: "alpha",
+                        label: "Ordem alfabética (A - Z)",
+                        desc: false,
+                    },
+                    {
+                        id: "alphaInv",
+                        label: "Ordem alfabética inversa (Z - A)",
+                        desc: true,
+                    },
+                ]}
+                selectedIdMapper={(sortState) => {
+                    if (!sortState) return undefined;
+                    return sortState.desc ? "alphaInv" : "alpha";
+                }}
+            />
         ),
+        sortingFn: (rowA, rowB, columnId) => {
+            const a = String(rowA.getValue(columnId)).toLowerCase();
+            const b = String(rowB.getValue(columnId)).toLowerCase();
+            return a.localeCompare(b);
+        },
     },
     {
         accessorKey: "status",
-        header: () => <div className="text-[14px] text-[#42474a]">Status</div>,
+        header: ({ column, table }) => (
+            <SortHeader
+                column={column}
+                table={table}
+                title="Status"
+                options={[
+                    { id: "incompleta", label: "Incompleta", desc: false },
+                    { id: "em-andamento", label: "Em andamento", desc: false },
+                    { id: "finalizada", label: "Finalizada", desc: false },
+                ]}
+                selectedIdMapper={() => getStatusSelectedId()}
+                onSelect={(opt) => handleStatusSelect(opt, table, column.id)}
+            />
+        ),
+        sortingFn: (rowA, rowB, columnId) => {
+            const a = String(rowA.getValue(columnId));
+            const b = String(rowB.getValue(columnId));
+            const priority = getStatusPriority();
+            const va = priority[a];
+            const vb = priority[b];
+            return va - vb;
+        },
         cell: ({ row }) => {
             const status = row.getValue("status");
-            let className;
-
-            switch (status) {
-                case "Incompleta":
-                    className = "bg-[#D06D12] hover:bg-[#D06D12]";
-                    break;
-                case "Finalizada":
-                    className = "bg-[#297805] hover:bg-[#297805]";
-                    break;
-                case "Em andamento":
-                    className = "bg-[#086397] hover:bg-[#086397]";
-                    break;
-            }
-
-            return <Badge className={className}>{status as string}</Badge>;
+            return <StatusBadge status={status as string} />;
         },
     },
     {
@@ -79,11 +153,9 @@ export const columns: ColumnDef<Ocorrencia>[] = [
                             <TooltipTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="
-                    h-[27px] w-[27px] p-0 rounded-[4px]
-                    bg-white border border-[#086397]
-                    hover:bg-gray-100
-                  "
+                                    className={
+                                        "h-[27px] w-[27px] p-0 rounded-[4px] bg-white border border-[#086397] hover:bg-gray-100"
+                                    }
                                 >
                                     <span className="sr-only">Visualizar</span>
                                     <Search className="h-3 w-3 text-[#086397]" />

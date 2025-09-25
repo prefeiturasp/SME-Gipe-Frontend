@@ -128,35 +128,34 @@ export default function ModalAlterarEmail({
                                     </FormItem>
                                 )}
                             />
-                            {!errorMessage && (
-                                <Aviso
-                                    icon={
-                                        updateSuccess ? (
-                                            <Check className="w-[22px]" />
-                                        ) : null
-                                    }
-                                >
-                                    {!updateSuccess ? (
-                                        <>
-                                            Você já possui um endereço de e-mail
-                                            cadastrado. Ao alterá-lo, todas as
-                                            comunicações serão enviadas para o
-                                            novo endereço.
-                                        </>
-                                    ) : (
-                                        <>
-                                            Quase lá! Um e-mail de confirmação
-                                            foi enviado para o novo endereço.
-                                            Basta acessá-lo e seguir as
-                                            instruções para concluir a
-                                            alteração.
-                                        </>
-                                    )}
-                                </Aviso>
-                            )}
-                        </div>
 
-                        <ErrorMessage message={errorMessage} />
+                            <ErrorMessage message={errorMessage} />
+
+                            <Aviso
+                                icon={
+                                    updateSuccess ? (
+                                        <Check className="w-[22px]" />
+                                    ) : null
+                                }
+                            >
+                                {!updateSuccess ? (
+                                    <>
+                                        <strong>Importante:</strong> Ao alterar o e-mail cadastrado, todas as
+                                        comunicações serão enviadas para o novo endereço. Além disso, ele se
+                                        tornará padrão e será utilizado para acessar todos os sistemas da SME
+                                        aos quais você já possui acesso.
+                                    </>
+                                ) : (
+                                    <>
+                                        Quase lá! Um e-mail de confirmação
+                                        foi enviado para o novo endereço.
+                                        Basta acessá-lo e seguir as
+                                        instruções para concluir a
+                                        alteração.
+                                    </>
+                                )}
+                            </Aviso>
+                        </div>
 
                         <DialogFooter className="mt-6">
                             {updateSuccess ? (
