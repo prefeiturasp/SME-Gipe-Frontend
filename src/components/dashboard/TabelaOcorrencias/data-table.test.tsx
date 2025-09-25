@@ -3,14 +3,23 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { DataTable } from "./data-table";
-import { columns } from "./columns";
-import type { Ocorrencia } from "./columns";
+import { Ocorrencia } from "./useOcorrenciasColumns";
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: () => ({
+        isGipe: true,
+        isPontoFocal: false,
+        isAssistenteOuDiretor: false,
+    }),
+}));
 
 function makeRows(n: number): Ocorrencia[] {
     return Array.from({ length: n }).map((_, i) => ({
         protocolo: `P${i + 1}`,
         dataHora: `2025-09-${String(i + 1).padStart(2, "0")} 10:00`,
         codigoEol: `EOL${i + 1}`,
+        dre: `DRE-${i + 1}`,
+        nomeUe: `UE-${i + 1}`,
         tipoViolencia: "Física",
         status: "Em andamento",
         id: String(i + 1),
@@ -20,9 +29,7 @@ function makeRows(n: number): Ocorrencia[] {
 describe("DataTable - paginação e empty", () => {
     it("mostra botão de paginação correto para mais de uma página", async () => {
         const rows = makeRows(11);
-        render(
-            <DataTable<Ocorrencia, unknown> columns={columns} data={rows} />
-        );
+        render(<DataTable data={rows} />);
 
         expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
@@ -35,9 +42,7 @@ describe("DataTable - paginação e empty", () => {
 
     it("navega com next e prev buttons", async () => {
         const rows = makeRows(11);
-        render(
-            <DataTable<Ocorrencia, unknown> columns={columns} data={rows} />
-        );
+        render(<DataTable data={rows} />);
 
         const user = userEvent.setup();
 
@@ -53,7 +58,7 @@ describe("DataTable - paginação e empty", () => {
     });
 
     it("renderiza mensagem de 'Nenhum resultado encontrado.' quando data é vazia", () => {
-        render(<DataTable<Ocorrencia, unknown> columns={columns} data={[]} />);
+        render(<DataTable data={[]} />);
         expect(
             screen.getByText("Nenhum resultado encontrado.")
         ).toBeInTheDocument();
