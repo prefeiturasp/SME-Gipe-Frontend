@@ -1,4 +1,4 @@
-import { Ocorrencia } from "./columns";
+import { Ocorrencia } from "./useOcorrenciasColumns";
 
 const tipos = [
     "Ocorrência com objeto sem ameaça (arma de fogo, arma branca, etc)",
@@ -24,12 +24,16 @@ export async function getData(): Promise<Ocorrencia[]> {
         const codigoEol = String(10000 + i);
         const tipoViolencia = randomFrom(tipos);
         const status = randomFrom(statuses);
+        const dre = `DRE-${String.fromCharCode(65 + (i % 10))}`;
+        const nomeUe = `ESCOLA MUNICIPAL ${i}`;
 
         items.push({
             id,
             protocolo,
             dataHora,
             codigoEol,
+            dre,
+            nomeUe,
             tipoViolencia,
             status,
         });
