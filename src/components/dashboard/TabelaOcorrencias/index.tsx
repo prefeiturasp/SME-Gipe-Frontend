@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { columns, Ocorrencia } from "./columns";
+import { Ocorrencia } from "./useOcorrenciasColumns";
 import { DataTable } from "./data-table";
 import { getData } from "./mockData";
 import { Button } from "@/components/ui/button";
@@ -124,9 +124,21 @@ export default function TabelaOcorrencias() {
         const matchPeriodoLocal = (itemDataHora: string) =>
             matchPeriodo(itemDataHora, periodoInicial, periodoFinal);
 
+        function matchDre(itemDre: string) {
+            if (!dre) return true;
+            return normalizeText(itemDre).includes(normalizeText(dre));
+        }
+
+        function matchNomeUe(itemNomeUe: string) {
+            if (!nomeUe) return true;
+            return normalizeText(itemNomeUe).includes(normalizeText(nomeUe));
+        }
+
         return data.filter((item) => {
             return (
                 matchCodigo(item.codigoEol) &&
+                matchDre(item.dre || "") &&
+                matchNomeUe(item.nomeUe || "") &&
                 matchTipo(item.tipoViolencia) &&
                 matchStatus(item.status) &&
                 matchPeriodoLocal(item.dataHora)
@@ -183,7 +195,7 @@ export default function TabelaOcorrencias() {
                     onApply={handleApplyFilters}
                 />
             )}
-            <DataTable columns={columns} data={filteredData} />
+            <DataTable data={filteredData} />
         </div>
     );
 }
