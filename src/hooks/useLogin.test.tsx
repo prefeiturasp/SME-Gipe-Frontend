@@ -44,7 +44,7 @@ describe("useLogin", () => {
             cpf: "12345678900",
             login: "fulano",
             cargo: { nome: "admin" },
-            perfil_acesso: { nome: "Gestor" },
+            perfil_acesso: { nome: "Gestor", codigo: 123 },
             unidade_lotacao: [{ nomeUnidade: "EMEF Teste" }],
             token: "fake-token",
         };
@@ -64,7 +64,10 @@ describe("useLogin", () => {
         expect(setUserMock).toHaveBeenCalledWith({
             nome: fakeResponse.name,
             identificador: fakeResponse.login,
-            perfil_acesso: fakeResponse.perfil_acesso.nome,
+            perfil_acesso: {
+                nome: fakeResponse.perfil_acesso.nome,
+                codigo: fakeResponse.perfil_acesso.codigo,
+            },
             unidade: fakeResponse.unidade_lotacao,
             email: fakeResponse.email,
             cpf: fakeResponse.cpf,
