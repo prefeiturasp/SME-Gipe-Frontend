@@ -80,4 +80,49 @@ describe("AlterarSenha", () => {
             ).toBeInTheDocument();
         });
     });
+
+    it("exibe mensagem de erro específica quando senha é uma das últimas 5 anteriores", async () => {
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "A nova senha não pode ser uma das ultimas 5 anteriores",
+        });
+
+        render(<AlterarSenha {...defaultProps} />);
+        const user = userEvent.setup();
+        const senhaInput = screen.getByTestId("input-password");
+        const confirmarInput = screen.getByTestId("input-confirm-password");
+
+        await user.type(senhaInput, "Senha@123");
+        await user.type(confirmarInput, "Senha@123");
+        await user.click(screen.getByRole("button", { name: /salvar senha/i }));
+
+        expect(await screen.findByText(/A nova senha não pode ser uma das ultimas 5 anteriores/i)).toBeInTheDocument();
+        expect(screen.getByText(/crie uma nova senha/i)).toBeInTheDocument();
+    });
+
+    it("exibe mensagem customizada para token expirado", async () => {
+        mutateAsyncMock.mockResolvedValueOnce({
+            success: false,
+            error: "Token inválido ou expirado.",
+        });
+
+        render(<AlterarSenha {...defaultProps} />);
+        const user = userEvent.setup();
+
+        const senhaInput = screen.getByTestId("input-password");
+        const confirmarInput = screen.getByTestId("input-confirm-password");
+
+        await user.type(senhaInput, "Senha@123");
+        await user.type(confirmarInput, "Senha@123");
+
+        fireEvent.click(screen.getByRole("button", { name: /salvar senha/i }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                /Por segurança, o link de redefinição expira em 5 minutos\. Solicite um novo para redefinir sua senha\./i)
+            ).toBeInTheDocument();
+        });
+    });
+
 });
