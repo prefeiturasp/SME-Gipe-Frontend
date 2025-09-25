@@ -106,14 +106,26 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                                                     cell
                                                 )}
                                                 className={cn(
+                                                    "px-2 text-sm text-gray-800",
                                                     isAction
                                                         ? "w-[49px] min-w-[49px] max-w-[49px] px-0"
                                                         : ""
                                                 )}
                                             >
-                                                {flexRender(
-                                                    cell.column?.columnDef.cell,
-                                                    cell.getContext()
+                                                {isAction ? (
+                                                    flexRender(
+                                                        cell.column.columnDef
+                                                            .cell,
+                                                        cell.getContext()
+                                                    )
+                                                ) : (
+                                                    <div className="line-clamp-2">
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </div>
                                                 )}
                                             </TableCell>
                                         );
