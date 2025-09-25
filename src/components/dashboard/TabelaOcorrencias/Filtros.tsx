@@ -163,7 +163,7 @@ export default function Filtros({
                         <legend className="text-[14px] text-[#42474a] block mb-1">
                             Período
                         </legend>
-                        <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border">
+                        <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border h-[40px]">
                             <input
                                 id="periodo-inicial"
                                 type="date"
