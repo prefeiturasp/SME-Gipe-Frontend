@@ -44,12 +44,19 @@ class Cadastro_Localizadores {
     return '//form//button[contains(text(), "Cadastrar agora")]';
   }
 
+  // Mensagem de e-mail já cadastrado
   mensagem_email_ja_cadastrado() {
     return '/html/body/div/div[2]/div/form/div[7]';
   }
 
-    CPF_ja_cadastrado() {
+  // Mensagem CPF já cadastrado
+  CPF_ja_cadastrado() {
     return '/html/body/div/div[2]/div/form/div[7]';
+  }
+
+  // Campo de e-mail na segunda etapa (caso tenha diferença)
+  input_campo_email() {
+    return 'input[data-testid="input-email"]';
   }
 }
 
