@@ -5,12 +5,12 @@ import { Navbar } from "./Navbar";
 interface MockUser {
     identificador: string;
     nome: string;
-    perfil_acesso: string;
+    perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
     identificador: "12345",
     nome: "JOÃO DA SILVA",
-    perfil_acesso: "ASSISTENTE DE DIRETOR",
+    perfil_acesso: { nome: "ASSISTENTE DE DIRETOR", codigo: 3085 },
 };
 
 vi.mock("@/stores/useUserStore", () => ({
@@ -41,7 +41,7 @@ describe("Navbar", () => {
         const mockUserCPF = {
             identificador: "12345678901",
             nome: "MARIA DA SILVA",
-            perfil_acesso: "DIRETOR",
+            perfil_acesso: { nome: "DIRETOR", codigo: 3360 },
         };
         vi.doMock("@/stores/useUserStore", () => ({
             useUserStore: (
