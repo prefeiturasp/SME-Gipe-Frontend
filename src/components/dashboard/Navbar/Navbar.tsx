@@ -6,7 +6,7 @@ import LogoGipe from "@/assets/images/logo-gipe-navbar.webp";
 import SignOutButton from "./SignOutButton";
 
 function capitalizeWords(str: string) {
-    return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    return str?.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function Navbar() {
