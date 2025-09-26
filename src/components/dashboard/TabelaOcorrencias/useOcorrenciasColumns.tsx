@@ -128,12 +128,8 @@ export const useOcorrenciasColumns = () => {
                     />
                 ),
                 sortingFn: (rowA, rowB, columnId) => {
-                    const a = String(
-                        rowA.getValue(columnId) || ""
-                    ).toLowerCase();
-                    const b = String(
-                        rowB.getValue(columnId) || ""
-                    ).toLowerCase();
+                    const a = String(rowA.getValue(columnId)).toLowerCase();
+                    const b = String(rowB.getValue(columnId)).toLowerCase();
                     return a.localeCompare(b);
                 },
             });
@@ -166,12 +162,8 @@ export const useOcorrenciasColumns = () => {
                     />
                 ),
                 sortingFn: (rowA, rowB, columnId) => {
-                    const a = String(
-                        rowA.getValue(columnId) || ""
-                    ).toLowerCase();
-                    const b = String(
-                        rowB.getValue(columnId) || ""
-                    ).toLowerCase();
+                    const a = String(rowA.getValue(columnId)).toLowerCase();
+                    const b = String(rowB.getValue(columnId)).toLowerCase();
                     return a.localeCompare(b);
                 },
             });
