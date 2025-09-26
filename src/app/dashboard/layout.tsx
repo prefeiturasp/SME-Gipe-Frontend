@@ -17,6 +17,10 @@ export default function DashboardLayout({
                         <Navbar />
                         <main className="flex-1 overflow-auto bg-muted p-4">
                             {children}
+                            <footer className="p-4 text-sm text-[#42474a]">
+                                Sistema homologado para navegadores: Google
+                                Chrome e Firefox
+                            </footer>
                         </main>
                     </div>
                 </SidebarProvider>
