@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import Dashboard from "./page";
 
-// Mock do Zustand store
 vi.mock("@/stores/useUserStore", () => {
     return {
         useUserStore: vi.fn(),
@@ -34,7 +33,7 @@ describe("Dashboard page", () => {
     it("renderiza conteúdo protegido se user estiver presente", async () => {
         const fakeUser = {
             nome: "Fake User",
-            perfil_acesso: "Assistente de diretor",
+            perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
             unidade: [{ nomeUnidade: "Escola Fake" }],
         };
 
@@ -47,13 +46,10 @@ describe("Dashboard page", () => {
         render(<Dashboard />);
 
         await waitFor(() => {
-            expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-            expect(screen.getAllByText(/fake user/i).length).toBeGreaterThan(0);
-            expect(screen.getByText(/escola fake/i)).toBeInTheDocument();
             expect(
-                screen.getByText(/assistente de diretor/i)
+                screen.getByText(/intercorrências institucionais/i)
             ).toBeInTheDocument();
-            expect(screen.getByText(/área protegida/i)).toBeInTheDocument();
+            expect(screen.getByText(/\+ nova ocorrência/i)).toBeInTheDocument();
         });
     });
 });

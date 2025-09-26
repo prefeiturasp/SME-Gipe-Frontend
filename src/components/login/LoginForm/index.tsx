@@ -72,10 +72,9 @@ export default function LoginForm() {
                                     align="start"
                                     content={
                                         <>
-                                            Se você é de uma EMEF ou EMEI,
-                                            utilize seu RF. Se você é de um
-                                            CEMEI ou CEI, use o seu CPF para
-                                            realizar o login.
+                                            Se você é de uma unidade direta utilize o RF para realizar o login.
+                                            <br />
+                                            Se for de uma unidade indireta/parceira utilize o CPF para realizar o login.
                                         </>
                                     }
                                 />
@@ -109,13 +108,9 @@ export default function LoginForm() {
                                         align="start"
                                         content={
                                             <>
-                                                Se você é de uma EMEF ou EMEI,
-                                                utilize sua senha institucional.{" "}
+                                                Se você é de uma unidade direta utilize sua senha institucional.
                                                 <br />
-                                                Se você é de um CEMEI ou CEI,
-                                                clique em
-                                                &quot;Cadastre-se&quot; para
-                                                criar sua senha.
+                                                Se for de uma unidade indireta/parceira clique em &quot;Cadastre-se&quot; para criar sua senha.
                                             </>
                                         }
                                     />

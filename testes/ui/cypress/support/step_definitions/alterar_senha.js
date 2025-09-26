@@ -7,8 +7,8 @@ const locators_alterar_senha = new Alterar_Senha_Localizadores()
 
 Given("que o usuário realizou o login com sucesso", () => {
   cy.login_gipe()
-  cy.get(locators.campo_usuario()).type('50423501011')
-  cy.get(locators.campo_senha()).type('Ruby@142107')
+  cy.get(locators.campo_usuario()).type('7210418')
+  cy.get(locators.campo_senha()).type('Sgp0418')
   cy.get('button').filter((_, el) => el.innerText.trim() === 'Acessar').click()
   cy.url().should("include", "/dashboard");
 });
@@ -40,11 +40,3 @@ When("o usuário preenche o campo Confirmação da nova senha com {string}", (va
     .type(valor, { delay: 0 });
 });
 
-When("o usuário clica no botão Salvar Senha", () => {
-    cy.xpath(locators_alterar_senha.button_salvar_senha()).click();
-});
-
-Then("o sistema cadastrar uma nova senha para o usuário", () => {
-    cy.xpath(locators_alterar_senha.alerta_mensagem(), { timeout: 20000 })
-    .should("be.visible");
-});

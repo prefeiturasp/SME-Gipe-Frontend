@@ -41,7 +41,7 @@ describe("MeusDadosPage", () => {
     it("deve exibir o nome completo", () => {
         const fakeUser = {
             nome: "Fake User",
-            perfil_acesso: "Assistente de diretor",
+            perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
             unidade: [{ nomeUnidade: "Escola Fake" }],
         };
 

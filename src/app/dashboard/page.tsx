@@ -1,5 +1,8 @@
 "use client";
 
+import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
+import TabelaOcorrencias from "@/components/dashboard/TabelaOcorrencias";
+import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/useUserStore";
 
 export default function Dashboard() {
@@ -14,54 +17,24 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="bg-white shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                            Dashboard
-                        </h1>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                            <h2 className="text-lg font-medium text-blue-900 mb-2">
-                                Informações da Sessão
-                            </h2>
-                            <div className="space-y-2 text-sm text-blue-800">
-                                <p>
-                                    <strong>Nome:</strong> {user.nome}
-                                </p>
-                                <p>
-                                    <strong>Perfil de acesso:</strong>{" "}
-                                    {user.perfil_acesso}
-                                </p>
-                                <p>
-                                    <strong>Unidade educacional:</strong>{" "}
-                                    {user.unidade
-                                        .map((unidade) => unidade.nomeUnidade)
-                                        .join(", ")}
-                                </p>
-                                <p>
-                                    <strong>Email:</strong> {user.email}
-                                </p>
-                                <p>
-                                    <strong>CPF:</strong> {user.cpf}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900 mb-3">
-                                Área Protegida
-                            </h3>
-                            <p className="text-gray-600">
-                                Este conteúdo só é visível para usuários
-                                autenticados. Você está vendo isso porque fez
-                                login com sucesso!
-                            </p>
-                        </div>
-                    </div>
+        <div>
+            <h1 className="px-[16px] pt-4 text-[24px] font-bold text-[#42474a]">
+                Intercorrências Institucionais
+            </h1>
+            <QuadroBranco>
+                <div className="flex flex-row space-x-4 items-center justify-between">
+                    <span className="text-[14px] text-[#42474a]">
+                        Para registrar uma nova intercorrência institucional,
+                        clique no botão &quot;nova ocorrência&quot;
+                    </span>
+                    <Button variant="submit" size="sm" className="font-normal">
+                        + Nova ocorrência
+                    </Button>
                 </div>
-            </div>
+            </QuadroBranco>
+            <QuadroBranco>
+                <TabelaOcorrencias />
+            </QuadroBranco>
         </div>
     );
 }

@@ -6,7 +6,7 @@ import FormDados from "./FormDados";
 
 interface MockUser {
     nome: string;
-    perfil_acesso: string;
+    perfil_acesso: { nome: string; codigo: number };
     cpf: string;
     unidade: { nomeUnidade: string }[];
     email: string;
@@ -15,7 +15,7 @@ const mockUser: MockUser = {
     nome: "João da Silva",
     email: "joao@email.com",
     cpf: "123.456.789-00",
-    perfil_acesso: "Administrador",
+    perfil_acesso: { nome: "Administrador", codigo: 0 },
     unidade: [{ nomeUnidade: "Escola XPTO" }],
 };
 
@@ -23,34 +23,32 @@ const mutateAsyncMock = vi.fn();
 const toastMock = vi.fn();
 
 vi.mock("@/stores/useUserStore", () => {
-  const mockUser = {
-    nome: "João da Silva",
-    email: "joao@email.com",
-    cpf: "123.456.789-00",
-    perfil_acesso: "Administrador",
-    unidade: [{ nomeUnidade: "Escola XPTO" }],
-  };
+    const mockUser = {
+        nome: "João da Silva",
+        email: "joao@email.com",
+        cpf: "123.456.789-00",
+        perfil_acesso: { nome: "Administrador", codigo: 0 },
+        unidade: [{ nomeUnidade: "Escola XPTO" }],
+    };
 
-  const mockSetUser = vi.fn();
+    const mockSetUser = vi.fn();
 
-  const mockUserStore = {
-    user: mockUser,
-    setUser: mockSetUser,
-  };
+    const mockUserStore = {
+        user: mockUser,
+        setUser: mockSetUser,
+    };
 
-  const mockedHook = (selector: (state: typeof mockUserStore) => unknown) =>
-    selector(mockUserStore);
+    const mockedHook = (selector: (state: typeof mockUserStore) => unknown) =>
+        selector(mockUserStore);
 
-  return {
-    useUserStore: Object.assign(mockedHook, {
-      getState: () => mockUserStore,
-    }),
-    // 👇 exporta se precisar usar nos expects
-    __mockUser: mockUser,
-    __mockSetUser: mockSetUser,
-  };
+    return {
+        useUserStore: Object.assign(mockedHook, {
+            getState: () => mockUserStore,
+        }),
+        __mockUser: mockUser,
+        __mockSetUser: mockSetUser,
+    };
 });
-
 
 vi.mock("@/hooks/useAtualizarNome", () => ({
     default: () => ({
@@ -60,7 +58,7 @@ vi.mock("@/hooks/useAtualizarNome", () => ({
 }));
 
 vi.mock("@/components/ui/headless-toast", () => ({
-    toast: (args: any) => toastMock(args),
+    toast: (args: unknown) => toastMock(args),
 }));
 
 const pushSpy = vi.fn();
@@ -95,7 +93,7 @@ describe("FormDados", () => {
         expect(screen.getByLabelText(/e-mail/i)).toHaveValue(mockUser.email);
         expect(screen.getByLabelText(/cpf/i)).toHaveValue(mockUser.cpf);
         expect(screen.getByLabelText(/perfil de acesso/i)).toHaveValue(
-            mockUser.perfil_acesso
+            mockUser.perfil_acesso.nome
         );
     });
 
@@ -104,7 +102,9 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);
@@ -123,7 +123,9 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);
@@ -144,7 +146,9 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);
@@ -165,7 +169,9 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);
@@ -184,7 +190,9 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);
@@ -203,12 +211,17 @@ describe("FormDados", () => {
     });
 
     it("mostra erro ao confirmar edição se mutateAsync falhar", async () => {
-        mutateAsyncMock.mockResolvedValue({ success: false, error: "Erro fake" });
+        mutateAsyncMock.mockResolvedValue({
+            success: false,
+            error: "Erro fake",
+        });
         const user = userEvent.setup();
         renderWithQueryProvider(<FormDados />);
 
         const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", { name: /alterar nome/i });
+        const btnAlterarNome = screen.getByRole("button", {
+            name: /alterar nome/i,
+        });
         await user.click(btnAlterarNome);
 
         await user.clear(inputNome);

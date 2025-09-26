@@ -8,10 +8,9 @@ export interface LoginSuccessResponse {
     email: string;
     cpf: string;
     login: string;
-    visoes: unknown[];
     perfil_acesso: {
         nome: string;
-        codigo: string;
+        codigo: number;
     };
     unidade_lotacao: [
         {

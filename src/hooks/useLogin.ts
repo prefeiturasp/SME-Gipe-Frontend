@@ -20,7 +20,7 @@ const useLogin = () => {
             setUser({
                 nome: name,
                 identificador: login,
-                perfil_acesso: perfil_acesso.nome,
+                perfil_acesso: perfil_acesso,
                 unidade: unidade_lotacao,
                 email,
                 cpf,

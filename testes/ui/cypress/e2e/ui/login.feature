@@ -11,10 +11,10 @@ Funcionalidade: Login
     Então o resultado esperado para "<cenario>" deve ser exibido
 
     Exemplos:
-      | cenario              | rf       | senha      |
-      | Login válido padrão  | 6913261  | Sgp3261    |
-      | Login inválido       | 6913261  | Sgp326     |
-      | Senha em branco      | 6913261  |            |
-      | RF em branco         |          | Sgp3261    |
+      | cenario              | rf           | senha          |
+      | Login válido padrão  | 7210418      | Sgp0418        |
+      | Login inválido       | 6913261      | Sgp326         |
+      | Senha em branco      | 6913261      |                |
+      | RF em branco         |              | Sgp3261        |
       
 

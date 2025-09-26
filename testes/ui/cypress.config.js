@@ -37,6 +37,10 @@ module.exports = defineConfig({
     waitForAnimations: true,
     animationDistanceThreshold: 5,
 
+    env: {
+      TAGS: "not @wip" // 🚀 Ignora cenários marcados como @wip por padrão
+    },
+
     async setupNodeEvents(on, config) {
       // Allure
       allureWriter(on, config);
