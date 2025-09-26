@@ -6,11 +6,36 @@ import {
     waitFor,
     within,
 } from "@testing-library/react";
-import { describe, it, vi, expect } from "vitest";
+import { describe, it, vi, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import Filtros, { FiltrosValues } from "./Filtros";
 
+interface MockUser {
+    identificador: string;
+    nome: string;
+    perfil_acesso: { nome: string; codigo: number };
+}
+
+let mockUser: MockUser = {
+    identificador: "12345",
+    nome: "JOÃO DA SILVA",
+    perfil_acesso: { nome: "GIPE", codigo: 0 },
+};
+
+vi.mock("@/stores/useUserStore", () => ({
+    useUserStore: (selector: (state: { user: MockUser }) => unknown) =>
+        selector({ user: mockUser }),
+}));
+
 describe("Filtros component", () => {
+    beforeEach(() => {
+        mockUser = {
+            identificador: "12345",
+            nome: "JOÃO DA SILVA",
+            perfil_acesso: { nome: "GIPE", codigo: 0 },
+        };
+    });
+
     it("deve chamar onApply com initialValues quando Filtrar for clicado", () => {
         const onApply = vi.fn();
         const initialValues: Partial<FiltrosValues> = {
@@ -160,5 +185,55 @@ describe("Filtros component", () => {
 
         expect(() => fireEvent.click(filtrarButton)).not.toThrow();
         expect(() => fireEvent.click(limparButton)).not.toThrow();
+    });
+
+    it("deve exibir os campos corretos para o perfil Ponto Focal", () => {
+        mockUser = {
+            identificador: "12345",
+            nome: "Ponto Focal",
+            perfil_acesso: { nome: "Ponto Focal", codigo: 1 },
+        };
+
+        render(<Filtros />);
+
+        expect(screen.getByLabelText(/Código EOL/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole("combobox", { name: /Nome da UE/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("combobox", { name: /DRE/i })
+        ).not.toBeInTheDocument();
+        expect(screen.getByText(/Período/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole("combobox", { name: /Tipo de violência/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("combobox", { name: /Status/i })
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir os campos corretos para o perfil Assistente/Diretor", () => {
+        mockUser = {
+            identificador: "12345",
+            nome: "Assistente",
+            perfil_acesso: { nome: "Assistente", codigo: 3085 },
+        };
+
+        render(<Filtros />);
+
+        expect(screen.queryByLabelText(/Código EOL/i)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("combobox", { name: /Nome da UE/i })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("combobox", { name: /DRE/i })
+        ).not.toBeInTheDocument();
+        expect(screen.getByText(/Período/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole("combobox", { name: /Tipo de violência/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("combobox", { name: /Status/i })
+        ).toBeInTheDocument();
     });
 });

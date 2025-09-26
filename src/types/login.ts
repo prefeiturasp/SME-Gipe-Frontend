@@ -10,7 +10,7 @@ export interface LoginSuccessResponse {
     login: string;
     perfil_acesso: {
         nome: string;
-        codigo: string;
+        codigo: number;
     };
     unidade_lotacao: [
         {

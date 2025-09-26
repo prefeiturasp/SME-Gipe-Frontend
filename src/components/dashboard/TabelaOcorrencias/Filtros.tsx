@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 export type FiltrosValues = {
     codigoEol: string;
@@ -31,6 +32,7 @@ export default function Filtros({
     onApply,
     onClear,
 }: Readonly<FiltrosProps>) {
+    const { isGipe, isPontoFocal } = useUserPermissions();
     const [codigoEol, setCodigoEol] = useState(initialValues?.codigoEol ?? "");
     const [nomeUe, setNomeUe] = useState(initialValues?.nomeUe ?? "");
     const [dre, setDre] = useState(initialValues?.dre ?? "");
@@ -78,63 +80,82 @@ export default function Filtros({
         !!tipoViolencia ||
         !!status;
 
+    const renderCodigoEol = () => (
+        <div className="min-w-0">
+            <label
+                htmlFor="codigo-eol"
+                className="text-[14px] text-[#42474a] block mb-1"
+            >
+                Código EOL
+            </label>
+            <input
+                id="codigo-eol"
+                value={codigoEol}
+                onChange={(e) => setCodigoEol(e.target.value)}
+                placeholder="Código EOL"
+                className="flex h-10 w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium rounded-[4px] outline-none focus:bg-[#E8F0FE]"
+            />
+        </div>
+    );
+
+    const renderNomeUe = () => (
+        <div className="min-w-0">
+            <label
+                htmlFor="nome-ue"
+                className="text-[14px] text-[#42474a] block mb-1"
+            >
+                Nome da UE
+            </label>
+            <Select value={nomeUe} onValueChange={(v) => setNomeUe(v)}>
+                <SelectTrigger id="nome-ue">
+                    <SelectValue placeholder="Selecione a UE" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="ue-1">UE 1</SelectItem>
+                    <SelectItem value="ue-2">UE 2</SelectItem>
+                    <SelectItem value="ue-3">UE 3</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
+    const renderDre = () => (
+        <div className="min-w-0">
+            <label
+                htmlFor="dre"
+                className="text-[14px] text-[#42474a] block mb-1"
+            >
+                DRE
+            </label>
+            <Select value={dre} onValueChange={(v) => setDre(v)}>
+                <SelectTrigger id="dre">
+                    <SelectValue placeholder="Selecione a DRE" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="dre-1">DRE 1</SelectItem>
+                    <SelectItem value="dre-2">DRE 2</SelectItem>
+                    <SelectItem value="dre-3">DRE 3</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
     return (
         <div className="my-[44px]">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <div className="min-w-0">
-                    <label
-                        htmlFor="codigo-eol"
-                        className="text-[14px] text-[#42474a] block mb-1"
-                    >
-                        Código EOL
-                    </label>
-                    <input
-                        id="codigo-eol"
-                        value={codigoEol}
-                        onChange={(e) => setCodigoEol(e.target.value)}
-                        placeholder="Código EOL"
-                        className="flex h-10 w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium rounded-[4px] outline-none focus:bg-[#E8F0FE]"
-                    />
+            {isGipe && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    {renderCodigoEol()}
+                    {renderNomeUe()}
+                    {renderDre()}
                 </div>
+            )}
 
-                <div className="min-w-0">
-                    <label
-                        htmlFor="nome-ue"
-                        className="text-[14px] text-[#42474a] block mb-1"
-                    >
-                        Nome da UE
-                    </label>
-                    <Select value={nomeUe} onValueChange={(v) => setNomeUe(v)}>
-                        <SelectTrigger id="nome-ue">
-                            <SelectValue placeholder="Selecione a UE" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ue-1">UE 1</SelectItem>
-                            <SelectItem value="ue-2">UE 2</SelectItem>
-                            <SelectItem value="ue-3">UE 3</SelectItem>
-                        </SelectContent>
-                    </Select>
+            {isPontoFocal && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    {renderCodigoEol()}
+                    {renderNomeUe()}
                 </div>
-
-                <div className="min-w-0">
-                    <label
-                        htmlFor="dre"
-                        className="text-[14px] text-[#42474a] block mb-1"
-                    >
-                        DRE
-                    </label>
-                    <Select value={dre} onValueChange={(v) => setDre(v)}>
-                        <SelectTrigger id="dre">
-                            <SelectValue placeholder="Selecione a DRE" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="dre-1">DRE 1</SelectItem>
-                            <SelectItem value="dre-2">DRE 2</SelectItem>
-                            <SelectItem value="dre-3">DRE 3</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
                 <div className="min-w-0 w-full">
@@ -142,7 +163,7 @@ export default function Filtros({
                         <legend className="text-[14px] text-[#42474a] block mb-1">
                             Período
                         </legend>
-                        <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border">
+                        <div className="flex items-center border border-[#dadada] rounded-[4px] overflow-hidden w-full max-w-full box-border h-[40px]">
                             <input
                                 id="periodo-inicial"
                                 type="date"
