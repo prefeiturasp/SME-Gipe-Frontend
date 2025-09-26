@@ -6,7 +6,7 @@ import { vi } from "vitest";
 interface User {
     nome: string;
     identificador: string | number;
-    perfil_acesso: string;
+    perfil_acesso: { nome: string; codigo: number };
     unidade: [
         {
             nomeUnidade: string;
@@ -66,7 +66,7 @@ describe("useConfirmarEmail", () => {
         const existingUser = {
             nome: "Fulano",
             identificador: "u1",
-            perfil_acesso: "Gestor",
+            perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
                     nomeUnidade: string;
@@ -158,7 +158,7 @@ describe("useConfirmarEmail", () => {
         const existingUser = {
             nome: "Fulano",
             identificador: "u1",
-            perfil_acesso: "Gestor",
+            perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
                     nomeUnidade: string;
@@ -195,7 +195,7 @@ describe("useConfirmarEmail", () => {
         const existingUser = {
             nome: "Fulano",
             identificador: "u1",
-            perfil_acesso: "Gestor",
+            perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
                     nomeUnidade: string;

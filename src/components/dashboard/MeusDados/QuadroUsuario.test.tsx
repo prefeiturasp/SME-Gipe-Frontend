@@ -4,14 +4,14 @@ import { vi } from "vitest";
 const mockUser: MockUser = {
     identificador: "12345",
     nome: "JOÃO DA SILVA",
-    perfil_acesso: "ASSISTENTE DE DIRETOR",
+    perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
     cpf: "123.456.789-00",
 };
 
 interface MockUser {
     identificador: string;
     nome: string;
-    perfil_acesso: string;
+    perfil_acesso: { nome: string; codigo: number };
     cpf: string;
 }
 
