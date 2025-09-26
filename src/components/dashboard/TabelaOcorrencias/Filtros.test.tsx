@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import { describe, it, vi, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
-import Filtros, { FiltrosValues } from "./Filtros";
+import Filtros, { FiltrosValues } from "./filtros";
 
 interface MockUser {
     identificador: string;
