@@ -111,18 +111,31 @@ export const useOcorrenciasColumns = () => {
                         title="DRE"
                         options={[
                             {
-                                id: "asc",
-                                label: "Crescente (0 - 10)",
+                                id: "alpha",
+                                label: "Ordem alfabética (A - Z)",
                                 desc: false,
                             },
                             {
-                                id: "desc",
-                                label: "Decrescente (10 - 0)",
+                                id: "alphaInv",
+                                label: "Ordem alfabética inversa (Z - A)",
                                 desc: true,
                             },
                         ]}
+                        selectedIdMapper={(sortState) => {
+                            if (!sortState) return undefined;
+                            return sortState.desc ? "alphaInv" : "alpha";
+                        }}
                     />
                 ),
+                sortingFn: (rowA, rowB, columnId) => {
+                    const a = String(
+                        rowA.getValue(columnId) || ""
+                    ).toLowerCase();
+                    const b = String(
+                        rowB.getValue(columnId) || ""
+                    ).toLowerCase();
+                    return a.localeCompare(b);
+                },
             });
         }
 
@@ -136,18 +149,31 @@ export const useOcorrenciasColumns = () => {
                         title="Nome da UE"
                         options={[
                             {
-                                id: "asc",
-                                label: "Crescente (0 - 10)",
+                                id: "alpha",
+                                label: "Ordem alfabética (A - Z)",
                                 desc: false,
                             },
                             {
-                                id: "desc",
-                                label: "Decrescente (10 - 0)",
+                                id: "alphaInv",
+                                label: "Ordem alfabética inversa (Z - A)",
                                 desc: true,
                             },
                         ]}
+                        selectedIdMapper={(sortState) => {
+                            if (!sortState) return undefined;
+                            return sortState.desc ? "alphaInv" : "alpha";
+                        }}
                     />
                 ),
+                sortingFn: (rowA, rowB, columnId) => {
+                    const a = String(
+                        rowA.getValue(columnId) || ""
+                    ).toLowerCase();
+                    const b = String(
+                        rowB.getValue(columnId) || ""
+                    ).toLowerCase();
+                    return a.localeCompare(b);
+                },
             });
         }
 
