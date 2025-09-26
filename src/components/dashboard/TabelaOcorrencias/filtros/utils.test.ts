@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchDre, matchNomeUe } from "./filters";
+import { matchDre, matchNomeUe } from "./utils";
 
 describe("TabelaOcorrencias/filters", () => {
     describe("matchDre", () => {

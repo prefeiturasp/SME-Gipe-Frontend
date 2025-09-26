@@ -1,5 +1,5 @@
 import { normalizeText } from "@/lib/utils";
-import { FiltrosValues } from "./Filtros";
+import { FiltrosValues } from ".";
 
 export function parseDataHora(dataHora: string) {
     const [datePart] = dataHora.split(" - ");

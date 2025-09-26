@@ -7,7 +7,7 @@ import { getData } from "./mockData";
 import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
 import Export from "@/assets/icons/Export";
-import Filtros, { FiltrosValues } from "./Filtros";
+import Filtros, { FiltrosValues } from "./filtros";
 
 import {
     hasAnyFilter,
@@ -17,7 +17,7 @@ import {
     matchPeriodo,
     matchStatus,
     matchTipo,
-} from "./filters";
+} from "./filtros/utils";
 
 export default function TabelaOcorrencias() {
     const [data, setData] = useState<Ocorrencia[]>([]);

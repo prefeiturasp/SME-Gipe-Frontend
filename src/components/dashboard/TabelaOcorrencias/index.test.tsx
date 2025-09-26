@@ -26,7 +26,7 @@ vi.mock("./mockData", () => ({
 
 import { getData } from "./mockData";
 import TabelaOcorrencias from "../TabelaOcorrencias";
-import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filters";
+import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
 
 const sampleData = [
     {
