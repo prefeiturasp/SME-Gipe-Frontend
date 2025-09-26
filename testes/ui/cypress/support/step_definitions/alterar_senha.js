@@ -40,12 +40,3 @@ When("o usuário preenche o campo Confirmação da nova senha com {string}", (va
     .type(valor, { delay: 0 });
 });
 
-When("o usuário clica no botão Salvar Senha", () => {
-    cy.xpath(locators_alterar_senha.button_salvar_senha()).click();
-});
-
-Then("o sistema cadastrar uma nova senha para o usuário", () => {
-    cy.xpath(locators_alterar_senha.alerta_mensagem(), { timeout: 20000 })
-    .should("be.visible");
-});
-
