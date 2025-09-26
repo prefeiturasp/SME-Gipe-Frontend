@@ -3,7 +3,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
-    ColumnDef,
     flexRender,
     getCoreRowModel,
     useReactTable,
@@ -23,11 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-}
+import { useOcorrenciasColumns, Ocorrencia } from "./useOcorrenciasColumns";
 
 export function resolveColId<TData, TValue>(
     node: Header<TData, TValue> | Cell<TData, TValue>
@@ -41,10 +36,9 @@ export function hasColumnFlag<TData, TValue>(
     return node?.column ? "true" : "false";
 }
 
-export function DataTable<TData, TValue>({
-    columns,
-    data,
-}: Readonly<DataTableProps<TData, TValue>>) {
+export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
+    const columns = useOcorrenciasColumns();
+
     const table = useReactTable({
         data,
         columns,
@@ -112,14 +106,26 @@ export function DataTable<TData, TValue>({
                                                     cell
                                                 )}
                                                 className={cn(
+                                                    "px-2 text-sm text-gray-800",
                                                     isAction
                                                         ? "w-[49px] min-w-[49px] max-w-[49px] px-0"
                                                         : ""
                                                 )}
                                             >
-                                                {flexRender(
-                                                    cell.column?.columnDef.cell,
-                                                    cell.getContext()
+                                                {isAction ? (
+                                                    flexRender(
+                                                        cell.column.columnDef
+                                                            .cell,
+                                                        cell.getContext()
+                                                    )
+                                                ) : (
+                                                    <div className="line-clamp-2">
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </div>
                                                 )}
                                             </TableCell>
                                         );

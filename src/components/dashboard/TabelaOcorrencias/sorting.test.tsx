@@ -4,6 +4,22 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
 
+interface MockUser {
+    identificador: string;
+    nome: string;
+    perfil_acesso: { nome: string; codigo: number };
+}
+const mockUser: MockUser = {
+    identificador: "12345",
+    nome: "JOÃO DA SILVA",
+    perfil_acesso: { nome: "GIPE", codigo: 0 },
+};
+
+vi.mock("@/stores/useUserStore", () => ({
+    useUserStore: (selector: (state: { user: MockUser }) => unknown) =>
+        selector({ user: mockUser }),
+}));
+
 vi.mock("./mockData", () => ({
     getData: vi.fn(),
 }));
@@ -208,5 +224,123 @@ describe("TabelaOcorrencias - sorting", () => {
             const firstOld = screen.getAllByTestId("td-protocolo")[0];
             expect(within(firstOld).getByText("P0002")).toBeInTheDocument();
         });
+    });
+
+    it("ordena por DRE alfabético e inverso", async () => {
+        const dataWithDre = [
+            {
+                protocolo: "P0001",
+                dataHora: "2025-09-01 10:00",
+                codigoEol: "EOL1",
+                tipoViolencia: "Física",
+                status: "Incompleta",
+                dre: "DRE - Itaquera",
+                nomeUe: "EMEF Alpha",
+                id: "1",
+            },
+            {
+                protocolo: "P0002",
+                dataHora: "2025-09-02 11:00",
+                codigoEol: "EOL2",
+                tipoViolencia: "Psicológica",
+                status: "Finalizada",
+                dre: "DRE - Capela do Socorro",
+                nomeUe: "EMEF Beta",
+                id: "2",
+            },
+            {
+                protocolo: "P0003",
+                dataHora: "2025-09-03 12:00",
+                codigoEol: "EOL3",
+                tipoViolencia: "Material",
+                status: "Finalizada",
+                dre: "DRE - Penha",
+                nomeUe: "EMEF Gamma",
+                id: "3",
+            },
+        ];
+
+        (getData as unknown as Mock).mockResolvedValue(dataWithDre);
+        render(<TabelaOcorrencias />);
+
+        await waitFor(() =>
+            expect(screen.getByText("P0001")).toBeInTheDocument()
+        );
+
+        const dreHeader = screen.getByText("DRE");
+        const user = userEvent.setup();
+
+        await user.click(dreHeader);
+        const alpha = await screen.findByText(/Ordem alfabética \(A - Z\)/i);
+        await user.click(alpha);
+
+        const first = screen.getAllByTestId("td-protocolo")[0];
+        expect(within(first).getByText("P0002")).toBeInTheDocument();
+
+        await user.click(dreHeader);
+        const alphaInv = await screen.findByText(/Ordem alfabética inversa/i);
+        await user.click(alphaInv);
+
+        const firstInv = screen.getAllByTestId("td-protocolo")[0];
+        expect(within(firstInv).getByText("P0003")).toBeInTheDocument();
+    });
+
+    it("ordena por Nome da UE alfabético e inverso", async () => {
+        const dataWithUe = [
+            {
+                protocolo: "P0001",
+                dataHora: "2025-09-01 10:00",
+                codigoEol: "EOL1",
+                tipoViolencia: "Física",
+                status: "Incompleta",
+                dre: "DRE - Itaquera",
+                nomeUe: "CEU Água Azul",
+                id: "1",
+            },
+            {
+                protocolo: "P0002",
+                dataHora: "2025-09-02 11:00",
+                codigoEol: "EOL2",
+                tipoViolencia: "Psicológica",
+                status: "Finalizada",
+                dre: "DRE - Capela do Socorro",
+                nomeUe: "EMEF Prof. João",
+                id: "2",
+            },
+            {
+                protocolo: "P0003",
+                dataHora: "2025-09-03 12:00",
+                codigoEol: "EOL3",
+                tipoViolencia: "Material",
+                status: "Finalizada",
+                dre: "DRE - Penha",
+                nomeUe: "EMEF Dom Pedro I",
+                id: "3",
+            },
+        ];
+
+        (getData as unknown as Mock).mockResolvedValue(dataWithUe);
+        render(<TabelaOcorrencias />);
+
+        await waitFor(() =>
+            expect(screen.getByText("P0001")).toBeInTheDocument()
+        );
+
+        const nomeHeader = screen.getByText("Nome da UE");
+        const user = userEvent.setup();
+
+        await user.click(nomeHeader);
+        const alpha = await screen.findByText(/Ordem alfabética \(A - Z\)/i);
+        await user.click(alpha);
+
+        const first = screen.getAllByTestId("td-protocolo")[0];
+        expect(within(first).getByText("P0001")).toBeInTheDocument();
+
+        await user.click(nomeHeader);
+        const alphaInv = await screen.findByText(/Ordem alfabética inversa/i);
+        await user.click(alphaInv);
+
+        const firstInv = screen.getAllByTestId("td-protocolo")[0];
+        expect(within(firstInv).getByText("P0002")).toBeInTheDocument();
     });
 });

@@ -31,3 +31,10 @@ export function isValidCPF(cpf: string): boolean {
     if (rest !== parseInt(cpf.substring(10, 11))) return false;
     return true;
 }
+
+export function normalizeText(value: string) {
+    return String(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
