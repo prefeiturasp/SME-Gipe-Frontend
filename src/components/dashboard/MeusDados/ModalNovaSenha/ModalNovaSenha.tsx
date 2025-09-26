@@ -29,6 +29,7 @@ import CloseCheck from "@/assets/icons/CloseCheck";
 import formSchema, { FormAlterarSenha } from "./schema";
 import ErrorMessage from "@/components/login/FormCadastro/ErrorMessage";
 import useAtualizarSenha from "@/hooks/useAtualizarSenha";
+import Aviso from "@/components/login/FormCadastro/Aviso";
 
 type ModalNovaSenhaProps = {
     open: boolean;
@@ -284,7 +285,13 @@ export default function ModalNovaSenha({
 
                         <ErrorMessage message={errorMessage} />
 
-                        <DialogFooter className="mt-6">
+                        <div className="w-full mt-8">
+                            <Aviso>
+                                <strong>Importante:</strong> Ao alterar a sua senha, ela se tornará padrão e será utilizada para acessar todos os sistemas da SME aos quais você já possui acesso.
+                            </Aviso>
+                        </div>
+                            
+                        <DialogFooter className="mt-8">
                             <Button
                                 type="button"
                                 size="sm"
