@@ -23,7 +23,7 @@ const user = {
     nome: "Fulano",
     email: "fulano@email.com",
     cargo: "admin",
-    perfil_acesso: "ADMIN",
+    perfil_acesso: { codigo: 0, nome: "ADMIN" },
     unidade: [{ nomeUnidade: "Unidade Teste", codigo: "fake-uuid" }] as [
         { nomeUnidade: string; codigo: string }
     ],
