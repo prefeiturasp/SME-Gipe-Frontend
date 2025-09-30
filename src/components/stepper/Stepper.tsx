@@ -16,52 +16,65 @@ interface StepperProps {
 
 export function Stepper({ steps, currentStep }: StepperProps) {
     return (
-        <div className="flex items-center justify-center w-full mt-8">
+        <div className="flex w-full items-start justify-between">
             {steps.map((step, index) => {
-                const isActive = index + 1 === currentStep;
-                const isCompleted = index + 1 < currentStep;
-                const isLast = index === steps.length - 1;
+                const stepNumber = index + 1;
+                const isActive = stepNumber === currentStep;
+                const isCompleted = stepNumber < currentStep;
 
-                let stepCircleClass =
-                    "flex items-center justify-center w-8 h-8 rounded-full border text-sm font-bold";
-                if (isActive) {
-                    stepCircleClass +=
-                        " bg-[#717FC7] text-white border-[#717FC7]";
-                } else {
-                    stepCircleClass +=
-                        " bg-white text-gray-500 border-[#6F777C]";
-                }
+                const renderStepContent = () => {
+                    if (isCompleted) {
+                        return (
+                            <Check
+                                width={16}
+                                height={16}
+                                color="#fff"
+                                data-testid="check-icon"
+                            />
+                        );
+                    }
+                    return null;
+                };
 
                 return (
                     <div
                         key={step.label}
-                        className="flex items-start justify-center flex-1"
+                        className="flex flex-1 flex-col items-center justify-start"
                     >
-                        <div className={stepCircleClass}>
-                            {isCompleted ? (
-                                <Check width={20} height={20} color="#717FC7" data-testid="check-icon"/>
-                            ) : (
-                                index + 1
-                            )}
+                        <div className="flex w-full items-center">
+                            <div className="flex-1 border-t-[1.5px] border-[#DADADA]" />
+                            <div
+                                className={cn(
+                                    "flex h-[20px] w-[20px] items-center justify-center rounded-full border-[2px] mx-2",
+                                    {
+                                        "border-[#717FC7] bg-[#717FC7]":
+                                            isCompleted,
+                                        "border-[#717FC7] bg-transparent":
+                                            isActive,
+                                        "border-[#DADADA] bg-transparent":
+                                            !isActive && !isCompleted,
+                                    }
+                                )}
+                            >
+                                {renderStepContent()}
+                            </div>
+                            <div className="flex-1 border-t-[1.5px] border-[#DADADA]" />
                         </div>
-                        <div className="ml-2 flex flex-col justify-start mt-1">
+                        <div className="mt-2 text-center">
                             <p
                                 className={cn(
-                                    "text-md",
-                                    isActive
-                                        ? "text-[#42474a]"
-                                        : "text-[#6f777c]"
+                                    "flex h-[42px] w-[100px] items-center justify-center text-sm font-bold",
+                                    {
+                                        "text-[#42474a]":
+                                            isActive || isCompleted,
+                                        "text-[#dadada]":
+                                            !isActive && !isCompleted,
+                                    }
                                 )}
                             >
                                 {step.label}
                             </p>
-                            <p className="text-sm text-[#6f777c]">
-                                {step.description}
-                            </p>
                         </div>
-                        {!isLast && (
-                            <div className="-ml-8 -mr-4 flex-1 h-[1px] bg-[#717FC7] self-start mt-3" />
-                        )}
                     </div>
                 );
             })}
