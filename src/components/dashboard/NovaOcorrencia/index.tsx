@@ -43,7 +43,7 @@ export default function NovaOcorrencia() {
             </QuadroBranco>
             <QuadroBranco>
                 <div className="mt-4">
-                    <Stepper steps={steps} currentStep={2} />
+                    <Stepper steps={steps} currentStep={1} />
                 </div>
             </QuadroBranco>
         </div>
