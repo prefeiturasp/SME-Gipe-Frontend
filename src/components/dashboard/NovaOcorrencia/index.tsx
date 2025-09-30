@@ -1,5 +1,25 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
+import { Stepper } from "@/components/stepper/Stepper";
+
+const steps = [
+    {
+        label: "Cadastro de ocorrência",
+        description: "",
+    },
+    {
+        label: "Fase 02",
+        description: "",
+    },
+    {
+        label: "Fase 03",
+        description: "",
+    },
+    {
+        label: "Anexos",
+        description: "",
+    },
+];
 
 export default function NovaOcorrencia() {
     return (
@@ -21,7 +41,11 @@ export default function NovaOcorrencia() {
                     </p>
                 </div>
             </QuadroBranco>
-            <QuadroBranco>Formulário de nova ocorrência</QuadroBranco>
+            <QuadroBranco>
+                <div className="mt-4">
+                    <Stepper steps={steps} currentStep={2} />
+                </div>
+            </QuadroBranco>
         </div>
     );
 }
