@@ -21,7 +21,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 {title}
             </h1>
             {showBackButton && (
-                <Button variant="customOutline" onClick={() => router.back()}>
+                <Button
+                    variant="customOutline"
+                    size="sm"
+                    onClick={() => router.back()}
+                >
                     <ArrowLeft />
                     &nbsp;Voltar
                 </Button>
