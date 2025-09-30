@@ -23,4 +23,10 @@ describe("Dashboard page", () => {
             expect(screen.getByText(/\+ nova ocorrência/i)).toBeInTheDocument();
         });
     });
+
+    it("deve ter um link para a página de nova ocorrência", () => {
+        render(<Dashboard />);
+        const link = screen.getByRole("link", { name: /\+ nova ocorrência/i });
+        expect(link).toHaveAttribute("href", "/dashboard/nova-ocorrencia");
+    });
 });
