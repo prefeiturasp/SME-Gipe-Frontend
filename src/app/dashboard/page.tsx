@@ -2,6 +2,7 @@ import PageHeader from "@/components/dashboard/PageHeader/PageHeader";
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import TabelaOcorrencias from "@/components/dashboard/TabelaOcorrencias";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Dashboard() {
     return (
@@ -16,8 +17,16 @@ export default function Dashboard() {
                         Para registrar uma nova intercorrência institucional,
                         clique no botão &quot;nova ocorrência&quot;
                     </span>
-                    <Button variant="submit" size="sm" className="font-normal">
-                        + Nova ocorrência
+
+                    <Button
+                        asChild
+                        variant="submit"
+                        size="sm"
+                        className="font-normal"
+                    >
+                        <Link href="/dashboard/nova-ocorrencia" replace>
+                            + Nova ocorrência
+                        </Link>
                     </Button>
                 </div>
             </QuadroBranco>
