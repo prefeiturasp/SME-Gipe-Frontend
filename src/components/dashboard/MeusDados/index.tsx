@@ -1,5 +1,5 @@
 import React from "react";
-import Header from "./Header";
+import PageHeader from "../PageHeader/PageHeader";
 import QuadroUsuario from "./QuadroUsuario";
 
 import QuadroBranco from "../QuadroBranco/QuadroBranco";
@@ -8,7 +8,7 @@ import FormDados from "./FormDados";
 const MeusDados: React.FC = () => {
     return (
         <>
-            <Header />
+            <PageHeader title="Meus Dados" />
             <QuadroBranco>
                 <span className="text-[14px] text-[#42474a]">
                     Esses são os seus dados cadastrados. Você pode alterá-los
