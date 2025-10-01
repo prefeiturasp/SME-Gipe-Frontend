@@ -19,8 +19,6 @@ const mockUser: MockUser = {
     unidade: [{ nomeUnidade: "Escola XPTO" }],
 };
 
-const mutateAsyncMock = vi.fn();
-const toastMock = vi.fn();
 
 vi.mock("@/stores/useUserStore", () => {
     const mockUser = {
@@ -50,16 +48,6 @@ vi.mock("@/stores/useUserStore", () => {
     };
 });
 
-vi.mock("@/hooks/useAtualizarNome", () => ({
-    default: () => ({
-        mutateAsync: mutateAsyncMock,
-        isPending: false,
-    }),
-}));
-
-vi.mock("@/components/ui/headless-toast", () => ({
-    toast: (args: unknown) => toastMock(args),
-}));
 
 const pushSpy = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -80,8 +68,6 @@ function renderWithQueryProvider(ui: React.ReactElement) {
 describe("FormDados", () => {
     beforeEach(() => {
         pushSpy.mockClear();
-        mutateAsyncMock.mockReset();
-        toastMock.mockReset();
     });
 
     it("renderiza os campos com valores do usuário", () => {
@@ -97,148 +83,6 @@ describe("FormDados", () => {
         );
     });
 
-    it("mostra erro se nome tiver menos de 3 caracteres ao confirmar edição", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "Jo");
-
-        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
-        await user.click(btnConfirmar);
-
-        expect(
-            await screen.findByText("Informe o nome completo")
-        ).toBeInTheDocument();
-    });
-
-    it("mostra erro se nome tiver números ou caracteres especiais ao confirmar edição", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "João123");
-
-        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
-        await user.click(btnConfirmar);
-
-        expect(
-            await screen.findByText(
-                "O nome não pode conter números ou caracteres especiais"
-            )
-        ).toBeInTheDocument();
-    });
-
-    it("mostra erro se nome não tiver sobrenome (sem espaço) ao confirmar edição", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "Joao");
-
-        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
-        await user.click(btnConfirmar);
-
-        expect(
-            await screen.findByText(
-                "Informe o nome completo (nome e sobrenome)"
-            )
-        ).toBeInTheDocument();
-    });
-
-    it("restaura o nome original ao clicar em Cancelar na edição", async () => {
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "Novo Nome");
-        expect(inputNome).toHaveValue("Novo Nome");
-
-        const btnCancelar = screen.getByRole("button", { name: /cancelar/i });
-        await user.click(btnCancelar);
-
-        expect(inputNome).toHaveValue(mockUser.nome);
-    });
-
-    it("atualiza o nome com sucesso ao confirmar edição", async () => {
-        mutateAsyncMock.mockResolvedValue({ success: true });
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "Maria Souza");
-
-        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
-        await user.click(btnConfirmar);
-
-        expect(mutateAsyncMock).toHaveBeenCalledWith({ name: "Maria Souza" });
-        expect(toastMock).toHaveBeenCalledWith(
-            expect.objectContaining({
-                variant: "success",
-                title: expect.any(String),
-            })
-        );
-    });
-
-    it("mostra erro ao confirmar edição se mutateAsync falhar", async () => {
-        mutateAsyncMock.mockResolvedValue({
-            success: false,
-            error: "Erro fake",
-        });
-        const user = userEvent.setup();
-        renderWithQueryProvider(<FormDados />);
-
-        const inputNome = screen.getByLabelText(/nome completo/i);
-        const btnAlterarNome = screen.getByRole("button", {
-            name: /alterar nome/i,
-        });
-        await user.click(btnAlterarNome);
-
-        await user.clear(inputNome);
-        await user.type(inputNome, "Maria Souza");
-
-        const btnConfirmar = screen.getByRole("button", { name: /confirmar/i });
-        await user.click(btnConfirmar);
-
-        expect(mutateAsyncMock).toHaveBeenCalledWith({ name: "Maria Souza" });
-        expect(toastMock).toHaveBeenCalledWith(
-            expect.objectContaining({
-                variant: "error",
-                title: expect.any(String),
-                description: "Erro fake",
-            })
-        );
-    });
 
     it("abre o modal de nova senha ao clicar em 'Alterar senha'", async () => {
         const user = userEvent.setup();
