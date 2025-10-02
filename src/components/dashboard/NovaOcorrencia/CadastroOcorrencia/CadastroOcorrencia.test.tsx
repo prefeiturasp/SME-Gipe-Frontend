@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import CadastroOcorrencia from "./index";
+import CadastroOcorrencia from "../index";
 import { vi } from "vitest";
 
 const fakeUser = {
@@ -69,9 +69,11 @@ describe("CadastroOcorrencia", () => {
         expect(dateInput.value).toBe("2025-10-02");
         expect(nextButton).toBeDisabled();
 
-        const radioSim = screen.getByLabelText<HTMLInputElement>(/Sim/);
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
-        await waitFor(() => expect(radioSim.checked).toBe(true));
+        await waitFor(() =>
+            expect(radioSim).toHaveAttribute("aria-checked", "true")
+        );
 
         await waitFor(() => expect(nextButton).toBeEnabled());
     });
