@@ -1,6 +1,7 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
+import CadastroOcorrencia from "./CadastroOcorrencia";
 
 const steps = [
     {
@@ -45,6 +46,7 @@ export default function NovaOcorrencia() {
                 <div className="mt-4">
                     <Stepper steps={steps} currentStep={1} />
                 </div>
+                <CadastroOcorrencia />
             </QuadroBranco>
         </div>
     );
