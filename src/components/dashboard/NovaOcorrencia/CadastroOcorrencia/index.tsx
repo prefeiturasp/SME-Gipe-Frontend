@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { formSchema, CadastroOcorrenciaData } from "./schema";
 
@@ -42,9 +43,9 @@ export default function CadastroOcorrencia() {
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(() => {})}
-                className="flex flex-col gap-4 mt-4"
+                className="flex flex-col gap-6 mt-4"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                         control={form.control}
                         name="dataOcorrencia"
@@ -70,7 +71,9 @@ export default function CadastroOcorrencia() {
                         name="dre"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Qual a DRE?*</FormLabel>
+                                <FormLabel className="text-[#b0b0b0]">
+                                    Qual a DRE?*
+                                </FormLabel>
                                 <Select
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
@@ -97,7 +100,9 @@ export default function CadastroOcorrencia() {
                     name="unidadeEducacional"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Qual a Unidade Educacional?*</FormLabel>
+                            <FormLabel className="text-[#b0b0b0]">
+                                Qual a Unidade Educacional?*
+                            </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
@@ -128,40 +133,41 @@ export default function CadastroOcorrencia() {
                                 depredação?*
                             </FormLabel>
                             <FormControl>
-                                <div className="flex items-center space-x-4 pt-2">
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="radio"
-                                            value="Sim"
-                                            checked={field.value === "Sim"}
-                                            onChange={field.onChange}
-                                            name={field.name}
-                                            className="form-radio h-4 w-4"
-                                        />
-                                        <span className="text-sm">Sim</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="radio"
-                                            value="Não"
-                                            checked={field.value === "Não"}
-                                            onChange={field.onChange}
-                                            name={field.name}
-                                            className="form-radio h-4 w-4"
-                                        />
-                                        <span className="text-sm">Não</span>
-                                    </label>
+                                <div className="pt-2">
+                                    <RadioGroup
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        className="flex flex-col space-y-2"
+                                    >
+                                        <label className="flex items-center space-x-2">
+                                            <RadioGroupItem value="Sim" />
+                                            <span className="text-sm text-[#42474a]">
+                                                Sim
+                                            </span>
+                                        </label>
+                                        <label className="flex items-center space-x-2">
+                                            <RadioGroupItem value="Não" />
+                                            <span className="text-sm text-[#42474a]">
+                                                Não
+                                            </span>
+                                        </label>
+                                    </RadioGroup>
                                 </div>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <div className="flex justify-end gap-4 mt-4">
-                    <Button variant="outline" disabled>
+                <div className="flex justify-end gap-4">
+                    <Button size="sm" variant="outline" disabled>
                         Anterior
                     </Button>
-                    <Button type="submit" variant="submit" disabled={!isValid}>
+                    <Button
+                        size="sm"
+                        type="submit"
+                        variant="submit"
+                        disabled={!isValid}
+                    >
                         Próximo
                     </Button>
                 </div>
