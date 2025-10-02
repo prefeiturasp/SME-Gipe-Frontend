@@ -26,6 +26,12 @@ import { formSchema, CadastroOcorrenciaData } from "./schema";
 export default function CadastroOcorrencia() {
     const user = useUserStore((state) => state.user);
 
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const maxDate = `${yyyy}-${mm}-${dd}`;
+
     const form = useForm<CadastroOcorrenciaData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -59,6 +65,7 @@ export default function CadastroOcorrencia() {
                                         type="date"
                                         placeholder="dd/mm/aaaa"
                                         {...field}
+                                        max={maxDate}
                                         className="has-calendar"
                                     />
                                 </FormControl>

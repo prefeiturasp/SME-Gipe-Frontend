@@ -77,4 +77,82 @@ describe("CadastroOcorrencia", () => {
 
         await waitFor(() => expect(nextButton).toBeEnabled());
     });
+
+    it("não permite data futura e exibe erro", async () => {
+        render(<CadastroOcorrencia />);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        expect(nextButton).toBeDisabled();
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+
+        // data futura: amanhã
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+        const dd = String(tomorrow.getDate()).padStart(2, "0");
+        const futureDate = `${yyyy}-${mm}-${dd}`;
+
+        fireEvent.change(dateInput, { target: { value: futureDate } });
+        expect(dateInput.value).toBe(futureDate);
+
+        // Mensagem de validação do schema
+        const error = await screen.findByText(
+            /A data da ocorrência não pode ser no futuro\./i
+        );
+        expect(error).toBeInTheDocument();
+
+        // Botão continua desabilitado
+        expect(nextButton).toBeDisabled();
+    });
+
+    it("exibe erro quando a data é inválida (NaN)", async () => {
+        const { container } = render(<CadastroOcorrencia />);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        expect(nextButton).toBeDisabled();
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+
+        // valor que gera Date invalid (NaN)
+        fireEvent.change(dateInput, { target: { value: "invalid-date" } });
+        expect(dateInput.value).toBe("");
+
+        const formEl = container.querySelector("form") as HTMLFormElement;
+        fireEvent.submit(formEl);
+
+        const error = await screen.findByText(
+            /A data da ocorrência é obrigatória\.|A data da ocorrência não pode ser no futuro\./i
+        );
+        expect(error).toBeInTheDocument();
+
+        expect(nextButton).toBeDisabled();
+    });
+
+    it("schema rejeita data inválida (NaN) via safeParse", async () => {
+        const mod = await import("./schema");
+        const formSchema = mod.formSchema;
+
+        const result = formSchema.safeParse({
+            dataOcorrencia: "invalid-date",
+            dre: "DRE Teste",
+            unidadeEducacional: "EMEF Teste",
+            tipoOcorrencia: "Sim",
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            const messages = result.error.issues.map(
+                (i: { message: string }) => i.message
+            );
+            expect(messages).toContain(
+                "A data da ocorrência não pode ser no futuro."
+            );
+        }
+    });
 });
