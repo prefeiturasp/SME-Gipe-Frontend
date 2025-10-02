@@ -143,7 +143,7 @@ export default function CadastroOcorrencia() {
                                 <div className="pt-2">
                                     <RadioGroup
                                         onValueChange={field.onChange}
-                                        value={field.value}
+                                        value={field.value ?? ""}
                                         className="flex flex-col space-y-2"
                                     >
                                         <label className="flex items-center space-x-2">
@@ -165,7 +165,7 @@ export default function CadastroOcorrencia() {
                         </FormItem>
                     )}
                 />
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-end gap-2">
                     <Button size="sm" variant="outline" disabled>
                         Anterior
                     </Button>
