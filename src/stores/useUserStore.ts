@@ -1,14 +1,7 @@
 import { create } from "zustand";
-import {
-    setEncryptedCookie,
-    getDecryptedCookie,
-    removeCookie,
-} from "@/lib/cookieUtils";
 import { logoutAction } from "@/actions/logout";
 
-const COOKIE_KEY = "user_data";
-
-interface User {
+export interface User {
     nome: string;
     identificador: string | number;
     perfil_acesso: {
@@ -31,18 +24,12 @@ interface UserState {
     clearUser: () => void;
 }
 
-const getInitialUser = (): User | null => {
-    return getDecryptedCookie<User>(COOKIE_KEY);
-};
-
 export const useUserStore = create<UserState>((set) => ({
-    user: getInitialUser(),
+    user: null,
     setUser: (user) => {
-        setEncryptedCookie(COOKIE_KEY, user, 1);
         set({ user });
     },
     clearUser: () => {
-        removeCookie(COOKIE_KEY);
         logoutAction();
         set({ user: null });
     },
