@@ -5,12 +5,12 @@ import { vi } from "vitest";
 import type { Mock } from "vitest";
 
 interface MockUser {
-    identificador: string;
+    username: string;
     nome: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
-    identificador: "12345",
+    username: "12345",
     nome: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };

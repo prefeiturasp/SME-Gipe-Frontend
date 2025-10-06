@@ -5,28 +5,56 @@ import { vi } from "vitest";
 import FormDados from "./FormDados";
 
 interface MockUser {
-    nome: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
     cpf: string;
-    unidade: { nomeUnidade: string }[];
+    unidades: {
+        dre: { nome: string; codigo_eol: string; sigla: string };
+        ue: { nome: string; codigo_eol: string; sigla: string };
+    }[];
     email: string;
 }
 const mockUser: MockUser = {
-    nome: "João da Silva",
+    name: "João da Silva",
     email: "joao@email.com",
     cpf: "123.456.789-00",
     perfil_acesso: { nome: "Administrador", codigo: 0 },
-    unidade: [{ nomeUnidade: "Escola XPTO" }],
+    unidades: [
+        {
+            dre: {
+                codigo_eol: "001",
+                nome: "DRE Teste",
+                sigla: "DRT",
+            },
+            ue: {
+                codigo_eol: "0001",
+                nome: "EMEF Teste",
+                sigla: "EMEF",
+            },
+        },
+    ],
 };
-
 
 vi.mock("@/stores/useUserStore", () => {
     const mockUser = {
-        nome: "João da Silva",
+        name: "João da Silva",
         email: "joao@email.com",
         cpf: "123.456.789-00",
         perfil_acesso: { nome: "Administrador", codigo: 0 },
-        unidade: [{ nomeUnidade: "Escola XPTO" }],
+        unidades: [
+            {
+                dre: {
+                    codigo_eol: "001",
+                    nome: "DRE Teste",
+                    sigla: "DRT",
+                },
+                ue: {
+                    codigo_eol: "0001",
+                    nome: "EMEF Teste",
+                    sigla: "EMEF",
+                },
+            },
+        ],
     };
 
     const mockSetUser = vi.fn();
@@ -47,7 +75,6 @@ vi.mock("@/stores/useUserStore", () => {
         __mockSetUser: mockSetUser,
     };
 });
-
 
 const pushSpy = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -74,7 +101,7 @@ describe("FormDados", () => {
         renderWithQueryProvider(<FormDados />);
 
         expect(screen.getByLabelText(/nome completo/i)).toHaveValue(
-            mockUser.nome
+            mockUser.name
         );
         expect(screen.getByLabelText(/e-mail/i)).toHaveValue(mockUser.email);
         expect(screen.getByLabelText(/cpf/i)).toHaveValue(mockUser.cpf);
@@ -82,7 +109,6 @@ describe("FormDados", () => {
             mockUser.perfil_acesso.nome
         );
     });
-
 
     it("abre o modal de nova senha ao clicar em 'Alterar senha'", async () => {
         const user = userEvent.setup();

@@ -5,7 +5,7 @@ import { vi } from "vitest";
 
 interface User {
     nome: string;
-    identificador: string | number;
+    username: string | number;
     perfil_acesso: { nome: string; codigo: number };
     unidade: [
         {
@@ -65,7 +65,7 @@ describe("useConfirmarEmail", () => {
     it("atualiza apenas o email do usuário quando sucesso e user existe", async () => {
         const existingUser = {
             nome: "Fulano",
-            identificador: "u1",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
@@ -157,7 +157,7 @@ describe("useConfirmarEmail", () => {
     it("não chama setUser se response.success for false", async () => {
         const existingUser = {
             nome: "Fulano",
-            identificador: "u1",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
@@ -194,7 +194,7 @@ describe("useConfirmarEmail", () => {
     it("não chama setUser se response.new_mail for falsy", async () => {
         const existingUser = {
             nome: "Fulano",
-            identificador: "u1",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {

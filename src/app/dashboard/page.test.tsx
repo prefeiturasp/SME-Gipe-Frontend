@@ -24,9 +24,11 @@ describe("Dashboard page", () => {
         });
     });
 
-    it("deve ter um link para a página de nova ocorrência", () => {
+    it("deve ter um link para a página de nova ocorrência", async () => {
         render(<Dashboard />);
-        const link = screen.getByRole("link", { name: /\+ nova ocorrência/i });
+        const link = await screen.findByRole("link", {
+            name: /\+ nova ocorrência/i,
+        });
         expect(link).toHaveAttribute("href", "/dashboard/nova-ocorrencia");
     });
 });

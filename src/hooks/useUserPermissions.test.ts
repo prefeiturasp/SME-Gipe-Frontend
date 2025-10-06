@@ -9,7 +9,7 @@ import {
 } from "@/const";
 
 interface MockUser {
-    identificador: string;
+    username: string;
     nome: string;
     perfil_acesso: { nome: string; codigo: number };
 }
@@ -26,13 +26,13 @@ vi.mock("@/stores/useUserStore", () => ({
     ) =>
         selector({
             user: mockUser,
-            setUser: vi.fn() as Mock,
-            clearUser: vi.fn() as Mock,
+            setUser: vi.fn(),
+            clearUser: vi.fn(),
         }),
 }));
 
 const createMockUser = (codigo: number): MockUser => ({
-    identificador: "12345",
+    username: "12345",
     nome: "Test User",
     perfil_acesso: { nome: "Test Profile", codigo },
 });

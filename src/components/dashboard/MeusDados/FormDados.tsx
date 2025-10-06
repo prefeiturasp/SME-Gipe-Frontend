@@ -27,15 +27,15 @@ const FormDados: React.FC = () => {
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            nome: user.name,
-            email: user.email,
+            nome: user?.name,
+            email: user?.email,
             senha: "****************",
-            cpf: user.cpf,
-            dre: user.unidades?.map((unidade) => unidade.dre.nome).join(", "),
-            unidade: user.unidades
+            cpf: user?.cpf,
+            dre: user?.unidades?.map((unidade) => unidade.dre.nome).join(", "),
+            unidade: user?.unidades
                 ?.map((unidade) => unidade.ue.nome)
                 .join(", "),
-            perfil: user.perfil_acesso?.nome,
+            perfil: user?.perfil_acesso?.nome,
         },
     });
 

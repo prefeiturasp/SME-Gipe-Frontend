@@ -32,7 +32,7 @@ describe("loginAction", () => {
         process.env = originalEnv;
     });
 
-    it("retorna dados do usuário e seta o cookie com sucesso", async () => {
+    it("retorna success true quando tem sucesso", async () => {
         process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         const fakeUser = {
@@ -65,7 +65,7 @@ describe("loginAction", () => {
             sameSite: "lax",
         });
 
-        expect(result).toEqual({ success: true, data: fakeUser });
+        expect(result).toEqual({ success: true });
     });
 
     it("retorna erro com a mensagem do servidor se a requisição falhar", async () => {
