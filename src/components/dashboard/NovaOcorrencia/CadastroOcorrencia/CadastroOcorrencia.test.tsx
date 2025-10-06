@@ -5,12 +5,20 @@ import { vi } from "vitest";
 
 const fakeUser = {
     nome: "Usuário Teste",
-    identificador: "user-1",
+    username: "382888888",
     perfil_acesso: { nome: "DRE Teste", codigo: 123 },
-    unidade: [
+    unidades: [
         {
-            nomeUnidade: "EMEF Teste",
-            codigo: "ue-1",
+            dre: {
+                codigo_eol: "001",
+                nome: "DRE Teste",
+                sigla: "DRT",
+            },
+            ue: {
+                codigo_eol: "0001",
+                nome: "EMEF Teste",
+                sigla: "EMEF",
+            },
         },
     ],
     email: "a@b.com",
@@ -99,13 +107,11 @@ describe("CadastroOcorrencia", () => {
         fireEvent.change(dateInput, { target: { value: futureDate } });
         expect(dateInput.value).toBe(futureDate);
 
-        // Mensagem de validação do schema
         const error = await screen.findByText(
             /A data da ocorrência não pode ser no futuro\./i
         );
         expect(error).toBeInTheDocument();
 
-        // Botão continua desabilitado
         expect(nextButton).toBeDisabled();
     });
 
@@ -119,7 +125,6 @@ describe("CadastroOcorrencia", () => {
             /Quando a ocorrência aconteceu\?\*/i
         );
 
-        // valor que gera Date invalid (NaN)
         fireEvent.change(dateInput, { target: { value: "invalid-date" } });
         expect(dateInput.value).toBe("");
 

@@ -8,9 +8,7 @@ import {
     LoginErrorResponse,
 } from "@/types/login";
 
-type LoginResult =
-    | { success: true; data: LoginSuccessResponse }
-    | { success: false; error: string };
+type LoginResult = { success: true } | { success: false; error: string };
 
 export async function loginAction(
     credentials: LoginRequest
@@ -30,7 +28,7 @@ export async function loginAction(
             path: "/",
             sameSite: "lax",
         });
-        return { success: true, data };
+        return { success: true };
     } catch (err) {
         const error = err as AxiosError<LoginErrorResponse>;
 

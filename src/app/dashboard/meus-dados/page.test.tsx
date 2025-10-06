@@ -40,9 +40,22 @@ describe("MeusDadosPage", () => {
 
     it("deve exibir o nome completo", () => {
         const fakeUser = {
-            nome: "Fake User",
+            name: "Fake User",
             perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
-            unidade: [{ nomeUnidade: "Escola Fake" }],
+            unidades: [
+                {
+                    dre: {
+                        codigo_eol: "001",
+                        nome: "DRE Teste",
+                        sigla: "DRT",
+                    },
+                    ue: {
+                        codigo_eol: "0001",
+                        nome: "EMEF Teste",
+                        sigla: "EMEF",
+                    },
+                },
+            ],
         };
 
         (

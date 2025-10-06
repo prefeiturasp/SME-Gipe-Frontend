@@ -2,15 +2,15 @@ import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 const mockUser: MockUser = {
-    identificador: "12345",
-    nome: "JOÃO DA SILVA",
+    username: "12345",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
     cpf: "123.456.789-00",
 };
 
 interface MockUser {
-    identificador: string;
-    nome: string;
+    username: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
     cpf: string;
 }
@@ -25,9 +25,9 @@ vi.mock("@/stores/useUserStore", () => ({
 import QuadroUsuario from "./QuadroUsuario";
 
 describe("QuadroUsuario", () => {
-    it("renderiza o nome do usuário", () => {
+    it("renderiza o name do usuário", () => {
         render(<QuadroUsuario />);
-        expect(screen.getByText(mockUser.nome)).toBeInTheDocument();
+        expect(screen.getByText(mockUser.name)).toBeInTheDocument();
     });
 
     it("renderiza o CPF do usuário", () => {
@@ -38,7 +38,7 @@ describe("QuadroUsuario", () => {
     it("renderiza o RF do usuário", () => {
         render(<QuadroUsuario />);
         expect(
-            screen.getByText(`RF: ${mockUser.identificador}`)
+            screen.getByText(`RF: ${mockUser.username}`)
         ).toBeInTheDocument();
     });
 });

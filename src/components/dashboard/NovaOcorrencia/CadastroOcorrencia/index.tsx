@@ -37,8 +37,8 @@ export default function CadastroOcorrencia() {
         mode: "onChange",
         defaultValues: {
             dataOcorrencia: "",
-            dre: user?.perfil_acesso.nome,
-            unidadeEducacional: user?.unidade[0]?.nomeUnidade,
+            dre: user?.unidades[0]?.dre.nome ?? undefined,
+            unidadeEducacional: user?.unidades[0]?.ue.nome ?? undefined,
             tipoOcorrencia: undefined,
         },
     });
@@ -51,133 +51,141 @@ export default function CadastroOcorrencia() {
                 onSubmit={form.handleSubmit(() => {})}
                 className="flex flex-col gap-6 mt-4"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <fieldset className="contents">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                            control={form.control}
+                            name="dataOcorrencia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Quando a ocorrência aconteceu?*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="date"
+                                            placeholder="dd/mm/aaaa"
+                                            {...field}
+                                            max={maxDate}
+                                            className="has-calendar"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="dre"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#b0b0b0]">
+                                        Qual a DRE?*
+                                    </FormLabel>
+                                    <Select
+                                        key={field.value}
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        disabled
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione a DRE" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {field.value && (
+                                                <SelectItem value={field.value}>
+                                                    {field.value}
+                                                </SelectItem>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <FormField
                         control={form.control}
-                        name="dataOcorrencia"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    Quando a ocorrência aconteceu?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="date"
-                                        placeholder="dd/mm/aaaa"
-                                        {...field}
-                                        max={maxDate}
-                                        className="has-calendar"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="dre"
+                        name="unidadeEducacional"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="text-[#b0b0b0]">
-                                    Qual a DRE?*
+                                    Qual a Unidade Educacional?*
                                 </FormLabel>
                                 <Select
+                                    key={field.value}
                                     onValueChange={field.onChange}
-                                    defaultValue={field.value}
+                                    value={field.value}
                                     disabled
                                 >
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Selecione a DRE" />
+                                            <SelectValue placeholder="Selecione a unidade" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value={field.value}>
-                                            {field.value}
-                                        </SelectItem>
+                                        {field.value && (
+                                            <SelectItem value={field.value}>
+                                                {field.value}
+                                            </SelectItem>
+                                        )}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                </div>
-                <FormField
-                    control={form.control}
-                    name="unidadeEducacional"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-[#b0b0b0]">
-                                Qual a Unidade Educacional?*
-                            </FormLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                disabled
-                            >
+                    <FormField
+                        control={form.control}
+                        name="tipoOcorrencia"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>
+                                    A ocorrência é sobre furto, roubo, invasão
+                                    ou depredação?*
+                                </FormLabel>
                                 <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione a unidade" />
-                                    </SelectTrigger>
+                                    <div className="pt-2">
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
+                                            value={field.value ?? ""}
+                                            className="flex flex-col space-y-2"
+                                        >
+                                            <label className="flex items-center space-x-2">
+                                                <RadioGroupItem value="Sim" />
+                                                <span className="text-sm text-[#42474a]">
+                                                    Sim
+                                                </span>
+                                            </label>
+                                            <label className="flex items-center space-x-2">
+                                                <RadioGroupItem value="Não" />
+                                                <span className="text-sm text-[#42474a]">
+                                                    Não
+                                                </span>
+                                            </label>
+                                        </RadioGroup>
+                                    </div>
                                 </FormControl>
-                                <SelectContent>
-                                    <SelectItem value={field.value}>
-                                        {field.value}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="tipoOcorrencia"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>
-                                A ocorrência é sobre furto, roubo, invasão ou
-                                depredação?*
-                            </FormLabel>
-                            <FormControl>
-                                <div className="pt-2">
-                                    <RadioGroup
-                                        onValueChange={field.onChange}
-                                        value={field.value ?? ""}
-                                        className="flex flex-col space-y-2"
-                                    >
-                                        <label className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Sim" />
-                                            <span className="text-sm text-[#42474a]">
-                                                Sim
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Não" />
-                                            <span className="text-sm text-[#42474a]">
-                                                Não
-                                            </span>
-                                        </label>
-                                    </RadioGroup>
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="outline" disabled>
-                        Anterior
-                    </Button>
-                    <Button
-                        size="sm"
-                        type="submit"
-                        variant="submit"
-                        disabled={!isValid}
-                    >
-                        Próximo
-                    </Button>
-                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" disabled>
+                            Anterior
+                        </Button>
+                        <Button
+                            size="sm"
+                            type="submit"
+                            variant="submit"
+                            disabled={!isValid}
+                        >
+                            Próximo
+                        </Button>
+                    </div>
+                </fieldset>
             </form>
         </Form>
     );

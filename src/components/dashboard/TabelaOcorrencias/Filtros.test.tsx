@@ -11,14 +11,14 @@ import userEvent from "@testing-library/user-event";
 import Filtros, { FiltrosValues } from "./filtros";
 
 interface MockUser {
-    identificador: string;
-    nome: string;
+    username: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 
 let mockUser: MockUser = {
-    identificador: "12345",
-    nome: "JOÃO DA SILVA",
+    username: "12345",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };
 
@@ -30,8 +30,8 @@ vi.mock("@/stores/useUserStore", () => ({
 describe("Filtros component", () => {
     beforeEach(() => {
         mockUser = {
-            identificador: "12345",
-            nome: "JOÃO DA SILVA",
+            username: "12345",
+            name: "JOÃO DA SILVA",
             perfil_acesso: { nome: "GIPE", codigo: 0 },
         };
     });
@@ -189,8 +189,8 @@ describe("Filtros component", () => {
 
     it("deve exibir os campos corretos para o perfil Ponto Focal", () => {
         mockUser = {
-            identificador: "12345",
-            nome: "Ponto Focal",
+            username: "12345",
+            name: "Ponto Focal",
             perfil_acesso: { nome: "Ponto Focal", codigo: 1 },
         };
 
@@ -214,8 +214,8 @@ describe("Filtros component", () => {
 
     it("deve exibir os campos corretos para o perfil Assistente/Diretor", () => {
         mockUser = {
-            identificador: "12345",
-            nome: "Assistente",
+            username: "12345",
+            name: "Assistente",
             perfil_acesso: { nome: "Assistente", codigo: 3085 },
         };
 
