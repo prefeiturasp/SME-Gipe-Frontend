@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-
 import {
     Form,
     FormField,
@@ -16,29 +15,29 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormDataMeusDados } from "./schema";
-import { useUserStore } from "@/stores/useUserStore";
+import { User, useUserStore } from "@/stores/useUserStore";
 import ModalNovaSenha from "./ModalNovaSenha/ModalNovaSenha";
 import ModalAlterarEmail from "./ModalAlterarEmail/ModalAlterarEmail";
+import FormDadosSkeleton from "./FormDadosSkeleton";
 
-const FormDados: React.FC = () => {
+const ProfileForm = ({ user }: { user: User }) => {
     const [openModalNovaSenha, setOpenModalNovaSenha] = useState(false);
     const [openModalAlterarEmail, setOpenModalAlterarEmail] = useState(false);
-    const user = useUserStore((state) => state.user);
+
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            nome: user?.nome,
-            email: user?.email,
-            senha: "111111111111",
-            cpf: user?.cpf,
-            dre: user?.perfil_acesso.nome,
-            unidade: user?.unidade
-                .map((unidade) => unidade.nomeUnidade)
+            nome: user.name,
+            email: user.email,
+            senha: "****************",
+            cpf: user.cpf,
+            dre: user.unidades?.map((unidade) => unidade.dre.nome).join(", "),
+            unidade: user.unidades
+                ?.map((unidade) => unidade.ue.nome)
                 .join(", "),
-            perfil: user?.perfil_acesso.nome,
+            perfil: user.perfil_acesso?.nome,
         },
     });
-
 
     return (
         <div className="w-full md:w-1/2 flex flex-col h-full flex-1">
@@ -219,10 +218,19 @@ const FormDados: React.FC = () => {
             <ModalAlterarEmail
                 open={openModalAlterarEmail}
                 onOpenChange={setOpenModalAlterarEmail}
-                currentMail={user?.email || ""}
+                currentMail={user?.email}
             />
         </div>
     );
+};
+const FormDados: React.FC = () => {
+    const user = useUserStore((state) => state.user);
+
+    if (!user) {
+        return <FormDadosSkeleton />;
+    }
+
+    return <ProfileForm user={user} />;
 };
 
 export default FormDados;
