@@ -2,20 +2,29 @@ import { create } from "zustand";
 import { logoutAction } from "@/actions/logout";
 
 export interface User {
-    nome: string;
-    identificador: string | number;
-    perfil_acesso: {
-        nome: string;
-        codigo: number;
-    };
-    unidade: [
-        {
-            nomeUnidade: string;
-            codigo: string;
-        }
-    ];
+    username: string;
+    name: string;
     email: string;
     cpf: string;
+    rede: string;
+    is_core_sso: boolean;
+    is_validado: boolean;
+    perfil_acesso: {
+        codigo: number;
+        nome: string;
+    };
+    unidades: {
+        ue: {
+            codigo_eol: string | null;
+            nome: string | null;
+            sigla: string | null;
+        };
+        dre: {
+            codigo_eol: string | null;
+            nome: string | null;
+            sigla: string | null;
+        };
+    }[];
 }
 
 interface UserState {
