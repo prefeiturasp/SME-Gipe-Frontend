@@ -18,8 +18,8 @@ import FullPageLoader from "@/components/ui/FullPageLoader";
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { clearUser } = useUserStore();
-    const { isLoading, isError, error, data } = useMe();
+    const { user, clearUser } = useUserStore();
+    const { isLoading, isError, error } = useMe();
 
     useEffect(() => {
         if (isError) {
@@ -32,14 +32,14 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         }
     }, [isError, error, router, clearUser, queryClient]);
 
-    // Enquanto carrega, exibe um loader em tela cheia.
-    // Isso evita que as páginas internas precisem ter seus próprios skeletons para o usuário.
-    if (isLoading || !data) {
-        return <FullPageLoader />; // Ex: um spinner centralizado na tela
+    // Exibe o loader enquanto a query estiver em andamento OU se a query terminou
+    // mas o usuário ainda não foi populado no store.
+    if (isLoading || !user) {
+        return <FullPageLoader />;
     }
 
-    // Se passou pelo carregamento e não deu erro, os dados existem.
-    // Renderiza a página real.
+    // Se passou pelo carregamento, não deu erro e o usuário existe no store,
+    // renderiza a página real.
     return <>{children}</>;
 };
 
