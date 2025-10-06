@@ -18,11 +18,11 @@ import { formSchema, FormDataMeusDados } from "./schema";
 import { User, useUserStore } from "@/stores/useUserStore";
 import ModalNovaSenha from "./ModalNovaSenha/ModalNovaSenha";
 import ModalAlterarEmail from "./ModalAlterarEmail/ModalAlterarEmail";
-import FormDadosSkeleton from "./FormDadosSkeleton";
 
-const ProfileForm = ({ user }: { user: User }) => {
+const FormDados: React.FC = () => {
     const [openModalNovaSenha, setOpenModalNovaSenha] = useState(false);
     const [openModalAlterarEmail, setOpenModalAlterarEmail] = useState(false);
+    const user = useUserStore((state) => state.user) as User;
 
     const form = useForm<FormDataMeusDados>({
         resolver: zodResolver(formSchema),
@@ -222,15 +222,6 @@ const ProfileForm = ({ user }: { user: User }) => {
             />
         </div>
     );
-};
-const FormDados: React.FC = () => {
-    const user = useUserStore((state) => state.user);
-
-    if (!user) {
-        return <FormDadosSkeleton />;
-    }
-
-    return <ProfileForm user={user} />;
 };
 
 export default FormDados;
