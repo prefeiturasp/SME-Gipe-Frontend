@@ -12,13 +12,13 @@ import Filtros, { FiltrosValues } from "./filtros";
 
 interface MockUser {
     username: string;
-    nome: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 
 let mockUser: MockUser = {
     username: "12345",
-    nome: "JOÃO DA SILVA",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };
 
@@ -31,7 +31,7 @@ describe("Filtros component", () => {
     beforeEach(() => {
         mockUser = {
             username: "12345",
-            nome: "JOÃO DA SILVA",
+            name: "JOÃO DA SILVA",
             perfil_acesso: { nome: "GIPE", codigo: 0 },
         };
     });
@@ -190,7 +190,7 @@ describe("Filtros component", () => {
     it("deve exibir os campos corretos para o perfil Ponto Focal", () => {
         mockUser = {
             username: "12345",
-            nome: "Ponto Focal",
+            name: "Ponto Focal",
             perfil_acesso: { nome: "Ponto Focal", codigo: 1 },
         };
 
@@ -215,7 +215,7 @@ describe("Filtros component", () => {
     it("deve exibir os campos corretos para o perfil Assistente/Diretor", () => {
         mockUser = {
             username: "12345",
-            nome: "Assistente",
+            name: "Assistente",
             perfil_acesso: { nome: "Assistente", codigo: 3085 },
         };
 

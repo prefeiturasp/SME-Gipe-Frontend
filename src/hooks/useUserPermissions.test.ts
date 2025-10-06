@@ -10,7 +10,7 @@ import {
 
 interface MockUser {
     username: string;
-    nome: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 
@@ -33,7 +33,7 @@ vi.mock("@/stores/useUserStore", () => ({
 
 const createMockUser = (codigo: number): MockUser => ({
     username: "12345",
-    nome: "Test User",
+    name: "Test User",
     perfil_acesso: { nome: "Test Profile", codigo },
 });
 

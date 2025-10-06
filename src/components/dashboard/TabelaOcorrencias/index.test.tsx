@@ -6,12 +6,12 @@ import type { Mock } from "vitest";
 
 interface MockUser {
     username: string;
-    nome: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
     username: "12345",
-    nome: "JOÃO DA SILVA",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };
 
