@@ -12,5 +12,5 @@ Funcionalidade: Consulta de ocorrências
     E que o usuário está na página de listagem de ocorrências
     E o usuário clica no botão nova ocorrência
     E o usuário preenche os campos da ocorrência
-    # Então o sistema deve exibir apenas as ocorrências com status Em andamento
+    Então o sistema deve cadastrar uma nova ocorrência no sistema
 

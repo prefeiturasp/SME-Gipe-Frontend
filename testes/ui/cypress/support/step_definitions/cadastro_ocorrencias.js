@@ -34,6 +34,6 @@ When("o usuário preenche os campos da ocorrência", () => {
   cy.get(locators_ocorrencias.input_data_ocorrencia()).type('2025-10-07')
 });
 
-// Then("o sistema deve exibir apenas as ocorrências com status Em andamento", () => {
-//   //cy.get('h1').contains('Intercorrências Institucionais').should('be.visible');
-// });
+Then("o sistema deve cadastrar uma nova ocorrência no sistema", () => {
+  cy.url().should("include", "/dashboard");
+});
