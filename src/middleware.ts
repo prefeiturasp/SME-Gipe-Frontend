@@ -16,7 +16,7 @@ function isPublic(pathname: string) {
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    const isAuthenticated = !!request.cookies.get("user_data");
+    const isAuthenticated = !!request.cookies.get("auth_token");
 
     if (pathname.startsWith("/confirmar-email/")) {
         return NextResponse.next();

@@ -17,7 +17,7 @@ function makeReq(pathname: string, cookieValue?: string): MockRequest {
         url: `http://localhost${pathname}`,
         cookies: {
             get: (key: string) =>
-                key === "user_data" && cookieValue
+                key === "auth_token" && cookieValue
                     ? { value: cookieValue }
                     : undefined,
         },

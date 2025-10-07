@@ -3,13 +3,13 @@ import { describe, it, afterEach, vi, expect } from "vitest";
 import { Navbar } from "./Navbar";
 
 interface MockUser {
-    identificador: string;
-    nome: string;
+    username: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
-    identificador: "12345",
-    nome: "JOÃO DA SILVA",
+    username: "12345",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "ASSISTENTE DE DIRETOR", codigo: 3085 },
 };
 
@@ -32,14 +32,14 @@ describe("Navbar", () => {
         expect(screen.getByAltText("Logo GIPE")).toBeInTheDocument();
     });
 
-    it("deve exibir RF quando identificador não for CPF", () => {
+    it("deve exibir RF quando username não for CPF", () => {
         render(<Navbar />);
         expect(screen.getByText(/RF: 12345/i)).toBeInTheDocument();
     });
 
-    it("deve exibir CPF quando identificador for um CPF válido", async () => {
+    it("deve exibir CPF quando username for um CPF válido", async () => {
         const mockUserCPF = {
-            identificador: "12345678901",
+            username: "12345678901",
             nome: "MARIA DA SILVA",
             perfil_acesso: { nome: "DIRETOR", codigo: 3360 },
         };

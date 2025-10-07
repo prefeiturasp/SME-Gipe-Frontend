@@ -36,11 +36,11 @@ export function Navbar() {
                         <>
                             <div>
                                 <span className="font-bold">
-                                    {isCPF(user.identificador) ? "CPF" : "RF"}:{" "}
-                                    {user.identificador}
+                                    {isCPF(user.username) ? "CPF" : "RF"}:{" "}
+                                    {user.username}
                                 </span>
                             </div>
-                            <div>{capitalizeWords(user.nome)}</div>
+                            <div>{capitalizeWords(user.name)}</div>
                             <div>
                                 {capitalizeWords(user.perfil_acesso.nome)}
                             </div>

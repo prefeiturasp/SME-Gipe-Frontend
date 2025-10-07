@@ -1,10 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import LoginForm from "./index";
 import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Mock do hook useLogin
 const mutateAsyncMock = vi.fn();
 const onSuccessMock = vi.fn();
 vi.mock("@/hooks/useLogin", () => ({
@@ -16,7 +14,6 @@ vi.mock("@/hooks/useLogin", () => ({
     }),
 }));
 
-// Mock do useRouter do Next.js (next/navigation)
 const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: pushMock }),
@@ -174,24 +171,22 @@ describe("LoginForm", () => {
         });
     });
 
-    it("chama router.push ao clicar em Cadastre-se", async () => {
-        render(<LoginForm />);
+    it("o link 'Cadastre-se' aponta para /cadastro", async () => {
+        render(<LoginForm />, { wrapper });
 
         const cadastreSeButton = screen.getByRole("link", {
             name: "Cadastre-se",
         });
-        fireEvent.click(cadastreSeButton);
 
         expect(cadastreSeButton).toHaveAttribute("href", "/cadastro");
     });
 
-    it("chama router.push ao clicar em Esqueci minha senha", async () => {
-        render(<LoginForm />);
+    it("o link 'Esqueci minha senha' aponta para /recuperar-senha", async () => {
+        render(<LoginForm />, { wrapper });
 
         const esqueciSenhaButton = screen.getByRole("link", {
             name: /esqueci minha senha/i,
         });
-        fireEvent.click(esqueciSenhaButton);
 
         expect(esqueciSenhaButton).toHaveAttribute("href", "/recuperar-senha");
     });

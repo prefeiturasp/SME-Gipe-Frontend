@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import DashboardLayout from "@/app/dashboard/layout";
+import { useUserStore } from "@/stores/useUserStore";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -10,16 +12,42 @@ vi.mock("next/navigation", () => ({
     usePathname: () => "/dashboard",
 }));
 
-vi.mock("next/image", () => ({
-    default: (props: Record<string, unknown>) => {
-        // eslint-disable-next-line @next/next/no-img-element, @typescript-eslint/no-unused-vars
-        const { priority, fetchPriority, fill, ...rest } = props || {};
-        return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt={typeof rest.alt === "string" ? rest.alt : ""} {...rest} />
-        );
-    },
+vi.mock("@/hooks/useMe", () => ({
+    default: () => ({
+        isLoading: false,
+        isError: false,
+    }),
 }));
+
+const queryClient = new QueryClient();
+
+const mockUser = {
+    username: "testuser",
+    name: "Test User",
+    email: "test@example.com",
+    cpf: "123.456.789-00",
+    rede: "SME",
+    is_core_sso: false,
+    is_validado: true,
+    perfil_acesso: {
+        codigo: 1,
+        nome: "Perfil Teste",
+    },
+    unidades: [
+        {
+            ue: {
+                codigo_eol: "123",
+                nome: "UE Teste",
+                sigla: "UET",
+            },
+            dre: {
+                codigo_eol: "456",
+                nome: "DRE Teste",
+                sigla: "DRET",
+            },
+        },
+    ],
+};
 
 beforeAll(() => {
     window.matchMedia = () =>
@@ -34,15 +62,28 @@ beforeAll(() => {
 });
 
 describe("DashboardLayout (layout.tsx)", () => {
+    beforeEach(() => {
+        useUserStore.setState({ user: mockUser });
+    });
+
+    afterEach(() => {
+        useUserStore.setState({ user: null });
+        vi.clearAllMocks();
+    });
+
     it("renderiza sidebar, navbar e conteúdo corretamente", async () => {
         render(
-            <DashboardLayout>
-                <div data-testid="child">Conteúdo de teste</div>
-            </DashboardLayout>
+            <QueryClientProvider client={queryClient}>
+                <DashboardLayout>
+                    <div data-testid="child">Conteúdo de teste</div>
+                </DashboardLayout>
+            </QueryClientProvider>
         );
 
-        const child = await screen.findByTestId("child");
+        const child = screen.getByTestId("child");
         expect(child).toBeInTheDocument();
+
+        expect(await screen.findByText(mockUser.name)).toBeInTheDocument();
 
         expect(screen.getByText(/sair/i)).toBeInTheDocument();
 
