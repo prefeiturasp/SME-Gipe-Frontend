@@ -1,7 +1,10 @@
+"use client";
+
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
 import CadastroOcorrencia from "./CadastroOcorrencia";
+import { useState } from "react";
 
 const steps = [
     {
@@ -23,6 +26,7 @@ const steps = [
 ];
 
 export default function NovaOcorrencia() {
+    const [currentStep, setCurrentStep] = useState(1);
     return (
         <div className="pt-4">
             <PageHeader title="Intercorrências Institucionais" />
@@ -44,9 +48,12 @@ export default function NovaOcorrencia() {
             </QuadroBranco>
             <QuadroBranco>
                 <div className="mt-4">
-                    <Stepper steps={steps} currentStep={1} />
+                    <Stepper steps={steps} currentStep={currentStep} />
                 </div>
-                <CadastroOcorrencia />
+
+                {currentStep === 1 && (
+                    <CadastroOcorrencia onSuccess={() => setCurrentStep(2)} />
+                )}
             </QuadroBranco>
         </div>
     );

@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
 import {
     Form,
     FormControl,
@@ -22,9 +23,17 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { formSchema, CadastroOcorrenciaData } from "./schema";
+import { useNovaOcorrencia } from "@/hooks/useNovaOcorrencia";
 
-export default function CadastroOcorrencia() {
+export type CadastroOcorrenciaProps = {
+    onSuccess: () => void;
+};
+
+export default function CadastroOcorrencia({
+    onSuccess,
+}: Readonly<CadastroOcorrenciaProps>) {
     const user = useUserStore((state) => state.user);
+    const { mutateAsync, isPending } = useNovaOcorrencia();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -37,18 +46,39 @@ export default function CadastroOcorrencia() {
         mode: "onChange",
         defaultValues: {
             dataOcorrencia: "",
-            dre: user?.unidades[0]?.dre.nome ?? undefined,
-            unidadeEducacional: user?.unidades[0]?.ue.nome ?? undefined,
+            dre: user?.unidades[0]?.dre.codigo_eol ?? undefined,
+            unidadeEducacional: user?.unidades[0]?.ue.codigo_eol ?? undefined,
             tipoOcorrencia: undefined,
         },
     });
 
     const { isValid } = form.formState;
 
+    const onSubmit = async (data: CadastroOcorrenciaData) => {
+        const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+
+        const response = await mutateAsync({
+            data_ocorrencia: dataOcorrencia,
+            unidade_codigo_eol: data.unidadeEducacional,
+            dre_codigo_eol: data.dre,
+            sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
+        });
+
+        if (response.success) {
+            onSuccess();
+        } else {
+            toast({
+                variant: "error",
+                title: "Erro ao cadastrar ocorrência",
+                description: response.error,
+            });
+        }
+    };
+
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(() => {})}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="flex flex-col gap-6 mt-4"
             >
                 <fieldset className="contents">
@@ -94,9 +124,15 @@ export default function CadastroOcorrencia() {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {field.value && (
-                                                <SelectItem value={field.value}>
-                                                    {field.value}
+                                            {user?.unidades[0]?.dre
+                                                ?.codigo_eol && (
+                                                <SelectItem
+                                                    value={
+                                                        user.unidades[0].dre
+                                                            .codigo_eol
+                                                    }
+                                                >
+                                                    {user.unidades[0].dre.nome}
                                                 </SelectItem>
                                             )}
                                         </SelectContent>
@@ -126,9 +162,14 @@ export default function CadastroOcorrencia() {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {field.value && (
-                                            <SelectItem value={field.value}>
-                                                {field.value}
+                                        {user?.unidades[0]?.ue?.codigo_eol && (
+                                            <SelectItem
+                                                value={
+                                                    user.unidades[0].ue
+                                                        .codigo_eol
+                                                }
+                                            >
+                                                {user.unidades[0].ue.nome}
                                             </SelectItem>
                                         )}
                                     </SelectContent>
@@ -180,7 +221,7 @@ export default function CadastroOcorrencia() {
                             size="sm"
                             type="submit"
                             variant="submit"
-                            disabled={!isValid}
+                            disabled={!isValid || isPending}
                         >
                             Próximo
                         </Button>

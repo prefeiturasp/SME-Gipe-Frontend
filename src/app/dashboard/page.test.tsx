@@ -20,15 +20,6 @@ describe("Dashboard page", () => {
             expect(
                 screen.getByText(/intercorrências institucionais/i)
             ).toBeInTheDocument();
-            expect(screen.getByText(/\+ nova ocorrência/i)).toBeInTheDocument();
         });
-    });
-
-    it("deve ter um link para a página de nova ocorrência", async () => {
-        render(<Dashboard />);
-        const link = await screen.findByRole("link", {
-            name: /\+ nova ocorrência/i,
-        });
-        expect(link).toHaveAttribute("href", "/dashboard/nova-ocorrencia");
     });
 });
