@@ -11,7 +11,10 @@ export const novaOcorrencia = async (body: NovaOcorrenciaBody) => {
         const authToken = cookieStore.get("auth_token")?.value;
 
         if (!authToken) {
-            throw new Error("Usuário não autenticado. Token não encontrado.");
+            return {
+                success: false,
+                error: "Usuário não autenticado. Token não encontrado.",
+            };
         }
 
         await apiIntercorrencias.post("/intercorrencias/", body, {
