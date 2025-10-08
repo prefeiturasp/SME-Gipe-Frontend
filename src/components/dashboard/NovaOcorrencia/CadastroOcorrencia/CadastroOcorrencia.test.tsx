@@ -1,7 +1,15 @@
+import { vi } from "vitest";
+
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import CadastroOcorrencia from "../index";
-import { vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import CadastroOcorrencia from "./index";
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        back: vi.fn(),
+    }),
+}));
 
 const fakeUser = {
     nome: "Usuário Teste",
@@ -25,25 +33,41 @@ const fakeUser = {
     cpf: "12345678900",
 };
 
-vi.mock("next/navigation", () => ({
-    useRouter: () => ({
-        back: vi.fn(),
-    }),
-}));
-
 type UseUserSelector = (state: { user: typeof fakeUser }) => unknown;
 
 vi.mock("@/stores/useUserStore", () => ({
     useUserStore: (selector: UseUserSelector) => selector({ user: fakeUser }),
 }));
 
+const mutateMock = vi.fn();
+vi.mock("@/hooks/useNovaOcorrencia", () => ({
+    useNovaOcorrencia: () => ({
+        mutateAsync: mutateMock,
+        isPending: false,
+    }),
+}));
+
+const toastMock = vi.fn();
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: (opts: unknown) => toastMock(opts),
+}));
+
+const queryClient = new QueryClient();
+
+const renderWithClient = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+};
+
 describe("CadastroOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        queryClient.clear();
     });
 
     it("deve renderizar os campos corretamente com os valores do usuário", () => {
-        render(<CadastroOcorrencia />);
+        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
 
         expect(
             screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
@@ -52,8 +76,8 @@ describe("CadastroOcorrencia", () => {
         expect(screen.getAllByText(/DRE Teste/i).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/EMEF Teste/i).length).toBeGreaterThan(0);
 
-        expect(screen.getByLabelText(/Sim/)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Não/)).toBeInTheDocument();
+        expect(screen.getByText(/Sim/)).toBeInTheDocument();
+        expect(screen.getByText(/Não/)).toBeInTheDocument();
 
         expect(
             screen.getByRole("button", { name: /Anterior/i })
@@ -64,7 +88,7 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("deve validar o preenchimento e habilitar o botão Próximo apenas quando o formulário estiver válido", async () => {
-        render(<CadastroOcorrencia />);
+        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
@@ -87,7 +111,7 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("não permite data futura e exibe erro", async () => {
-        render(<CadastroOcorrencia />);
+        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
@@ -96,7 +120,6 @@ describe("CadastroOcorrencia", () => {
             /Quando a ocorrência aconteceu\?\*/i
         );
 
-        // data futura: amanhã
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const yyyy = tomorrow.getFullYear();
@@ -116,7 +139,9 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("exibe erro quando a data é inválida (NaN)", async () => {
-        const { container } = render(<CadastroOcorrencia />);
+        const { container } = renderWithClient(
+            <CadastroOcorrencia onSuccess={() => vi.fn()} />
+        );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
@@ -159,5 +184,88 @@ describe("CadastroOcorrencia", () => {
                 "A data da ocorrência não pode ser no futuro."
             );
         }
+    });
+
+    it("submete o formulário com sucesso e chama onSuccess", async () => {
+        const onSuccess = vi.fn();
+        mutateMock.mockImplementationOnce(async () => {
+            onSuccess();
+            return { success: true };
+        });
+
+        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
+        await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    });
+
+    it("exibe toast quando submissão falha", async () => {
+        const onSuccess = vi.fn();
+        mutateMock.mockResolvedValue({ success: false, error: "erro" });
+
+        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
+        await waitFor(() => expect(toastMock).toHaveBeenCalled());
+        expect(onSuccess).not.toHaveBeenCalled();
+    });
+
+    it("mostra placeholders quando códigos EOL estão ausentes", async () => {
+        vi.resetModules();
+
+        const userNoCodes = {
+            ...fakeUser,
+            unidades: [],
+        };
+
+        vi.doMock("next/navigation", () => ({
+            useRouter: () => ({ back: vi.fn() }),
+        }));
+
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (selector: UseUserSelector) =>
+                selector({ user: userNoCodes as unknown as typeof fakeUser }),
+        }));
+
+        vi.doMock("@/hooks/useNovaOcorrencia", () => ({
+            useNovaOcorrencia: () => ({
+                mutateAsync: mutateMock,
+                isPending: false,
+            }),
+        }));
+
+        const mod = await import("./index");
+        const CadastroOcorrenciaIsolated = mod.default;
+
+        renderWithClient(<CadastroOcorrenciaIsolated onSuccess={() => {}} />);
+
+        expect(screen.getByText(/Selecione a DRE/i)).toBeInTheDocument();
+        expect(screen.getByText(/Selecione a unidade/i)).toBeInTheDocument();
     });
 });

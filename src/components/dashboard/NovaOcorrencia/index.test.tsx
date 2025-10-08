@@ -1,7 +1,8 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import NovaOcorrencia from "./index";
 import { vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -9,9 +10,59 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
+const queryClient = new QueryClient();
+
+const renderWithClient = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+};
+
+const fakeUser = {
+    nome: "Usuário Teste",
+    username: "382888888",
+    perfil_acesso: { nome: "DRE Teste", codigo: 123 },
+    unidades: [
+        {
+            dre: {
+                codigo_eol: "001",
+                nome: "DRE Teste",
+                sigla: "DRT",
+            },
+            ue: {
+                codigo_eol: "0001",
+                nome: "EMEF Teste",
+                sigla: "EMEF",
+            },
+        },
+    ],
+    email: "a@b.com",
+    cpf: "12345678900",
+};
+
+type UseUserSelector = (state: { user: typeof fakeUser }) => unknown;
+
+function mockUseUserStore() {
+    return {
+        useUserStore: (selector: UseUserSelector) =>
+            selector({
+                user: fakeUser,
+            }),
+    };
+}
+
+function mockUseNovaOcorrencia() {
+    return {
+        useNovaOcorrencia: () => ({
+            mutateAsync: async () => ({ success: true }),
+            isPending: false,
+        }),
+    };
+}
+
 describe("NovaOcorrencia", () => {
     it("deve renderizar o PageHeader com o título correto", () => {
-        render(<NovaOcorrencia />);
+        renderWithClient(<NovaOcorrencia />);
         const heading = screen.getByRole("heading", {
             name: /Nova ocorrência/i,
         });
@@ -19,10 +70,36 @@ describe("NovaOcorrencia", () => {
     });
 
     it("deve renderizar o Stepper com os passos corretos", () => {
-        render(<NovaOcorrencia />);
+        renderWithClient(<NovaOcorrencia />);
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
         expect(screen.getByText("Fase 02")).toBeInTheDocument();
         expect(screen.getByText("Fase 03")).toBeInTheDocument();
         expect(screen.getByText("Anexos")).toBeInTheDocument();
+    });
+
+    it("avança de step quando a mutation do filho retorna sucesso (integração)", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+
+        const mod = await import("./index");
+        const NovaOcorrencia = mod.default;
+        renderWithClient(<NovaOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        const checks = await screen.findAllByTestId("check-icon");
+        expect(checks.length).toBeGreaterThanOrEqual(1);
     });
 });
