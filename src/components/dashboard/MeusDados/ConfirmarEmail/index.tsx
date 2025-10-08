@@ -10,7 +10,6 @@ import useConfirmarEmail from "@/hooks/useConfirmarEmail";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/useUserStore";
-import Cookies from "js-cookie";
 
 import LogoPrefeituraSP from "../../../login/LogoPrefeituraSP";
 import Spinner from "@/assets/icons/Spinner";
@@ -56,7 +55,6 @@ export default function ConfirmarEmail({ code }: { readonly code: string }) {
 
     const handleLogout = () => {
         clearUser();
-        Cookies.remove("user_data", { path: "/" });
         router.push("/");
     };
 

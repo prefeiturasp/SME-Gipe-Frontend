@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Logout from "@/assets/icons/Logout";
-import Cookies from "js-cookie";
 import { useUserStore } from "@/stores/useUserStore";
 
 export default function SignOutButton() {
@@ -12,7 +11,6 @@ export default function SignOutButton() {
 
     const handleLogout = () => {
         clearUser();
-        Cookies.remove("user_data", { path: "/" });
         router.push("/");
     };
 

@@ -1,16 +1,9 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import SignOutButton from "./SignOutButton";
-import Cookies from "js-cookie";
-import { vi, Mock } from "vitest";
+import { vi } from "vitest";
 
 const clearUserMock = vi.fn();
 const pushMock = vi.fn();
-
-vi.mock("js-cookie", () => ({
-    default: {
-        remove: vi.fn(),
-    },
-}));
 
 vi.mock("@/stores/useUserStore", () => ({
     useUserStore: (selector: (state: unknown) => unknown) =>
@@ -24,7 +17,6 @@ vi.mock("next/navigation", () => ({
 describe("SignOutButton", () => {
     beforeEach(() => {
         clearUserMock.mockClear();
-        (Cookies.remove as Mock).mockClear();
         pushMock.mockClear();
     });
 
@@ -40,7 +32,6 @@ describe("SignOutButton", () => {
         fireEvent.click(screen.getByRole("button", { name: /sair/i }));
 
         expect(clearUserMock).toHaveBeenCalled();
-        expect(Cookies.remove).toHaveBeenCalledWith("user_data", { path: "/" });
         expect(pushMock).toHaveBeenCalledWith("/");
     });
 });
