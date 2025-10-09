@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SignOutButton from "./SignOutButton";
 import { vi } from "vitest";
 
@@ -14,23 +15,36 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: pushMock }),
 }));
 
+const queryClient = new QueryClient();
+
+const renderComponent = () => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <SignOutButton />
+        </QueryClientProvider>
+    );
+};
+
 describe("SignOutButton", () => {
     beforeEach(() => {
         clearUserMock.mockClear();
         pushMock.mockClear();
+        queryClient.clear();
     });
 
     it('renderiza o botão "Sair"', () => {
-        render(<SignOutButton />);
+        renderComponent();
         expect(
             screen.getByRole("button", { name: /sair/i })
         ).toBeInTheDocument();
     });
 
-    it("executa clearUser, Cookies.remove e router.push ao clicar", () => {
-        render(<SignOutButton />);
+    it("executa clearUser, remove a query e redireciona ao clicar", () => {
+        const removeQueriesSpy = vi.spyOn(queryClient, "removeQueries");
+        renderComponent();
         fireEvent.click(screen.getByRole("button", { name: /sair/i }));
 
+        expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey: ["me"] });
         expect(clearUserMock).toHaveBeenCalled();
         expect(pushMock).toHaveBeenCalledWith("/");
     });

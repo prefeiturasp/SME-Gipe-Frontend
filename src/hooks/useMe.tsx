@@ -5,14 +5,19 @@ import { useEffect } from "react";
 
 const useMe = () => {
     const setUser = useUserStore((state) => state.setUser);
+
     const query = useQuery({
         queryKey: ["me"],
         queryFn: async () => {
             const response = await getMeAction();
-            if (response.success) {
-                return response.data;
+
+            if (!response.success) {
+                throw new Error(
+                    response.error || "Erro ao buscar dados do usuário"
+                );
             }
-            return null;
+
+            return response.data;
         },
         retry: false,
         staleTime: 1000 * 60 * 5,

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import DashboardLayout from "@/app/dashboard/layout";
 import { useUserStore } from "@/stores/useUserStore";
@@ -11,15 +11,6 @@ vi.mock("next/navigation", () => ({
     }),
     usePathname: () => "/dashboard",
 }));
-
-vi.mock("@/hooks/useMe", () => ({
-    default: () => ({
-        isLoading: false,
-        isError: false,
-    }),
-}));
-
-const queryClient = new QueryClient();
 
 const mockUser = {
     username: "testuser",
@@ -49,6 +40,20 @@ const mockUser = {
     ],
 };
 
+vi.mock("@/components/providers/AuthGuard", () => ({
+    default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@/hooks/useMe", () => ({
+    default: () => ({
+        isLoading: false,
+        isError: false,
+        data: mockUser,
+    }),
+}));
+
+const queryClient = new QueryClient();
+
 beforeAll(() => {
     window.matchMedia = () =>
         ({
@@ -72,21 +77,22 @@ describe("DashboardLayout (layout.tsx)", () => {
     });
 
     it("renderiza sidebar, navbar e conteúdo corretamente", async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <DashboardLayout>
-                    <div data-testid="child">Conteúdo de teste</div>
-                </DashboardLayout>
-            </QueryClientProvider>
-        );
+        await act(async () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DashboardLayout>
+                        <div data-testid="child">Conteúdo de teste</div>
+                    </DashboardLayout>
+                </QueryClientProvider>
+            );
+        });
 
-        const child = screen.getByTestId("child");
-        expect(child).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(mockUser.name)).toBeInTheDocument();
+        });
 
-        expect(await screen.findByText(mockUser.name)).toBeInTheDocument();
-
+        expect(screen.getByTestId("child")).toBeInTheDocument();
         expect(screen.getByText(/sair/i)).toBeInTheDocument();
-
         expect(
             screen.getByText(/intercorrência institucional/i)
         ).toBeInTheDocument();

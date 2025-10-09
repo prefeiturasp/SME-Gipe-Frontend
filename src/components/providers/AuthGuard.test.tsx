@@ -7,9 +7,9 @@ import AuthGuard from "./AuthGuard";
 import useMe from "@/hooks/useMe";
 import { User, useUserStore } from "@/stores/useUserStore";
 
-// Mocks
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(),
+    usePathname: vi.fn().mockReturnValue("/dashboard"),
 }));
 
 vi.mock("@/hooks/useMe", () => ({
@@ -121,7 +121,7 @@ describe("AuthGuard", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("deve redirecionar para /login e limpar o estado em caso de erro", async () => {
+    it("deve redirecionar para / e limpar o estado em caso de erro", async () => {
         const error = new Error("Não autorizado");
         useMeMock.mockReturnValue({ isLoading: false, isError: true, error });
         useUserStoreMock.mockReturnValue({
@@ -141,12 +141,54 @@ describe("AuthGuard", () => {
             expect(mockRemoveQueries).toHaveBeenCalledWith({
                 queryKey: ["me"],
             });
-            expect(mockPush).toHaveBeenCalledWith("/login");
+            expect(mockPush).toHaveBeenCalledWith("/");
         });
 
         expect(
             screen.queryByText("Conteúdo Protegido")
         ).not.toBeInTheDocument();
+    });
+
+    it("não deve redirecionar múltiplas vezes quando didRedirect.current é true", async () => {
+        const error = new Error("Não autorizado");
+
+        useMeMock.mockReturnValue({ isLoading: false, isError: true, error });
+        useUserStoreMock.mockReturnValue({
+            user: null,
+            clearUser: mockClearUser,
+        });
+
+        const { rerender } = renderWithProviders(
+            <AuthGuard>
+                <TestChild />
+            </AuthGuard>,
+            queryClient
+        );
+
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledTimes(1);
+            expect(mockClearUser).toHaveBeenCalledTimes(1);
+        });
+
+        mockPush.mockClear();
+        mockClearUser.mockClear();
+        mockRemoveQueries.mockClear();
+
+        useMeMock.mockReturnValue({ isLoading: false, isError: true, error });
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AuthGuard>
+                    <TestChild />
+                </AuthGuard>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(mockPush).not.toHaveBeenCalled();
+            expect(mockClearUser).not.toHaveBeenCalled();
+            expect(mockRemoveQueries).not.toHaveBeenCalled();
+        });
     });
 
     it("deve renderizar os filhos quando o usuário estiver autenticado", () => {
@@ -166,6 +208,7 @@ describe("AuthGuard", () => {
             isLoading: false,
             isError: false,
             error: null,
+            data: fakeUser,
         });
         useUserStoreMock.mockReturnValue({
             user: fakeUser,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Logout from "@/assets/icons/Logout";
@@ -7,10 +8,12 @@ import { useUserStore } from "@/stores/useUserStore";
 
 export default function SignOutButton() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const clearUser = useUserStore((state) => state.clearUser);
 
     const handleLogout = () => {
         clearUser();
+        queryClient.removeQueries({ queryKey: ["me"] });
         router.push("/");
     };
 
