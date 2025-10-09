@@ -7,6 +7,10 @@ class Cadastro_ocorrencias_Localizadores {
     input_data_ocorrencia() {
     return 'input[placeholder="dd/mm/aaaa"]';
   }
+
+    selecionar__ocorrencia_roubo_furto() {
+    return 'button[data-state="checked"]';
+  }
 }
 
 export default Cadastro_ocorrencias_Localizadores;
