@@ -59,7 +59,7 @@ describe("useUserStore", () => {
         expect(result.current.user).toEqual(mockUser);
     });
 
-    it("deve limpar o usuário e chamar logoutAction com clearUser", () => {
+    it("deve limpar o usuário e chamar logoutAction com clearUser", async () => {
         const { result } = renderHook(() => useUserStore());
 
         act(() => {
@@ -67,8 +67,8 @@ describe("useUserStore", () => {
         });
         expect(result.current.user).toEqual(mockUser);
 
-        act(() => {
-            result.current.clearUser();
+        await act(async () => {
+            await result.current.clearUser();
         });
 
         expect(logoutAction).toHaveBeenCalledTimes(1);

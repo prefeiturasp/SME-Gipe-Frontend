@@ -39,13 +39,19 @@ describe("SignOutButton", () => {
         ).toBeInTheDocument();
     });
 
-    it("executa clearUser, remove a query e redireciona ao clicar", () => {
+    it("executa clearUser, remove a query e redireciona ao clicar", async () => {
+        clearUserMock.mockResolvedValue(undefined);
         const removeQueriesSpy = vi.spyOn(queryClient, "removeQueries");
         renderComponent();
+
         fireEvent.click(screen.getByRole("button", { name: /sair/i }));
 
+        // Aguarda a execução do clearUser (que é async)
+        await vi.waitFor(() => {
+            expect(clearUserMock).toHaveBeenCalled();
+        });
+
         expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey: ["me"] });
-        expect(clearUserMock).toHaveBeenCalled();
         expect(pushMock).toHaveBeenCalledWith("/");
     });
 });
