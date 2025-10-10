@@ -1,5 +1,5 @@
 {
-  "name": "sme-novosgp-testesautomatizados",
+  "name": "sme-gipe-testesautomatizados",
   "version": "1.0.0",
   "description": "Testes automatizados com Cypress + Allure + Cucumber",
   "main": "cypress.config.js",
