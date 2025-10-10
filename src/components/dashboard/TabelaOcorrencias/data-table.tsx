@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useOcorrenciasColumns, Ocorrencia } from "./useOcorrenciasColumns";
+import { useOcorrenciasColumns } from "./useOcorrenciasColumns";
+import { Ocorrencia } from "@/types/ocorrencia";
 
 export function resolveColId<TData, TValue>(
     node: Header<TData, TValue> | Cell<TData, TValue>
