@@ -11,9 +11,9 @@ export default function SignOutButton() {
     const queryClient = useQueryClient();
     const clearUser = useUserStore((state) => state.clearUser);
 
-    const handleLogout = () => {
-        clearUser();
+    const handleLogout = async () => {
         queryClient.removeQueries({ queryKey: ["me"] });
+        await clearUser();
         router.push("/");
     };
 
