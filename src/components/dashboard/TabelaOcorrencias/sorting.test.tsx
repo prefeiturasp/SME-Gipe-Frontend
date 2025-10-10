@@ -5,13 +5,13 @@ import { vi } from "vitest";
 import type { Mock } from "vitest";
 
 interface MockUser {
-    identificador: string;
-    nome: string;
+    username: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
-    identificador: "12345",
-    nome: "JOÃO DA SILVA",
+    username: "12345",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };
 
@@ -20,11 +20,11 @@ vi.mock("@/stores/useUserStore", () => ({
         selector({ user: mockUser }),
 }));
 
-vi.mock("./mockData", () => ({
-    getData: vi.fn(),
+vi.mock("@/hooks/useOcorrencias", () => ({
+    useOcorrencias: vi.fn(),
 }));
 
-import { getData } from "./mockData";
+import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "./index";
 
 const sampleData = [
@@ -48,11 +48,14 @@ const sampleData = [
 
 describe("TabelaOcorrencias - sorting", () => {
     beforeEach(() => {
-        (getData as unknown as Mock).mockReset();
+        (useOcorrencias as Mock).mockClear();
     });
 
     it("ordena por protocolo asc e desc", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -79,7 +82,10 @@ describe("TabelaOcorrencias - sorting", () => {
     });
 
     it("ordena por tipoViolencia alfabético e inverso", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -105,7 +111,10 @@ describe("TabelaOcorrencias - sorting", () => {
     });
 
     it("ordena por status usando prioridade selecionada", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -129,7 +138,10 @@ describe("TabelaOcorrencias - sorting", () => {
     });
 
     it("prioriza Incompleta quando selecionada", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -165,7 +177,10 @@ describe("TabelaOcorrencias - sorting", () => {
             },
         ];
 
-        (getData as unknown as Mock).mockResolvedValue(dataWithEmAndamento);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: dataWithEmAndamento,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -189,7 +204,10 @@ describe("TabelaOcorrencias - sorting", () => {
     });
 
     it("ordena por dataHora recent e oldest", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -260,7 +278,10 @@ describe("TabelaOcorrencias - sorting", () => {
             },
         ];
 
-        (getData as unknown as Mock).mockResolvedValue(dataWithDre);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: dataWithDre,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>
@@ -319,7 +340,10 @@ describe("TabelaOcorrencias - sorting", () => {
             },
         ];
 
-        (getData as unknown as Mock).mockResolvedValue(dataWithUe);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: dataWithUe,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() =>

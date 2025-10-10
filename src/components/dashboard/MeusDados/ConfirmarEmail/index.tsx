@@ -10,10 +10,10 @@ import useConfirmarEmail from "@/hooks/useConfirmarEmail";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/useUserStore";
-import Cookies from "js-cookie";
 
 import LogoPrefeituraSP from "../../../login/LogoPrefeituraSP";
 import Spinner from "@/assets/icons/Spinner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ConfirmarEmail({ code }: { readonly code: string }) {
     const [returnMessage, setReturnMessage] = useState<{
@@ -23,6 +23,7 @@ export default function ConfirmarEmail({ code }: { readonly code: string }) {
 
     const router = useRouter();
     const clearUser = useUserStore((state) => state.clearUser);
+    const queryClient = useQueryClient();
     const { mutateAsync } = useConfirmarEmail();
 
     const calledRef = useRef(false);
@@ -55,8 +56,8 @@ export default function ConfirmarEmail({ code }: { readonly code: string }) {
     }, [code, handleUpdateEmail]);
 
     const handleLogout = () => {
+        queryClient.removeQueries({ queryKey: ["me"] });
         clearUser();
-        Cookies.remove("user_data", { path: "/" });
         router.push("/");
     };
 

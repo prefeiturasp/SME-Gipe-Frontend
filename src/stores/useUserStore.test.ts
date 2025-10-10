@@ -1,65 +1,77 @@
+import { act, renderHook } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-vi.mock("@/lib/cookieUtils", () => ({
-    setEncryptedCookie: vi.fn(),
-    getDecryptedCookie: vi.fn(),
-    removeCookie: vi.fn(),
-}));
+import { useUserStore, User } from "./useUserStore";
 
 vi.mock("@/actions/logout", () => ({
     logoutAction: vi.fn(),
 }));
 
-import {
-    setEncryptedCookie,
-    getDecryptedCookie,
-    removeCookie,
-} from "@/lib/cookieUtils";
-
 import { logoutAction } from "@/actions/logout";
 
-const user = {
-    identificador: "12345678900",
-    nome: "Fulano",
-    email: "fulano@email.com",
-    cargo: "admin",
-    perfil_acesso: { codigo: 0, nome: "ADMIN" },
-    unidade: [{ nomeUnidade: "Unidade Teste", codigo: "fake-uuid" }] as [
-        { nomeUnidade: string; codigo: string }
+const mockUser: User = {
+    username: "testuser",
+    name: "Test User",
+    email: "test@example.com",
+    cpf: "123.456.789-00",
+    rede: "SME",
+    is_core_sso: false,
+    is_validado: true,
+    perfil_acesso: {
+        codigo: 1,
+        nome: "Perfil Teste",
+    },
+    unidades: [
+        {
+            ue: {
+                codigo_eol: "123",
+                nome: "UE Teste",
+                sigla: "UET",
+            },
+            dre: {
+                codigo_eol: "456",
+                nome: "DRE Teste",
+                sigla: "DRET",
+            },
+        },
     ],
-    cpf: "12345678900",
 };
 
 describe("useUserStore", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        act(() => {
+            useUserStore.setState({ user: null });
+        });
     });
 
-    it("estado inicial lê do cookie", async () => {
-        (
-            getDecryptedCookie as unknown as {
-                mockReturnValue: (v: unknown) => void;
-            }
-        ).mockReturnValue(user);
-        const { useUserStore: newStore } = await import("./useUserStore");
-        expect(newStore.getState().user).toEqual(user);
-        newStore.setState({ user: null });
+    it("deve iniciar com o usuário nulo", () => {
+        const { result } = renderHook(() => useUserStore());
+        expect(result.current.user).toBeNull();
     });
 
-    it("setUser salva no cookie e atualiza o estado", async () => {
-        const { useUserStore } = await import("./useUserStore");
-        useUserStore.getState().setUser(user);
-        expect(setEncryptedCookie).toHaveBeenCalledWith("user_data", user, 1);
-        expect(useUserStore.getState().user).toEqual(user);
-        useUserStore.setState({ user: null });
+    it("deve definir o usuário com setUser", () => {
+        const { result } = renderHook(() => useUserStore());
+
+        act(() => {
+            result.current.setUser(mockUser);
+        });
+
+        expect(result.current.user).toEqual(mockUser);
     });
 
-    it("clearUser remove cookie e chama a action de logout", async () => {
-        const { useUserStore } = await import("./useUserStore");
-        useUserStore.setState({ user });
-        useUserStore.getState().clearUser();
-        expect(logoutAction).toHaveBeenCalled();
-        expect(removeCookie).toHaveBeenCalledWith("user_data");
-        expect(useUserStore.getState().user).toBeNull();
+    it("deve limpar o usuário e chamar logoutAction com clearUser", async () => {
+        const { result } = renderHook(() => useUserStore());
+
+        act(() => {
+            result.current.setUser(mockUser);
+        });
+        expect(result.current.user).toEqual(mockUser);
+
+        await act(async () => {
+            await result.current.clearUser();
+        });
+
+        expect(logoutAction).toHaveBeenCalledTimes(1);
+        expect(result.current.user).toBeNull();
     });
 });

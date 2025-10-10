@@ -4,8 +4,8 @@ import useConfirmarEmail from "./useConfirmarEmail";
 import { vi } from "vitest";
 
 interface User {
-    nome: string;
-    identificador: string | number;
+    name: string;
+    username: string | number;
     perfil_acesso: { nome: string; codigo: number };
     unidade: [
         {
@@ -44,7 +44,7 @@ vi.mock("@/stores/useUserStore", () => {
 const confirmarEmailActionMock = vi.fn();
 vi.mock("@/actions/confirmar-email", () => ({
     confirmarEmailAction: (...args: unknown[]) =>
-        confirmarEmailActionMock(...(args as unknown[])),
+        confirmarEmailActionMock(...args),
 }));
 
 describe("useConfirmarEmail", () => {
@@ -64,8 +64,8 @@ describe("useConfirmarEmail", () => {
 
     it("atualiza apenas o email do usuário quando sucesso e user existe", async () => {
         const existingUser = {
-            nome: "Fulano",
-            identificador: "u1",
+            name: "Fulano",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
@@ -156,8 +156,8 @@ describe("useConfirmarEmail", () => {
 
     it("não chama setUser se response.success for false", async () => {
         const existingUser = {
-            nome: "Fulano",
-            identificador: "u1",
+            name: "Fulano",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {
@@ -193,8 +193,8 @@ describe("useConfirmarEmail", () => {
 
     it("não chama setUser se response.new_mail for falsy", async () => {
         const existingUser = {
-            nome: "Fulano",
-            identificador: "u1",
+            name: "Fulano",
+            username: "u1",
             perfil_acesso: { nome: "Gestor", codigo: 1 },
             unidade: [{ nomeUnidade: "UE1", codigo: "1" }] as [
                 {

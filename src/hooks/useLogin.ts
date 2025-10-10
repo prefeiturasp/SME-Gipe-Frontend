@@ -1,10 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { useUserStore } from "@/stores/useUserStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { loginAction } from "@/actions/login";
 
 const useLogin = () => {
-    const setUser = useUserStore((state) => state.setUser);
+    const queryClient = useQueryClient();
     const router = useRouter();
 
     return useMutation({
@@ -12,20 +11,7 @@ const useLogin = () => {
         onSuccess: (response) => {
             if (!response.success) return;
 
-            const { name, login, perfil_acesso, unidade_lotacao, email, cpf } =
-                response.data;
-
-            if (!name || !login || !perfil_acesso) return;
-
-            setUser({
-                nome: name,
-                identificador: login,
-                perfil_acesso: perfil_acesso,
-                unidade: unidade_lotacao,
-                email,
-                cpf,
-            });
-
+            queryClient.invalidateQueries({ queryKey: ["me"] });
             router.push("/dashboard");
         },
     });

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { DataTable } from "./data-table";
-import { Ocorrencia } from "./useOcorrenciasColumns";
+import { Ocorrencia } from "@/types/ocorrencia";
 
 vi.mock("@/hooks/useUserPermissions", () => ({
     useUserPermissions: () => ({
@@ -15,6 +15,8 @@ vi.mock("@/hooks/useUserPermissions", () => ({
 
 function makeRows(n: number): Ocorrencia[] {
     return Array.from({ length: n }).map((_, i) => ({
+        id: i + 1,
+        uuid: `uuid-${i + 1}`,
         protocolo: `P${i + 1}`,
         dataHora: `2025-09-${String(i + 1).padStart(2, "0")} 10:00`,
         codigoEol: `EOL${i + 1}`,
@@ -22,7 +24,6 @@ function makeRows(n: number): Ocorrencia[] {
         nomeUe: `UE-${i + 1}`,
         tipoViolencia: "Física",
         status: "Em andamento",
-        id: String(i + 1),
     }));
 }
 

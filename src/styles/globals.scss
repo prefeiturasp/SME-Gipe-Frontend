@@ -93,3 +93,16 @@
         font-family: "Roboto", Arial, Helvetica, sans-serif;
     }
 }
+
+.has-calendar {
+    position: relative;
+    padding-right: 35px;
+}
+
+.has-calendar::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

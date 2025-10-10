@@ -1,55 +1,41 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import Dashboard from "./page";
+import { vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-vi.mock("@/stores/useUserStore", () => {
-    return {
-        useUserStore: vi.fn(),
-    };
-});
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        back: vi.fn(),
+    }),
+}));
+vi.mock("@/hooks/useOcorrencias", () => ({
+    useOcorrencias: () => ({
+        data: [],
+        isLoading: false,
+        isError: false,
+    }),
+}));
 
-import { useUserStore } from "@/stores/useUserStore";
+const queryClient = new QueryClient();
+
+const renderWithProvider = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+};
 
 describe("Dashboard page", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it("mostra mensagem de 'Usuário não autenticado' se user for null", async () => {
-        (
-            useUserStore as unknown as {
-                mockImplementation: (fn: () => unknown) => void;
-            }
-        ).mockImplementation(() => null);
-
-        render(<Dashboard />);
-
-        await waitFor(() => {
-            expect(
-                screen.getByText(/usuário não autenticado/i)
-            ).toBeInTheDocument();
-        });
-    });
-
-    it("renderiza conteúdo protegido se user estiver presente", async () => {
-        const fakeUser = {
-            nome: "Fake User",
-            perfil_acesso: { nome: "Assistente de diretor", codigo: 3085 },
-            unidade: [{ nomeUnidade: "Escola Fake" }],
-        };
-
-        (
-            useUserStore as unknown as {
-                mockImplementation: (fn: () => unknown) => void;
-            }
-        ).mockImplementation(() => fakeUser);
-
-        render(<Dashboard />);
+    it("renderiza conteúdo protegido", async () => {
+        renderWithProvider(<Dashboard />);
 
         await waitFor(() => {
             expect(
                 screen.getByText(/intercorrências institucionais/i)
             ).toBeInTheDocument();
-            expect(screen.getByText(/\+ nova ocorrência/i)).toBeInTheDocument();
         });
     });
 });

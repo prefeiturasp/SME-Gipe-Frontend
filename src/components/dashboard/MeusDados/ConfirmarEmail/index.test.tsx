@@ -1,6 +1,5 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import * as Cookies from "js-cookie";
 import { vi } from "vitest";
 import ConfirmarEmail from "./index";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -113,13 +112,6 @@ describe("ConfirmarEmail component", () => {
         fireEvent.click(sairBtn);
 
         expect(clearUserMock).toHaveBeenCalled();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((Cookies as any).default.remove).toHaveBeenCalledWith(
-            "user_data",
-            {
-                path: "/",
-            }
-        );
         expect(pushMock).toHaveBeenCalledWith("/");
     });
 });

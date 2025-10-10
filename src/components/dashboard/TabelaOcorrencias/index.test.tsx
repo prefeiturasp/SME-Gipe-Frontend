@@ -5,13 +5,13 @@ import { vi } from "vitest";
 import type { Mock } from "vitest";
 
 interface MockUser {
-    identificador: string;
-    nome: string;
+    username: string;
+    name: string;
     perfil_acesso: { nome: string; codigo: number };
 }
 const mockUser: MockUser = {
-    identificador: "12345",
-    nome: "JOÃO DA SILVA",
+    username: "12345",
+    name: "JOÃO DA SILVA",
     perfil_acesso: { nome: "GIPE", codigo: 0 },
 };
 
@@ -20,11 +20,11 @@ vi.mock("@/stores/useUserStore", () => ({
         selector({ user: mockUser }),
 }));
 
-vi.mock("./mockData", () => ({
-    getData: vi.fn(),
+vi.mock("@/hooks/useOcorrencias", () => ({
+    useOcorrencias: vi.fn(),
 }));
 
-import { getData } from "./mockData";
+import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
 
@@ -49,11 +49,14 @@ const sampleData = [
 
 describe("TabelaOcorrencias", () => {
     beforeEach(() => {
-        (getData as unknown as Mock).mockReset();
+        (useOcorrencias as Mock).mockClear();
     });
 
     it("renderiza cabeçalhos e linhas quando existem dados", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() => {
@@ -89,7 +92,10 @@ describe("TabelaOcorrencias", () => {
     });
 
     it("renderiza estado vazio corretamente", async () => {
-        (getData as unknown as Mock).mockResolvedValue([]);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: [],
+            isLoading: false,
+        });
         render(<TabelaOcorrencias />);
 
         await waitFor(() => {
@@ -97,6 +103,35 @@ describe("TabelaOcorrencias", () => {
                 screen.getByText("Nenhum resultado encontrado.")
             ).toBeInTheDocument();
         });
+    });
+
+    it("deve renderizar o estado de loading", () => {
+        (useOcorrencias as Mock).mockReturnValue({
+            data: undefined,
+            isLoading: true,
+        });
+        render(<TabelaOcorrencias />);
+
+        expect(screen.getByText("Carregando...")).toBeInTheDocument();
+        expect(screen.queryByText("Protocolo")).not.toBeInTheDocument();
+    });
+
+    it("deve usar array vazio quando ocorrenciasData é undefined", async () => {
+        (useOcorrencias as Mock).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        });
+        render(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Nenhum resultado encontrado.")
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.getByText("Histórico de ocorrências registradas")
+        ).toBeInTheDocument();
     });
 
     it("parseDataHora retorna Date esperado (DD/MM/YYYY - HH:mm)", () => {
@@ -162,7 +197,10 @@ describe("TabelaOcorrencias", () => {
     });
 
     it("filtra por Código EOL e permite limpar para ver todos novamente", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         const user = userEvent.setup();
         render(<TabelaOcorrencias />);
 
@@ -195,7 +233,10 @@ describe("TabelaOcorrencias", () => {
     });
 
     it("filtra por Tipo de violência e Status", async () => {
-        (getData as unknown as Mock).mockResolvedValue(sampleData);
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
         const user = userEvent.setup();
         render(<TabelaOcorrencias />);
 
