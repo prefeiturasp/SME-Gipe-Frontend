@@ -7,16 +7,18 @@ import AuthGuard from "./AuthGuard";
 import useMe from "@/hooks/useMe";
 import { User, useUserStore } from "@/stores/useUserStore";
 
-// Mocks
 vi.mock("next/navigation", () => ({
     useRouter: vi.fn(),
+    usePathname: vi.fn().mockReturnValue("/dashboard"),
 }));
 
 vi.mock("@/hooks/useMe", () => ({
     default: vi.fn(),
 }));
 
-vi.mock("@/stores/useUserStore");
+vi.mock("@/stores/useUserStore", () => ({
+    useUserStore: vi.fn(),
+}));
 
 vi.mock("@/components/ui/FullPageLoader", () => ({
     default: () => <div>FullPageLoader</div>,
@@ -41,7 +43,6 @@ const useRouterMock = useRouter as Mock;
 const useUserStoreMock = useUserStore as unknown as Mock;
 
 const mockPush = vi.fn();
-const mockClearUser = vi.fn();
 
 const TestChild = () => <div>Conteúdo Protegido</div>;
 
@@ -79,10 +80,7 @@ describe("AuthGuard", () => {
             isError: false,
             error: null,
         });
-        useUserStoreMock.mockReturnValue({
-            user: null,
-            clearUser: mockClearUser,
-        });
+        useUserStoreMock.mockReturnValue(null);
 
         renderWithProviders(
             <AuthGuard>
@@ -102,11 +100,9 @@ describe("AuthGuard", () => {
             isLoading: false,
             isError: false,
             error: null,
+            data: undefined,
         });
-        useUserStoreMock.mockReturnValue({
-            user: null,
-            clearUser: mockClearUser,
-        });
+        useUserStoreMock.mockReturnValue(null);
 
         renderWithProviders(
             <AuthGuard>
@@ -121,13 +117,15 @@ describe("AuthGuard", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("deve redirecionar para /login e limpar o estado em caso de erro", async () => {
+    it("deve redirecionar para / em caso de erro", async () => {
         const error = new Error("Não autorizado");
-        useMeMock.mockReturnValue({ isLoading: false, isError: true, error });
-        useUserStoreMock.mockReturnValue({
-            user: null,
-            clearUser: mockClearUser,
+        useMeMock.mockReturnValue({
+            isLoading: false,
+            isError: true,
+            error,
+            data: undefined,
         });
+        useUserStoreMock.mockReturnValue(null);
 
         renderWithProviders(
             <AuthGuard>
@@ -136,17 +134,132 @@ describe("AuthGuard", () => {
             queryClient
         );
 
+        expect(screen.getByText("FullPageLoader")).toBeInTheDocument();
+
         await waitFor(() => {
-            expect(mockClearUser).toHaveBeenCalledTimes(1);
-            expect(mockRemoveQueries).toHaveBeenCalledWith({
-                queryKey: ["me"],
-            });
-            expect(mockPush).toHaveBeenCalledWith("/login");
+            expect(mockPush).toHaveBeenCalledWith("/");
+        });
+    });
+
+    it("não deve executar a lógica de redirect novamente quando didRedirect.current já é true", async () => {
+        useMeMock.mockReturnValue({
+            isLoading: true,
+            isError: false,
+            error: null,
+            data: undefined,
+        });
+        useUserStoreMock.mockReturnValue(null);
+
+        const { rerender } = renderWithProviders(
+            <AuthGuard>
+                <TestChild />
+            </AuthGuard>,
+            queryClient
+        );
+
+        expect(mockPush).not.toHaveBeenCalled();
+
+        useMeMock.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            error: null,
+            data: undefined,
         });
 
-        expect(
-            screen.queryByText("Conteúdo Protegido")
-        ).not.toBeInTheDocument();
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AuthGuard>
+                    <TestChild />
+                </AuthGuard>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledTimes(1);
+        });
+
+        mockPush.mockClear();
+
+        useMeMock.mockReturnValue({
+            isLoading: false,
+            isError: true,
+            error: new Error("Não autorizado"),
+            data: undefined,
+        });
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AuthGuard>
+                    <TestChild />
+                </AuthGuard>
+            </QueryClientProvider>
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("não deve redirecionar múltiplas vezes quando didRedirect.current é true", async () => {
+        const error = new Error("Não autorizado");
+
+        useMeMock.mockReturnValue({
+            isLoading: true,
+            isError: false,
+            error: null,
+            data: undefined,
+        });
+        useUserStoreMock.mockReturnValue(null);
+
+        const { rerender } = renderWithProviders(
+            <AuthGuard>
+                <TestChild />
+            </AuthGuard>,
+            queryClient
+        );
+
+        expect(screen.getByText("FullPageLoader")).toBeInTheDocument();
+        expect(mockPush).not.toHaveBeenCalled();
+
+        useMeMock.mockReturnValue({
+            isLoading: false,
+            isError: true,
+            error,
+            data: undefined,
+        });
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AuthGuard>
+                    <TestChild />
+                </AuthGuard>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledTimes(1);
+            expect(mockPush).toHaveBeenCalledWith("/");
+        });
+
+        mockPush.mockClear();
+        useMeMock.mockReturnValue({
+            isLoading: false,
+            isError: true,
+            error: new Error("Outro erro"),
+            data: undefined,
+        });
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AuthGuard>
+                    <TestChild />
+                </AuthGuard>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(mockPush).not.toHaveBeenCalled();
+        });
     });
 
     it("deve renderizar os filhos quando o usuário estiver autenticado", () => {
@@ -166,11 +279,9 @@ describe("AuthGuard", () => {
             isLoading: false,
             isError: false,
             error: null,
+            data: fakeUser,
         });
-        useUserStoreMock.mockReturnValue({
-            user: fakeUser,
-            clearUser: mockClearUser,
-        });
+        useUserStoreMock.mockReturnValue(fakeUser);
 
         renderWithProviders(
             <AuthGuard>

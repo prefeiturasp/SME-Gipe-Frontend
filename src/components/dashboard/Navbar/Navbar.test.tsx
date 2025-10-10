@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, afterEach, vi, expect } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "./Navbar";
 
 interface MockUser {
@@ -14,33 +15,43 @@ const mockUser: MockUser = {
 };
 
 vi.mock("@/stores/useUserStore", () => ({
-    useUserStore: (selector: (state: { user: MockUser }) => unknown) =>
-        selector({ user: mockUser }),
+    useUserStore: (
+        selector: (state: { user: MockUser | undefined }) => unknown
+    ) => selector({ user: mockUser }),
 }));
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn() }),
 }));
 
+const queryClient = new QueryClient();
+
+const renderWithProvider = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+};
+
 describe("Navbar", () => {
     afterEach(() => {
         vi.clearAllMocks();
+        vi.resetModules();
     });
 
     it("deve renderizar a logo", () => {
-        render(<Navbar />);
+        renderWithProvider(<Navbar />);
         expect(screen.getByAltText("Logo GIPE")).toBeInTheDocument();
     });
 
     it("deve exibir RF quando username não for CPF", () => {
-        render(<Navbar />);
+        renderWithProvider(<Navbar />);
         expect(screen.getByText(/RF: 12345/i)).toBeInTheDocument();
     });
 
     it("deve exibir CPF quando username for um CPF válido", async () => {
         const mockUserCPF = {
             username: "12345678901",
-            nome: "MARIA DA SILVA",
+            name: "MARIA DA SILVA",
             perfil_acesso: { nome: "DIRETOR", codigo: 3360 },
         };
         vi.doMock("@/stores/useUserStore", () => ({
@@ -48,24 +59,23 @@ describe("Navbar", () => {
                 selector: (state: { user: typeof mockUserCPF }) => unknown
             ) => selector({ user: mockUserCPF }),
         }));
-        vi.resetModules();
         const { Navbar: NavbarCPF } = await import("./Navbar");
-        render(<NavbarCPF />);
+        renderWithProvider(<NavbarCPF />);
         expect(screen.getByText(/CPF: 12345678901/i)).toBeInTheDocument();
     });
 
     it("deve exibir o nome do usuário capitalizado", () => {
-        render(<Navbar />);
+        renderWithProvider(<Navbar />);
         expect(screen.getByText(/joão da silva/i)).toBeInTheDocument();
     });
 
     it("deve exibir o perfil de acesso capitalizado", () => {
-        render(<Navbar />);
+        renderWithProvider(<Navbar />);
         expect(screen.getByText(/assistente de diretor/i)).toBeInTheDocument();
     });
 
     it("deve renderizar o botão de sair", () => {
-        render(<Navbar />);
+        renderWithProvider(<Navbar />);
         expect(
             screen.getByRole("button", { name: /sair/i })
         ).toBeInTheDocument();
@@ -76,9 +86,8 @@ describe("Navbar", () => {
             useUserStore: (selector: (state: { user: undefined }) => unknown) =>
                 selector({ user: undefined }),
         }));
-        vi.resetModules();
         const { Navbar: NavbarSemUser } = await import("./Navbar");
-        render(<NavbarSemUser />);
+        renderWithProvider(<NavbarSemUser />);
         expect(screen.queryByText(/RF:/i)).not.toBeInTheDocument();
     });
 });
