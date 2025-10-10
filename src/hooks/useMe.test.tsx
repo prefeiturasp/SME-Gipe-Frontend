@@ -72,14 +72,35 @@ describe("useMe", () => {
         expect(setUserMock).toHaveBeenCalledWith(fakeUser);
     });
 
-    it("deve retornar null e não chamar setUser quando a action falhar silenciosamente", async () => {
-        getMeActionMock.mockResolvedValue({ success: false });
+    it("deve entrar em estado de erro quando a action retorna success: false", async () => {
+        getMeActionMock.mockResolvedValue({
+            success: false,
+            error: "Falha simulada",
+        });
 
         const { result } = renderHook(() => useMe(), { wrapper });
 
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() => expect(result.current.isError).toBe(true));
 
-        expect(result.current.data).toBeNull();
+        expect(result.current.error).toBeInstanceOf(Error);
+        expect(result.current.error?.message).toBe("Falha simulada");
+        expect(setUserMock).not.toHaveBeenCalled();
+    });
+
+    it("deve usar a mensagem padrão quando response.error é undefined", async () => {
+        getMeActionMock.mockResolvedValue({
+            success: false,
+            error: undefined,
+        });
+
+        const { result } = renderHook(() => useMe(), { wrapper });
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+
+        expect(result.current.error).toBeInstanceOf(Error);
+        expect(result.current.error?.message).toBe(
+            "Erro ao buscar dados do usuário"
+        );
         expect(setUserMock).not.toHaveBeenCalled();
     });
 

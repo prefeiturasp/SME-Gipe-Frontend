@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Ocorrencia } from "./useOcorrenciasColumns";
+import React, { useMemo, useState } from "react";
 import { DataTable } from "./data-table";
-import { getData } from "./mockData";
 import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
 import Export from "@/assets/icons/Export";
 import Filtros, { FiltrosValues } from "./filtros";
+import { useOcorrencias } from "@/hooks/useOcorrencias";
 
 import {
     hasAnyFilter,
@@ -20,7 +19,8 @@ import {
 } from "./filtros/utils";
 
 export default function TabelaOcorrencias() {
-    const [data, setData] = useState<Ocorrencia[]>([]);
+    const { data: ocorrenciasData, isLoading } = useOcorrencias();
+
     const [showFilters, setShowFilters] = useState(false);
 
     const [filtros, setFiltros] = useState<FiltrosValues>({
@@ -49,11 +49,8 @@ export default function TabelaOcorrencias() {
         setFiltros(values);
     }
 
-    useEffect(() => {
-        getData().then(setData);
-    }, []);
-
     const filteredData = useMemo(() => {
+        const data = ocorrenciasData || [];
         if (!hasAnyFilter(filtros)) return data;
 
         return data.filter((item) => {
@@ -70,7 +67,11 @@ export default function TabelaOcorrencias() {
                 )
             );
         });
-    }, [data, filtros]);
+    }, [ocorrenciasData, filtros]);
+
+    if (isLoading) {
+        return <div>Carregando...</div>;
+    }
 
     return (
         <div>

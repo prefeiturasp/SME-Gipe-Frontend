@@ -30,7 +30,7 @@ export interface User {
 interface UserState {
     user: User | null;
     setUser: (user: User) => void;
-    clearUser: () => void;
+    clearUser: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -38,8 +38,8 @@ export const useUserStore = create<UserState>((set) => ({
     setUser: (user) => {
         set({ user });
     },
-    clearUser: () => {
-        logoutAction();
+    clearUser: async () => {
+        await logoutAction();
         set({ user: null });
     },
 }));

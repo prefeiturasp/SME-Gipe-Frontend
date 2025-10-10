@@ -29,8 +29,25 @@ export async function getMeAction(): Promise<MeResult> {
 
         return { success: true, data };
     } catch (err) {
-        const error = err as AxiosError;
-        console.error("Erro ao buscar dados do usuário:", error.message);
-        return { success: false, error: "Erro ao buscar os dados do usuário" };
+        if (axios.isAxiosError(err)) {
+            const error = err as AxiosError<{ code?: string }>;
+            if (
+                error.response?.data?.code === "token_not_valid" ||
+                error.response?.status === 401
+            ) {
+                cookies().delete("auth_token");
+            }
+        }
+
+        const error = err as AxiosError<{ detail?: string }>;
+        let message = "Erro ao buscar os dados do usuário";
+        if (error.response?.status === 500) {
+            message = "Erro interno no servidor";
+        } else if (error.response?.data?.detail) {
+            message = error.response.data.detail;
+        } else if (error.message) {
+            message = error.message;
+        }
+        return { success: false, error: message };
     }
 }

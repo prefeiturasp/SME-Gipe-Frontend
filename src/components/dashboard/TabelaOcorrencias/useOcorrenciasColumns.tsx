@@ -18,17 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useMemo } from "react";
-
-export type Ocorrencia = {
-    protocolo: string;
-    dataHora: string;
-    codigoEol: string;
-    nomeUe?: string;
-    dre?: string;
-    tipoViolencia: string;
-    status: "Incompleta" | "Finalizada" | "Em andamento";
-    id: string;
-};
+import { Ocorrencia } from "@/types/ocorrencia";
 
 export const useOcorrenciasColumns = () => {
     const { isGipe, isPontoFocal } = useUserPermissions();
