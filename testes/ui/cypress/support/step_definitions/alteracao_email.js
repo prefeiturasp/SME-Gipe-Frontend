@@ -35,13 +35,6 @@ When("preenche o campo E-mail com {string}", (valor) => {
     .type(valor, { delay: 0 });
 });
 
-When("clica no botão Salvar e-mail", () => {
-  cy.xpath(locators_alterar_email.botao_salvar_email())
-    .should("be.visible");
-});
-
-Then("o sistema o sistema cadastrar um novo e-mail para o usuário", () => {
-    cy.xpath(locators_alterar_email.mensagem_email_cadastrado(), { timeout: 20000 })
-    .should("be.visible");
-    cy.xpath(locators_alterar_email.botao_cancelar()).click();
+Then("o sistema o sistema deve apresentar a mensagem alertando o usuário sobre a alteração do e-mail", () => {
+    cy.contains('span', 'Importante: Ao alterar o e-mail').should('be.visible')
 });

@@ -1,6 +1,6 @@
 class Alterar_Email_Localizadores {
   botao_alterar_email() {
-    return "/html/body/div/div/div[2]/main/div[2]/div/div[2]/form/div[1]/div[2]/div/button";
+    return "/html/body/div[1]/div/div[2]/main/div[2]/div/div[2]/div/div[2]/div/button";
     
   }
 
@@ -9,11 +9,7 @@ class Alterar_Email_Localizadores {
   }
 
   botao_salvar_email() {
-    return '//*[@id="radix-:ra:"]/form/div[2]/button[2]';
-  }
-
-  mensagem_email_cadastrado() {
-    return '//*[@id="radix-:ra:"]/form/div[1]/div[2]/span';
+    return '//*[@id="radix-:r3:"]/form/div[2]/button[2]';
   }
 
   botao_cancelar() {
