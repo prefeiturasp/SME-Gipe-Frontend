@@ -5,6 +5,7 @@ import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
 import CadastroOcorrencia from "./CadastroOcorrencia";
 import { useState } from "react";
+import Categorizar from "./Categorizar";
 
 const steps = [
     {
@@ -12,7 +13,7 @@ const steps = [
         description: "",
     },
     {
-        label: "Fase 02",
+        label: "Formulário patrimonial",
         description: "",
     },
     {
@@ -53,6 +54,12 @@ export default function NovaOcorrencia() {
 
                 {currentStep === 1 && (
                     <CadastroOcorrencia onSuccess={() => setCurrentStep(2)} />
+                )}
+                {currentStep === 2 && (
+                    <Categorizar
+                        onNext={() => setCurrentStep(3)}
+                        onPrevious={() => setCurrentStep(1)}
+                    />
                 )}
             </QuadroBranco>
         </div>
