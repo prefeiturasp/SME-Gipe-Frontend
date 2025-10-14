@@ -1,0 +1,289 @@
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Categorizar from "./index";
+import userEvent from "@testing-library/user-event";
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        back: vi.fn(),
+    }),
+}));
+
+const createWrapper = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: { retry: false },
+        },
+    });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
+    Wrapper.displayName = "QueryClientProvider";
+    return Wrapper;
+};
+
+describe("Categorizar", () => {
+    const mockOnPrevious = vi.fn();
+    const mockOnNext = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("deve renderizar todos os campos do formulário", () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        expect(
+            screen.getByText("Qual o tipo de ocorrência?*")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Se necessário, selecione mais de uma opção")
+        ).toBeInTheDocument();
+        expect(screen.getByText("Descreva a ocorrência*")).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "Unidade Educacional é contemplada pelo Smart Sampa? Se sim, houve dano às câmeras do sistema?*"
+            )
+        ).toBeInTheDocument();
+    });
+
+    it("deve renderizar todas as opções de tipo de ocorrência", async () => {
+        const user = userEvent.setup();
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Violência física")).toBeInTheDocument();
+            expect(
+                screen.getByText("Violência psicológica")
+            ).toBeInTheDocument();
+            expect(screen.getByText("Violência sexual")).toBeInTheDocument();
+            expect(screen.getByText("Negligência")).toBeInTheDocument();
+            expect(screen.getByText("Bullying")).toBeInTheDocument();
+            expect(screen.getByText("Cyberbullying")).toBeInTheDocument();
+        });
+    });
+
+    it("deve renderizar as opções do Smart Sampa", () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        expect(screen.getByText("Sim e houve dano")).toBeInTheDocument();
+        expect(screen.getByText("Sim, mas não houve dano")).toBeInTheDocument();
+        expect(
+            screen.getByText("A UE não faz parte do Smart Sampa")
+        ).toBeInTheDocument();
+    });
+
+    it("deve desabilitar o botão Próximo quando o formulário está inválido", () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const btnProximo = screen.getByRole("button", { name: /próximo/i });
+        expect(btnProximo).toBeDisabled();
+    });
+
+    it("deve habilitar o botão Próximo quando todos os campos obrigatórios são preenchidos", async () => {
+        const user = userEvent.setup();
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const option = await screen.findByText("Violência física");
+        await user.click(option);
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(textarea, "Descrição detalhada da ocorrência");
+
+        const radioNaoFazParte = screen.getByRole("radio", {
+            name: /a ue não faz parte do smart sampa/i,
+        });
+        await user.click(radioNaoFazParte);
+
+        await waitFor(() => {
+            const btnProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            expect(btnProximo).not.toBeDisabled();
+        });
+    });
+    it("deve chamar onPrevious ao clicar no botão Anterior", () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const btnAnterior = screen.getByRole("button", { name: /anterior/i });
+        fireEvent.click(btnAnterior);
+
+        expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve permitir selecionar múltiplos tipos de ocorrência", async () => {
+        const user = userEvent.setup();
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const opcaoFisica = await screen.findByText("Violência física");
+        await user.click(opcaoFisica);
+
+        const opcaoPsicologica = await screen.findByText(
+            "Violência psicológica"
+        );
+        await user.click(opcaoPsicologica);
+
+        const opcaoNegligencia = await screen.findByText("Negligência");
+        await user.click(opcaoNegligencia);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Violência física, Violência psicológica, Negligência"
+                )
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve permitir selecionar e visualizar a seleção no botão", async () => {
+        const user = userEvent.setup();
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const violenciaFisica = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        await user.click(violenciaFisica);
+
+        await waitFor(() => {
+            const button = screen.getByRole("button", {
+                name: /violência física/i,
+            });
+            expect(button).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByText("Selecione os tipos de ocorrência")
+        ).not.toBeInTheDocument();
+    });
+    it("deve exibir erro quando descrição é muito curta", async () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        fireEvent.change(textarea, { target: { value: "Curto" } });
+        fireEvent.blur(textarea);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "A descrição deve ter pelo menos 10 caracteres."
+                )
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve chamar onNext ao submeter o formulário válido", async () => {
+        const user = userEvent.setup();
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const opcaoFisica = await screen.findByText("Violência física");
+        await user.click(opcaoFisica);
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(
+            textarea,
+            "Descrição detalhada da ocorrência com mais de dez caracteres"
+        );
+
+        const radioNaoFazParte = screen.getByRole("radio", {
+            name: /a ue não faz parte do smart sampa/i,
+        });
+        await user.click(radioNaoFazParte);
+
+        await waitFor(() => {
+            const btnProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            expect(btnProximo).not.toBeDisabled();
+        });
+
+        const btnProximo = screen.getByRole("button", { name: /próximo/i });
+        await user.click(btnProximo);
+
+        await waitFor(() => {
+            expect(mockOnNext).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it("deve exibir mensagem de erro quando nenhum tipo de ocorrência é selecionado", async () => {
+        render(
+            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            { wrapper: createWrapper() }
+        );
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        fireEvent.change(textarea, {
+            target: { value: "Descrição detalhada da ocorrência" },
+        });
+
+        const radioNaoFazParte = screen.getByRole("radio", {
+            name: /a ue não faz parte do smart sampa/i,
+        });
+        fireEvent.click(radioNaoFazParte);
+
+        await waitFor(() => {
+            const btnProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            expect(btnProximo).toBeDisabled();
+        });
+    });
+});
