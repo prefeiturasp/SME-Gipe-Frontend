@@ -102,4 +102,111 @@ describe("NovaOcorrencia", () => {
         const checks = await screen.findAllByTestId("check-icon");
         expect(checks.length).toBeGreaterThanOrEqual(1);
     });
+
+    it("deve avançar do step 2 (Categorizar) para o step 3 ao clicar em Próximo", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+
+        const mod = await import("./index");
+        const NovaOcorrencia = mod.default;
+        renderWithClient(<NovaOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Qual o tipo de ocorrência?*")
+            ).toBeInTheDocument();
+        });
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        fireEvent.click(multiSelectButton);
+
+        const opcaoViolencia = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        fireEvent.click(opcaoViolencia);
+
+        const descricaoField = screen.getByPlaceholderText("Descreva aqui...");
+        fireEvent.change(descricaoField, {
+            target: {
+                value: "Descrição detalhada da ocorrência com mais de dez caracteres",
+            },
+        });
+
+        const radioSmartSampa = screen.getByRole("radio", {
+            name: /A UE não faz parte do Smart Sampa/i,
+        });
+        fireEvent.click(radioSmartSampa);
+
+        const nextButtonStep2 = screen.getByRole("button", {
+            name: /Próximo/i,
+        });
+        await waitFor(() => expect(nextButtonStep2).toBeEnabled());
+        fireEvent.click(nextButtonStep2);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Qual o tipo de ocorrência?*")
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    it("deve voltar do step 2 (Categorizar) para o step 1 ao clicar em Anterior", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+
+        const mod = await import("./index");
+        const NovaOcorrencia = mod.default;
+        renderWithClient(<NovaOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Qual o tipo de ocorrência?*")
+            ).toBeInTheDocument();
+        });
+
+        const previousButton = screen.getByRole("button", {
+            name: /Anterior/i,
+        });
+        fireEvent.click(previousButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByText("Qual o tipo de ocorrência?*")
+        ).not.toBeInTheDocument();
+    });
 });

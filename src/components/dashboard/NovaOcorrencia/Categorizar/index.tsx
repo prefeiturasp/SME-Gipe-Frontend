@@ -90,7 +90,7 @@ export default function Categorizar({
                             <FormItem>
                                 <FormLabel>Descreva a ocorrência*</FormLabel>
                                 <p className="text-sm text-[#42474a] mt-1 mb-2">
-                                    Se houver informações sobre agressores ou
+                                    se houver informações sobre agressores ou
                                     vítimas, preencher aqui
                                 </p>
                                 <FormControl>
