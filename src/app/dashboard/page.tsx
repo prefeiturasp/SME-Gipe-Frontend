@@ -1,4 +1,4 @@
-import Header from "@/components/dashboard/NovaOcorrencia/Header";
+import Header from "@/components/dashboard/CadastrarOcorrencia/Header";
 import PageHeader from "@/components/dashboard/PageHeader/PageHeader";
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import TabelaOcorrencias from "@/components/dashboard/TabelaOcorrencias";

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { novaOcorrencia } from "./nova-ocorrencia";
-import { NovaOcorrenciaBody } from "@/types/nova-ocorrencia";
+import { CadastrarOcorrencia } from "./cadastrar-ocorrencia";
+import { CadastrarOcorrenciaBody } from "@/types/cadastrar-ocorrencia";
 import { AxiosError, AxiosRequestHeaders } from "axios";
 
 vi.mock("next/headers", () => ({
@@ -13,8 +13,8 @@ vi.mock("@/lib/axios-intercorrencias");
 
 const cookiesMock = cookies as Mock;
 
-describe("novaOcorrencia action", () => {
-    const mockBody: NovaOcorrenciaBody = {
+describe("CadastrarOcorrencia action", () => {
+    const mockBody: CadastrarOcorrenciaBody = {
         data_ocorrencia: "2023-10-07",
         unidade_codigo_eol: "12345",
         dre_codigo_eol: "DRE-ABC",
@@ -34,7 +34,7 @@ describe("novaOcorrencia action", () => {
             .spyOn(apiIntercorrencias, "post")
             .mockResolvedValue({});
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({ success: true });
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
@@ -51,7 +51,7 @@ describe("novaOcorrencia action", () => {
         });
         const postSpy = vi.spyOn(apiIntercorrencias, "post");
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({
             success: false,
@@ -71,7 +71,7 @@ describe("novaOcorrencia action", () => {
         };
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({
             success: false,
@@ -91,7 +91,7 @@ describe("novaOcorrencia action", () => {
         };
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({ success: false, error: detailMessage });
     });
@@ -101,7 +101,7 @@ describe("novaOcorrencia action", () => {
         const error = new AxiosError(errorMessage);
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({ success: false, error: errorMessage });
     });
@@ -110,7 +110,7 @@ describe("novaOcorrencia action", () => {
         const error = new AxiosError();
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await CadastrarOcorrencia(mockBody);
 
         expect(result).toEqual({
             success: false,

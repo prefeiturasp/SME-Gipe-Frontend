@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import NovaOcorrenciaPage from "./page";
+import CadastrarOcorrenciaPage from "./page";
 import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -17,9 +17,9 @@ const renderWithClient = (ui: React.ReactElement) => {
     );
 };
 
-describe("NovaOcorrenciaPage", () => {
-    it("deve renderizar o componente NovaOcorrencia com os elementos principais", () => {
-        renderWithClient(<NovaOcorrenciaPage />);
+describe("CadastrarOcorrenciaPage", () => {
+    it("deve renderizar o componente CadastrarOcorrencia com os elementos principais", () => {
+        renderWithClient(<CadastrarOcorrenciaPage />);
 
         expect(
             screen.getByRole("heading", {

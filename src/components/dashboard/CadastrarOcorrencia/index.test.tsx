@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import NovaOcorrencia from "./index";
+import CadastrarOcorrencia from "./index";
 import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -51,18 +51,18 @@ function mockUseUserStore() {
     };
 }
 
-function mockUseNovaOcorrencia() {
+function mockUseCadastrarOcorrencia() {
     return {
-        useNovaOcorrencia: () => ({
+        useCadastrarOcorrencia: () => ({
             mutateAsync: async () => ({ success: true }),
             isPending: false,
         }),
     };
 }
 
-describe("NovaOcorrencia", () => {
+describe("CadastrarOcorrencia", () => {
     it("deve renderizar o PageHeader com o título correto", () => {
-        renderWithClient(<NovaOcorrencia />);
+        renderWithClient(<CadastrarOcorrencia />);
         const heading = screen.getByRole("heading", {
             name: /Nova ocorrência/i,
         });
@@ -70,7 +70,7 @@ describe("NovaOcorrencia", () => {
     });
 
     it("deve renderizar o Stepper com os passos corretos", () => {
-        renderWithClient(<NovaOcorrencia />);
+        renderWithClient(<CadastrarOcorrencia />);
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
         expect(screen.getByText("Formulário patrimonial")).toBeInTheDocument();
         expect(screen.getByText("Fase 03")).toBeInTheDocument();
@@ -81,11 +81,11 @@ describe("NovaOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");
-        const NovaOcorrencia = mod.default;
-        renderWithClient(<NovaOcorrencia />);
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
 
         const dateInput = screen.getByLabelText(
             /Quando a ocorrência aconteceu\?\*/i
@@ -107,11 +107,11 @@ describe("NovaOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");
-        const NovaOcorrencia = mod.default;
-        renderWithClient(<NovaOcorrencia />);
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
 
         const dateInput = screen.getByLabelText(
             /Quando a ocorrência aconteceu\?\*/i
@@ -170,11 +170,11 @@ describe("NovaOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock("@/hooks/useNovaOcorrencia", mockUseNovaOcorrencia);
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");
-        const NovaOcorrencia = mod.default;
-        renderWithClient(<NovaOcorrencia />);
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
 
         const dateInput = screen.getByLabelText(
             /Quando a ocorrência aconteceu\?\*/i

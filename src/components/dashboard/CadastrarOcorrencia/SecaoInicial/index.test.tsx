@@ -40,8 +40,8 @@ vi.mock("@/stores/useUserStore", () => ({
 }));
 
 const mutateMock = vi.fn();
-vi.mock("@/hooks/useNovaOcorrencia", () => ({
-    useNovaOcorrencia: () => ({
+vi.mock("@/hooks/useCadastrarOcorrencia", () => ({
+    useCadastrarOcorrencia: () => ({
         mutateAsync: mutateMock,
         isPending: false,
     }),
@@ -190,7 +190,7 @@ describe("CadastroOcorrencia", () => {
         const onSuccess = vi.fn();
         mutateMock.mockImplementationOnce(async () => {
             onSuccess();
-            return { success: true };
+            return { success: true, data: { uuid: "test-uuid" } };
         });
 
         renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
@@ -253,8 +253,8 @@ describe("CadastroOcorrencia", () => {
                 selector({ user: userNoCodes as unknown as typeof fakeUser }),
         }));
 
-        vi.doMock("@/hooks/useNovaOcorrencia", () => ({
-            useNovaOcorrencia: () => ({
+        vi.doMock("@/hooks/useCadastrarOcorrencia", () => ({
+            useCadastrarOcorrencia: () => ({
                 mutateAsync: mutateMock,
                 isPending: false,
             }),

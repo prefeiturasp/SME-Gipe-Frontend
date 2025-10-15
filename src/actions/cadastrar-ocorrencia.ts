@@ -3,9 +3,9 @@
 import { cookies } from "next/headers";
 import { AxiosError } from "axios";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { NovaOcorrenciaBody } from "@/types/nova-ocorrencia";
+import { CadastrarOcorrenciaBody } from "@/types/cadastrar-ocorrencia";
 
-export const novaOcorrencia = async (body: NovaOcorrenciaBody) => {
+export const CadastrarOcorrencia = async (body: CadastrarOcorrenciaBody) => {
     try {
         const cookieStore = cookies();
         const authToken = cookieStore.get("auth_token")?.value;

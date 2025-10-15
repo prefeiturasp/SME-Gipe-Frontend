@@ -1,4 +1,4 @@
-export type NovaOcorrenciaBody = {
+export type CadastrarOcorrenciaBody = {
     data_ocorrencia: string;
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
