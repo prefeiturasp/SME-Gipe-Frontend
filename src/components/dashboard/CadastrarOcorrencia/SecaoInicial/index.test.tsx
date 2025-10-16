@@ -39,6 +39,17 @@ vi.mock("@/stores/useUserStore", () => ({
     useUserStore: (selector: UseUserSelector) => selector({ user: fakeUser }),
 }));
 
+const setFormDataMock = vi.fn();
+const setOcorrenciaIdMock = vi.fn();
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: () => ({
+        formData: {},
+        setFormData: setFormDataMock,
+        setOcorrenciaId: setOcorrenciaIdMock,
+    }),
+}));
+
 const mutateMock = vi.fn();
 vi.mock("@/hooks/useCadastrarOcorrencia", () => ({
     useCadastrarOcorrencia: () => ({
@@ -64,6 +75,8 @@ describe("CadastroOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         queryClient.clear();
+        setFormDataMock.mockClear();
+        setOcorrenciaIdMock.mockClear();
     });
 
     it("deve renderizar os campos corretamente com os valores do usuário", () => {
@@ -186,6 +199,30 @@ describe("CadastroOcorrencia", () => {
         }
     });
 
+    it("exibe toast quando submissão falha", async () => {
+        const onSuccess = vi.fn();
+        mutateMock.mockResolvedValue({ success: false, error: "erro" });
+
+        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
+        await waitFor(() => expect(toastMock).toHaveBeenCalled());
+        expect(onSuccess).not.toHaveBeenCalled();
+    });
+
     it("submete o formulário com sucesso e chama onSuccess", async () => {
         const onSuccess = vi.fn();
         mutateMock.mockImplementationOnce(async () => {
@@ -210,30 +247,6 @@ describe("CadastroOcorrencia", () => {
 
         await waitFor(() => expect(mutateMock).toHaveBeenCalled());
         await waitFor(() => expect(onSuccess).toHaveBeenCalled());
-    });
-
-    it("exibe toast quando submissão falha", async () => {
-        const onSuccess = vi.fn();
-        mutateMock.mockResolvedValue({ success: false, error: "erro" });
-
-        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
-
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
-
-        const nextButton = screen.getByRole("button", { name: /Próximo/i });
-
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
-
-        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
-        await waitFor(() => expect(toastMock).toHaveBeenCalled());
-        expect(onSuccess).not.toHaveBeenCalled();
     });
 
     it("mostra placeholders quando códigos EOL estão ausentes", async () => {
@@ -267,5 +280,60 @@ describe("CadastroOcorrencia", () => {
 
         expect(screen.getByText(/Selecione a DRE/i)).toBeInTheDocument();
         expect(screen.getByText(/Selecione a unidade/i)).toBeInTheDocument();
+    });
+
+    it("chama apenas onSuccess sem fazer mutation quando formData já está preenchido", async () => {
+        vi.resetModules();
+
+        const preFilledFormData = {
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+        };
+
+        vi.doMock("next/navigation", () => ({
+            useRouter: () => ({ back: vi.fn() }),
+        }));
+
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (selector: UseUserSelector) =>
+                selector({ user: fakeUser }),
+        }));
+
+        const mockMutate = vi.fn();
+        vi.doMock("@/hooks/useCadastrarOcorrencia", () => ({
+            useCadastrarOcorrencia: () => ({
+                mutateAsync: mockMutate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
+            useOcorrenciaFormStore: () => ({
+                formData: preFilledFormData,
+                setFormData: vi.fn(),
+                setOcorrenciaId: vi.fn(),
+            }),
+        }));
+
+        const mod = await import("./index");
+        const CadastroOcorrenciaIsolated = mod.default;
+
+        const onSuccess = vi.fn();
+        renderWithClient(<CadastroOcorrenciaIsolated onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        expect(dateInput.value).toBe("2025-10-02");
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+        expect(mockMutate).not.toHaveBeenCalled();
     });
 });

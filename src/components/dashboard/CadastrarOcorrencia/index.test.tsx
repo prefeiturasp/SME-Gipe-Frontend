@@ -51,10 +51,25 @@ function mockUseUserStore() {
     };
 }
 
+function mockUseOcorrenciaFormStore() {
+    return {
+        useOcorrenciaFormStore: () => ({
+            formData: {},
+            setFormData: vi.fn(),
+            setOcorrenciaId: vi.fn(),
+            ocorrenciaId: null,
+            resetForm: vi.fn(),
+        }),
+    };
+}
+
 function mockUseCadastrarOcorrencia() {
     return {
         useCadastrarOcorrencia: () => ({
-            mutateAsync: async () => ({ success: true }),
+            mutateAsync: async () => ({
+                success: true,
+                data: { uuid: "test-uuid" },
+            }),
             isPending: false,
         }),
     };
@@ -81,6 +96,10 @@ describe("CadastrarOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock(
+            "@/stores/useOcorrenciaFormStore",
+            mockUseOcorrenciaFormStore
+        );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");
@@ -107,6 +126,10 @@ describe("CadastrarOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock(
+            "@/stores/useOcorrenciaFormStore",
+            mockUseOcorrenciaFormStore
+        );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");
@@ -170,6 +193,10 @@ describe("CadastrarOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock(
+            "@/stores/useOcorrenciaFormStore",
+            mockUseOcorrenciaFormStore
+        );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
 
         const mod = await import("./index");

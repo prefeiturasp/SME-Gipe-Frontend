@@ -74,7 +74,7 @@ export default function CadastroOcorrencia({
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
         });
 
-        if (response.success && response.data.uuid) {
+        if (response.success && response?.data?.uuid) {
             setOcorrenciaId(response.data.uuid);
             onSuccess();
         } else {
