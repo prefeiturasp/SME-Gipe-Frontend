@@ -6,15 +6,15 @@ type OcorrenciaFormData = Partial<CadastroOcorrenciaData> &
     Partial<CategorizarData>;
 
 type OcorrenciaFormState = {
-    ocorrenciaId: number | null;
+    ocorrenciaUuid: number | null;
     formData: OcorrenciaFormData;
     setFormData: (data: Partial<OcorrenciaFormData>) => void;
-    setOcorrenciaId: (id: number) => void;
+    setOcorrenciaUuid: (id: number) => void;
     reset: () => void;
 };
 
 const initialState = {
-    ocorrenciaId: null,
+    ocorrenciaUuid: null,
     formData: {},
 };
 
@@ -24,6 +24,6 @@ export const useOcorrenciaFormStore = create<OcorrenciaFormState>((set) => ({
         set((state) => ({
             formData: { ...state.formData, ...data },
         })),
-    setOcorrenciaId: (id) => set({ ocorrenciaId: id }),
+    setOcorrenciaUuid: (id) => set({ ocorrenciaUuid: id }),
     reset: () => set(initialState),
 }));

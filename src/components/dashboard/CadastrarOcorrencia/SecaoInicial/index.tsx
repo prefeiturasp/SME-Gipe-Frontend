@@ -36,7 +36,8 @@ export default function CadastroOcorrencia({
     const user = useUserStore((state) => state.user);
     const { mutateAsync, isPending } = useCadastrarOcorrencia();
 
-    const { formData, setFormData, setOcorrenciaId } = useOcorrenciaFormStore();
+    const { formData, setFormData, setOcorrenciaUuid } =
+        useOcorrenciaFormStore();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -75,7 +76,7 @@ export default function CadastroOcorrencia({
         });
 
         if (response.success && response?.data?.uuid) {
-            setOcorrenciaId(response.data.uuid);
+            setOcorrenciaUuid(response.data.uuid);
             onSuccess();
         } else {
             toast({

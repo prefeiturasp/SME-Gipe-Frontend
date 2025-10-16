@@ -56,8 +56,8 @@ function mockUseOcorrenciaFormStore() {
         useOcorrenciaFormStore: () => ({
             formData: {},
             setFormData: vi.fn(),
-            setOcorrenciaId: vi.fn(),
-            ocorrenciaId: null,
+            setOcorrenciaUuid: vi.fn(),
+            ocorrenciaUuid: null,
             resetForm: vi.fn(),
         }),
     };

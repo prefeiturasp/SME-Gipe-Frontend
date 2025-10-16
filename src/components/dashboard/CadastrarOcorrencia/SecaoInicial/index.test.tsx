@@ -46,7 +46,7 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: {},
         setFormData: setFormDataMock,
-        setOcorrenciaId: setOcorrenciaIdMock,
+        setOcorrenciaUuid: setOcorrenciaIdMock,
     }),
 }));
 
@@ -313,7 +313,7 @@ describe("CadastroOcorrencia", () => {
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
                 setFormData: vi.fn(),
-                setOcorrenciaId: vi.fn(),
+                setOcorrenciaUuid: vi.fn(),
             }),
         }));
 

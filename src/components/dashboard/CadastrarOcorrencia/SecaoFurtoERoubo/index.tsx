@@ -35,7 +35,7 @@ export default function Categorizar({
     onPrevious,
     onNext,
 }: Readonly<CategorizarProps>) {
-    const { formData, setFormData, ocorrenciaId } = useOcorrenciaFormStore();
+    const { formData, setFormData } = useOcorrenciaFormStore();
 
     const form = useForm<CategorizarData>({
         resolver: zodResolver(formSchema),
@@ -51,11 +51,6 @@ export default function Categorizar({
 
     const onSubmit = async (data: CategorizarData) => {
         setFormData(data);
-
-        console.log("ID da ocorrência para atualizar:", ocorrenciaId);
-        console.log("Dados a serem enviados:", data);
-        console.log("Dados do formulário:", data);
-
         onNext();
     };
 
