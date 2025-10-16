@@ -14,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, CategorizarData } from "./schema";
 
 export type CategorizarProps = {
@@ -34,20 +35,22 @@ export default function Categorizar({
     onPrevious,
     onNext,
 }: Readonly<CategorizarProps>) {
+    const { formData, setFormData } = useOcorrenciaFormStore();
+
     const form = useForm<CategorizarData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            tiposOcorrencia: [],
-            descricao: "",
-            smartSampa: undefined,
+            tiposOcorrencia: formData.tiposOcorrencia || [],
+            descricao: formData.descricao || "",
+            smartSampa: formData.smartSampa || undefined,
         },
     });
 
     const { isValid } = form.formState;
 
-    const onSubmit = (data: CategorizarData) => {
-        console.log("Dados do formulário:", data);
+    const onSubmit = async (data: CategorizarData) => {
+        setFormData(data);
         onNext();
     };
 
@@ -154,7 +157,10 @@ export default function Categorizar({
                             size="sm"
                             variant="outline"
                             type="button"
-                            onClick={onPrevious}
+                            onClick={() => {
+                                setFormData(form.getValues());
+                                onPrevious();
+                            }}
                         >
                             Anterior
                         </Button>

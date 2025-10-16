@@ -20,7 +20,7 @@ export default function Header() {
                     size="sm"
                     className="font-normal"
                 >
-                    <Link href="/dashboard/nova-ocorrencia" replace>
+                    <Link href="/dashboard/cadastrar-ocorrencia" replace>
                         + Nova ocorrência
                     </Link>
                 </Button>

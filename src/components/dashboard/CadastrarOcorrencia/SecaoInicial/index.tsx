@@ -22,8 +22,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, CadastroOcorrenciaData } from "./schema";
-import { useNovaOcorrencia } from "@/hooks/useNovaOcorrencia";
+import { useCadastrarOcorrencia } from "@/hooks/useCadastrarOcorrencia";
 
 export type CadastroOcorrenciaProps = {
     onSuccess: () => void;
@@ -33,7 +34,10 @@ export default function CadastroOcorrencia({
     onSuccess,
 }: Readonly<CadastroOcorrenciaProps>) {
     const user = useUserStore((state) => state.user);
-    const { mutateAsync, isPending } = useNovaOcorrencia();
+    const { mutateAsync, isPending } = useCadastrarOcorrencia();
+
+    const { formData, setFormData, setOcorrenciaUuid } =
+        useOcorrenciaFormStore();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -45,17 +49,24 @@ export default function CadastroOcorrencia({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            dataOcorrencia: "",
-            dre: user?.unidades[0]?.dre.codigo_eol ?? undefined,
-            unidadeEducacional: user?.unidades[0]?.ue.codigo_eol ?? undefined,
-            tipoOcorrencia: undefined,
+            dataOcorrencia: formData.dataOcorrencia || "",
+            dre: formData.dre ?? user?.unidades[0]?.dre.codigo_eol ?? undefined,
+            unidadeEducacional:
+                formData.unidadeEducacional ??
+                user?.unidades[0]?.ue.codigo_eol ??
+                undefined,
+            tipoOcorrencia: formData.tipoOcorrencia || undefined,
         },
     });
 
     const { isValid } = form.formState;
 
     const onSubmit = async (data: CadastroOcorrenciaData) => {
+        if (formData && Object.keys(formData).length > 0) {
+            return onSuccess();
+        }
         const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+        setFormData(data);
 
         const response = await mutateAsync({
             data_ocorrencia: dataOcorrencia,
@@ -64,7 +75,8 @@ export default function CadastroOcorrencia({
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
         });
 
-        if (response.success) {
+        if (response.success && response?.data?.uuid) {
+            setOcorrenciaUuid(response.data.uuid);
             onSuccess();
         } else {
             toast({

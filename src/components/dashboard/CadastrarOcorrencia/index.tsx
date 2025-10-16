@@ -3,9 +3,9 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import CadastroOcorrencia from "./CadastroOcorrencia";
+import CadastroOcorrencia from "./SecaoInicial";
 import { useState } from "react";
-import Categorizar from "./Categorizar";
+import Categorizar from "./SecaoFurtoERoubo";
 
 const steps = [
     {
@@ -26,7 +26,7 @@ const steps = [
     },
 ];
 
-export default function NovaOcorrencia() {
+export default function CadastrarOcorrencia() {
     const [currentStep, setCurrentStep] = useState(1);
     return (
         <div className="pt-4">
