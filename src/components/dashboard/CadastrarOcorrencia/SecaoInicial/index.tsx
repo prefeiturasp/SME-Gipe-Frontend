@@ -62,11 +62,11 @@ export default function CadastroOcorrencia({
     const { isValid } = form.formState;
 
     const onSubmit = async (data: CadastroOcorrenciaData) => {
+        setFormData(data);
         if (formData && Object.keys(formData).length > 0) {
             return onSuccess();
         }
         const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
-        setFormData(data);
 
         const response = await mutateAsync({
             data_ocorrencia: dataOcorrencia,
