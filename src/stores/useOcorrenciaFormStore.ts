@@ -6,10 +6,10 @@ type OcorrenciaFormData = Partial<CadastroOcorrenciaData> &
     Partial<CategorizarData>;
 
 type OcorrenciaFormState = {
-    ocorrenciaUuid: number | null;
+    ocorrenciaUuid: string | null;
     formData: OcorrenciaFormData;
     setFormData: (data: Partial<OcorrenciaFormData>) => void;
-    setOcorrenciaUuid: (id: number) => void;
+    setOcorrenciaUuid: (id: string) => void;
     reset: () => void;
 };
 
