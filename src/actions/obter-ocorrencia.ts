@@ -2,6 +2,7 @@
 
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { cookies } from "next/headers";
+import { AxiosError } from "axios";
 
 export type OcorrenciaAPI = {
     id: number;
@@ -19,21 +20,40 @@ export type OcorrenciaAPI = {
     smart_sampa?: string;
 };
 
-export async function obterOcorrencia(uuid: string): Promise<OcorrenciaAPI> {
+export async function obterOcorrencia(
+    uuid: string
+): Promise<
+    { success: true; data: OcorrenciaAPI } | { success: false; error: string }
+> {
     const cookieStore = cookies();
     const token = cookieStore.get("auth_token")?.value;
 
     if (!token) {
-        throw new Error("Usuário não autenticado");
+        return { success: false, error: "Usuário não autenticado" };
     }
 
-    const { data } = await apiIntercorrencias.get<OcorrenciaAPI>(
-        `/intercorrencias/${uuid}/`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+    try {
+        const { data } = await apiIntercorrencias.get<OcorrenciaAPI>(
+            `/intercorrencias/${uuid}/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return { success: true, data };
+    } catch (err) {
+        const error = err as AxiosError<{ detail?: string }>;
+        let message = "Erro ao buscar ocorrência";
+        if (error.response?.status === 500) {
+            message = "Erro interno no servidor";
+        } else if (error.response?.status === 404) {
+            message = "Ocorrência não encontrada";
+        } else if (error.response?.data?.detail) {
+            message = error.response.data.detail;
+        } else if (error.message) {
+            message = error.message;
         }
-    );
-    return data;
+        return { success: false, error: message };
+    }
 }

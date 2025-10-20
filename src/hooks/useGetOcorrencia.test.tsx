@@ -39,13 +39,22 @@ describe("useGetOcorrencia", () => {
     it("deve chamar a action com o UUID correto e retornar os dados", async () => {
         const mockData = {
             id: 1,
+            uuid: "abc-123-def-456",
             data_ocorrencia: "2024-01-15",
             unidade_codigo_eol: "123456",
-            tiposOcorrencia: ["Violência física"],
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+            tipos_ocorrencia: ["Violência física"],
             descricao: "Descrição da ocorrência",
             status: "Em andamento",
         };
-        obterOcorrenciaMock.mockResolvedValue(mockData);
+        obterOcorrenciaMock.mockResolvedValue({
+            success: true,
+            data: mockData,
+        });
 
         const uuid = "abc-123-def-456";
         const { result } = renderHook(() => useGetOcorrencia(uuid), {
@@ -61,11 +70,20 @@ describe("useGetOcorrencia", () => {
     it("deve retornar os dados da ocorrência mesmo sem campos opcionais", async () => {
         const mockData = {
             id: 2,
+            uuid: "xyz-789-uvw-012",
             data_ocorrencia: "2024-02-20",
             unidade_codigo_eol: "654321",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: true,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             status: "Incompleta",
         };
-        obterOcorrenciaMock.mockResolvedValue(mockData);
+        obterOcorrenciaMock.mockResolvedValue({
+            success: true,
+            data: mockData,
+        });
 
         const uuid = "xyz-789-uvw-012";
         const { result } = renderHook(() => useGetOcorrencia(uuid), {
@@ -77,9 +95,11 @@ describe("useGetOcorrencia", () => {
         expect(result.current.data).toEqual(mockData);
     });
 
-    it("deve lidar com erro quando a action falhar", async () => {
-        const mockError = new Error("Erro ao buscar ocorrência");
-        obterOcorrenciaMock.mockRejectedValue(mockError);
+    it("deve lidar com erro quando a action retornar success: false", async () => {
+        obterOcorrenciaMock.mockResolvedValue({
+            success: false,
+            error: "Ocorrência não encontrada",
+        });
 
         const uuid = "uuid-invalido";
         const { result } = renderHook(() => useGetOcorrencia(uuid), {
@@ -87,7 +107,9 @@ describe("useGetOcorrencia", () => {
         });
 
         await waitFor(() => expect(result.current.isError).toBe(true));
-        expect(result.current.error).toEqual(mockError);
+        expect(result.current.error).toEqual(
+            new Error("Ocorrência não encontrada")
+        );
     });
 
     it("deve respeitar o staleTime de 5 minutos", () => {
