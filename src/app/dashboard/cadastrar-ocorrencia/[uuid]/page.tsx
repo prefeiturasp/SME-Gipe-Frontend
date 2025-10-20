@@ -94,7 +94,7 @@ export default function EditarOcorrenciaPage() {
 
     const getInitialStep = () => {
         // função futura para implementar lógica baseada no status da ocorrência
-        return 1;
+        return 2;
     };
 
     return <CadastrarOcorrencia initialStep={getInitialStep()} />;
