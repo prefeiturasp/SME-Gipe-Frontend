@@ -4,9 +4,8 @@ import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
 import SecaoInicial from "./SecaoInicial";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 
 const steps = [
     {
@@ -35,13 +34,7 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
-    const resetFormStore = useOcorrenciaFormStore((state) => state.reset);
 
-    useEffect(() => {
-        if (initialStep === 1) {
-            resetFormStore();
-        }
-    }, [initialStep, resetFormStore]);
     return (
         <div className="pt-4">
             <PageHeader title="Intercorrências Institucionais" />
