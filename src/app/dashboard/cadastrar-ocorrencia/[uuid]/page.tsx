@@ -84,12 +84,12 @@ export default function EditarOcorrenciaPage() {
         };
     }, [ocorrencia, setFormData, setOcorrenciaUuid, reset]);
 
-    if (isLoading || !isStoreReady) {
-        return <LoadingSpinner />;
-    }
-
     if (isError) {
         return <ErrorMessage error={error} />;
+    }
+
+    if (isLoading || !isStoreReady || !ocorrencia) {
+        return <LoadingSpinner />;
     }
 
     const getInitialStep = () => {
@@ -97,7 +97,5 @@ export default function EditarOcorrenciaPage() {
         return 1;
     };
 
-    return ocorrencia ? (
-        <CadastrarOcorrencia initialStep={getInitialStep()} />
-    ) : null;
+    return <CadastrarOcorrencia initialStep={getInitialStep()} />;
 }
