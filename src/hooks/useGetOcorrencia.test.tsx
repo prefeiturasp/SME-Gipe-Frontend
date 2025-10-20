@@ -112,24 +112,51 @@ describe("useGetOcorrencia", () => {
         );
     });
 
-    it("deve respeitar o staleTime de 5 minutos", () => {
+    it("deve respeitar o staleTime de 5 minutos", async () => {
+        const mockData = {
+            id: 4,
+            uuid: "test-uuid",
+            data_ocorrencia: "2024-04-01",
+            unidade_codigo_eol: "999999",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+            status: "Finalizada",
+        };
+        obterOcorrenciaMock.mockResolvedValue({
+            success: true,
+            data: mockData,
+        });
+
         const uuid = "test-uuid";
         const { result } = renderHook(() => useGetOcorrencia(uuid), {
             wrapper: createWrapper(),
         });
 
-        // Verifica se o staleTime está configurado corretamente
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
         expect(result.current.isStale).toBe(false);
     });
 
     it("deve usar a queryKey correta para caching", async () => {
         const mockData = {
             id: 3,
+            uuid: "cache-test-uuid",
             data_ocorrencia: "2024-03-10",
             unidade_codigo_eol: "111111",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             status: "Finalizada",
         };
-        obterOcorrenciaMock.mockResolvedValue(mockData);
+        obterOcorrenciaMock.mockResolvedValue({
+            success: true,
+            data: mockData,
+        });
 
         const uuid = "cache-test-uuid";
         const queryClient = new QueryClient({

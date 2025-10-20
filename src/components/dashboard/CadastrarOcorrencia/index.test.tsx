@@ -52,14 +52,23 @@ function mockUseUserStore() {
 }
 
 function mockUseOcorrenciaFormStore() {
+    const mockStoreState = {
+        formData: {},
+        setFormData: vi.fn(),
+        setOcorrenciaUuid: vi.fn(),
+        ocorrenciaUuid: null,
+        reset: vi.fn(),
+    };
+
     return {
-        useOcorrenciaFormStore: () => ({
-            formData: {},
-            setFormData: vi.fn(),
-            setOcorrenciaUuid: vi.fn(),
-            ocorrenciaUuid: null,
-            resetForm: vi.fn(),
-        }),
+        useOcorrenciaFormStore: (
+            selector?: (state: typeof mockStoreState) => unknown
+        ) => {
+            if (typeof selector === "function") {
+                return selector(mockStoreState);
+            }
+            return mockStoreState;
+        },
     };
 }
 
