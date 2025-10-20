@@ -3,9 +3,9 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import CadastroOcorrencia from "./SecaoInicial";
+import SecaoInicial from "./SecaoInicial";
 import { useEffect, useState } from "react";
-import Categorizar from "./SecaoFurtoERoubo";
+import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 
 const steps = [
@@ -67,10 +67,10 @@ export default function CadastrarOcorrencia({
                 </div>
 
                 {currentStep === 1 && (
-                    <CadastroOcorrencia onSuccess={() => setCurrentStep(2)} />
+                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
                 )}
                 {currentStep === 2 && (
-                    <Categorizar
+                    <SecaoFurtoERoubo
                         onNext={() => setCurrentStep(3)}
                         onPrevious={() => setCurrentStep(1)}
                     />

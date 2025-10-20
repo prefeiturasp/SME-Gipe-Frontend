@@ -23,16 +23,16 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { formSchema, CadastroOcorrenciaData } from "./schema";
+import { formSchema, SecaoInicialData } from "./schema";
 import { useCadastrarOcorrencia } from "@/hooks/useCadastrarOcorrencia";
 
-export type CadastroOcorrenciaProps = {
+export type SecaoInicialProps = {
     onSuccess: () => void;
 };
 
-export default function CadastroOcorrencia({
+export default function SecaoInicial({
     onSuccess,
-}: Readonly<CadastroOcorrenciaProps>) {
+}: Readonly<SecaoInicialProps>) {
     const user = useUserStore((state) => state.user);
     const { mutateAsync, isPending } = useCadastrarOcorrencia();
 
@@ -45,7 +45,7 @@ export default function CadastroOcorrencia({
     const dd = String(today.getDate()).padStart(2, "0");
     const maxDate = `${yyyy}-${mm}-${dd}`;
 
-    const form = useForm<CadastroOcorrenciaData>({
+    const form = useForm<SecaoInicialData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
@@ -61,7 +61,7 @@ export default function CadastroOcorrencia({
 
     const { isValid } = form.formState;
 
-    const onSubmit = async (data: CadastroOcorrenciaData) => {
+    const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
         if (formData && Object.keys(formData).length > 0) {
             return onSuccess();

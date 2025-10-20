@@ -17,7 +17,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, SecaoFurtoERouboData } from "./schema";
 
-export type CategorizarProps = {
+export type SecaoFurtoERouboProps = {
     onPrevious: () => void;
     onNext: () => void;
 };
@@ -31,10 +31,10 @@ const TIPOS_OCORRENCIA = [
     { value: "cyberbullying", label: "Cyberbullying" },
 ];
 
-export default function Categorizar({
+export default function SecaoFurtoERoubo({
     onPrevious,
     onNext,
-}: Readonly<CategorizarProps>) {
+}: Readonly<SecaoFurtoERouboProps>) {
     const { formData, setFormData } = useOcorrenciaFormStore();
 
     const form = useForm<SecaoFurtoERouboData>({

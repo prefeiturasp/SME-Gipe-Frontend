@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { CadastroOcorrenciaData } from "@/components/dashboard/CadastrarOcorrencia/SecaoInicial/schema";
+import { SecaoInicialData } from "@/components/dashboard/CadastrarOcorrencia/SecaoInicial/schema";
 import { SecaoFurtoERouboData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
 
-type OcorrenciaFormData = Partial<CadastroOcorrenciaData> &
+type OcorrenciaFormData = Partial<SecaoInicialData> &
     Partial<SecaoFurtoERouboData>;
 
 type OcorrenciaFormState = {
