@@ -52,14 +52,23 @@ function mockUseUserStore() {
 }
 
 function mockUseOcorrenciaFormStore() {
+    const mockStoreState = {
+        formData: {},
+        setFormData: vi.fn(),
+        setOcorrenciaUuid: vi.fn(),
+        ocorrenciaUuid: null,
+        reset: vi.fn(),
+    };
+
     return {
-        useOcorrenciaFormStore: () => ({
-            formData: {},
-            setFormData: vi.fn(),
-            setOcorrenciaUuid: vi.fn(),
-            ocorrenciaUuid: null,
-            resetForm: vi.fn(),
-        }),
+        useOcorrenciaFormStore: (
+            selector?: (state: typeof mockStoreState) => unknown
+        ) => {
+            if (typeof selector === "function") {
+                return selector(mockStoreState);
+            }
+            return mockStoreState;
+        },
     };
 }
 
@@ -122,7 +131,7 @@ describe("CadastrarOcorrencia", () => {
         expect(checks.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("deve avançar do step 2 (Categorizar) para o step 3 ao clicar em Próximo", async () => {
+    it("deve avançar do step 2 (SecaoFurtoERoubo) para o step 3 ao clicar em Próximo", async () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
@@ -189,7 +198,7 @@ describe("CadastrarOcorrencia", () => {
         });
     });
 
-    it("deve voltar do step 2 (Categorizar) para o step 1 ao clicar em Anterior", async () => {
+    it("deve voltar do step 2 (SecaoFurtoERoubo) para o step 1 ao clicar em Anterior", async () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);

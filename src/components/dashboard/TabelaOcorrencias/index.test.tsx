@@ -36,6 +36,7 @@ const sampleData = [
         tipoViolencia: "Física",
         status: "Incompleta",
         id: "1",
+        uuid: "uuid-test-1",
     },
     {
         protocolo: "P0002",
@@ -44,6 +45,7 @@ const sampleData = [
         tipoViolencia: "Psicológica",
         status: "Finalizada",
         id: "2",
+        uuid: "uuid-test-2",
     },
 ];
 
@@ -81,12 +83,16 @@ describe("TabelaOcorrencias", () => {
         expect(incompleta.className).toContain("bg-[#D06D12]");
         expect(finalizada.className).toContain("bg-[#297805]");
 
-        const visualBtns = screen.getAllByRole("button", {
+        const visualLinks = screen.getAllByRole("link", {
             name: /Visualizar/i,
         });
-        expect(visualBtns.length).toBeGreaterThan(0);
+        expect(visualLinks.length).toBeGreaterThan(0);
+        expect(visualLinks[0]).toHaveAttribute(
+            "href",
+            "/dashboard/cadastrar-ocorrencia/uuid-test-1"
+        );
 
-        await userEvent.hover(visualBtns[0]);
+        await userEvent.hover(visualLinks[0]);
         const tooltip = await screen.findByRole("tooltip");
         expect(within(tooltip).getByText(/Visualizar/i)).toBeInTheDocument();
     });
@@ -216,8 +222,8 @@ describe("TabelaOcorrencias", () => {
         const botoesFiltrar = screen.getAllByRole("button", {
             name: /Filtrar/i,
         });
-        const botaoFiltrarDoPainel = botoesFiltrar[botoesFiltrar.length - 1];
-        await user.click(botaoFiltrarDoPainel);
+        const botaoFiltrarDoPainel = botoesFiltrar.at(-1);
+        await user.click(botaoFiltrarDoPainel!);
 
         await waitFor(() => {
             expect(screen.queryByText("P0001")).not.toBeInTheDocument();
@@ -265,8 +271,8 @@ describe("TabelaOcorrencias", () => {
         const botoesFiltrar2 = screen.getAllByRole("button", {
             name: /Filtrar/i,
         });
-        const botaoFiltrarDoPainel2 = botoesFiltrar2[botoesFiltrar2.length - 1];
-        await user.click(botaoFiltrarDoPainel2);
+        const botaoFiltrarDoPainel2 = botoesFiltrar2.at(-1);
+        await user.click(botaoFiltrarDoPainel2!);
 
         await waitFor(() => {
             expect(screen.queryByText("P0001")).not.toBeInTheDocument();

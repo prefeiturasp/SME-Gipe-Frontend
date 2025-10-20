@@ -1,15 +1,15 @@
 import { create } from "zustand";
-import { CadastroOcorrenciaData } from "@/components/dashboard/CadastrarOcorrencia/SecaoInicial/schema";
-import { CategorizarData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
+import { SecaoInicialData } from "@/components/dashboard/CadastrarOcorrencia/SecaoInicial/schema";
+import { SecaoFurtoERouboData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
 
-type OcorrenciaFormData = Partial<CadastroOcorrenciaData> &
-    Partial<CategorizarData>;
+type OcorrenciaFormData = Partial<SecaoInicialData> &
+    Partial<SecaoFurtoERouboData>;
 
 type OcorrenciaFormState = {
-    ocorrenciaUuid: number | null;
+    ocorrenciaUuid: string | null;
     formData: OcorrenciaFormData;
     setFormData: (data: Partial<OcorrenciaFormData>) => void;
-    setOcorrenciaUuid: (id: number) => void;
+    setOcorrenciaUuid: (id: string) => void;
     reset: () => void;
 };
 

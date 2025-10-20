@@ -3,7 +3,7 @@ import { vi } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import CadastroOcorrencia from "./index";
+import SecaoInicial from "./index";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -71,7 +71,7 @@ const renderWithClient = (ui: React.ReactElement) => {
     );
 };
 
-describe("CadastroOcorrencia", () => {
+describe("SecaoInicial", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         queryClient.clear();
@@ -80,7 +80,7 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("deve renderizar os campos corretamente com os valores do usuário", () => {
-        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
+        renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         expect(
             screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
@@ -101,7 +101,7 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("deve validar o preenchimento e habilitar o botão Próximo apenas quando o formulário estiver válido", async () => {
-        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
+        renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
@@ -124,7 +124,7 @@ describe("CadastroOcorrencia", () => {
     });
 
     it("não permite data futura e exibe erro", async () => {
-        renderWithClient(<CadastroOcorrencia onSuccess={() => vi.fn()} />);
+        renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
@@ -153,7 +153,7 @@ describe("CadastroOcorrencia", () => {
 
     it("exibe erro quando a data é inválida (NaN)", async () => {
         const { container } = renderWithClient(
-            <CadastroOcorrencia onSuccess={() => vi.fn()} />
+            <SecaoInicial onSuccess={() => vi.fn()} />
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -203,7 +203,7 @@ describe("CadastroOcorrencia", () => {
         const onSuccess = vi.fn();
         mutateMock.mockResolvedValue({ success: false, error: "erro" });
 
-        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
+        renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
         const dateInput = screen.getByLabelText<HTMLInputElement>(
             /Quando a ocorrência aconteceu\?\*/i
@@ -230,7 +230,7 @@ describe("CadastroOcorrencia", () => {
             return { success: true, data: { uuid: "test-uuid" } };
         });
 
-        renderWithClient(<CadastroOcorrencia onSuccess={onSuccess} />);
+        renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
         const dateInput = screen.getByLabelText<HTMLInputElement>(
             /Quando a ocorrência aconteceu\?\*/i
@@ -274,9 +274,9 @@ describe("CadastroOcorrencia", () => {
         }));
 
         const mod = await import("./index");
-        const CadastroOcorrenciaIsolated = mod.default;
+        const SecaoInicialIsolated = mod.default;
 
-        renderWithClient(<CadastroOcorrenciaIsolated onSuccess={() => {}} />);
+        renderWithClient(<SecaoInicialIsolated onSuccess={() => {}} />);
 
         expect(screen.getByText(/Selecione a DRE/i)).toBeInTheDocument();
         expect(screen.getByText(/Selecione a unidade/i)).toBeInTheDocument();
@@ -318,10 +318,10 @@ describe("CadastroOcorrencia", () => {
         }));
 
         const mod = await import("./index");
-        const CadastroOcorrenciaIsolated = mod.default;
+        const SecaoInicialIsolated = mod.default;
 
         const onSuccess = vi.fn();
-        renderWithClient(<CadastroOcorrenciaIsolated onSuccess={onSuccess} />);
+        renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
         const dateInput = screen.getByLabelText<HTMLInputElement>(
             /Quando a ocorrência aconteceu\?\*/i

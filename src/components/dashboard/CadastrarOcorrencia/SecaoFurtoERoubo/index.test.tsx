@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Categorizar from "./index";
+import SecaoFurtoERoubo from "./index";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("next/navigation", () => ({
@@ -26,7 +26,7 @@ const createWrapper = () => {
     return Wrapper;
 };
 
-describe("Categorizar", () => {
+describe("SecaoFurtoERoubo", () => {
     const mockOnPrevious = vi.fn();
     const mockOnNext = vi.fn();
 
@@ -36,7 +36,10 @@ describe("Categorizar", () => {
 
     it("deve renderizar todos os campos do formulário", () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -57,7 +60,10 @@ describe("Categorizar", () => {
     it("deve renderizar todas as opções de tipo de ocorrência", async () => {
         const user = userEvent.setup();
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -80,7 +86,10 @@ describe("Categorizar", () => {
 
     it("deve renderizar as opções do Smart Sampa", () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -93,7 +102,10 @@ describe("Categorizar", () => {
 
     it("deve desabilitar o botão Próximo quando o formulário está inválido", () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -104,7 +116,10 @@ describe("Categorizar", () => {
     it("deve habilitar o botão Próximo quando todos os campos obrigatórios são preenchidos", async () => {
         const user = userEvent.setup();
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -133,7 +148,10 @@ describe("Categorizar", () => {
     });
     it("deve chamar onPrevious ao clicar no botão Anterior", () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -146,7 +164,10 @@ describe("Categorizar", () => {
     it("deve permitir selecionar múltiplos tipos de ocorrência", async () => {
         const user = userEvent.setup();
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -178,7 +199,10 @@ describe("Categorizar", () => {
     it("deve permitir selecionar e visualizar a seleção no botão", async () => {
         const user = userEvent.setup();
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -205,7 +229,10 @@ describe("Categorizar", () => {
     });
     it("deve exibir erro quando descrição é muito curta", async () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -225,7 +252,10 @@ describe("Categorizar", () => {
     it("deve chamar onNext ao submeter o formulário válido", async () => {
         const user = userEvent.setup();
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
@@ -265,7 +295,10 @@ describe("Categorizar", () => {
 
     it("deve exibir mensagem de erro quando nenhum tipo de ocorrência é selecionado", async () => {
         render(
-            <Categorizar onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
             { wrapper: createWrapper() }
         );
 
