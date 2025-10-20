@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { formSchema, CategorizarData } from "./schema";
+import { formSchema, SecaoFurtoERouboData } from "./schema";
 
 export type CategorizarProps = {
     onPrevious: () => void;
@@ -37,7 +37,7 @@ export default function Categorizar({
 }: Readonly<CategorizarProps>) {
     const { formData, setFormData } = useOcorrenciaFormStore();
 
-    const form = useForm<CategorizarData>({
+    const form = useForm<SecaoFurtoERouboData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
@@ -49,7 +49,7 @@ export default function Categorizar({
 
     const { isValid } = form.formState;
 
-    const onSubmit = async (data: CategorizarData) => {
+    const onSubmit = async (data: SecaoFurtoERouboData) => {
         setFormData(data);
         onNext();
     };

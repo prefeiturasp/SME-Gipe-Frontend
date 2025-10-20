@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { CadastroOcorrenciaData } from "@/components/dashboard/CadastrarOcorrencia/SecaoInicial/schema";
-import { CategorizarData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
+import { SecaoFurtoERouboData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
 
 type OcorrenciaFormData = Partial<CadastroOcorrenciaData> &
-    Partial<CategorizarData>;
+    Partial<SecaoFurtoERouboData>;
 
 type OcorrenciaFormState = {
     ocorrenciaUuid: string | null;

@@ -13,4 +13,4 @@ export const formSchema = z.object({
     }),
 });
 
-export type CategorizarData = z.infer<typeof formSchema>;
+export type SecaoFurtoERouboData = z.infer<typeof formSchema>;
