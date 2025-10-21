@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { formSchema, SecaoFurtoERouboData } from "./schema";
 
 export type SecaoFurtoERouboProps = {
@@ -22,20 +23,19 @@ export type SecaoFurtoERouboProps = {
     onNext: () => void;
 };
 
-const TIPOS_OCORRENCIA = [
-    { value: "violencia-fisica", label: "Violência física" },
-    { value: "violencia-psicologica", label: "Violência psicológica" },
-    { value: "violencia-sexual", label: "Violência sexual" },
-    { value: "negligencia", label: "Negligência" },
-    { value: "bullying", label: "Bullying" },
-    { value: "cyberbullying", label: "Cyberbullying" },
-];
-
 export default function SecaoFurtoERoubo({
     onPrevious,
     onNext,
 }: Readonly<SecaoFurtoERouboProps>) {
     const { formData, setFormData } = useOcorrenciaFormStore();
+    const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
+        useTiposOcorrencia();
+
+    const tiposOcorrenciaOptions =
+        tiposOcorrencia?.map((tipo) => ({
+            value: tipo.uuid,
+            label: tipo.nome,
+        })) || [];
 
     const form = useForm<SecaoFurtoERouboData>({
         resolver: zodResolver(formSchema),
@@ -72,10 +72,11 @@ export default function SecaoFurtoERoubo({
 
                                 <FormControl>
                                     <MultiSelect
-                                        options={TIPOS_OCORRENCIA}
+                                        options={tiposOcorrenciaOptions}
                                         value={field.value}
                                         onChange={field.onChange}
                                         placeholder="Selecione os tipos de ocorrência"
+                                        disabled={isLoadingTipos}
                                     />
                                 </FormControl>
                                 <p className="text-[12px] text-[#42474a] mt-1 mb-2">
