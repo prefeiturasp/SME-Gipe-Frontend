@@ -4,12 +4,42 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SecaoFurtoERoubo from "./index";
 import userEvent from "@testing-library/user-event";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: vi.fn(),
     }),
 }));
+
+vi.mock("@/hooks/useTiposOcorrencia");
+
+const mockTiposOcorrencia = [
+    {
+        uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+        nome: "Violência física",
+    },
+    {
+        uuid: "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+        nome: "Violência psicológica",
+    },
+    {
+        uuid: "4d30a69e-e0b1-4d33-aee9-47636728bf44",
+        nome: "Violência sexual",
+    },
+    {
+        uuid: "263f33e0-36e3-45ec-b886-aa775ed1bd7e",
+        nome: "Negligência",
+    },
+    {
+        uuid: "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
+        nome: "Bullying",
+    },
+    {
+        uuid: "252ebf03-c661-4195-b42e-455376e10396",
+        nome: "Cyberbullying",
+    },
+];
 
 const createWrapper = () => {
     const queryClient = new QueryClient({
@@ -32,6 +62,13 @@ describe("SecaoFurtoERoubo", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+            data: mockTiposOcorrencia,
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
     });
 
     it("deve renderizar todos os campos do formulário", () => {
@@ -318,5 +355,58 @@ describe("SecaoFurtoERoubo", () => {
             });
             expect(btnProximo).toBeDisabled();
         });
+    });
+
+    it("deve desabilitar o MultiSelect quando os tipos estão carregando", () => {
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+            data: undefined,
+            isLoading: true,
+            isError: false,
+            error: null,
+        } as never);
+
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButtons = screen.getAllByRole("button");
+        const multiSelectButton = multiSelectButtons.find(
+            (button) => button.getAttribute("aria-haspopup") === "listbox"
+        );
+
+        expect(multiSelectButton).toBeDisabled();
+    });
+
+    it("deve exibir lista vazia quando não há tipos de ocorrência", () => {
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
+
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        expect(
+            screen.getByText("Qual o tipo de ocorrência?*")
+        ).toBeInTheDocument();
+
+        const multiSelectButtons = screen.getAllByRole("button");
+        const multiSelectButton = multiSelectButtons.find(
+            (button) => button.getAttribute("aria-haspopup") === "listbox"
+        );
+
+        expect(multiSelectButton).toBeInTheDocument();
+        expect(multiSelectButton).not.toBeDisabled();
     });
 });
