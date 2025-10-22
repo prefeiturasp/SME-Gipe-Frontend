@@ -24,7 +24,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, SecaoInicialData } from "./schema";
-import { useCadastrarOcorrencia } from "@/hooks/useCadastrarOcorrencia";
+import { useSecaoInicial } from "@/hooks/useSecaoInicial";
+import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
 
 export type SecaoInicialProps = {
     onSuccess: () => void;
@@ -34,9 +35,12 @@ export default function SecaoInicial({
     onSuccess,
 }: Readonly<SecaoInicialProps>) {
     const user = useUserStore((state) => state.user);
-    const { mutateAsync, isPending } = useCadastrarOcorrencia();
+    const { mutateAsync: criarOcorrencia, isPending: isCriando } =
+        useSecaoInicial();
+    const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
+        useAtualizarSecaoInicial();
 
-    const { formData, setFormData, setOcorrenciaUuid } =
+    const { formData, setFormData, setOcorrenciaUuid, ocorrenciaUuid } =
         useOcorrenciaFormStore();
 
     const today = new Date();
@@ -61,14 +65,57 @@ export default function SecaoInicial({
 
     const { isValid } = form.formState;
 
+    const hasFormChanged = (data: SecaoInicialData) => {
+        // Verifica se houve alteração comparando com o formData armazenado
+        return (
+            formData.dataOcorrencia !== data.dataOcorrencia ||
+            formData.dre !== data.dre ||
+            formData.unidadeEducacional !== data.unidadeEducacional ||
+            formData.tipoOcorrencia !== data.tipoOcorrencia
+        );
+    };
+
     const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
-        if (formData && Object.keys(formData).length > 0) {
-            return onSuccess();
+
+        // Se já existe ocorrenciaUuid, estamos editando
+        if (ocorrenciaUuid) {
+            // Verifica se houve alteração no formulário
+            if (!hasFormChanged(data)) {
+                // Não houve alteração, apenas avança para a próxima etapa
+                return onSuccess();
+            }
+
+            // Houve alteração, atualiza a ocorrência
+            const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+
+            const response = await atualizarOcorrencia({
+                uuid: ocorrenciaUuid,
+                body: {
+                    data_ocorrencia: dataOcorrencia,
+                    unidade_codigo_eol: data.unidadeEducacional,
+                    dre_codigo_eol: data.dre,
+                    sobre_furto_roubo_invasao_depredacao:
+                        data.tipoOcorrencia === "Sim",
+                },
+            });
+
+            if (response.success) {
+                onSuccess();
+            } else {
+                toast({
+                    variant: "error",
+                    title: "Erro ao atualizar ocorrência",
+                    description: response.error,
+                });
+            }
+            return;
         }
+
+        // Se não existe ocorrenciaUuid, estamos criando uma nova
         const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
 
-        const response = await mutateAsync({
+        const response = await criarOcorrencia({
             data_ocorrencia: dataOcorrencia,
             unidade_codigo_eol: data.unidadeEducacional,
             dre_codigo_eol: data.dre,
@@ -233,7 +280,7 @@ export default function SecaoInicial({
                             size="sm"
                             type="submit"
                             variant="submit"
-                            disabled={!isValid || isPending}
+                            disabled={!isValid || isCriando || isAtualizando}
                         >
                             Próximo
                         </Button>
