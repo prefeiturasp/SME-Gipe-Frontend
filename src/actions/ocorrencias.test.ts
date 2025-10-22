@@ -37,7 +37,7 @@ describe("getOcorrenciasAction", () => {
 
         await getOcorrenciasAction({});
 
-        expect(mockApiGet).toHaveBeenCalledWith("/intercorrencias/", {
+        expect(mockApiGet).toHaveBeenCalledWith("/diretor/", {
             headers: { Authorization: "Bearer fake-token" },
         });
     });
@@ -50,7 +50,7 @@ describe("getOcorrenciasAction", () => {
 
         await getOcorrenciasAction({ dre: "12345" });
 
-        expect(mockApiGet).toHaveBeenCalledWith("/intercorrencias/?dre=12345", {
+        expect(mockApiGet).toHaveBeenCalledWith("/diretor/?dre=12345", {
             headers: { Authorization: "Bearer fake-token" },
         });
     });
@@ -63,12 +63,9 @@ describe("getOcorrenciasAction", () => {
 
         await getOcorrenciasAction({ usuario: "user123" });
 
-        expect(mockApiGet).toHaveBeenCalledWith(
-            "/intercorrencias/?usuario=user123",
-            {
-                headers: { Authorization: "Bearer fake-token" },
-            }
-        );
+        expect(mockApiGet).toHaveBeenCalledWith("/diretor/?usuario=user123", {
+            headers: { Authorization: "Bearer fake-token" },
+        });
     });
 
     it("deve retornar os dados com sucesso", async () => {

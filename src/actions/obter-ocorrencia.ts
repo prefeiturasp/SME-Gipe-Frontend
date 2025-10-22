@@ -34,7 +34,7 @@ export async function obterOcorrencia(
 
     try {
         const { data } = await apiIntercorrencias.get<OcorrenciaAPI>(
-            `/intercorrencias/${uuid}/`,
+            `/diretor/${uuid}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

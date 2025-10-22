@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SecaoFurtoERoubo from "./index";
 import userEvent from "@testing-library/user-event";
 import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+import * as useAtualizarSecaoFurtoRouboHook from "@/hooks/useAtualizarSecaoFurtoRoubo";
+import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -13,6 +15,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/hooks/useTiposOcorrencia");
+vi.mock("@/hooks/useAtualizarSecaoFurtoRoubo");
+vi.mock("@/stores/useOcorrenciaFormStore");
 
 const mockTiposOcorrencia = [
     {
@@ -408,5 +412,245 @@ describe("SecaoFurtoERoubo", () => {
 
         expect(multiSelectButton).toBeInTheDocument();
         expect(multiSelectButton).not.toBeDisabled();
+    });
+
+    describe("Atualização de ocorrência existente", () => {
+        const mockMutate = vi.fn();
+        const mockSetFormData = vi.fn();
+
+        beforeEach(() => {
+            vi.clearAllMocks();
+
+            // Mock do store com ocorrenciaUuid
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: vi.fn(),
+            } as never);
+
+            // Mock do hook de atualização
+            vi.spyOn(
+                useAtualizarSecaoFurtoRouboHook,
+                "useAtualizarSecaoFurtoRoubo"
+            ).mockReturnValue({
+                mutate: mockMutate,
+                isPending: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia"
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+        });
+
+        it("deve atualizar a ocorrência quando houver mudanças", async () => {
+            const user = userEvent.setup();
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const textarea = screen.getByPlaceholderText("Descreva aqui...");
+            await user.clear(textarea);
+            await user.type(textarea, "Nova descrição da ocorrência");
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            descricao_ocorrencia:
+                                "Nova descrição da ocorrência",
+                            smart_sampa_situacao: "nao_faz_parte",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve avançar sem atualizar quando não houver mudanças", async () => {
+            const user = userEvent.setup();
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).not.toHaveBeenCalled();
+                expect(mockOnNext).toHaveBeenCalledTimes(1);
+            });
+        });
+
+        it("deve exibir toast de erro quando a atualização falhar", async () => {
+            const user = userEvent.setup();
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({
+                    success: false,
+                    error: "Erro ao atualizar",
+                });
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const radioSimHouveDano = screen.getByRole("radio", {
+                name: /sim e houve dano/i,
+            });
+            await user.click(radioSimHouveDano);
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+                expect(mockOnNext).not.toHaveBeenCalled();
+            });
+        });
+
+        it("deve exibir toast de erro em caso de erro de rede", async () => {
+            const user = userEvent.setup();
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onError?.();
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const radioSimSemDano = screen.getByRole("radio", {
+                name: /sim, mas não houve dano/i,
+            });
+            await user.click(radioSimSemDano);
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+                expect(mockOnNext).not.toHaveBeenCalled();
+            });
+        });
+
+        it("deve detectar mudança ao alterar tipos de ocorrência", async () => {
+            const user = userEvent.setup();
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const multiSelectButton = screen.getByRole("button", {
+                name: /violência física/i,
+            });
+            await user.click(multiSelectButton);
+
+            const opcaoBullying = await screen.findByText("Bullying");
+            await user.click(opcaoBullying);
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            tipos_ocorrencia: expect.arrayContaining([
+                                "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
+                            ]),
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
     });
 });
