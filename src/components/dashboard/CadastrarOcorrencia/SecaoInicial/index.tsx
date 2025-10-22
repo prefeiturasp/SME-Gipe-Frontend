@@ -66,7 +66,6 @@ export default function SecaoInicial({
     const { isValid } = form.formState;
 
     const hasFormChanged = (data: SecaoInicialData) => {
-        // Verifica se houve alteração comparando com o formData armazenado
         return (
             formData.dataOcorrencia !== data.dataOcorrencia ||
             formData.dre !== data.dre ||
@@ -78,15 +77,11 @@ export default function SecaoInicial({
     const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
 
-        // Se já existe ocorrenciaUuid, estamos editando
         if (ocorrenciaUuid) {
-            // Verifica se houve alteração no formulário
             if (!hasFormChanged(data)) {
-                // Não houve alteração, apenas avança para a próxima etapa
                 return onSuccess();
             }
 
-            // Houve alteração, atualiza a ocorrência
             const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
 
             const response = await atualizarOcorrencia({
@@ -102,17 +97,17 @@ export default function SecaoInicial({
 
             if (response.success) {
                 onSuccess();
-            } else {
-                toast({
-                    variant: "error",
-                    title: "Erro ao atualizar ocorrência",
-                    description: response.error,
-                });
+                return;
             }
+
+            toast({
+                variant: "error",
+                title: "Erro ao atualizar ocorrência",
+                description: response.error,
+            });
             return;
         }
 
-        // Se não existe ocorrenciaUuid, estamos criando uma nova
         const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
 
         const response = await criarOcorrencia({
@@ -122,15 +117,18 @@ export default function SecaoInicial({
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
         });
 
-        if (response.success && response?.data?.uuid) {
-            setOcorrenciaUuid(response.data.uuid);
-            onSuccess();
-        } else {
+        if (!response.success) {
             toast({
                 variant: "error",
                 title: "Erro ao cadastrar ocorrência",
                 description: response.error,
             });
+            return;
+        }
+
+        if (response.data?.uuid) {
+            setOcorrenciaUuid(response.data.uuid);
+            onSuccess();
         }
     };
 
