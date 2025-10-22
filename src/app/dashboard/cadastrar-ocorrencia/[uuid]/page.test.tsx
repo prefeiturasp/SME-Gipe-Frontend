@@ -137,7 +137,7 @@ describe("EditarOcorrenciaPage", () => {
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             tipos_ocorrencia: ["Violência física", "Violência psicológica"],
             descricao: "Descrição detalhada da ocorrência",
-            smart_sampa: "sim-houve-dano",
+            smart_sampa: "sim_com_dano",
         };
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -178,7 +178,7 @@ describe("EditarOcorrenciaPage", () => {
                 tipoOcorrencia: "Sim",
                 tiposOcorrencia: ["Violência física", "Violência psicológica"],
                 descricao: "Descrição detalhada da ocorrência",
-                smartSampa: "sim-houve-dano",
+                smartSampa: "sim_com_dano",
             })
         );
     });

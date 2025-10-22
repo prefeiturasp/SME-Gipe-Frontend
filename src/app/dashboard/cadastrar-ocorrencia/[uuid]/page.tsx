@@ -24,9 +24,9 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaAPI) => {
         : ("Não" as const);
 
     const validSmartSampaValues = [
-        "sim-houve-dano",
-        "sim-sem-dano",
-        "nao-faz-parte",
+        "sim_com_dano",
+        "sim_sem_dano",
+        "nao_faz_parte",
     ] as const;
     const smartSampa =
         ocorrencia.smart_sampa &&
@@ -34,9 +34,9 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaAPI) => {
             ocorrencia.smart_sampa as (typeof validSmartSampaValues)[number]
         )
             ? (ocorrencia.smart_sampa as
-                  | "sim-houve-dano"
-                  | "sim-sem-dano"
-                  | "nao-faz-parte")
+                  | "sim_com_dano"
+                  | "sim_sem_dano"
+                  | "nao_faz_parte")
             : undefined;
 
     return {
@@ -44,7 +44,6 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaAPI) => {
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,
-
         ...(ocorrencia.tipos_ocorrencia && {
             tiposOcorrencia: ocorrencia.tipos_ocorrencia,
         }),
