@@ -41,12 +41,31 @@ vi.mock("@/stores/useUserStore", () => ({
 
 const setFormDataMock = vi.fn();
 const setOcorrenciaIdMock = vi.fn();
+const mockOcorrenciaUuid = null;
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: {},
         setFormData: setFormDataMock,
         setOcorrenciaUuid: setOcorrenciaIdMock,
+        ocorrenciaUuid: mockOcorrenciaUuid,
+    }),
+}));
+
+const mockCriarOcorrencia = vi.fn();
+const mockAtualizarOcorrencia = vi.fn();
+
+vi.mock("@/hooks/useSecaoInicial", () => ({
+    useSecaoInicial: () => ({
+        mutateAsync: mockCriarOcorrencia,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/hooks/useAtualizarSecaoInicial", () => ({
+    useAtualizarSecaoInicial: () => ({
+        mutateAsync: mockAtualizarOcorrencia,
+        isPending: false,
     }),
 }));
 
