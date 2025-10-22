@@ -3,9 +3,14 @@
 import { cookies } from "next/headers";
 import { AxiosError } from "axios";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { CadastrarOcorrenciaBody } from "@/types/cadastrar-ocorrencia";
+import { SecaoInicialBody } from "@/types/secao-inicial";
 
-export const CadastrarOcorrencia = async (body: CadastrarOcorrenciaBody) => {
+export const SecaoInicial = async (
+    body: SecaoInicialBody
+): Promise<
+    | { success: true; data: { uuid: string } }
+    | { success: false; error: string }
+> => {
     try {
         const cookieStore = cookies();
         const authToken = cookieStore.get("auth_token")?.value;
@@ -18,7 +23,7 @@ export const CadastrarOcorrencia = async (body: CadastrarOcorrenciaBody) => {
         }
 
         const response = await apiIntercorrencias.post(
-            "/intercorrencias/",
+            "/diretor/secao-inicial/",
             body,
             {
                 headers: {
