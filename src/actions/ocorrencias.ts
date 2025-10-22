@@ -23,17 +23,13 @@ export const getOcorrenciasAction = async ({
         return { success: false, error: "Usuário não autenticado" };
     }
 
-    let url = "/intercorrencias/";
+    let url = "/";
     const params = new URLSearchParams();
 
     if (dre) {
         params.append("dre", dre);
     } else if (usuario) {
-        params.append("usuario", usuario);
-    }
-
-    if (params.toString()) {
-        url += `?${params.toString()}`;
+        url = "diretor/";
     }
 
     try {
