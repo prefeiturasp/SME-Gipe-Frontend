@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
 import {
     Form,
     FormControl,
@@ -16,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { formSchema, SecaoFurtoERouboData } from "./schema";
 
 export type SecaoFurtoERouboProps = {
@@ -27,9 +29,12 @@ export default function SecaoFurtoERoubo({
     onPrevious,
     onNext,
 }: Readonly<SecaoFurtoERouboProps>) {
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia();
+    const { mutate: atualizarSecaoFurtoRoubo } = useAtualizarSecaoFurtoRoubo();
+
+    console.log("Form data atual na seção Furto e Roubo:", formData);
 
     const tiposOcorrenciaOptions =
         tiposOcorrencia?.map((tipo) => ({
@@ -49,9 +54,77 @@ export default function SecaoFurtoERoubo({
 
     const { isValid } = form.formState;
 
+    const hasFormChanged = () => {
+        const currentValues = form.getValues();
+
+        const currentTiposSorted = [...currentValues.tiposOcorrencia].sort(
+            (a, b) => a.localeCompare(b)
+        );
+        const savedTiposSorted = [...(formData.tiposOcorrencia || [])].sort(
+            (a, b) => a.localeCompare(b)
+        );
+
+        const tiposChanged =
+            JSON.stringify(currentTiposSorted) !==
+            JSON.stringify(savedTiposSorted);
+        const descricaoChanged = currentValues.descricao !== formData.descricao;
+        const smartSampaChanged =
+            currentValues.smartSampa !== formData.smartSampa;
+
+        return tiposChanged || descricaoChanged || smartSampaChanged;
+    };
+
     const onSubmit = async (data: SecaoFurtoERouboData) => {
-        setFormData(data);
-        onNext();
+        // Se já existe uma ocorrência, verifica se houve mudanças e atualiza
+        if (ocorrenciaUuid) {
+            if (!hasFormChanged()) {
+                // Se não houve mudanças, apenas avança
+                onNext();
+                return;
+            }
+
+            // O valor de smartSampa no formulário já está no formato da API
+            const smartSampaSituacao = data.smartSampa || "nao_faz_parte";
+
+            atualizarSecaoFurtoRoubo(
+                {
+                    uuid: ocorrenciaUuid,
+                    body: {
+                        tipos_ocorrencia: data.tiposOcorrencia,
+                        descricao_ocorrencia: data.descricao,
+                        smart_sampa_situacao: smartSampaSituacao,
+                    },
+                },
+                {
+                    onSuccess: (response) => {
+                        if (!response.success) {
+                            toast({
+                                title: "Erro ao atualizar seção Furto e Roubo",
+                                description: response.error,
+                                variant: "error",
+                            });
+                            return;
+                        }
+
+                        // Atualiza o estado local
+                        setFormData(data);
+                        onNext();
+                    },
+                    onError: () => {
+                        toast({
+                            title: "Erro ao atualizar seção Furto e Roubo",
+                            description:
+                                "Não foi possível atualizar os dados. Tente novamente.",
+                            variant: "error",
+                        });
+                    },
+                }
+            );
+        } else {
+            // Se não existe ocorrência, apenas salva no estado
+            setFormData(data);
+            onNext();
+        }
     };
 
     return (
@@ -127,19 +200,19 @@ export default function SecaoFurtoERoubo({
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="sim-houve-dano" />
+                                                <RadioGroupItem value="sim_com_dano" />
                                                 <span className="text-sm text-[#42474a]">
                                                     Sim e houve dano
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="sim-sem-dano" />
+                                                <RadioGroupItem value="sim_sem_dano" />
                                                 <span className="text-sm text-[#42474a]">
                                                     Sim, mas não houve dano
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="nao-faz-parte" />
+                                                <RadioGroupItem value="nao_faz_parte" />
                                                 <span className="text-sm text-[#42474a]">
                                                     A UE não faz parte do Smart
                                                     Sampa
