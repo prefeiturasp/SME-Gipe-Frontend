@@ -5,15 +5,7 @@ import { OcorrenciaAPI } from "@/types/ocorrencia";
 import { AxiosError } from "axios";
 import { cookies } from "next/headers";
 
-type GetOcorrenciasParams = {
-    dre?: string | null;
-    usuario?: string;
-};
-
-export const getOcorrenciasAction = async ({
-    dre,
-    usuario,
-}: GetOcorrenciasParams): Promise<
+export const getOcorrenciasAction = async (): Promise<
     { success: true; data: OcorrenciaAPI[] } | { success: false; error: string }
 > => {
     const cookieStore = cookies();
@@ -23,14 +15,7 @@ export const getOcorrenciasAction = async ({
         return { success: false, error: "Usuário não autenticado" };
     }
 
-    let url = "/";
-    const params = new URLSearchParams();
-
-    if (dre) {
-        params.append("dre", dre);
-    } else if (usuario) {
-        url = "diretor/";
-    }
+    const url = "/diretor/";
 
     try {
         const { data } = await apiIntercorrencias.get<OcorrenciaAPI[]>(url, {
