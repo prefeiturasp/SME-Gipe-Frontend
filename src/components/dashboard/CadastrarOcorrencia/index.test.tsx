@@ -122,6 +122,39 @@ function mockUseCadastrarOcorrencia() {
     };
 }
 
+function mockUseSecaoInicial() {
+    return {
+        useSecaoInicial: () => ({
+            mutateAsync: async () => ({
+                success: true,
+                data: { uuid: "test-uuid" },
+            }),
+            isPending: false,
+        }),
+    };
+}
+
+function mockUseAtualizarSecaoInicial() {
+    return {
+        useAtualizarSecaoInicial: () => ({
+            mutateAsync: async () => ({
+                success: true,
+            }),
+            isPending: false,
+        }),
+    };
+}
+
+function mockUseAtualizarSecaoFurtoRoubo() {
+    return {
+        useAtualizarSecaoFurtoRoubo: () => ({
+            mutate: vi.fn(),
+            mutateAsync: vi.fn(),
+            isPending: false,
+        }),
+    };
+}
+
 describe("CadastrarOcorrencia", () => {
     it("deve renderizar o PageHeader com o título correto", () => {
         renderWithClient(<CadastrarOcorrencia />);
@@ -148,7 +181,16 @@ describe("CadastrarOcorrencia", () => {
             mockUseOcorrenciaFormStore
         );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
         vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;
@@ -179,7 +221,16 @@ describe("CadastrarOcorrencia", () => {
             mockUseOcorrenciaFormStore
         );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
         vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;
@@ -247,7 +298,16 @@ describe("CadastrarOcorrencia", () => {
             mockUseOcorrenciaFormStore
         );
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
         vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
-import { OcorrenciaAPI } from "@/actions/obter-ocorrencia";
+import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
@@ -14,7 +14,7 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
     return <div>Erro ao buscar dados: {message}</div>;
 };
 
-const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaAPI) => {
+const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
     const dataOcorrencia = ocorrencia.data_ocorrencia
         ? new Date(ocorrencia.data_ocorrencia).toISOString().split("T")[0]
         : "";
@@ -28,26 +28,25 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaAPI) => {
         "sim_sem_dano",
         "nao_faz_parte",
     ] as const;
+    const rawSmartSampa = ocorrencia.smart_sampa_situacao;
     const smartSampa =
-        ocorrencia.smart_sampa &&
-        validSmartSampaValues.includes(
-            ocorrencia.smart_sampa as (typeof validSmartSampaValues)[number]
-        )
-            ? (ocorrencia.smart_sampa as
-                  | "sim_com_dano"
-                  | "sim_sem_dano"
-                  | "nao_faz_parte")
+        rawSmartSampa && validSmartSampaValues.includes(rawSmartSampa)
+            ? rawSmartSampa
             : undefined;
+
+    const tiposOcorrencia = ocorrencia.tipos_ocorrencia?.map(
+        (tipo) => tipo.uuid
+    );
 
     return {
         dataOcorrencia,
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,
-        ...(ocorrencia.tipos_ocorrencia && {
-            tiposOcorrencia: ocorrencia.tipos_ocorrencia,
+        ...(tiposOcorrencia && { tiposOcorrencia }),
+        ...(ocorrencia.descricao_ocorrencia && {
+            descricao: ocorrencia.descricao_ocorrencia,
         }),
-        ...(ocorrencia.descricao && { descricao: ocorrencia.descricao }),
         ...(smartSampa && { smartSampa }),
     };
 };

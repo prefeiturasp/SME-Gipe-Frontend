@@ -34,8 +34,6 @@ export default function SecaoFurtoERoubo({
         useTiposOcorrencia();
     const { mutate: atualizarSecaoFurtoRoubo } = useAtualizarSecaoFurtoRoubo();
 
-    console.log("Form data atual na seção Furto e Roubo:", formData);
-
     const tiposOcorrenciaOptions =
         tiposOcorrencia?.map((tipo) => ({
             value: tipo.uuid,
@@ -75,16 +73,13 @@ export default function SecaoFurtoERoubo({
     };
 
     const onSubmit = async (data: SecaoFurtoERouboData) => {
-        // Se já existe uma ocorrência, verifica se houve mudanças e atualiza
         if (ocorrenciaUuid) {
             if (!hasFormChanged()) {
-                // Se não houve mudanças, apenas avança
                 onNext();
                 return;
             }
 
-            // O valor de smartSampa no formulário já está no formato da API
-            const smartSampaSituacao = data.smartSampa || "nao_faz_parte";
+            const smartSampaSituacao = data.smartSampa;
 
             atualizarSecaoFurtoRoubo(
                 {
@@ -106,7 +101,6 @@ export default function SecaoFurtoERoubo({
                             return;
                         }
 
-                        // Atualiza o estado local
                         setFormData(data);
                         onNext();
                     },
@@ -121,7 +115,6 @@ export default function SecaoFurtoERoubo({
                 }
             );
         } else {
-            // Se não existe ocorrência, apenas salva no estado
             setFormData(data);
             onNext();
         }

@@ -16,7 +16,18 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/hooks/useTiposOcorrencia");
 vi.mock("@/hooks/useAtualizarSecaoFurtoRoubo");
-vi.mock("@/stores/useOcorrenciaFormStore");
+
+const mockSetFormData = vi.fn();
+const mockClearFormData = vi.fn();
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: vi.fn(() => ({
+        formData: {},
+        setFormData: mockSetFormData,
+        ocorrenciaUuid: null,
+        clearFormData: mockClearFormData,
+    })),
+}));
 
 const mockTiposOcorrencia = [
     {
@@ -67,9 +78,29 @@ describe("SecaoFurtoERoubo", () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: null,
+            clearFormData: mockClearFormData,
+        } as never);
+
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
             data: mockTiposOcorrencia,
             isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
+
+        vi.spyOn(
+            useAtualizarSecaoFurtoRouboHook,
+            "useAtualizarSecaoFurtoRoubo"
+        ).mockReturnValue({
+            mutate: vi.fn(),
+            mutateAsync: vi.fn(),
+            isPending: false,
             isError: false,
             error: null,
         } as never);
@@ -421,7 +452,6 @@ describe("SecaoFurtoERoubo", () => {
         beforeEach(() => {
             vi.clearAllMocks();
 
-            // Mock do store com ocorrenciaUuid
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
                 "useOcorrenciaFormStore"
@@ -436,7 +466,6 @@ describe("SecaoFurtoERoubo", () => {
                 clearFormData: vi.fn(),
             } as never);
 
-            // Mock do hook de atualização
             vi.spyOn(
                 useAtualizarSecaoFurtoRouboHook,
                 "useAtualizarSecaoFurtoRoubo"
@@ -651,6 +680,100 @@ describe("SecaoFurtoERoubo", () => {
                     expect.any(Object)
                 );
             });
+        });
+
+        it("deve lidar corretamente quando formData.tiposOcorrencia é undefined", async () => {
+            const user = userEvent.setup();
+
+            // Mock com tiposOcorrencia undefined
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: undefined,
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: vi.fn(),
+            } as never);
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            // Adiciona um tipo de ocorrência
+            const multiSelectButton = screen.getByRole("button", {
+                name: /selecione os tipos de ocorrência/i,
+            });
+            await user.click(multiSelectButton);
+
+            const opcaoBullying = await screen.findByText("Bullying");
+            await user.click(opcaoBullying);
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            // Como tiposOcorrencia era undefined (tratado como []), adicionar um tipo é uma mudança
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            tipos_ocorrencia: [
+                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
+                            ],
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve avançar sem atualizar quando formData.tiposOcorrencia é undefined e nenhum tipo é selecionado", () => {
+            // Mock com tiposOcorrencia undefined
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: undefined,
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: vi.fn(),
+            } as never);
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            // O formulário está inválido porque tiposOcorrencia está vazio (undefined tratado como [])
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            expect(btnProximo).toBeDisabled();
         });
     });
 });
