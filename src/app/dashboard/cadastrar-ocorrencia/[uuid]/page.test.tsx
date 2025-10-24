@@ -135,9 +135,12 @@ describe("EditarOcorrenciaPage", () => {
             user_username: "20090388003",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
-            tipos_ocorrencia: ["Violência física", "Violência psicológica"],
-            descricao: "Descrição detalhada da ocorrência",
-            smart_sampa: "sim-houve-dano",
+            tipos_ocorrencia: [
+                { uuid: "uuid-1", nome: "Violência física" },
+                { uuid: "uuid-2", nome: "Violência psicológica" },
+            ],
+            descricao_ocorrencia: "Descrição detalhada da ocorrência",
+            smart_sampa_situacao: "sim_com_dano" as const,
         };
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -176,9 +179,9 @@ describe("EditarOcorrenciaPage", () => {
                 dre: "108400",
                 unidadeEducacional: "654321",
                 tipoOcorrencia: "Sim",
-                tiposOcorrencia: ["Violência física", "Violência psicológica"],
+                tiposOcorrencia: ["uuid-1", "uuid-2"],
                 descricao: "Descrição detalhada da ocorrência",
-                smartSampa: "sim-houve-dano",
+                smartSampa: "sim_com_dano",
             })
         );
     });
@@ -240,7 +243,10 @@ describe("EditarOcorrenciaPage", () => {
             user_username: "20090388003",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
-            smart_sampa: "valor-invalido",
+            smart_sampa_situacao: "valor-invalido" as
+                | "sim_com_dano"
+                | "sim_sem_dano"
+                | "nao_faz_parte",
         };
 
         mockUseGetOcorrencia.mockReturnValue({

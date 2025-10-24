@@ -83,10 +83,10 @@ describe("useOcorrenciaFormStore", () => {
         const { result } = renderHook(() => useOcorrenciaFormStore());
 
         act(() => {
-            result.current.setOcorrenciaUuid(123);
+            result.current.setOcorrenciaUuid("123");
         });
 
-        expect(result.current.ocorrenciaUuid).toBe(123);
+        expect(result.current.ocorrenciaUuid).toBe("123");
     });
 
     it("deve resetar o estado com reset", () => {
@@ -98,7 +98,7 @@ describe("useOcorrenciaFormStore", () => {
                 dre: "001",
                 unidadeEducacional: "0001",
             });
-            result.current.setOcorrenciaUuid(456);
+            result.current.setOcorrenciaUuid("456");
         });
 
         expect(result.current.formData).toEqual({
@@ -106,7 +106,7 @@ describe("useOcorrenciaFormStore", () => {
             dre: "001",
             unidadeEducacional: "0001",
         });
-        expect(result.current.ocorrenciaUuid).toBe(456);
+        expect(result.current.ocorrenciaUuid).toBe("456");
 
         act(() => {
             result.current.reset();
@@ -143,14 +143,14 @@ describe("useOcorrenciaFormStore", () => {
             result.current.setFormData({
                 tiposOcorrencia: ["Violência física"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "nao-faz-parte",
+                smartSampa: "nao_faz_parte",
             });
         });
 
         expect(result.current.formData).toEqual({
             tiposOcorrencia: ["Violência física"],
             descricao: "Descrição da ocorrência",
-            smartSampa: "nao-faz-parte",
+            smartSampa: "nao_faz_parte",
         });
     });
 
@@ -161,7 +161,7 @@ describe("useOcorrenciaFormStore", () => {
             result1.current.setFormData({
                 dataOcorrencia: "2025-10-02",
             });
-            result1.current.setOcorrenciaUuid(789);
+            result1.current.setOcorrenciaUuid("789");
         });
 
         const { result: result2 } = renderHook(() => useOcorrenciaFormStore());
@@ -169,7 +169,7 @@ describe("useOcorrenciaFormStore", () => {
         expect(result2.current.formData).toEqual({
             dataOcorrencia: "2025-10-02",
         });
-        expect(result2.current.ocorrenciaUuid).toBe(789);
+        expect(result2.current.ocorrenciaUuid).toBe("789");
     });
 
     it("deve permitir setFormData com objeto vazio", () => {
@@ -198,9 +198,9 @@ describe("useOcorrenciaFormStore", () => {
         const { result } = renderHook(() => useOcorrenciaFormStore());
 
         act(() => {
-            result.current.setOcorrenciaUuid(0);
+            result.current.setOcorrenciaUuid("0");
         });
 
-        expect(result.current.ocorrenciaUuid).toBe(0);
+        expect(result.current.ocorrenciaUuid).toBe("0");
     });
 });

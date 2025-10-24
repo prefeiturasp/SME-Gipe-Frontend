@@ -8,7 +8,7 @@ export const formSchema = z.object({
         .string()
         .min(1, "A descrição é obrigatória.")
         .min(10, "A descrição deve ter pelo menos 10 caracteres."),
-    smartSampa: z.enum(["sim-houve-dano", "sim-sem-dano", "nao-faz-parte"], {
+    smartSampa: z.enum(["sim_com_dano", "sim_sem_dano", "nao_faz_parte"], {
         required_error: "Selecione uma opção.",
     }),
 });

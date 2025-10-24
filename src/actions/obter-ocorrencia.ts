@@ -4,7 +4,7 @@ import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { cookies } from "next/headers";
 import { AxiosError } from "axios";
 
-export type OcorrenciaAPI = {
+export type OcorrenciaDetalheAPI = {
     id: number;
     uuid: string;
     data_ocorrencia: string;
@@ -14,16 +14,18 @@ export type OcorrenciaAPI = {
     user_username: string;
     criado_em: string;
     atualizado_em: string;
-    tipos_ocorrencia?: string[];
-    descricao?: string;
+    tipos_ocorrencia?: Array<{ uuid: string; nome: string }>;
+    descricao_ocorrencia?: string;
     status?: string;
-    smart_sampa?: string;
+    smart_sampa_situacao?: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
+    smart_sampa_situacao_display?: string;
 };
 
 export async function obterOcorrencia(
     uuid: string
 ): Promise<
-    { success: true; data: OcorrenciaAPI } | { success: false; error: string }
+    | { success: true; data: OcorrenciaDetalheAPI }
+    | { success: false; error: string }
 > {
     const cookieStore = cookies();
     const token = cookieStore.get("auth_token")?.value;
@@ -33,8 +35,8 @@ export async function obterOcorrencia(
     }
 
     try {
-        const { data } = await apiIntercorrencias.get<OcorrenciaAPI>(
-            `/intercorrencias/${uuid}/`,
+        const { data } = await apiIntercorrencias.get<OcorrenciaDetalheAPI>(
+            `/diretor/${uuid}/`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

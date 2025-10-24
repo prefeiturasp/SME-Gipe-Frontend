@@ -41,19 +41,31 @@ vi.mock("@/stores/useUserStore", () => ({
 
 const setFormDataMock = vi.fn();
 const setOcorrenciaIdMock = vi.fn();
+let mockOcorrenciaUuid: string | null = null;
+let mockFormData: Record<string, unknown> = {};
+
+const mockCriarOcorrencia = vi.fn();
+const mockAtualizarOcorrencia = vi.fn();
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
-        formData: {},
+        formData: mockFormData,
         setFormData: setFormDataMock,
         setOcorrenciaUuid: setOcorrenciaIdMock,
+        ocorrenciaUuid: mockOcorrenciaUuid,
     }),
 }));
 
-const mutateMock = vi.fn();
-vi.mock("@/hooks/useCadastrarOcorrencia", () => ({
-    useCadastrarOcorrencia: () => ({
-        mutateAsync: mutateMock,
+vi.mock("@/hooks/useSecaoInicial", () => ({
+    useSecaoInicial: () => ({
+        mutateAsync: mockCriarOcorrencia,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/hooks/useAtualizarSecaoInicial", () => ({
+    useAtualizarSecaoInicial: () => ({
+        mutateAsync: mockAtualizarOcorrencia,
         isPending: false,
     }),
 }));
@@ -75,6 +87,8 @@ describe("SecaoInicial", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         queryClient.clear();
+        mockOcorrenciaUuid = null;
+        mockFormData = {};
         setFormDataMock.mockClear();
         setOcorrenciaIdMock.mockClear();
     });
@@ -201,33 +215,9 @@ describe("SecaoInicial", () => {
 
     it("exibe toast quando submissão falha", async () => {
         const onSuccess = vi.fn();
-        mutateMock.mockResolvedValue({ success: false, error: "erro" });
-
-        renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
-
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
-
-        const nextButton = screen.getByRole("button", { name: /Próximo/i });
-
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
-
-        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
-        await waitFor(() => expect(toastMock).toHaveBeenCalled());
-        expect(onSuccess).not.toHaveBeenCalled();
-    });
-
-    it("submete o formulário com sucesso e chama onSuccess", async () => {
-        const onSuccess = vi.fn();
-        mutateMock.mockImplementationOnce(async () => {
-            onSuccess();
-            return { success: true, data: { uuid: "test-uuid" } };
+        mockCriarOcorrencia.mockResolvedValue({
+            success: false,
+            error: "erro",
         });
 
         renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
@@ -245,7 +235,34 @@ describe("SecaoInicial", () => {
         await waitFor(() => expect(nextButton).toBeEnabled());
         fireEvent.click(nextButton);
 
-        await waitFor(() => expect(mutateMock).toHaveBeenCalled());
+        await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
+        await waitFor(() => expect(toastMock).toHaveBeenCalled());
+        expect(onSuccess).not.toHaveBeenCalled();
+    });
+
+    it("submete o formulário com sucesso e chama onSuccess", async () => {
+        const onSuccess = vi.fn();
+        mockCriarOcorrencia.mockResolvedValue({
+            success: true,
+            data: { uuid: "test-uuid" },
+        });
+
+        renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
         await waitFor(() => expect(onSuccess).toHaveBeenCalled());
     });
 
@@ -266,9 +283,16 @@ describe("SecaoInicial", () => {
                 selector({ user: userNoCodes as unknown as typeof fakeUser }),
         }));
 
-        vi.doMock("@/hooks/useCadastrarOcorrencia", () => ({
-            useCadastrarOcorrencia: () => ({
-                mutateAsync: mutateMock,
+        vi.doMock("@/hooks/useSecaoInicial", () => ({
+            useSecaoInicial: () => ({
+                mutateAsync: vi.fn(),
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useAtualizarSecaoInicial", () => ({
+            useAtualizarSecaoInicial: () => ({
+                mutateAsync: vi.fn(),
                 isPending: false,
             }),
         }));
@@ -292,6 +316,11 @@ describe("SecaoInicial", () => {
             tipoOcorrencia: "Sim",
         };
 
+        const mockSetFormData = vi.fn();
+        const mockSetOcorrenciaUuid = vi.fn();
+        const mockMutateCreate = vi.fn();
+        const mockMutateUpdate = vi.fn();
+
         vi.doMock("next/navigation", () => ({
             useRouter: () => ({ back: vi.fn() }),
         }));
@@ -301,10 +330,16 @@ describe("SecaoInicial", () => {
                 selector({ user: fakeUser }),
         }));
 
-        const mockMutate = vi.fn();
-        vi.doMock("@/hooks/useCadastrarOcorrencia", () => ({
-            useCadastrarOcorrencia: () => ({
-                mutateAsync: mockMutate,
+        vi.doMock("@/hooks/useSecaoInicial", () => ({
+            useSecaoInicial: () => ({
+                mutateAsync: mockMutateCreate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useAtualizarSecaoInicial", () => ({
+            useAtualizarSecaoInicial: () => ({
+                mutateAsync: mockMutateUpdate,
                 isPending: false,
             }),
         }));
@@ -312,8 +347,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
-                setFormData: vi.fn(),
-                setOcorrenciaUuid: vi.fn(),
+                setFormData: mockSetFormData,
+                setOcorrenciaUuid: mockSetOcorrenciaUuid,
+                ocorrenciaUuid: "uuid-existente",
             }),
         }));
 
@@ -334,6 +370,171 @@ describe("SecaoInicial", () => {
         fireEvent.click(nextButton);
 
         await waitFor(() => expect(onSuccess).toHaveBeenCalled());
-        expect(mockMutate).not.toHaveBeenCalled();
+        expect(mockMutateCreate).not.toHaveBeenCalled();
+        expect(mockMutateUpdate).not.toHaveBeenCalled();
+    });
+
+    it("chama atualizarOcorrencia quando ocorrenciaUuid existe e formData foi alterado", async () => {
+        vi.resetModules();
+
+        const preFilledFormData = {
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+        };
+
+        const mockSetFormData = vi.fn();
+        const mockSetOcorrenciaUuid = vi.fn();
+        const mockMutateCreate = vi.fn();
+        const mockMutateUpdate = vi.fn().mockResolvedValue({
+            success: true,
+        });
+
+        vi.doMock("next/navigation", () => ({
+            useRouter: () => ({ back: vi.fn() }),
+        }));
+
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (selector: UseUserSelector) =>
+                selector({ user: fakeUser }),
+        }));
+
+        vi.doMock("@/hooks/useSecaoInicial", () => ({
+            useSecaoInicial: () => ({
+                mutateAsync: mockMutateCreate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useAtualizarSecaoInicial", () => ({
+            useAtualizarSecaoInicial: () => ({
+                mutateAsync: mockMutateUpdate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
+            useOcorrenciaFormStore: () => ({
+                formData: preFilledFormData,
+                setFormData: mockSetFormData,
+                setOcorrenciaUuid: mockSetOcorrenciaUuid,
+                ocorrenciaUuid: "uuid-existente",
+            }),
+        }));
+
+        const mod = await import("./index");
+        const SecaoInicialIsolated = mod.default;
+
+        const onSuccess = vi.fn();
+        renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        expect(dateInput.value).toBe("2025-10-02");
+
+        fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
+        expect(dateInput.value).toBe("2025-10-05");
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mockMutateUpdate).toHaveBeenCalled());
+        expect(mockMutateUpdate).toHaveBeenCalledWith({
+            uuid: "uuid-existente",
+            body: {
+                data_ocorrencia: expect.any(String),
+                unidade_codigo_eol: "0001",
+                dre_codigo_eol: "001",
+                sobre_furto_roubo_invasao_depredacao: true,
+            },
+        });
+        expect(mockMutateCreate).not.toHaveBeenCalled();
+        await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    });
+
+    it("exibe toast de erro quando atualizarOcorrencia falha", async () => {
+        vi.resetModules();
+
+        const preFilledFormData = {
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+        };
+
+        const mockSetFormData = vi.fn();
+        const mockSetOcorrenciaUuid = vi.fn();
+        const mockMutateCreate = vi.fn();
+        const mockMutateUpdate = vi.fn().mockResolvedValue({
+            success: false,
+            error: "Erro ao atualizar",
+        });
+        const mockToast = vi.fn();
+
+        vi.doMock("next/navigation", () => ({
+            useRouter: () => ({ back: vi.fn() }),
+        }));
+
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (selector: UseUserSelector) =>
+                selector({ user: fakeUser }),
+        }));
+
+        vi.doMock("@/hooks/useSecaoInicial", () => ({
+            useSecaoInicial: () => ({
+                mutateAsync: mockMutateCreate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useAtualizarSecaoInicial", () => ({
+            useAtualizarSecaoInicial: () => ({
+                mutateAsync: mockMutateUpdate,
+                isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
+            useOcorrenciaFormStore: () => ({
+                formData: preFilledFormData,
+                setFormData: mockSetFormData,
+                setOcorrenciaUuid: mockSetOcorrenciaUuid,
+                ocorrenciaUuid: "uuid-existente",
+            }),
+        }));
+
+        vi.doMock("@/components/ui/headless-toast", () => ({
+            toast: (opts: unknown) => mockToast(opts),
+        }));
+
+        const mod = await import("./index");
+        const SecaoInicialIsolated = mod.default;
+
+        const onSuccess = vi.fn();
+        renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByLabelText<HTMLInputElement>(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+
+        fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+
+        fireEvent.click(nextButton);
+
+        await waitFor(() => expect(mockMutateUpdate).toHaveBeenCalled());
+        await waitFor(() => expect(mockToast).toHaveBeenCalled());
+        expect(mockToast).toHaveBeenCalledWith({
+            variant: "error",
+            title: "Erro ao atualizar ocorrência",
+            description: "Erro ao atualizar",
+        });
+        expect(onSuccess).not.toHaveBeenCalled();
     });
 });

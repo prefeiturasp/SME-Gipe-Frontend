@@ -47,7 +47,7 @@ describe("useGetOcorrencia", () => {
             user_username: "20090388003",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
-            tipos_ocorrencia: ["Violência física"],
+            tipos_ocorrencia: [{ uuid: "tipo-1", nome: "Violência física" }],
             descricao: "Descrição da ocorrência",
             status: "Em andamento",
         };
