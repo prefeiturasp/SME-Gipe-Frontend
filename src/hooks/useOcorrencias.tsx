@@ -1,22 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUserStore, type User } from "@/stores/useUserStore";
-import { useUserPermissions } from "./useUserPermissions";
+import { useUserStore } from "@/stores/useUserStore";
 import { Ocorrencia } from "@/types/ocorrencia";
 import { getOcorrenciasAction } from "@/actions/ocorrencias";
 
-const fetchAndTransformOcorrencias = async (
-    isPontoFocal: boolean,
-    isAssistenteOuDiretor: boolean,
-    user: User | null
-): Promise<Ocorrencia[]> => {
-    let params = {};
-    if (isPontoFocal && user?.unidades?.[0]?.dre?.codigo_eol) {
-        params = { dre: user.unidades[0].dre.codigo_eol };
-    } else if (isAssistenteOuDiretor && user?.username) {
-        params = { usuario: user.username };
-    }
+function randomFrom<T>(arr: readonly T[]) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
-    const response = await getOcorrenciasAction(params);
+const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
+    const response = await getOcorrenciasAction();
 
     if (!response.success) {
         throw new Error(response.error);
@@ -25,10 +17,6 @@ const fetchAndTransformOcorrencias = async (
     const tipos = [
         "Ocorrência com objeto sem ameaça (arma de fogo, arma branca, etc)",
     ];
-
-    function randomFrom<T>(arr: readonly T[]) {
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
 
     return response.data.map((item, index) => {
         const date = new Date(item.data_ocorrencia);
@@ -54,16 +42,10 @@ const fetchAndTransformOcorrencias = async (
 
 export const useOcorrencias = () => {
     const user = useUserStore((state) => state.user);
-    const { isPontoFocal, isAssistenteOuDiretor } = useUserPermissions();
 
     return useQuery<Ocorrencia[]>({
         queryKey: ["ocorrencias", user?.username],
-        queryFn: () =>
-            fetchAndTransformOcorrencias(
-                isPontoFocal,
-                isAssistenteOuDiretor,
-                user
-            ),
+        queryFn: () => fetchAndTransformOcorrencias(),
         enabled: !!user,
     });
 };

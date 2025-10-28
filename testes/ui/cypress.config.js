@@ -38,7 +38,7 @@ module.exports = defineConfig({
     animationDistanceThreshold: 5,
 
     env: {
-      TAGS: "not @wip" // 🚀 Ignora cenários marcados como @wip por padrão
+      TAGS: "not @skip" // 🚀 Ignora cenários marcados como @wip por padrão
     },
 
     async setupNodeEvents(on, config) {

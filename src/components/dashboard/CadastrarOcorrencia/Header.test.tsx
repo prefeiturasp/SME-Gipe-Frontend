@@ -30,7 +30,10 @@ describe("Header - Nova Ocorrência", () => {
             name: /\+ nova ocorrência/i,
         });
         expect(button).toBeInTheDocument();
-        expect(button).toHaveAttribute("href", "/dashboard/nova-ocorrencia");
+        expect(button).toHaveAttribute(
+            "href",
+            "/dashboard/cadastrar-ocorrencia"
+        );
     });
 
     it('não deve renderizar o botão "Nova ocorrência" para outros perfis', () => {

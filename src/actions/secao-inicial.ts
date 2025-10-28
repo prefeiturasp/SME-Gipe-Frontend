@@ -3,9 +3,14 @@
 import { cookies } from "next/headers";
 import { AxiosError } from "axios";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { NovaOcorrenciaBody } from "@/types/nova-ocorrencia";
+import { SecaoInicialBody } from "@/types/secao-inicial";
 
-export const novaOcorrencia = async (body: NovaOcorrenciaBody) => {
+export const SecaoInicial = async (
+    body: SecaoInicialBody
+): Promise<
+    | { success: true; data: { uuid: string } }
+    | { success: false; error: string }
+> => {
     try {
         const cookieStore = cookies();
         const authToken = cookieStore.get("auth_token")?.value;
@@ -17,12 +22,16 @@ export const novaOcorrencia = async (body: NovaOcorrenciaBody) => {
             };
         }
 
-        await apiIntercorrencias.post("/intercorrencias/", body, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-            },
-        });
-        return { success: true };
+        const response = await apiIntercorrencias.post(
+            "/diretor/secao-inicial/",
+            body,
+            {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            }
+        );
+        return { success: true, data: response.data };
     } catch (err) {
         const error = err as AxiosError<{ detail?: string }>;
         let message = "Erro ao criar ocorrência";

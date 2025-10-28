@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { novaOcorrencia } from "./nova-ocorrencia";
-import { NovaOcorrenciaBody } from "@/types/nova-ocorrencia";
+import { SecaoInicial } from "./secao-inicial";
+import { SecaoInicialBody } from "@/types/secao-inicial";
 import { AxiosError, AxiosRequestHeaders } from "axios";
 
 vi.mock("next/headers", () => ({
@@ -13,8 +13,8 @@ vi.mock("@/lib/axios-intercorrencias");
 
 const cookiesMock = cookies as Mock;
 
-describe("novaOcorrencia action", () => {
-    const mockBody: NovaOcorrenciaBody = {
+describe("SecaoInicial action", () => {
+    const mockBody: SecaoInicialBody = {
         data_ocorrencia: "2023-10-07",
         unidade_codigo_eol: "12345",
         dre_codigo_eol: "DRE-ABC",
@@ -30,19 +30,27 @@ describe("novaOcorrencia action", () => {
     });
 
     it("deve criar uma nova ocorrência com sucesso", async () => {
+        const mockResponse = { data: { uuid: "test-uuid-123" } };
         const postSpy = vi
             .spyOn(apiIntercorrencias, "post")
-            .mockResolvedValue({});
+            .mockResolvedValue(mockResponse);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
-        expect(result).toEqual({ success: true });
-        expect(cookies().get).toHaveBeenCalledWith("auth_token");
-        expect(postSpy).toHaveBeenCalledWith("/intercorrencias/", mockBody, {
-            headers: {
-                Authorization: `Bearer ${mockAuthToken}`,
-            },
+        expect(result).toEqual({
+            success: true,
+            data: { uuid: "test-uuid-123" },
         });
+        expect(cookies().get).toHaveBeenCalledWith("auth_token");
+        expect(postSpy).toHaveBeenCalledWith(
+            "/diretor/secao-inicial/",
+            mockBody,
+            {
+                headers: {
+                    Authorization: `Bearer ${mockAuthToken}`,
+                },
+            }
+        );
     });
 
     it("deve retornar erro se o token de autenticação não for encontrado", async () => {
@@ -51,7 +59,7 @@ describe("novaOcorrencia action", () => {
         });
         const postSpy = vi.spyOn(apiIntercorrencias, "post");
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
         expect(result).toEqual({
             success: false,
@@ -71,7 +79,7 @@ describe("novaOcorrencia action", () => {
         };
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
         expect(result).toEqual({
             success: false,
@@ -91,7 +99,7 @@ describe("novaOcorrencia action", () => {
         };
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
         expect(result).toEqual({ success: false, error: detailMessage });
     });
@@ -101,7 +109,7 @@ describe("novaOcorrencia action", () => {
         const error = new AxiosError(errorMessage);
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
         expect(result).toEqual({ success: false, error: errorMessage });
     });
@@ -110,7 +118,7 @@ describe("novaOcorrencia action", () => {
         const error = new AxiosError();
         vi.spyOn(apiIntercorrencias, "post").mockRejectedValue(error);
 
-        const result = await novaOcorrencia(mockBody);
+        const result = await SecaoInicial(mockBody);
 
         expect(result).toEqual({
             success: false,

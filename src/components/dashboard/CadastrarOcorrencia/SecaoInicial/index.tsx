@@ -22,18 +22,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
-import { formSchema, CadastroOcorrenciaData } from "./schema";
-import { useNovaOcorrencia } from "@/hooks/useNovaOcorrencia";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { formSchema, SecaoInicialData } from "./schema";
+import { useSecaoInicial } from "@/hooks/useSecaoInicial";
+import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
 
-export type CadastroOcorrenciaProps = {
+export type SecaoInicialProps = {
     onSuccess: () => void;
 };
 
-export default function CadastroOcorrencia({
+export default function SecaoInicial({
     onSuccess,
-}: Readonly<CadastroOcorrenciaProps>) {
+}: Readonly<SecaoInicialProps>) {
     const user = useUserStore((state) => state.user);
-    const { mutateAsync, isPending } = useNovaOcorrencia();
+    const { mutateAsync: criarOcorrencia, isPending: isCriando } =
+        useSecaoInicial();
+    const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
+        useAtualizarSecaoInicial();
+
+    const { formData, setFormData, setOcorrenciaUuid, ocorrenciaUuid } =
+        useOcorrenciaFormStore();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -41,37 +49,86 @@ export default function CadastroOcorrencia({
     const dd = String(today.getDate()).padStart(2, "0");
     const maxDate = `${yyyy}-${mm}-${dd}`;
 
-    const form = useForm<CadastroOcorrenciaData>({
+    const form = useForm<SecaoInicialData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            dataOcorrencia: "",
-            dre: user?.unidades[0]?.dre.codigo_eol ?? undefined,
-            unidadeEducacional: user?.unidades[0]?.ue.codigo_eol ?? undefined,
-            tipoOcorrencia: undefined,
+            dataOcorrencia: formData.dataOcorrencia || "",
+            dre: formData.dre ?? user?.unidades[0]?.dre.codigo_eol ?? undefined,
+            unidadeEducacional:
+                formData.unidadeEducacional ??
+                user?.unidades[0]?.ue.codigo_eol ??
+                undefined,
+            tipoOcorrencia: formData.tipoOcorrencia || undefined,
         },
     });
 
     const { isValid } = form.formState;
 
-    const onSubmit = async (data: CadastroOcorrenciaData) => {
+    const hasFormChanged = (data: SecaoInicialData) => {
+        return (
+            formData.dataOcorrencia !== data.dataOcorrencia ||
+            formData.dre !== data.dre ||
+            formData.unidadeEducacional !== data.unidadeEducacional ||
+            formData.tipoOcorrencia !== data.tipoOcorrencia
+        );
+    };
+
+    const onSubmit = async (data: SecaoInicialData) => {
+        setFormData(data);
+
+        if (ocorrenciaUuid) {
+            if (!hasFormChanged(data)) {
+                return onSuccess();
+            }
+
+            const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+
+            const response = await atualizarOcorrencia({
+                uuid: ocorrenciaUuid,
+                body: {
+                    data_ocorrencia: dataOcorrencia,
+                    unidade_codigo_eol: data.unidadeEducacional,
+                    dre_codigo_eol: data.dre,
+                    sobre_furto_roubo_invasao_depredacao:
+                        data.tipoOcorrencia === "Sim",
+                },
+            });
+
+            if (response.success) {
+                onSuccess();
+                return;
+            }
+
+            toast({
+                variant: "error",
+                title: "Erro ao atualizar ocorrência",
+                description: response.error,
+            });
+            return;
+        }
+
         const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
 
-        const response = await mutateAsync({
+        const response = await criarOcorrencia({
             data_ocorrencia: dataOcorrencia,
             unidade_codigo_eol: data.unidadeEducacional,
             dre_codigo_eol: data.dre,
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
         });
 
-        if (response.success) {
-            onSuccess();
-        } else {
+        if (!response.success) {
             toast({
                 variant: "error",
                 title: "Erro ao cadastrar ocorrência",
                 description: response.error,
             });
+            return;
+        }
+
+        if (response.data?.uuid) {
+            setOcorrenciaUuid(response.data.uuid);
+            onSuccess();
         }
     };
 
@@ -221,7 +278,7 @@ export default function CadastroOcorrencia({
                             size="sm"
                             type="submit"
                             variant="submit"
-                            disabled={!isValid || isPending}
+                            disabled={!isValid || isCriando || isAtualizando}
                         >
                             Próximo
                         </Button>
