@@ -23,4 +23,4 @@ export const formSchema = z.object({
     }),
 });
 
-export type CadastroOcorrenciaData = z.infer<typeof formSchema>;
+export type SecaoInicialData = z.infer<typeof formSchema>;

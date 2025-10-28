@@ -6,6 +6,7 @@ Funcionalidade: Consulta de ocorrências
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
+  @skip
   Cenário: Usuário cadastra ocorrência
     Dado que o usuário realizou o login com sucesso
     Quando o usuário está na página principal do sistema

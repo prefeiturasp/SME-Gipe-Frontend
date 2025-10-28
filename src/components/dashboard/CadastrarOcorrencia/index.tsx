@@ -3,8 +3,9 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import CadastroOcorrencia from "./CadastroOcorrencia";
+import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
+import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
 
 const steps = [
     {
@@ -12,7 +13,7 @@ const steps = [
         description: "",
     },
     {
-        label: "Fase 02",
+        label: "Formulário patrimonial",
         description: "",
     },
     {
@@ -25,8 +26,15 @@ const steps = [
     },
 ];
 
-export default function NovaOcorrencia() {
-    const [currentStep, setCurrentStep] = useState(1);
+type CadastrarOcorrenciaProps = {
+    initialStep?: number;
+};
+
+export default function CadastrarOcorrencia({
+    initialStep = 1,
+}: Readonly<CadastrarOcorrenciaProps>) {
+    const [currentStep, setCurrentStep] = useState(initialStep);
+
     return (
         <div className="pt-4">
             <PageHeader title="Intercorrências Institucionais" />
@@ -52,7 +60,13 @@ export default function NovaOcorrencia() {
                 </div>
 
                 {currentStep === 1 && (
-                    <CadastroOcorrencia onSuccess={() => setCurrentStep(2)} />
+                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
+                )}
+                {currentStep === 2 && (
+                    <SecaoFurtoERoubo
+                        onNext={() => setCurrentStep(3)}
+                        onPrevious={() => setCurrentStep(1)}
+                    />
                 )}
             </QuadroBranco>
         </div>
