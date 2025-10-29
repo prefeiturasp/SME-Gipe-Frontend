@@ -6,25 +6,8 @@ import { Stepper } from "@/components/stepper/Stepper";
 import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
 import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-
-const steps = [
-    {
-        label: "Cadastro de ocorrência",
-        description: "",
-    },
-    {
-        label: "Formulário patrimonial",
-        description: "",
-    },
-    {
-        label: "Fase 03",
-        description: "",
-    },
-    {
-        label: "Anexos",
-        description: "",
-    },
-];
+import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -34,6 +17,33 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const { formData } = useOcorrenciaFormStore();
+
+    const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
+
+    const getStep2Label = () => {
+        if (!formData.tipoOcorrencia) return "Fase 02";
+        return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    };
+
+    const steps = [
+        {
+            label: "Cadastro de ocorrência",
+            description: "",
+        },
+        {
+            label: getStep2Label(),
+            description: "",
+        },
+        {
+            label: "Fase 03",
+            description: "",
+        },
+        {
+            label: "Anexos",
+            description: "",
+        },
+    ];
 
     return (
         <div className="pt-4">
@@ -62,8 +72,14 @@ export default function CadastrarOcorrencia({
                 {currentStep === 1 && (
                     <SecaoInicial onSuccess={() => setCurrentStep(2)} />
                 )}
-                {currentStep === 2 && (
+                {currentStep === 2 && isFurtoRoubo && (
                     <SecaoFurtoERoubo
+                        onNext={() => setCurrentStep(3)}
+                        onPrevious={() => setCurrentStep(1)}
+                    />
+                )}
+                {currentStep === 2 && !isFurtoRoubo && (
+                    <SecaoNaoFurtoERoubo
                         onNext={() => setCurrentStep(3)}
                         onPrevious={() => setCurrentStep(1)}
                     />
