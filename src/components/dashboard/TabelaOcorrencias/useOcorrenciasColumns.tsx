@@ -20,9 +20,11 @@ import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useMemo } from "react";
 import { Ocorrencia } from "@/types/ocorrencia";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useOcorrenciasColumns = () => {
     const { isGipe, isPontoFocal } = useUserPermissions();
+    const queryClient = useQueryClient();
 
     const columns = useMemo(() => {
         const dynamicColumns: ColumnDef<Ocorrencia>[] = [];
@@ -236,6 +238,13 @@ export const useOcorrenciasColumns = () => {
             size: 49,
             cell: ({ row }) => {
                 const uuid = row.original.uuid;
+
+                const handleClick = () => {
+                    queryClient.invalidateQueries({
+                        queryKey: ["ocorrencia", uuid],
+                    });
+                };
+
                 return (
                     <div className="flex h-full items-center justify-center">
                         <TooltipProvider>
@@ -250,6 +259,7 @@ export const useOcorrenciasColumns = () => {
                                     >
                                         <Link
                                             href={`/dashboard/cadastrar-ocorrencia/${uuid}`}
+                                            onClick={handleClick}
                                         >
                                             <span className="sr-only">
                                                 Visualizar
@@ -269,7 +279,7 @@ export const useOcorrenciasColumns = () => {
         });
 
         return dynamicColumns;
-    }, [isGipe, isPontoFocal]);
+    }, [isGipe, isPontoFocal, queryClient]);
 
     return columns;
 };
