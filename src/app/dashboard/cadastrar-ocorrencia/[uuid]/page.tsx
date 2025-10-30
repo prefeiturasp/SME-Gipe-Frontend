@@ -63,7 +63,8 @@ export default function EditarOcorrenciaPage() {
         error,
     } = useGetOcorrencia(ocorrenciaId);
 
-    const { setFormData, setOcorrenciaUuid, reset } = useOcorrenciaFormStore();
+    const { setFormData, setSavedFormData, setOcorrenciaUuid, reset } =
+        useOcorrenciaFormStore();
 
     useEffect(() => {
         reset();
@@ -73,6 +74,7 @@ export default function EditarOcorrenciaPage() {
 
             setOcorrenciaUuid(ocorrencia.uuid);
             setFormData(formData);
+            setSavedFormData(formData);
             setIsStoreReady(true);
         }
 
@@ -80,7 +82,7 @@ export default function EditarOcorrenciaPage() {
             reset();
             setIsStoreReady(false);
         };
-    }, [ocorrencia, setFormData, setOcorrenciaUuid, reset]);
+    }, [ocorrencia, setFormData, setSavedFormData, setOcorrenciaUuid, reset]);
 
     if (isError) {
         return <ErrorMessage error={error} />;

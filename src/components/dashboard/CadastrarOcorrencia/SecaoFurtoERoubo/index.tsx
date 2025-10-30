@@ -19,6 +19,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { formSchema, SecaoFurtoERouboData } from "./schema";
+import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoFurtoERouboProps = {
     onPrevious: () => void;
@@ -29,7 +30,13 @@ export default function SecaoFurtoERoubo({
     onPrevious,
     onNext,
 }: Readonly<SecaoFurtoERouboProps>) {
-    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const {
+        formData,
+        savedFormData,
+        setFormData,
+        setSavedFormData,
+        ocorrenciaUuid,
+    } = useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia();
     const { mutate: atualizarSecaoFurtoRoubo } = useAtualizarSecaoFurtoRoubo();
@@ -52,29 +59,15 @@ export default function SecaoFurtoERoubo({
 
     const { isValid } = form.formState;
 
-    const hasFormChanged = () => {
+    const onSubmit = async (data: SecaoFurtoERouboData) => {
         const currentValues = form.getValues();
 
-        const currentTiposSorted = [...currentValues.tiposOcorrencia].sort(
-            (a, b) => a.localeCompare(b)
-        );
-        const savedTiposSorted = [...(formData.tiposOcorrencia || [])].sort(
-            (a, b) => a.localeCompare(b)
-        );
-
-        const tiposChanged =
-            JSON.stringify(currentTiposSorted) !==
-            JSON.stringify(savedTiposSorted);
-        const descricaoChanged = currentValues.descricao !== formData.descricao;
-        const smartSampaChanged =
-            currentValues.smartSampa !== formData.smartSampa;
-
-        return tiposChanged || descricaoChanged || smartSampaChanged;
-    };
-
-    const onSubmit = async (data: SecaoFurtoERouboData) => {
         if (ocorrenciaUuid) {
-            if (!hasFormChanged()) {
+            if (
+                !hasFormDataChanged(currentValues, savedFormData, [
+                    "tiposOcorrencia",
+                ])
+            ) {
                 onNext();
                 return;
             }
@@ -102,6 +95,7 @@ export default function SecaoFurtoERoubo({
                         }
 
                         setFormData(data);
+                        setSavedFormData(data);
                         onNext();
                     },
                     onError: () => {
