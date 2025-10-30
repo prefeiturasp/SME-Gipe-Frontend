@@ -10,7 +10,9 @@ type OcorrenciaFormData = Partial<SecaoInicialData> &
 type OcorrenciaFormState = {
     ocorrenciaUuid: string | null;
     formData: OcorrenciaFormData;
+    savedFormData: OcorrenciaFormData;
     setFormData: (data: Partial<OcorrenciaFormData>) => void;
+    setSavedFormData: (data: Partial<OcorrenciaFormData>) => void;
     setOcorrenciaUuid: (id: string) => void;
     reset: () => void;
 };
@@ -18,6 +20,7 @@ type OcorrenciaFormState = {
 const initialState = {
     ocorrenciaUuid: null,
     formData: {},
+    savedFormData: {},
 };
 
 export const useOcorrenciaFormStore = create<OcorrenciaFormState>((set) => ({
@@ -25,6 +28,10 @@ export const useOcorrenciaFormStore = create<OcorrenciaFormState>((set) => ({
     setFormData: (data) =>
         set((state) => ({
             formData: { ...state.formData, ...data },
+        })),
+    setSavedFormData: (data) =>
+        set((state) => ({
+            savedFormData: { ...state.savedFormData, ...data },
         })),
     setOcorrenciaUuid: (id) => set({ ocorrenciaUuid: id }),
     reset: () => set(initialState),
