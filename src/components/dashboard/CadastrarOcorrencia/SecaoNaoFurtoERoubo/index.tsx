@@ -37,8 +37,10 @@ export default function SecaoNaoFurtoERoubo({
             label: tipo.nome,
         })) || [];
 
-    // Opções de envolvidos serão implementadas em outra task
-    const envolvidosOptions: { value: string; label: string }[] = [];
+    const envolvidosOptions: { value: string; label: string }[] = [
+        { value: "aluno", label: "Aluno" },
+        { value: "professor", label: "Professor" },
+    ];
 
     const form = useForm<SecaoNaoFurtoERouboData>({
         resolver: zodResolver(formSchema),
@@ -114,9 +116,6 @@ export default function SecaoNaoFurtoERoubo({
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Selecione os envolvidos"
-                                            disabled={
-                                                envolvidosOptions.length === 0
-                                            }
                                         />
                                     </FormControl>
                                     <p className="text-[12px] text-[#42474a] mt-1 mb-2">
