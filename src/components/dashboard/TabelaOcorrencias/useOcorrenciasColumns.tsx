@@ -239,12 +239,6 @@ export const useOcorrenciasColumns = () => {
             cell: ({ row }) => {
                 const uuid = row.original.uuid;
 
-                const handleClick = () => {
-                    queryClient.invalidateQueries({
-                        queryKey: ["ocorrencia", uuid],
-                    });
-                };
-
                 return (
                     <div className="flex h-full items-center justify-center">
                         <TooltipProvider>
@@ -259,7 +253,6 @@ export const useOcorrenciasColumns = () => {
                                     >
                                         <Link
                                             href={`/dashboard/cadastrar-ocorrencia/${uuid}`}
-                                            onClick={handleClick}
                                         >
                                             <span className="sr-only">
                                                 Visualizar
