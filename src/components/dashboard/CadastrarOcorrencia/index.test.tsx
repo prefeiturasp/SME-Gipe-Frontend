@@ -92,7 +92,9 @@ function mockUseUserStore() {
 function mockUseOcorrenciaFormStore() {
     const mockStoreState = {
         formData: {},
+        savedFormData: {},
         setFormData: vi.fn(),
+        setSavedFormData: vi.fn(),
         setOcorrenciaUuid: vi.fn(),
         ocorrenciaUuid: null,
         reset: vi.fn(),
@@ -155,6 +157,35 @@ function mockUseAtualizarSecaoFurtoRoubo() {
     };
 }
 
+function createDynamicStoreMock() {
+    let currentFormData = {};
+
+    const mockStoreState = {
+        get formData() {
+            return currentFormData;
+        },
+        savedFormData: {},
+        setFormData: vi.fn((data) => {
+            currentFormData = data;
+        }),
+        setSavedFormData: vi.fn(),
+        setOcorrenciaUuid: vi.fn(),
+        ocorrenciaUuid: null,
+        reset: vi.fn(),
+    };
+
+    return {
+        useOcorrenciaFormStore: (
+            selector?: (state: typeof mockStoreState) => unknown
+        ) => {
+            if (typeof selector === "function") {
+                return selector(mockStoreState);
+            }
+            return mockStoreState;
+        },
+    };
+}
+
 describe("CadastrarOcorrencia", () => {
     it("deve renderizar o PageHeader com o título correto", () => {
         renderWithClient(<CadastrarOcorrencia />);
@@ -167,7 +198,7 @@ describe("CadastrarOcorrencia", () => {
     it("deve renderizar o Stepper com os passos corretos", () => {
         renderWithClient(<CadastrarOcorrencia />);
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
-        expect(screen.getByText("Formulário patrimonial")).toBeInTheDocument();
+        expect(screen.getByText("Fase 02")).toBeInTheDocument();
         expect(screen.getByText("Fase 03")).toBeInTheDocument();
         expect(screen.getByText("Anexos")).toBeInTheDocument();
     });
@@ -176,10 +207,7 @@ describe("CadastrarOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock(
-            "@/stores/useOcorrenciaFormStore",
-            mockUseOcorrenciaFormStore
-        );
+        vi.doMock("@/stores/useOcorrenciaFormStore", createDynamicStoreMock);
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
         vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
         vi.doMock(
@@ -212,7 +240,7 @@ describe("CadastrarOcorrencia", () => {
         expect(checks.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("deve avançar do step 2 (SecaoFurtoERoubo) para o step 3 ao clicar em Próximo", async () => {
+    it("deve avançar do step 2 (SecaoNaoFurtoERoubo) para o step 3 ao clicar em Próximo", async () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
@@ -220,6 +248,148 @@ describe("CadastrarOcorrencia", () => {
             "@/stores/useOcorrenciaFormStore",
             mockUseOcorrenciaFormStore
         );
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
+        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioNao = screen.getByRole("radio", { name: /Não/ });
+        fireEvent.click(radioNao);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Qual o tipo de ocorrência?*")
+            ).toBeInTheDocument();
+        });
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        fireEvent.click(multiSelectButton);
+
+        const opcaoViolencia = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        fireEvent.click(opcaoViolencia);
+
+        const envolvidosButton = screen.getByRole("button", {
+            name: /selecione os envolvidos/i,
+        });
+        fireEvent.click(envolvidosButton);
+
+        const opcaoAluno = await screen.findByRole("option", {
+            name: /aluno/i,
+        });
+        fireEvent.click(opcaoAluno);
+
+        const descricaoField = screen.getByPlaceholderText("Descreva aqui...");
+        fireEvent.change(descricaoField, {
+            target: {
+                value: "Descrição detalhada da ocorrência com mais de dez caracteres",
+            },
+        });
+
+        const radioInfoAgressorSim = screen.getByRole("radio", {
+            name: /Sim/,
+        });
+        fireEvent.click(radioInfoAgressorSim);
+
+        const nextButtonStep2 = screen.getByRole("button", {
+            name: /Próximo/i,
+        });
+        await waitFor(() => expect(nextButtonStep2).toBeEnabled());
+        fireEvent.click(nextButtonStep2);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Qual o tipo de ocorrência?*")
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    it("deve voltar do step 2 (SecaoNaoFurtoERoubo) para o step 1 ao clicar em Anterior", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock(
+            "@/stores/useOcorrenciaFormStore",
+            mockUseOcorrenciaFormStore
+        );
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
+        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioNao = screen.getByRole("radio", { name: /Não/ });
+        fireEvent.click(radioNao);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Qual o tipo de ocorrência?*")
+            ).toBeInTheDocument();
+        });
+
+        const previousButton = screen.getByRole("button", {
+            name: /Anterior/i,
+        });
+        fireEvent.click(previousButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByText("Qual o tipo de ocorrência?*")
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve avançar do step 2 (SecaoFurtoERoubo) para o step 3 ao clicar em Próximo", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/stores/useOcorrenciaFormStore", createDynamicStoreMock);
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
         vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
         vi.doMock(
@@ -293,10 +463,7 @@ describe("CadastrarOcorrencia", () => {
         vi.resetModules();
 
         vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock(
-            "@/stores/useOcorrenciaFormStore",
-            mockUseOcorrenciaFormStore
-        );
+        vi.doMock("@/stores/useOcorrenciaFormStore", createDynamicStoreMock);
         vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
         vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
         vi.doMock(
@@ -327,7 +494,9 @@ describe("CadastrarOcorrencia", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText("Qual o tipo de ocorrência?*")
+                screen.getByText(
+                    /Unidade Educacional é contemplada pelo Smart Sampa\?/i
+                )
             ).toBeInTheDocument();
         });
 
@@ -343,7 +512,146 @@ describe("CadastrarOcorrencia", () => {
         });
 
         expect(
-            screen.queryByText("Qual o tipo de ocorrência?*")
+            screen.queryByText(
+                /Unidade Educacional é contemplada pelo Smart Sampa\?/i
+            )
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve renderizar SecaoFurtoERoubo quando tipoOcorrencia é Sim", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/stores/useOcorrenciaFormStore", createDynamicStoreMock);
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
+        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    /Unidade Educacional é contemplada pelo Smart Sampa\?/i
+                )
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve exibir todas as opções de Smart Sampa no SecaoFurtoERoubo", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock("@/stores/useOcorrenciaFormStore", createDynamicStoreMock);
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
+        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        fireEvent.click(radioSim);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Sim e houve dano")).toBeInTheDocument();
+            expect(
+                screen.getByText("Sim, mas não houve dano")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("A UE não faz parte do Smart Sampa")
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve renderizar SecaoNaoFurtoERoubo quando tipoOcorrencia é Não", async () => {
+        vi.resetModules();
+
+        vi.doMock("@/stores/useUserStore", mockUseUserStore);
+        vi.doMock(
+            "@/stores/useOcorrenciaFormStore",
+            mockUseOcorrenciaFormStore
+        );
+        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
+        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoInicial",
+            mockUseAtualizarSecaoInicial
+        );
+        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+        vi.doMock(
+            "@/hooks/useAtualizarSecaoFurtoRoubo",
+            mockUseAtualizarSecaoFurtoRoubo
+        );
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const dateInput = screen.getByLabelText(
+            /Quando a ocorrência aconteceu\?\*/i
+        );
+        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+
+        const radioNao = screen.getByRole("radio", { name: /Não/ });
+        fireEvent.click(radioNao);
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled());
+        fireEvent.click(nextButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Existem informações sobre o agressor e/ou vítima?*"
+                )
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByText(
+                /Unidade Educacional é contemplada pelo Smart Sampa\?/i
+            )
         ).not.toBeInTheDocument();
     });
 });

@@ -23,7 +23,9 @@ const mockClearFormData = vi.fn();
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: vi.fn(() => ({
         formData: {},
+        savedFormData: {},
         setFormData: mockSetFormData,
+        setSavedFormData: vi.fn(),
         ocorrenciaUuid: null,
         clearFormData: mockClearFormData,
     })),
@@ -82,7 +84,9 @@ describe("SecaoFurtoERoubo", () => {
             useOcorrenciaFormStoreModule.useOcorrenciaFormStore
         ).mockReturnValue({
             formData: {},
+            savedFormData: {},
             setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
             ocorrenciaUuid: null,
             clearFormData: mockClearFormData,
         } as never);
@@ -445,9 +449,66 @@ describe("SecaoFurtoERoubo", () => {
         expect(multiSelectButton).not.toBeDisabled();
     });
 
+    it("deve carregar formulário com descricao vazia quando formData.descricao é undefined", () => {
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {
+                tiposOcorrencia: [],
+                descricao: undefined,
+                smartSampa: undefined,
+            },
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: null,
+            clearFormData: mockClearFormData,
+        } as never);
+
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        expect(textarea).toHaveValue("");
+    });
+
+    it("deve carregar formulário com descricao preenchida quando formData.descricao existe", () => {
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {
+                tiposOcorrencia: [],
+                descricao: "Descrição já preenchida",
+                smartSampa: undefined,
+            },
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: null,
+            clearFormData: mockClearFormData,
+        } as never);
+
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const textarea = screen.getByPlaceholderText("Descreva aqui...");
+        expect(textarea).toHaveValue("Descrição já preenchida");
+    });
+
     describe("Atualização de ocorrência existente", () => {
         const mockMutate = vi.fn();
         const mockSetFormData = vi.fn();
+        const mockSetSavedFormData = vi.fn();
 
         beforeEach(() => {
             vi.clearAllMocks();
@@ -461,7 +522,13 @@ describe("SecaoFurtoERoubo", () => {
                     descricao: "Descrição original da ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
+                savedFormData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
                 setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
                 ocorrenciaUuid: "test-uuid-123",
                 clearFormData: vi.fn(),
             } as never);
@@ -685,7 +752,6 @@ describe("SecaoFurtoERoubo", () => {
         it("deve lidar corretamente quando formData.tiposOcorrencia é undefined", async () => {
             const user = userEvent.setup();
 
-            // Mock com tiposOcorrencia undefined
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
                 "useOcorrenciaFormStore"
@@ -695,7 +761,13 @@ describe("SecaoFurtoERoubo", () => {
                     descricao: "Descrição original da ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
+                savedFormData: {
+                    tiposOcorrencia: undefined,
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
                 setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
                 ocorrenciaUuid: "test-uuid-123",
                 clearFormData: vi.fn(),
             } as never);
@@ -712,7 +784,6 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            // Adiciona um tipo de ocorrência
             const multiSelectButton = screen.getByRole("button", {
                 name: /selecione os tipos de ocorrência/i,
             });
@@ -731,7 +802,6 @@ describe("SecaoFurtoERoubo", () => {
             const btnProximo = screen.getByRole("button", { name: /próximo/i });
             await user.click(btnProximo);
 
-            // Como tiposOcorrencia era undefined (tratado como []), adicionar um tipo é uma mudança
             await waitFor(() => {
                 expect(mockMutate).toHaveBeenCalledWith(
                     expect.objectContaining({
@@ -748,7 +818,6 @@ describe("SecaoFurtoERoubo", () => {
         });
 
         it("deve avançar sem atualizar quando formData.tiposOcorrencia é undefined e nenhum tipo é selecionado", () => {
-            // Mock com tiposOcorrencia undefined
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
                 "useOcorrenciaFormStore"
@@ -758,7 +827,13 @@ describe("SecaoFurtoERoubo", () => {
                     descricao: "Descrição original da ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
+                savedFormData: {
+                    tiposOcorrencia: undefined,
+                    descricao: "Descrição original da ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
                 setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
                 ocorrenciaUuid: "test-uuid-123",
                 clearFormData: vi.fn(),
             } as never);
@@ -771,9 +846,230 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            // O formulário está inválido porque tiposOcorrencia está vazio (undefined tratado como [])
             const btnProximo = screen.getByRole("button", { name: /próximo/i });
             expect(btnProximo).toBeDisabled();
+        });
+
+        it("deve comparar com savedFormData quando ocorrenciaUuid existe", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: "Descrição modificada localmente",
+                    smartSampa: "sim_com_dano",
+                },
+                savedFormData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: "Descrição original do backend",
+                    smartSampa: "nao_faz_parte",
+                },
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: vi.fn(),
+            } as never);
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            smart_sampa_situacao: "sim_com_dano",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve comparar com formData quando ocorrenciaUuid não existe (nova ocorrência)", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: "Descrição da nova ocorrência",
+                    smartSampa: "nao_faz_parte",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: undefined,
+                clearFormData: vi.fn(),
+            } as never);
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).not.toHaveBeenCalled();
+                expect(mockSetFormData).toHaveBeenCalled();
+                expect(mockOnNext).toHaveBeenCalledTimes(1);
+            });
+        });
+
+        it("deve tratar descricao undefined como string vazia na comparação (ocorrenciaUuid existe)", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: undefined,
+                    smartSampa: "nao_faz_parte",
+                },
+                savedFormData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: undefined,
+                    smartSampa: "nao_faz_parte",
+                },
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: vi.fn(),
+            } as never);
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const textarea = screen.getByPlaceholderText("Descreva aqui...");
+            expect(textarea).toHaveValue("");
+
+            await user.type(
+                textarea,
+                "Nova descrição com mais de dez caracteres"
+            );
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            descricao_ocorrencia:
+                                "Nova descrição com mais de dez caracteres",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve tratar descricao undefined como string vazia na comparação (ocorrenciaUuid não existe)", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore"
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
+                    descricao: undefined,
+                    smartSampa: "nao_faz_parte",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+                clearFormData: vi.fn(),
+            } as never);
+
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const textarea = screen.getByPlaceholderText("Descreva aqui...");
+            expect(textarea).toHaveValue("");
+
+            await user.type(
+                textarea,
+                "Descrição válida com mais de dez caracteres"
+            );
+
+            await waitFor(() => {
+                const btnProximo = screen.getByRole("button", {
+                    name: /próximo/i,
+                });
+                expect(btnProximo).not.toBeDisabled();
+            });
+
+            const btnProximo = screen.getByRole("button", { name: /próximo/i });
+            await user.click(btnProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).not.toHaveBeenCalled();
+                expect(mockSetFormData).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        descricao:
+                            "Descrição válida com mais de dez caracteres",
+                    })
+                );
+                expect(mockOnNext).toHaveBeenCalledTimes(1);
+            });
         });
     });
 });
