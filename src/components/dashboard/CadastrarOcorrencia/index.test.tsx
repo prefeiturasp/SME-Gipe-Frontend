@@ -654,4 +654,77 @@ describe("CadastrarOcorrencia", () => {
             )
         ).not.toBeInTheDocument();
     });
+
+    describe("handleClick - botão voltar do PageHeader", () => {
+        it("deve resetar a store e invalidar queries ao clicar no botão voltar", async () => {
+            const mockReset = vi.fn();
+            const mockInvalidateQueries = vi.fn().mockResolvedValue(undefined);
+
+            const customQueryClient = new QueryClient();
+            vi.spyOn(customQueryClient, "invalidateQueries").mockImplementation(
+                mockInvalidateQueries
+            );
+
+            const testUuid = "test-uuid-123";
+
+            const mockStoreWithUuid = {
+                formData: {},
+                savedFormData: {},
+                setFormData: vi.fn(),
+                setSavedFormData: vi.fn(),
+                setOcorrenciaUuid: vi.fn(),
+                ocorrenciaUuid: testUuid,
+                reset: mockReset,
+            };
+
+            vi.doMock("@/stores/useUserStore", mockUseUserStore);
+            vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
+                useOcorrenciaFormStore: (
+                    selector?: (state: typeof mockStoreWithUuid) => unknown
+                ) => {
+                    if (typeof selector === "function") {
+                        return selector(mockStoreWithUuid);
+                    }
+                    return mockStoreWithUuid;
+                },
+            }));
+            vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
+            vi.doMock(
+                "@/hooks/useAtualizarSecaoInicial",
+                mockUseAtualizarSecaoInicial
+            );
+            vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
+
+            const actualReactQuery = await vi.importActual(
+                "@tanstack/react-query"
+            );
+            vi.doMock("@tanstack/react-query", () => ({
+                ...(actualReactQuery as object),
+                useQueryClient: () => customQueryClient,
+            }));
+
+            vi.resetModules();
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            render(
+                <QueryClientProvider client={customQueryClient}>
+                    <CadastrarOcorrencia />
+                </QueryClientProvider>
+            );
+
+            const voltarButton = screen.getByRole("link", { name: /Voltar/i });
+            fireEvent.click(voltarButton);
+
+            await waitFor(() => {
+                expect(mockReset).toHaveBeenCalledTimes(1);
+            });
+
+            await waitFor(() => {
+                expect(mockInvalidateQueries).toHaveBeenCalledWith({
+                    queryKey: ["ocorrencia", testUuid],
+                });
+            });
+        });
+    });
 });

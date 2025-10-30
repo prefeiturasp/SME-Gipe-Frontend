@@ -8,6 +8,7 @@ import { useState } from "react";
 import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
 import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -17,7 +18,9 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
-    const { formData } = useOcorrenciaFormStore();
+    const { formData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const queryClient = useQueryClient();
+    const reset = useOcorrenciaFormStore((state) => state.reset);
 
     const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
 
@@ -45,9 +48,20 @@ export default function CadastrarOcorrencia({
         },
     ];
 
+    const handleClick = async () => {
+        reset();
+
+        await queryClient.invalidateQueries({
+            queryKey: ["ocorrencia", ocorrenciaUuid],
+        });
+    };
+
     return (
         <div className="pt-4">
-            <PageHeader title="Intercorrências Institucionais" />
+            <PageHeader
+                title="Intercorrências Institucionais"
+                onClickBack={handleClick}
+            />
             <QuadroBranco>
                 <div className="flex flex-col">
                     <h1 className="text-[#42474a] text-[24px] font-bold m-0">
