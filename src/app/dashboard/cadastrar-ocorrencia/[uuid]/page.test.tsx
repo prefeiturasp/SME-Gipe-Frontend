@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import EditarOcorrenciaPage from "./page";
 import { vi, type Mock } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -35,9 +36,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -88,9 +91,117 @@ describe("EditarOcorrenciaPage", () => {
         ).toBeInTheDocument();
 
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
-        expect(screen.getByText("Formulário patrimonial")).toBeInTheDocument();
+        expect(screen.getByText("Fase 02")).toBeInTheDocument();
         expect(screen.getByText("Fase 03")).toBeInTheDocument();
         expect(screen.getByText("Anexos")).toBeInTheDocument();
+    });
+
+    it("deve exibir 'Formulário patrimonial' quando tipoOcorrencia é Sim", async () => {
+        const mockData: OcorrenciaDetalheAPI = {
+            id: 1,
+            uuid: "test-uuid",
+            data_ocorrencia: "2025-10-15",
+            descricao_ocorrencia: "Descrição da ocorrência",
+            tipos_ocorrencia: [{ uuid: "tipo-1", nome: "Tipo 1" }],
+            unidade_codigo_eol: "094765",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: true,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        let currentFormData = {};
+        const mockStoreState = {
+            setFormData: vi.fn((data) => {
+                currentFormData = data;
+            }),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            get formData() {
+                return currentFormData;
+            },
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Formulário patrimonial")
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve exibir 'Formulário geral' quando tipoOcorrencia é Não", async () => {
+        const mockData: OcorrenciaDetalheAPI = {
+            id: 2,
+            uuid: "test-uuid",
+            data_ocorrencia: "2025-10-15",
+            descricao_ocorrencia: "Descrição da ocorrência",
+            tipos_ocorrencia: [{ uuid: "tipo-1", nome: "Tipo 1" }],
+            unidade_codigo_eol: "094765",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        let currentFormData = {};
+        const mockStoreState = {
+            setFormData: vi.fn((data) => {
+                currentFormData = data;
+            }),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            get formData() {
+                return currentFormData;
+            },
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Formulário geral")).toBeInTheDocument();
+        });
     });
 
     it("deve exibir loading enquanto carrega os dados", () => {
@@ -152,9 +263,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -208,9 +321,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -258,9 +373,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -282,9 +399,11 @@ describe("EditarOcorrenciaPage", () => {
     it("deve chamar reset na limpeza do componente", () => {
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -347,9 +466,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 
@@ -392,9 +513,11 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockStoreState = {
             setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
             setOcorrenciaUuid: vi.fn(),
             reset: vi.fn(),
             formData: {},
+            savedFormData: {},
             ocorrenciaUuid: null,
         };
 

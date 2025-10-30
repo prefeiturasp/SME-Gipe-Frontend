@@ -40,9 +40,11 @@ vi.mock("@/stores/useUserStore", () => ({
 }));
 
 const setFormDataMock = vi.fn();
+const setSavedFormDataMock = vi.fn();
 const setOcorrenciaIdMock = vi.fn();
 let mockOcorrenciaUuid: string | null = null;
 let mockFormData: Record<string, unknown> = {};
+let mockSavedFormData: Record<string, unknown> = {};
 
 const mockCriarOcorrencia = vi.fn();
 const mockAtualizarOcorrencia = vi.fn();
@@ -50,7 +52,9 @@ const mockAtualizarOcorrencia = vi.fn();
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: mockFormData,
+        savedFormData: mockSavedFormData,
         setFormData: setFormDataMock,
+        setSavedFormData: setSavedFormDataMock,
         setOcorrenciaUuid: setOcorrenciaIdMock,
         ocorrenciaUuid: mockOcorrenciaUuid,
     }),
@@ -89,7 +93,9 @@ describe("SecaoInicial", () => {
         queryClient.clear();
         mockOcorrenciaUuid = null;
         mockFormData = {};
+        mockSavedFormData = {};
         setFormDataMock.mockClear();
+        setSavedFormDataMock.mockClear();
         setOcorrenciaIdMock.mockClear();
     });
 
@@ -347,7 +353,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),
@@ -417,7 +425,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),
@@ -501,7 +511,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),

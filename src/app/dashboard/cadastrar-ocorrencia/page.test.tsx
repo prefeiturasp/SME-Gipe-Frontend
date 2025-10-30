@@ -38,7 +38,7 @@ describe("CadastrarOcorrenciaPage", () => {
         ).toBeInTheDocument();
 
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
-        expect(screen.getByText("Formulário patrimonial")).toBeInTheDocument();
+        expect(screen.getByText("Fase 02")).toBeInTheDocument();
         expect(screen.getByText("Fase 03")).toBeInTheDocument();
         expect(screen.getByText("Anexos")).toBeInTheDocument();
     });

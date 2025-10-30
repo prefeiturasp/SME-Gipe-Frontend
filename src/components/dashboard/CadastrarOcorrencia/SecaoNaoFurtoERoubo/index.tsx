@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/headless-toast";
 import {
     Form,
     FormControl,
@@ -17,29 +16,20 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
-import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
-import { formSchema, SecaoFurtoERouboData } from "./schema";
-import { hasFormDataChanged } from "@/lib/formUtils";
+import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
-export type SecaoFurtoERouboProps = {
+export type SecaoNaoFurtoERouboProps = {
     onPrevious: () => void;
     onNext: () => void;
 };
 
-export default function SecaoFurtoERoubo({
+export default function SecaoNaoFurtoERoubo({
     onPrevious,
     onNext,
-}: Readonly<SecaoFurtoERouboProps>) {
-    const {
-        formData,
-        savedFormData,
-        setFormData,
-        setSavedFormData,
-        ocorrenciaUuid,
-    } = useOcorrenciaFormStore();
+}: Readonly<SecaoNaoFurtoERouboProps>) {
+    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia();
-    const { mutate: atualizarSecaoFurtoRoubo } = useAtualizarSecaoFurtoRoubo();
 
     const tiposOcorrenciaOptions =
         tiposOcorrencia?.map((tipo) => ({
@@ -47,71 +37,33 @@ export default function SecaoFurtoERoubo({
             label: tipo.nome,
         })) || [];
 
-    const form = useForm<SecaoFurtoERouboData>({
+    const envolvidosOptions: { value: string; label: string }[] = [
+        { value: "aluno", label: "Aluno" },
+        { value: "professor", label: "Professor" },
+    ];
+
+    const form = useForm<SecaoNaoFurtoERouboData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
             tiposOcorrencia: formData.tiposOcorrencia || [],
+            envolvidos: formData.envolvidos || [],
             descricao: formData.descricao || "",
-            smartSampa: formData.smartSampa || undefined,
+            possuiInfoAgressorVitima:
+                formData.possuiInfoAgressorVitima || undefined,
         },
     });
 
     const { isValid } = form.formState;
 
-    const onSubmit = async (data: SecaoFurtoERouboData) => {
-        const currentValues = form.getValues();
-
-        if (ocorrenciaUuid) {
-            if (
-                !hasFormDataChanged(currentValues, savedFormData, [
-                    "tiposOcorrencia",
-                ])
-            ) {
-                onNext();
-                return;
-            }
-
-            const smartSampaSituacao = data.smartSampa;
-
-            atualizarSecaoFurtoRoubo(
-                {
-                    uuid: ocorrenciaUuid,
-                    body: {
-                        tipos_ocorrencia: data.tiposOcorrencia,
-                        descricao_ocorrencia: data.descricao,
-                        smart_sampa_situacao: smartSampaSituacao,
-                    },
-                },
-                {
-                    onSuccess: (response) => {
-                        if (!response.success) {
-                            toast({
-                                title: "Erro ao atualizar seção Furto e Roubo",
-                                description: response.error,
-                                variant: "error",
-                            });
-                            return;
-                        }
-
-                        setFormData(data);
-                        setSavedFormData(data);
-                        onNext();
-                    },
-                    onError: () => {
-                        toast({
-                            title: "Erro ao atualizar seção Furto e Roubo",
-                            description:
-                                "Não foi possível atualizar os dados. Tente novamente.",
-                            variant: "error",
-                        });
-                    },
-                }
-            );
-        } else {
-            setFormData(data);
-            onNext();
-        }
+    const onSubmit = async (data: SecaoNaoFurtoERouboData) => {
+        setFormData(data);
+        onNext();
+        console.log(
+            "Submitted data for ocorrência UUID:",
+            ocorrenciaUuid,
+            data
+        );
     };
 
     return (
@@ -121,31 +73,60 @@ export default function SecaoFurtoERoubo({
                 className="flex flex-col gap-6 mt-4"
             >
                 <fieldset className="contents">
-                    <FormField
-                        control={form.control}
-                        name="tiposOcorrencia"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    Qual o tipo de ocorrência?*
-                                </FormLabel>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                            control={form.control}
+                            name="tiposOcorrencia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Qual o tipo de ocorrência?*
+                                    </FormLabel>
 
-                                <FormControl>
-                                    <MultiSelect
-                                        options={tiposOcorrenciaOptions}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        placeholder="Selecione os tipos de ocorrência"
-                                        disabled={isLoadingTipos}
-                                    />
-                                </FormControl>
-                                <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                    Se necessário, selecione mais de uma opção
-                                </p>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    <FormControl>
+                                        <MultiSelect
+                                            options={tiposOcorrenciaOptions}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Selecione os tipos de ocorrência"
+                                            disabled={isLoadingTipos}
+                                        />
+                                    </FormControl>
+                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
+                                        Se necessário, selecione mais de uma
+                                        opção
+                                    </p>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="envolvidos"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Quem são os envolvidos?*
+                                    </FormLabel>
+
+                                    <FormControl>
+                                        <MultiSelect
+                                            options={envolvidosOptions}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Selecione os envolvidos"
+                                        />
+                                    </FormControl>
+                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
+                                        Se necessário, selecione mais de uma
+                                        opção
+                                    </p>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     <FormField
                         control={form.control}
@@ -171,13 +152,12 @@ export default function SecaoFurtoERoubo({
 
                     <FormField
                         control={form.control}
-                        name="smartSampa"
+                        name="possuiInfoAgressorVitima"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    Unidade Educacional é contemplada pelo Smart
-                                    Sampa? Se sim, houve dano às câmeras do
-                                    sistema?*
+                                    Existem informações sobre o agressor e/ou
+                                    vítima?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -187,22 +167,15 @@ export default function SecaoFurtoERoubo({
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="sim_com_dano" />
+                                                <RadioGroupItem value="Sim" />
                                                 <span className="text-sm text-[#42474a]">
-                                                    Sim e houve dano
+                                                    Sim
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="sim_sem_dano" />
+                                                <RadioGroupItem value="Não" />
                                                 <span className="text-sm text-[#42474a]">
-                                                    Sim, mas não houve dano
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="nao_faz_parte" />
-                                                <span className="text-sm text-[#42474a]">
-                                                    A UE não faz parte do Smart
-                                                    Sampa
+                                                    Não
                                                 </span>
                                             </label>
                                         </RadioGroup>

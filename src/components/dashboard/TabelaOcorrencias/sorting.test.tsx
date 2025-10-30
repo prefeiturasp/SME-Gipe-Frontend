@@ -3,6 +3,7 @@ import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface MockUser {
     username: string;
@@ -26,6 +27,19 @@ vi.mock("@/hooks/useOcorrencias", () => ({
 
 import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "./index";
+
+const renderWithQueryProvider = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    return render(ui, {
+        wrapper: ({ children }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        ),
+    });
+};
 
 const sampleData = [
     {
@@ -56,7 +70,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -86,7 +100,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -115,7 +129,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -142,7 +156,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -181,7 +195,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithEmAndamento,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0003")).toBeInTheDocument()
@@ -208,7 +222,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -282,7 +296,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithDre,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -344,7 +358,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithUe,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()

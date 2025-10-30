@@ -26,6 +26,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, SecaoInicialData } from "./schema";
 import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
+import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoInicialProps = {
     onSuccess: () => void;
@@ -40,8 +41,14 @@ export default function SecaoInicial({
     const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
         useAtualizarSecaoInicial();
 
-    const { formData, setFormData, setOcorrenciaUuid, ocorrenciaUuid } =
-        useOcorrenciaFormStore();
+    const {
+        formData,
+        savedFormData,
+        setFormData,
+        setSavedFormData,
+        setOcorrenciaUuid,
+        ocorrenciaUuid,
+    } = useOcorrenciaFormStore();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -65,20 +72,11 @@ export default function SecaoInicial({
 
     const { isValid } = form.formState;
 
-    const hasFormChanged = (data: SecaoInicialData) => {
-        return (
-            formData.dataOcorrencia !== data.dataOcorrencia ||
-            formData.dre !== data.dre ||
-            formData.unidadeEducacional !== data.unidadeEducacional ||
-            formData.tipoOcorrencia !== data.tipoOcorrencia
-        );
-    };
-
     const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
 
         if (ocorrenciaUuid) {
-            if (!hasFormChanged(data)) {
+            if (!hasFormDataChanged(data, savedFormData)) {
                 return onSuccess();
             }
 
@@ -96,6 +94,7 @@ export default function SecaoInicial({
             });
 
             if (response.success) {
+                setSavedFormData(data);
                 onSuccess();
                 return;
             }
@@ -128,6 +127,7 @@ export default function SecaoInicial({
 
         if (response.data?.uuid) {
             setOcorrenciaUuid(response.data.uuid);
+            setSavedFormData(data);
             onSuccess();
         }
     };
