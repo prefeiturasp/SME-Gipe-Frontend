@@ -79,6 +79,141 @@ describe("useOcorrenciaFormStore", () => {
         });
     });
 
+    it("deve atualizar o savedFormData com setSavedFormData", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-02",
+                dre: "001",
+            });
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+        });
+    });
+
+    it("deve fazer merge de dados ao chamar setSavedFormData múltiplas vezes", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-02",
+                dre: "001",
+            });
+        });
+
+        act(() => {
+            result.current.setSavedFormData({
+                unidadeEducacional: "0001",
+                tipoOcorrencia: "Sim",
+            });
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+        });
+    });
+
+    it("deve sobrescrever valores existentes no savedFormData", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-02",
+                dre: "001",
+            });
+        });
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-20",
+            });
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-20",
+            dre: "001",
+        });
+    });
+
+    it("deve manter formData e savedFormData independentes", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setFormData({
+                dataOcorrencia: "2025-10-02",
+                dre: "001",
+            });
+        });
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-15",
+                dre: "002",
+            });
+        });
+
+        expect(result.current.formData).toEqual({
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-15",
+            dre: "002",
+        });
+    });
+
+    it("deve resetar savedFormData ao chamar reset", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-02",
+                dre: "001",
+            });
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-02",
+            dre: "001",
+        });
+
+        act(() => {
+            result.current.reset();
+        });
+
+        expect(result.current.savedFormData).toEqual({});
+    });
+
+    it("deve permitir setSavedFormData com objeto vazio", () => {
+        const { result } = renderHook(() => useOcorrenciaFormStore());
+
+        act(() => {
+            result.current.setSavedFormData({
+                dataOcorrencia: "2025-10-02",
+            });
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-02",
+        });
+
+        act(() => {
+            result.current.setSavedFormData({});
+        });
+
+        expect(result.current.savedFormData).toEqual({
+            dataOcorrencia: "2025-10-02",
+        });
+    });
+
     it("deve atualizar o ocorrenciaUuid com setOcorrenciaUuid", () => {
         const { result } = renderHook(() => useOcorrenciaFormStore());
 
