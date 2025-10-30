@@ -36,7 +36,7 @@ export function MultiSelect({
     placeholder = "Selecione...",
     disabled = false,
     className,
-}: MultiSelectProps) {
+}: Readonly<MultiSelectProps>) {
     const [open, setOpen] = React.useState(false);
 
     const handleSelect = (optionValue: string) => {
@@ -73,7 +73,9 @@ export function MultiSelect({
                     )}
                     disabled={disabled}
                 >
-                    {getDisplayText()}
+                    <span className="truncate block text-left flex-1">
+                        {getDisplayText()}
+                    </span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent
