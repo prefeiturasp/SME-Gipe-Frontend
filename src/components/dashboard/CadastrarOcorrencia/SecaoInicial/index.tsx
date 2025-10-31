@@ -19,7 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { DateTimeInput } from "@/components/ui/date-time-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
@@ -61,6 +61,7 @@ export default function SecaoInicial({
         mode: "onChange",
         defaultValues: {
             dataOcorrencia: formData.dataOcorrencia || "",
+            horaOcorrencia: formData.horaOcorrencia || "",
             dre: formData.dre ?? user?.unidades[0]?.dre.codigo_eol ?? undefined,
             unidadeEducacional:
                 formData.unidadeEducacional ??
@@ -80,12 +81,14 @@ export default function SecaoInicial({
                 return onSuccess();
             }
 
-            const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+            const dataHoraOcorrencia = new Date(
+                `${data.dataOcorrencia}T${data.horaOcorrencia}`
+            ).toISOString();
 
             const response = await atualizarOcorrencia({
                 uuid: ocorrenciaUuid,
                 body: {
-                    data_ocorrencia: dataOcorrencia,
+                    data_ocorrencia: dataHoraOcorrencia,
                     unidade_codigo_eol: data.unidadeEducacional,
                     dre_codigo_eol: data.dre,
                     sobre_furto_roubo_invasao_depredacao:
@@ -107,10 +110,12 @@ export default function SecaoInicial({
             return;
         }
 
-        const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+        const dataHoraOcorrencia = new Date(
+            `${data.dataOcorrencia}T${data.horaOcorrencia}`
+        ).toISOString();
 
         const response = await criarOcorrencia({
-            data_ocorrencia: dataOcorrencia,
+            data_ocorrencia: dataHoraOcorrencia,
             unidade_codigo_eol: data.unidadeEducacional,
             dre_codigo_eol: data.dre,
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
@@ -149,12 +154,20 @@ export default function SecaoInicial({
                                         Quando a ocorrência aconteceu?*
                                     </FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="date"
-                                            placeholder="dd/mm/aaaa"
-                                            {...field}
-                                            max={maxDate}
-                                            className="has-calendar"
+                                        <DateTimeInput
+                                            dateValue={field.value}
+                                            timeValue={
+                                                form.watch("horaOcorrencia") ||
+                                                ""
+                                            }
+                                            onDateChange={field.onChange}
+                                            onTimeChange={(value) =>
+                                                form.setValue(
+                                                    "horaOcorrencia",
+                                                    value
+                                                )
+                                            }
+                                            maxDate={maxDate}
                                         />
                                     </FormControl>
                                     <FormMessage />

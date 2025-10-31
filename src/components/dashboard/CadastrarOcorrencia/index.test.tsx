@@ -224,10 +224,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -264,10 +265,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioNao = screen.getByRole("radio", { name: /Não/ });
         fireEvent.click(radioNao);
@@ -351,10 +353,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioNao = screen.getByRole("radio", { name: /Não/ });
         fireEvent.click(radioNao);
@@ -376,7 +379,7 @@ describe("CadastrarOcorrencia", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+                screen.getByPlaceholderText("Selecione a data")
             ).toBeInTheDocument();
         });
 
@@ -406,10 +409,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -480,10 +484,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -507,7 +512,7 @@ describe("CadastrarOcorrencia", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+                screen.getByPlaceholderText("Selecione a data")
             ).toBeInTheDocument();
         });
 
@@ -539,10 +544,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -581,10 +587,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -628,10 +635,11 @@ describe("CadastrarOcorrencia", () => {
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioNao = screen.getByRole("radio", { name: /Não/ });
         fireEvent.click(radioNao);

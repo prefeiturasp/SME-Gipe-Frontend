@@ -15,9 +15,20 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
 };
 
 const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
-    const dataOcorrencia = ocorrencia.data_ocorrencia
-        ? new Date(ocorrencia.data_ocorrencia).toISOString().split("T")[0]
-        : "";
+    let dataOcorrencia = "";
+    let horaOcorrencia = "";
+
+    if (ocorrencia.data_ocorrencia) {
+        const dataHora = new Date(ocorrencia.data_ocorrencia);
+        const year = dataHora.getFullYear();
+        const month = String(dataHora.getMonth() + 1).padStart(2, "0");
+        const day = String(dataHora.getDate()).padStart(2, "0");
+        const hours = String(dataHora.getHours()).padStart(2, "0");
+        const minutes = String(dataHora.getMinutes()).padStart(2, "0");
+
+        dataOcorrencia = `${year}-${month}-${day}`;
+        horaOcorrencia = `${hours}:${minutes}`;
+    }
 
     const tipoOcorrencia = ocorrencia.sobre_furto_roubo_invasao_depredacao
         ? ("Sim" as const)
@@ -40,6 +51,7 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
 
     return {
         dataOcorrencia,
+        horaOcorrencia,
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,

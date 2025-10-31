@@ -103,7 +103,14 @@ describe("SecaoInicial", () => {
         renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         expect(
-            screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+            screen.getByText(/Quando a ocorrência aconteceu\?\*/i)
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByPlaceholderText("Selecione a data")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText("Digite o horário")
         ).toBeInTheDocument();
 
         expect(screen.getAllByText(/DRE Teste/i).length).toBeGreaterThan(0);
@@ -126,12 +133,15 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        expect(dateInput.value).toBe("2025-10-02");
+        expect(dateInput).toHaveValue("2025-10-02");
+
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        expect(timeInput).toHaveValue("14:30");
+
         expect(nextButton).toBeDisabled();
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
@@ -149,9 +159,8 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -161,7 +170,10 @@ describe("SecaoInicial", () => {
         const futureDate = `${yyyy}-${mm}-${dd}`;
 
         fireEvent.change(dateInput, { target: { value: futureDate } });
-        expect(dateInput.value).toBe(futureDate);
+        expect(dateInput).toHaveValue(futureDate);
+
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        expect(timeInput).toHaveValue("14:30");
 
         const error = await screen.findByText(
             /A data da ocorrência não pode ser no futuro\./i
@@ -179,12 +191,10 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
 
         fireEvent.change(dateInput, { target: { value: "invalid-date" } });
-        expect(dateInput.value).toBe("");
+        expect(dateInput).toHaveValue("");
 
         const formEl = container.querySelector("form") as HTMLFormElement;
         fireEvent.submit(formEl);
@@ -203,6 +213,7 @@ describe("SecaoInicial", () => {
 
         const result = formSchema.safeParse({
             dataOcorrencia: "invalid-date",
+            horaOcorrencia: "14:30",
             dre: "DRE Teste",
             unidadeEducacional: "EMEF Teste",
             tipoOcorrencia: "Sim",
@@ -228,10 +239,11 @@ describe("SecaoInicial", () => {
 
         renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -255,10 +267,11 @@ describe("SecaoInicial", () => {
 
         renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -317,6 +330,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -367,10 +381,8 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        expect(dateInput.value).toBe("2025-10-02");
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        expect(dateInput).toHaveValue("2025-10-02");
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         await waitFor(() => expect(nextButton).toBeEnabled());
@@ -387,6 +399,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -439,13 +452,11 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        expect(dateInput.value).toBe("2025-10-02");
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        expect(dateInput).toHaveValue("2025-10-02");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
-        expect(dateInput.value).toBe("2025-10-05");
+        expect(dateInput).toHaveValue("2025-10-05");
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         await waitFor(() => expect(nextButton).toBeEnabled());
@@ -471,6 +482,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -529,9 +541,7 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
 

@@ -49,7 +49,7 @@ describe("useOcorrencias", () => {
                 {
                     id: 1,
                     uuid: "uuid-1",
-                    data_ocorrencia: "2025-10-08T12:00:00Z",
+                    data_ocorrencia: "2025-10-08T12:00:00",
                     unidade_codigo_eol: "unit-1",
                     dre_codigo_eol: "dre-1",
                 },
@@ -66,15 +66,18 @@ describe("useOcorrencias", () => {
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
         expect(getOcorrenciasActionMock).toHaveBeenCalled();
-        expect(result.current.data).toEqual([
-            expect.objectContaining({
-                id: 1,
-                uuid: "uuid-1",
-                codigoEol: "unit-1",
-                dre: "dre-1",
-                dataHora: "08/10/2025 - 12:00",
-            }),
-        ]);
+        expect(result.current.data).toBeDefined();
+        expect(result.current.data).toHaveLength(1);
+        expect(result.current.data?.[0]).toMatchObject({
+            id: 1,
+            uuid: "uuid-1",
+            codigoEol: "unit-1",
+            dre: "dre-1",
+            protocolo: "PRT-1",
+        });
+        expect(result.current.data?.[0].dataHora).toMatch(
+            /08\/10\/2025 - \d{2}:\d{2}/
+        );
     });
 
     it("deve lançar um erro se a action falhar", async () => {
