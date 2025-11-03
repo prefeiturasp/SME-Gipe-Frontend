@@ -36,9 +36,9 @@ export default function SecaoFinal({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            declarante: formData.declarante || undefined,
-            comunicacaoSeguranca: formData.comunicacaoSeguranca || undefined,
-            protocoloAcionado: formData.protocoloAcionado || undefined,
+            declarante: formData.declarante || "",
+            comunicacaoSeguranca: formData.comunicacaoSeguranca || "",
+            protocoloAcionado: formData.protocoloAcionado || "",
         },
     });
 
