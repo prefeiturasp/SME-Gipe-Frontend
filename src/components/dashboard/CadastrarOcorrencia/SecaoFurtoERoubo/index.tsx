@@ -216,7 +216,7 @@ export default function SecaoFurtoERoubo({
                     <div className="flex justify-end gap-2">
                         <Button
                             size="sm"
-                            variant="outline"
+                            variant="customOutline"
                             type="button"
                             onClick={() => {
                                 setFormData(form.getValues());

@@ -284,7 +284,7 @@ export default function SecaoInicial({
                         )}
                     />
                     <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" disabled>
+                        <Button size="sm" variant="customOutline" disabled>
                             Anterior
                         </Button>
                         <Button
