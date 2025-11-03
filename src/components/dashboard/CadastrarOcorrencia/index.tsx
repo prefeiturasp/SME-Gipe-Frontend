@@ -7,6 +7,7 @@ import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
 import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
 import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
+import SecaoFinal from "./SecaoFinal";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,10 +24,17 @@ export default function CadastrarOcorrencia({
     const reset = useOcorrenciaFormStore((state) => state.reset);
 
     const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
+    const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
 
     const getStep2Label = () => {
         if (!formData.tipoOcorrencia) return "Fase 02";
         return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    };
+
+    const getStep3Label = () => {
+        if (!formData.possuiInfoAgressorVitima && currentStep < 3)
+            return "Fase 03";
+        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
     };
 
     const steps = [
@@ -39,7 +47,7 @@ export default function CadastrarOcorrencia({
             description: "",
         },
         {
-            label: "Fase 03",
+            label: getStep3Label(),
             description: "",
         },
         {
@@ -96,6 +104,12 @@ export default function CadastrarOcorrencia({
                     <SecaoNaoFurtoERoubo
                         onNext={() => setCurrentStep(3)}
                         onPrevious={() => setCurrentStep(1)}
+                    />
+                )}
+                {currentStep === 3 && (
+                    <SecaoFinal
+                        onNext={() => setCurrentStep(4)}
+                        onPrevious={() => setCurrentStep(2)}
                     />
                 )}
             </QuadroBranco>
