@@ -8,11 +8,46 @@ import SecaoFinal from "./index";
 const setFormDataMock = vi.fn();
 let mockFormData: Record<string, unknown> = {};
 
+const mockDeclarantes = [
+    {
+        uuid: "4cc15f41-e356-4cf5-82f9-06db6cf6c917",
+        declarante: "Gabinete DRE",
+    },
+    {
+        uuid: "62da7064-dedf-489e-9b0c-41752e87243f",
+        declarante: "GCM",
+    },
+    {
+        uuid: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+        declarante: "GIPE",
+    },
+    {
+        uuid: "5818782c-f44e-4a55-ac8d-87ce64c5616a",
+        declarante: "NAAPA",
+    },
+    {
+        uuid: "cb747e41-5d72-434b-9f09-a1c240fcf8dd",
+        declarante: "ProtegeEscola",
+    },
+    {
+        uuid: "71f136e1-eb78-4ba6-967e-d8d1ce19994b",
+        declarante: "Unidade Educacional",
+    },
+];
+
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: mockFormData,
         setFormData: setFormDataMock,
     }),
+}));
+
+vi.mock("@/hooks/useDeclarantes", () => ({
+    useDeclarantes: vi.fn(() => ({
+        data: mockDeclarantes,
+        isLoading: false,
+        isError: false,
+    })),
 }));
 
 const queryClient = new QueryClient();
@@ -57,7 +92,7 @@ describe("SecaoFinal", () => {
 
     it("deve inicializar o formulário com valores do store quando disponíveis", () => {
         mockFormData = {
-            declarante: "GIPE",
+            declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "Ameaça",
         };
@@ -152,6 +187,9 @@ describe("SecaoFinal", () => {
             screen.getByRole("option", { name: /NAAPA/i })
         ).toBeInTheDocument();
         expect(
+            screen.getByRole("option", { name: /ProtegeEscola/i })
+        ).toBeInTheDocument();
+        expect(
             screen.getByRole("option", { name: /Unidade Educacional/i })
         ).toBeInTheDocument();
     });
@@ -243,7 +281,7 @@ describe("SecaoFinal", () => {
 
         await waitFor(() => {
             expect(setFormDataMock).toHaveBeenCalledWith({
-                declarante: "GIPE",
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
                 comunicacaoSeguranca: "Sim, com a GCM",
                 protocoloAcionado: "Ameaça",
             });
@@ -289,7 +327,7 @@ describe("SecaoFinal", () => {
         await waitFor(() => {
             expect(setFormDataMock).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    declarante: "NAAPA",
+                    declarante: "5818782c-f44e-4a55-ac8d-87ce64c5616a",
                 })
             );
             expect(mockOnPrevious).toHaveBeenCalled();
@@ -322,7 +360,7 @@ describe("SecaoFinal", () => {
         const formSchema = mod.formSchema;
 
         const result = formSchema.safeParse({
-            declarante: "GIPE",
+            declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "Ameaça",
         });
@@ -354,7 +392,7 @@ describe("SecaoFinal", () => {
         const formSchema = mod.formSchema;
 
         const result = formSchema.safeParse({
-            declarante: "GIPE",
+            declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
             comunicacaoSeguranca: "",
             protocoloAcionado: "Ameaça",
         });
@@ -375,7 +413,7 @@ describe("SecaoFinal", () => {
         const formSchema = mod.formSchema;
 
         const result = formSchema.safeParse({
-            declarante: "GIPE",
+            declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "",
         });
