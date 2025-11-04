@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { formSchema, SecaoFinalData } from "./schema";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useDeclarantes } from "@/hooks/useDeclarantes";
 
 export type SecaoFinalProps = {
     onNext: () => void;
@@ -31,6 +32,8 @@ export default function SecaoFinal({
     onPrevious,
 }: Readonly<SecaoFinalProps>) {
     const { formData, setFormData } = useOcorrenciaFormStore();
+    const { data: declarantes, isLoading: isLoadingDeclarantes } =
+        useDeclarantes();
 
     const form = useForm<SecaoFinalData>({
         resolver: zodResolver(formSchema),
@@ -66,6 +69,7 @@ export default function SecaoFinal({
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
+                                        disabled={isLoadingDeclarantes}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -73,21 +77,14 @@ export default function SecaoFinal({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="Gabinete DRE">
-                                                Gabinete DRE
-                                            </SelectItem>
-                                            <SelectItem value="GCM">
-                                                GCM
-                                            </SelectItem>
-                                            <SelectItem value="GIPE">
-                                                GIPE
-                                            </SelectItem>
-                                            <SelectItem value="NAAPA">
-                                                NAAPA
-                                            </SelectItem>
-                                            <SelectItem value="Unidade Educacional">
-                                                Unidade Educacional
-                                            </SelectItem>
+                                            {declarantes?.map((declarante) => (
+                                                <SelectItem
+                                                    key={declarante.uuid}
+                                                    value={declarante.uuid}
+                                                >
+                                                    {declarante.declarante}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
