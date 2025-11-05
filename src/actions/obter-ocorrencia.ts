@@ -19,6 +19,12 @@ export type OcorrenciaDetalheAPI = {
     status?: string;
     smart_sampa_situacao?: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
     smart_sampa_situacao_display?: string;
+    declarante_detalhes?: {
+        uuid: string;
+        declarante: string;
+    };
+    comunicacao_seguranca_publica?: "sim_gcm" | "sim_pm" | "nao";
+    protocolo_acionado?: "ameaca" | "alerta" | "registro";
 };
 
 export async function obterOcorrencia(
