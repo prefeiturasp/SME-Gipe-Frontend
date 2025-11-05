@@ -49,6 +49,28 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
         (tipo) => tipo.uuid
     );
 
+    const comunicacaoMap: Record<string, string> = {
+        sim_gcm: "Sim, com a GCM",
+        sim_pm: "Sim, com a PM",
+        nao: "Não",
+    };
+
+    const protocoloMap: Record<string, string> = {
+        ameaca: "Ameaça",
+        alerta: "Alerta",
+        registro: "Apenas para registro/não se aplica",
+    };
+
+    const comunicacaoSeguranca = ocorrencia.comunicacao_seguranca_publica
+        ? comunicacaoMap[ocorrencia.comunicacao_seguranca_publica]
+        : undefined;
+
+    const protocoloAcionado = ocorrencia.protocolo_acionado
+        ? protocoloMap[ocorrencia.protocolo_acionado]
+        : undefined;
+
+    const declarante = ocorrencia.declarante_detalhes?.uuid;
+
     return {
         dataOcorrencia,
         horaOcorrencia,
@@ -60,6 +82,9 @@ const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
             descricao: ocorrencia.descricao_ocorrencia,
         }),
         ...(smartSampa && { smartSampa }),
+        ...(declarante && { declarante }),
+        ...(comunicacaoSeguranca && { comunicacaoSeguranca }),
+        ...(protocoloAcionado && { protocoloAcionado }),
     };
 };
 
