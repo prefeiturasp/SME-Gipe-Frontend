@@ -21,6 +21,8 @@ import {
 import { formSchema, SecaoFinalData } from "./schema";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useDeclarantes } from "@/hooks/useDeclarantes";
+import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
+import { toast } from "@/components/ui/headless-toast";
 
 export type SecaoFinalProps = {
     onNext: () => void;
@@ -31,9 +33,16 @@ export default function SecaoFinal({
     onNext,
     onPrevious,
 }: Readonly<SecaoFinalProps>) {
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const {
+        formData,
+        setFormData,
+        ocorrenciaUuid,
+        savedFormData,
+        setSavedFormData,
+    } = useOcorrenciaFormStore();
     const { data: declarantes, isLoading: isLoadingDeclarantes } =
         useDeclarantes();
+    const { mutate, isPending } = useAtualizarSecaoFinal();
 
     const form = useForm<SecaoFinalData>({
         resolver: zodResolver(formSchema),
@@ -47,9 +56,76 @@ export default function SecaoFinal({
 
     const { isValid } = form.formState;
 
+    const mapFormDataToApi = (data: SecaoFinalData) => {
+        const comunicacaoMap: Record<string, string> = {
+            "Sim, com a GCM": "sim_gcm",
+            "Sim, com a PM": "sim_pm",
+            Não: "nao",
+        };
+
+        const protocoloMap: Record<string, string> = {
+            Ameaça: "ameaca",
+            Alerta: "alerta",
+            "Apenas para registro/não se aplica": "registro",
+        };
+
+        return {
+            unidade_codigo_eol: formData.unidadeEducacional || "",
+            dre_codigo_eol: formData.dre || "",
+            declarante: data.declarante,
+            comunicacao_seguranca_publica:
+                comunicacaoMap[data.comunicacaoSeguranca],
+            protocolo_acionado: protocoloMap[data.protocoloAcionado],
+        };
+    };
+
+    const hasChanges = () => {
+        if (!savedFormData) return true;
+
+        const currentData = form.getValues();
+        return (
+            currentData.declarante !== savedFormData.declarante ||
+            currentData.comunicacaoSeguranca !==
+                savedFormData.comunicacaoSeguranca ||
+            currentData.protocoloAcionado !== savedFormData.protocoloAcionado
+        );
+    };
+
     const onSubmit = async (data: SecaoFinalData) => {
         setFormData(data);
-        onNext();
+
+        if (!ocorrenciaUuid || !hasChanges()) {
+            onNext();
+            return;
+        }
+
+        const apiData = mapFormDataToApi(data);
+
+        mutate(
+            { uuid: ocorrenciaUuid, body: apiData },
+            {
+                onSuccess: (response) => {
+                    if (response.success) {
+                        setSavedFormData(data);
+                        onNext();
+                    } else {
+                        toast({
+                            title: "Erro ao atualizar seção final",
+                            description: response.error,
+                            variant: "error",
+                        });
+                    }
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro ao atualizar seção final",
+                        description:
+                            "Ocorreu um erro inesperado. Tente novamente.",
+                        variant: "error",
+                    });
+                },
+            }
+        );
     };
 
     return (
@@ -182,7 +258,8 @@ export default function SecaoFinal({
                             size="sm"
                             type="submit"
                             variant="submit"
-                            disabled={!isValid}
+                            disabled={!isValid || isPending}
+                            loading={isPending}
                         >
                             Próximo
                         </Button>

@@ -538,4 +538,60 @@ describe("EditarOcorrenciaPage", () => {
             })
         );
     });
+
+    it("deve transformar todos os campos da SecaoFinal quando todos estiverem presentes", () => {
+        const mockData = {
+            id: 10,
+            uuid: "test-uuid-completo",
+            data_ocorrencia: "2024-11-25T16:30:00Z",
+            unidade_codigo_eol: "888888",
+            dre_codigo_eol: "109200",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+            comunicacao_seguranca_publica: "sim_pm" as const,
+            protocolo_acionado: "alerta" as const,
+            declarante_detalhes: {
+                uuid: "declarante-uuid-456",
+                declarante: "NAAPA",
+            },
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        const mockStoreState = {
+            setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            formData: {},
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        expect(mockStoreState.setFormData).toHaveBeenCalledWith(
+            expect.objectContaining({
+                comunicacaoSeguranca: "Sim, com a PM",
+                protocoloAcionado: "Alerta",
+                declarante: "declarante-uuid-456",
+            })
+        );
+    });
 });
