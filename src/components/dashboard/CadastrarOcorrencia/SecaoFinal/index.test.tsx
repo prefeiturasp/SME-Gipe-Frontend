@@ -6,7 +6,10 @@ import { renderWithClient } from "../__tests__/helpers";
 import SecaoFinal from "./index";
 
 const setFormDataMock = vi.fn();
+const setSavedFormDataMock = vi.fn();
 let mockFormData: Record<string, unknown> = {};
+let mockSavedFormData: Record<string, unknown> | null = null;
+let mockOcorrenciaUuid: string | null = null;
 
 const mockDeclarantes = [
     {
@@ -39,6 +42,9 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: mockFormData,
         setFormData: setFormDataMock,
+        savedFormData: mockSavedFormData,
+        setSavedFormData: setSavedFormDataMock,
+        ocorrenciaUuid: mockOcorrenciaUuid,
     }),
 }));
 
@@ -48,6 +54,16 @@ vi.mock("@/hooks/useDeclarantes", () => ({
         isLoading: false,
         isError: false,
     })),
+}));
+
+const mockMutate = vi.fn();
+const mockIsPending = false;
+
+vi.mock("@/hooks/useAtualizarSecaoFinal", () => ({
+    useAtualizarSecaoFinal: () => ({
+        mutate: mockMutate,
+        isPending: mockIsPending,
+    }),
 }));
 
 const queryClient = new QueryClient();
@@ -60,7 +76,11 @@ describe("SecaoFinal", () => {
         vi.clearAllMocks();
         queryClient.clear();
         mockFormData = {};
+        mockSavedFormData = null;
+        mockOcorrenciaUuid = null;
         setFormDataMock.mockClear();
+        setSavedFormDataMock.mockClear();
+        mockMutate.mockClear();
     });
 
     it("deve renderizar todos os campos corretamente", () => {
@@ -425,5 +445,351 @@ describe("SecaoFinal", () => {
             );
             expect(messages).toContain("Selecione o protocolo acionado.");
         }
+    });
+
+    describe("Atualização de ocorrência existente", () => {
+        beforeEach(() => {
+            mockFormData = {
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+            };
+            mockOcorrenciaUuid = "test-uuid-123";
+        });
+
+        it("deve chamar mutate quando houver ocorrenciaUuid e houver mudanças", async () => {
+            mockSavedFormData = {
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            };
+
+            mockFormData = {
+                ...mockFormData,
+                ...mockSavedFormData,
+            };
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            fireEvent.click(declaranteSelect);
+            const declaranteOption = await screen.findByRole("option", {
+                name: /NAAPA/i,
+            });
+            fireEvent.click(declaranteOption);
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const comunicacaoOption = await screen.findByRole("option", {
+                name: /Sim, com a PM/i,
+            });
+            fireEvent.click(comunicacaoOption);
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+            const protocoloOption = await screen.findByRole("option", {
+                name: /Alerta/i,
+            });
+            fireEvent.click(protocoloOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        uuid: "test-uuid-123",
+                        body: expect.objectContaining({
+                            unidade_codigo_eol: "123456",
+                            dre_codigo_eol: "DRE-01",
+                            declarante: "5818782c-f44e-4a55-ac8d-87ce64c5616a",
+                            comunicacao_seguranca_publica: "sim_pm",
+                            protocolo_acionado: "alerta",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve não chamar mutate quando não houver mudanças", async () => {
+            mockSavedFormData = {
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            };
+
+            mockFormData = {
+                ...mockFormData,
+                ...mockSavedFormData,
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).not.toHaveBeenCalled();
+                expect(mockOnNext).toHaveBeenCalled();
+            });
+        });
+
+        it("deve não chamar onNext quando a atualização falhar", async () => {
+            mockSavedFormData = {
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            };
+
+            mockFormData = {
+                ...mockFormData,
+                ...mockSavedFormData,
+            };
+
+            const errorMessage = "Erro ao atualizar seção final";
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: false, error: errorMessage });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const comunicacaoOption = await screen.findByRole("option", {
+                name: /Sim, com a PM/i,
+            });
+            fireEvent.click(comunicacaoOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+                expect(mockOnNext).not.toHaveBeenCalled();
+            });
+        });
+
+        it("deve mapear corretamente os valores do formulário para a API", async () => {
+            mockSavedFormData = null;
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            fireEvent.click(declaranteSelect);
+            const declaranteOption = await screen.findByRole("option", {
+                name: /GIPE/i,
+            });
+            fireEvent.click(declaranteOption);
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const naoOption = await screen.findByRole("option", {
+                name: /^Não$/i,
+            });
+            fireEvent.click(naoOption);
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+            const registroOption = await screen.findByRole("option", {
+                name: /Apenas para registro\/não se aplica/i,
+            });
+            fireEvent.click(registroOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            comunicacao_seguranca_publica: "nao",
+                            protocolo_acionado: "registro",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve enviar strings vazias quando unidadeEducacional e dre não existirem", async () => {
+            mockFormData = {
+                unidadeEducacional: undefined,
+                dre: null,
+            };
+            mockSavedFormData = null;
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            fireEvent.click(declaranteSelect);
+            const declaranteOption = await screen.findByRole("option", {
+                name: /GIPE/i,
+            });
+            fireEvent.click(declaranteOption);
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const gcmOption = await screen.findByRole("option", {
+                name: /Sim, com a GCM/i,
+            });
+            fireEvent.click(gcmOption);
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+            const ameacaOption = await screen.findByRole("option", {
+                name: /Ameaça/i,
+            });
+            fireEvent.click(ameacaOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            unidade_codigo_eol: "",
+                            dre_codigo_eol: "",
+                            comunicacao_seguranca_publica: "sim_gcm",
+                            protocolo_acionado: "ameaca",
+                        }),
+                    }),
+                    expect.any(Object)
+                );
+            });
+        });
+
+        it("deve chamar setSavedFormData após atualização com sucesso", async () => {
+            mockSavedFormData = {
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            };
+
+            mockFormData = {
+                ...mockFormData,
+                ...mockSavedFormData,
+            };
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const comunicacaoOption = await screen.findByRole("option", {
+                name: /Não/i,
+            });
+            fireEvent.click(comunicacaoOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(setSavedFormDataMock).toHaveBeenCalled();
+                expect(mockOnNext).toHaveBeenCalled();
+            });
+        });
+
+        it("deve não chamar onNext quando houver erro na requisição", async () => {
+            mockSavedFormData = {
+                declarante: "7d2fb34f-4465-4b1b-b307-c1e4794777f0",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            };
+
+            mockFormData = {
+                ...mockFormData,
+                ...mockSavedFormData,
+            };
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onError?.();
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            const comunicacaoOption = await screen.findByRole("option", {
+                name: /Sim, com a PM/i,
+            });
+            fireEvent.click(comunicacaoOption);
+
+            const nextButton = screen.getByRole("button", { name: /Próximo/i });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+                expect(mockOnNext).not.toHaveBeenCalled();
+                expect(setSavedFormDataMock).not.toHaveBeenCalled();
+            });
+        });
     });
 });
