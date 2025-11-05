@@ -493,10 +493,14 @@ describe("SecaoNaoFurtoERoubo", () => {
         await user.click(opcaoBullying);
 
         await waitFor(() => {
-            const button = screen.getByRole("button", {
-                name: /violência física, bullying/i,
+            const removeViolenciaButton = screen.getByRole("button", {
+                name: /remover violência física/i,
             });
-            expect(button).toBeInTheDocument();
+            const removeBullyingButton = screen.getByRole("button", {
+                name: /remover bullying/i,
+            });
+            expect(removeViolenciaButton).toBeInTheDocument();
+            expect(removeBullyingButton).toBeInTheDocument();
         });
     });
 
@@ -526,10 +530,14 @@ describe("SecaoNaoFurtoERoubo", () => {
         await user.click(opcaoProfessor);
 
         await waitFor(() => {
-            const button = screen.getByRole("button", {
-                name: /aluno, professor/i,
+            const removeAlunoButton = screen.getByRole("button", {
+                name: /remover aluno/i,
             });
-            expect(button).toBeInTheDocument();
+            const removeProfessorButton = screen.getByRole("button", {
+                name: /remover professor/i,
+            });
+            expect(removeAlunoButton).toBeInTheDocument();
+            expect(removeProfessorButton).toBeInTheDocument();
         });
     });
 });
