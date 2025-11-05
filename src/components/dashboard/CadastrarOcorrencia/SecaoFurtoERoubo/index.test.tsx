@@ -264,11 +264,21 @@ describe("SecaoFurtoERoubo", () => {
         await user.click(opcaoNegligencia);
 
         await waitFor(() => {
-            expect(
-                screen.getByText(
-                    "Violência física, Violência psicológica, Negligência"
-                )
-            ).toBeInTheDocument();
+            const removeViolenciaFisicaButton = screen.getByRole("button", {
+                name: /remover violência física/i,
+            });
+            const removeViolenciaPsicologicaButton = screen.getByRole(
+                "button",
+                {
+                    name: /remover violência psicológica/i,
+                }
+            );
+            const removeNegligenciaButton = screen.getByRole("button", {
+                name: /remover negligência/i,
+            });
+            expect(removeViolenciaFisicaButton).toBeInTheDocument();
+            expect(removeViolenciaPsicologicaButton).toBeInTheDocument();
+            expect(removeNegligenciaButton).toBeInTheDocument();
         });
     });
 
@@ -293,10 +303,10 @@ describe("SecaoFurtoERoubo", () => {
         await user.click(violenciaFisica);
 
         await waitFor(() => {
-            const button = screen.getByRole("button", {
-                name: /violência física/i,
+            const removeButton = screen.getByRole("button", {
+                name: /remover violência física/i,
             });
-            expect(button).toBeInTheDocument();
+            expect(removeButton).toBeInTheDocument();
         });
 
         expect(
@@ -715,8 +725,10 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
+            // Busca pelo botão do MultiSelect que contém a tag "Violência física"
+            // Evita o botão de remover buscando pelo atributo aria-haspopup
             const multiSelectButton = screen.getByRole("button", {
-                name: /violência física/i,
+                expanded: false,
             });
             await user.click(multiSelectButton);
 
