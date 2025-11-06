@@ -4,9 +4,7 @@ export const formSchema = z.object({
     tiposOcorrencia: z
         .array(z.string())
         .min(1, "Selecione pelo menos um tipo de ocorrência."),
-    envolvidos: z
-        .array(z.string())
-        .min(1, "Selecione pelo menos um envolvido."),
+    envolvidos: z.string().min(1, "Selecione os envolvidos."),
     descricao: z
         .string()
         .min(1, "A descrição é obrigatória.")
