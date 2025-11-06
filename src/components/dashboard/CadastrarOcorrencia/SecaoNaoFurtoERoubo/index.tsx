@@ -11,11 +11,19 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
 export type SecaoNaoFurtoERouboProps = {
@@ -30,6 +38,8 @@ export default function SecaoNaoFurtoERoubo({
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia();
+    const { data: envolvidos, isLoading: isLoadingEnvolvidos } =
+        useEnvolvidos();
 
     const tiposOcorrenciaOptions =
         tiposOcorrencia?.map((tipo) => ({
@@ -37,17 +47,13 @@ export default function SecaoNaoFurtoERoubo({
             label: tipo.nome,
         })) || [];
 
-    const envolvidosOptions: { value: string; label: string }[] = [
-        { value: "aluno", label: "Aluno" },
-        { value: "professor", label: "Professor" },
-    ];
 
     const form = useForm<SecaoNaoFurtoERouboData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
             tiposOcorrencia: formData.tiposOcorrencia || [],
-            envolvidos: formData.envolvidos || [],
+            envolvidos: formData.envolvidos || "",
             descricao: formData.descricao || "",
             possuiInfoAgressorVitima:
                 formData.possuiInfoAgressorVitima || undefined,
@@ -106,22 +112,28 @@ export default function SecaoNaoFurtoERoubo({
                             name="envolvidos"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
-                                        Quem são os envolvidos?*
-                                    </FormLabel>
-
-                                    <FormControl>
-                                        <MultiSelect
-                                            options={envolvidosOptions}
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            placeholder="Selecione os envolvidos"
-                                        />
-                                    </FormControl>
-                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                        Se necessário, selecione mais de uma
-                                        opção
-                                    </p>
+                                    <FormLabel>Quem são os envolvidos?*</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        disabled={isLoadingEnvolvidos}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione os envolvidos" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {envolvidos?.map((envolvido) => (
+                                                <SelectItem
+                                                    key={envolvido.uuid}
+                                                    value={envolvido.uuid}
+                                                >
+                                                    {envolvido.perfil_dos_envolvidos}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

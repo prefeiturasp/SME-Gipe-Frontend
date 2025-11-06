@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SecaoNaoFurtoERoubo from "./index";
 import userEvent from "@testing-library/user-event";
 import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+import * as useEnvolvidosHook from "@/hooks/useEnvolvidos";
+import { useEnvolvidos } from "@/hooks/useEnvolvidos";
+
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 
 vi.mock("next/navigation", () => ({
@@ -15,6 +18,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/hooks/useTiposOcorrencia");
 
+vi.mock("@/hooks/useEnvolvidos")
 const mockSetFormData = vi.fn();
 const mockClearFormData = vi.fn();
 
@@ -28,6 +32,7 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
         clearFormData: mockClearFormData,
     })),
 }));
+
 
 const mockTiposOcorrencia = [
     {
@@ -53,6 +58,17 @@ const mockTiposOcorrencia = [
     {
         uuid: "252ebf03-c661-4195-b42e-455376e10396",
         nome: "Cyberbullying",
+    },
+];
+
+const mockEnvolvidos = [
+    {
+        uuid: "uuid-estudante",
+        perfil_dos_envolvidos: "Apenas um estudante",
+    },
+    {
+        uuid: "uuid-funcionario",
+        perfil_dos_envolvidos: "Estudante e funcionário",
     },
 ];
 
@@ -87,6 +103,13 @@ describe("SecaoNaoFurtoERoubo", () => {
             setSavedFormData: vi.fn(),
             ocorrenciaUuid: null,
             clearFormData: mockClearFormData,
+        } as never);
+
+        vi.spyOn(useEnvolvidosHook, "useEnvolvidos").mockReturnValue({
+            data: mockEnvolvidos,
+            isLoading: false,
+            isError: false,
+            error: null,
         } as never);
 
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
@@ -196,13 +219,13 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("button", {
-            name: /selecione os envolvidos/i,
+        const envolvidosButton = screen.getByRole("combobox", {
+        name: /Quem são os envolvidos\?\*/i,
         });
         await user.click(envolvidosButton);
 
         const opcaoAluno = await screen.findByRole("option", {
-            name: /aluno/i,
+            name: /Apenas um estudante/i,
         });
         await user.click(opcaoAluno);
 
@@ -258,13 +281,13 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("button", {
-            name: /selecione os envolvidos/i,
+        const envolvidosButton = screen.getByRole("combobox", {
+        name: /Quem são os envolvidos\?\*/i,
         });
         await user.click(envolvidosButton);
 
         const opcaoAluno = await screen.findByRole("option", {
-            name: /aluno/i,
+            name: /Apenas um estudante/i,
         });
         await user.click(opcaoAluno);
 
@@ -290,28 +313,6 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
     });
 
-    it("deve renderizar as opções mockadas de envolvidos", async () => {
-        const user = userEvent.setup();
-        render(
-            <SecaoNaoFurtoERoubo
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        const envolvidosButton = screen.getByRole("button", {
-            name: /selecione os envolvidos/i,
-        });
-        expect(envolvidosButton).toBeEnabled();
-
-        await user.click(envolvidosButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("Aluno")).toBeInTheDocument();
-            expect(screen.getByText("Professor")).toBeInTheDocument();
-        });
-    });
 
     it("deve carregar valores do formData quando existentes", () => {
         vi.mocked(
@@ -319,7 +320,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         ).mockReturnValue({
             formData: {
                 tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
-                envolvidos: ["aluno"],
+                envolvidos: "aluno",
                 descricao: "Descrição inicial",
                 possuiInfoAgressorVitima: "Sim" as const,
             },
@@ -430,21 +431,6 @@ describe("SecaoNaoFurtoERoubo", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve exibir texto auxiliar sobre seleção múltipla", () => {
-        render(
-            <SecaoNaoFurtoERoubo
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        const textos = screen.getAllByText(
-            "Se necessário, selecione mais de uma opção"
-        );
-        expect(textos).toHaveLength(2);
-    });
-
     it("deve desabilitar multiselect quando tipos de ocorrência estão carregando", () => {
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
             data: undefined,
@@ -501,43 +487,6 @@ describe("SecaoNaoFurtoERoubo", () => {
             });
             expect(removeViolenciaButton).toBeInTheDocument();
             expect(removeBullyingButton).toBeInTheDocument();
-        });
-    });
-
-    it("deve permitir selecionar múltiplos envolvidos", async () => {
-        const user = userEvent.setup();
-        render(
-            <SecaoNaoFurtoERoubo
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        const envolvidosButton = screen.getByRole("button", {
-            name: /selecione os envolvidos/i,
-        });
-        await user.click(envolvidosButton);
-
-        const opcaoAluno = await screen.findByRole("option", {
-            name: /^aluno$/i,
-        });
-        await user.click(opcaoAluno);
-
-        const opcaoProfessor = await screen.findByRole("option", {
-            name: /^professor$/i,
-        });
-        await user.click(opcaoProfessor);
-
-        await waitFor(() => {
-            const removeAlunoButton = screen.getByRole("button", {
-                name: /remover aluno/i,
-            });
-            const removeProfessorButton = screen.getByRole("button", {
-                name: /remover professor/i,
-            });
-            expect(removeAlunoButton).toBeInTheDocument();
-            expect(removeProfessorButton).toBeInTheDocument();
         });
     });
 });
