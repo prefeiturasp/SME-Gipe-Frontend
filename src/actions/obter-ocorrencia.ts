@@ -10,6 +10,8 @@ export type OcorrenciaDetalheAPI = {
     data_ocorrencia: string;
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
+    nome_dre?: string;
+    nome_unidade?: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
     user_username: string;
     criado_em: string;
