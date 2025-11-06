@@ -5,91 +5,13 @@ import { useParams } from "next/navigation";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
-import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
+import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
 const ErrorMessage = ({ error }: { error: unknown }) => {
     const message = error instanceof Error ? error.message : String(error);
     return <div>Erro ao buscar dados: {message}</div>;
-};
-
-const transformOcorrenciaToFormData = (ocorrencia: OcorrenciaDetalheAPI) => {
-    let dataOcorrencia = "";
-    let horaOcorrencia = "";
-
-    if (ocorrencia.data_ocorrencia) {
-        const dataHora = new Date(ocorrencia.data_ocorrencia);
-        const year = dataHora.getFullYear();
-        const month = String(dataHora.getMonth() + 1).padStart(2, "0");
-        const day = String(dataHora.getDate()).padStart(2, "0");
-        const hours = String(dataHora.getHours()).padStart(2, "0");
-        const minutes = String(dataHora.getMinutes()).padStart(2, "0");
-
-        dataOcorrencia = `${year}-${month}-${day}`;
-        horaOcorrencia = `${hours}:${minutes}`;
-    }
-
-    const tipoOcorrencia = ocorrencia.sobre_furto_roubo_invasao_depredacao
-        ? ("Sim" as const)
-        : ("Não" as const);
-
-    const validSmartSampaValues = [
-        "sim_com_dano",
-        "sim_sem_dano",
-        "nao_faz_parte",
-    ] as const;
-    const rawSmartSampa = ocorrencia.smart_sampa_situacao;
-    const smartSampa =
-        rawSmartSampa && validSmartSampaValues.includes(rawSmartSampa)
-            ? rawSmartSampa
-            : undefined;
-
-    const tiposOcorrencia = ocorrencia.tipos_ocorrencia?.map(
-        (tipo) => tipo.uuid
-    );
-
-    const comunicacaoMap: Record<string, string> = {
-        sim_gcm: "Sim, com a GCM",
-        sim_pm: "Sim, com a PM",
-        nao: "Não",
-    };
-
-    const protocoloMap: Record<string, string> = {
-        ameaca: "Ameaça",
-        alerta: "Alerta",
-        registro: "Apenas para registro/não se aplica",
-    };
-
-    const comunicacaoSeguranca = ocorrencia.comunicacao_seguranca_publica
-        ? comunicacaoMap[ocorrencia.comunicacao_seguranca_publica]
-        : undefined;
-
-    const protocoloAcionado = ocorrencia.protocolo_acionado
-        ? protocoloMap[ocorrencia.protocolo_acionado]
-        : undefined;
-
-    const declarante = ocorrencia.declarante_detalhes?.uuid;
-
-    return {
-        dataOcorrencia,
-        horaOcorrencia,
-        dre: ocorrencia.dre_codigo_eol,
-        unidadeEducacional: ocorrencia.unidade_codigo_eol,
-        tipoOcorrencia,
-        ...(ocorrencia.nome_dre && { nomeDre: ocorrencia.nome_dre }),
-        ...(ocorrencia.nome_unidade && {
-            nomeUnidade: ocorrencia.nome_unidade,
-        }),
-        ...(tiposOcorrencia && { tiposOcorrencia }),
-        ...(ocorrencia.descricao_ocorrencia && {
-            descricao: ocorrencia.descricao_ocorrencia,
-        }),
-        ...(smartSampa && { smartSampa }),
-        ...(declarante && { declarante }),
-        ...(comunicacaoSeguranca && { comunicacaoSeguranca }),
-        ...(protocoloAcionado && { protocoloAcionado }),
-    };
 };
 
 export default function EditarOcorrenciaPage() {
