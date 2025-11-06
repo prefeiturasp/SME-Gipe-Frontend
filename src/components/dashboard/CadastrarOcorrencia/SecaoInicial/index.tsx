@@ -73,6 +73,11 @@ export default function SecaoInicial({
 
     const { isValid } = form.formState;
 
+    const dreNome = formData.nomeDre || user?.unidades[0]?.dre.nome || "";
+
+    const unidadeNome =
+        formData.nomeUnidade || user?.unidades[0]?.ue.nome || "";
+
     const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
 
@@ -194,15 +199,9 @@ export default function SecaoInicial({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {user?.unidades[0]?.dre
-                                                ?.codigo_eol && (
-                                                <SelectItem
-                                                    value={
-                                                        user.unidades[0].dre
-                                                            .codigo_eol
-                                                    }
-                                                >
-                                                    {user.unidades[0].dre.nome}
+                                            {field.value && dreNome && (
+                                                <SelectItem value={field.value}>
+                                                    {dreNome}
                                                 </SelectItem>
                                             )}
                                         </SelectContent>
@@ -232,14 +231,9 @@ export default function SecaoInicial({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {user?.unidades[0]?.ue?.codigo_eol && (
-                                            <SelectItem
-                                                value={
-                                                    user.unidades[0].ue
-                                                        .codigo_eol
-                                                }
-                                            >
-                                                {user.unidades[0].ue.nome}
+                                        {field.value && unidadeNome && (
+                                            <SelectItem value={field.value}>
+                                                {unidadeNome}
                                             </SelectItem>
                                         )}
                                     </SelectContent>
