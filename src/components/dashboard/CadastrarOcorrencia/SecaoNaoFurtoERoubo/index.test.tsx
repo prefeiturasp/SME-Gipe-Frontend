@@ -6,7 +6,7 @@ import SecaoNaoFurtoERoubo from "./index";
 import userEvent from "@testing-library/user-event";
 import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useEnvolvidosHook from "@/hooks/useEnvolvidos";
-import { useEnvolvidos } from "@/hooks/useEnvolvidos";
+import * as useAtualizarSecaoNaoFurtoRouboHook from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 
@@ -18,7 +18,19 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/hooks/useTiposOcorrencia");
 
-vi.mock("@/hooks/useEnvolvidos")
+vi.mock("@/hooks/useEnvolvidos");
+
+vi.mock("@/hooks/useAtualizarSecaoNaoFurtoRoubo", () => ({
+    useAtualizarSecaoNaoFurtoRoubo: () => ({
+        mutate: vi.fn((_, options) => {
+            if (options?.onSuccess) {
+                options.onSuccess({ success: true, data: {} });
+            }
+        }),
+        isPending: false,
+    }),
+}));
+
 const mockSetFormData = vi.fn();
 const mockClearFormData = vi.fn();
 
@@ -32,7 +44,6 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
         clearFormData: mockClearFormData,
     })),
 }));
-
 
 const mockTiposOcorrencia = [
     {
@@ -220,7 +231,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         await user.click(opcaoViolencia);
 
         const envolvidosButton = screen.getByRole("combobox", {
-        name: /Quem são os envolvidos\?\*/i,
+            name: /Quem são os envolvidos\?\*/i,
         });
         await user.click(envolvidosButton);
 
@@ -263,6 +274,18 @@ describe("SecaoNaoFurtoERoubo", () => {
 
     it("deve chamar onNext ao submeter formulário válido", async () => {
         const user = userEvent.setup();
+
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: "test-uuid-123",
+            clearFormData: mockClearFormData,
+        } as never);
+
         render(
             <SecaoNaoFurtoERoubo
                 onPrevious={mockOnPrevious}
@@ -282,7 +305,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         await user.click(opcaoViolencia);
 
         const envolvidosButton = screen.getByRole("combobox", {
-        name: /Quem são os envolvidos\?\*/i,
+            name: /Quem são os envolvidos\?\*/i,
         });
         await user.click(envolvidosButton);
 
@@ -312,7 +335,6 @@ describe("SecaoNaoFurtoERoubo", () => {
             expect(mockOnNext).toHaveBeenCalled();
         });
     });
-
 
     it("deve carregar valores do formData quando existentes", () => {
         vi.mocked(
@@ -487,6 +509,281 @@ describe("SecaoNaoFurtoERoubo", () => {
             });
             expect(removeViolenciaButton).toBeInTheDocument();
             expect(removeBullyingButton).toBeInTheDocument();
+        });
+    });
+
+    it("deve exibir toast de erro quando ocorrenciaUuid não existe", async () => {
+        const user = userEvent.setup();
+
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: null,
+            clearFormData: mockClearFormData,
+        } as never);
+
+        render(
+            <SecaoNaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const opcaoViolencia = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        await user.click(opcaoViolencia);
+
+        const envolvidosButton = screen.getByRole("combobox", {
+            name: /Quem são os envolvidos\?\*/i,
+        });
+        await user.click(envolvidosButton);
+
+        const opcaoAluno = await screen.findByRole("option", {
+            name: /Apenas um estudante/i,
+        });
+        await user.click(opcaoAluno);
+
+        const descricaoField = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(
+            descricaoField,
+            "Esta é uma descrição detalhada com mais de dez caracteres"
+        );
+
+        const radioSim = screen.getByRole("radio", { name: /sim/i });
+        await user.click(radioSim);
+
+        const btnProximo = screen.getByRole("button", { name: /próximo/i });
+        await user.click(btnProximo);
+
+        await waitFor(() => {
+            expect(mockOnNext).not.toHaveBeenCalled();
+        });
+    });
+
+    it("deve exibir toast de erro quando response.success é false", async () => {
+        const user = userEvent.setup();
+        const mockMutate = vi.fn((_, options) => {
+            if (options?.onSuccess) {
+                options.onSuccess({
+                    success: false,
+                    error: "Erro ao processar a requisição",
+                });
+            }
+        });
+
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: "test-uuid-123",
+            clearFormData: mockClearFormData,
+        } as never);
+
+        vi.spyOn(
+            useAtualizarSecaoNaoFurtoRouboHook,
+            "useAtualizarSecaoNaoFurtoRoubo"
+        ).mockReturnValue({
+            mutate: mockMutate,
+            isPending: false,
+        } as never);
+
+        render(
+            <SecaoNaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+        const tipoOption = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        await user.click(tipoOption);
+
+        const descricaoInput = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(descricaoInput, "Descrição de teste para error");
+
+        const envolvido = screen.getByRole("combobox", {
+            name: /quem são os envolvidos/i,
+        });
+        await user.click(envolvido);
+        const envolvidoOption = await screen.findByRole("option", {
+            name: /apenas um estudante/i,
+        });
+        await user.click(envolvidoOption);
+
+        const radioSim = screen.getByRole("radio", { name: /sim/i });
+        await user.click(radioSim);
+
+        const submitButton = screen.getByRole("button", { name: /próximo/i });
+        await user.click(submitButton);
+
+        await waitFor(() => {
+            expect(mockMutate).toHaveBeenCalled();
+        });
+    });
+    it("deve exibir toast de erro quando onError é chamado", async () => {
+        const user = userEvent.setup();
+        const mockMutate = vi.fn((_, options) => {
+            if (options?.onError) {
+                options.onError(new Error("Network error"));
+            }
+        });
+
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: "test-uuid-123",
+            clearFormData: mockClearFormData,
+        } as never);
+
+        vi.spyOn(
+            useAtualizarSecaoNaoFurtoRouboHook,
+            "useAtualizarSecaoNaoFurtoRoubo"
+        ).mockReturnValue({
+            mutate: mockMutate,
+            isPending: false,
+        } as never);
+
+        render(
+            <SecaoNaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+
+        const opcaoViolencia = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        await user.click(opcaoViolencia);
+
+        const envolvidosButton = screen.getByRole("combobox", {
+            name: /Quem são os envolvidos\?\*/i,
+        });
+        await user.click(envolvidosButton);
+
+        const opcaoAluno = await screen.findByRole("option", {
+            name: /Apenas um estudante/i,
+        });
+        await user.click(opcaoAluno);
+
+        const descricaoField = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(
+            descricaoField,
+            "Esta é uma descrição detalhada com mais de dez caracteres"
+        );
+
+        const radioSim = screen.getByRole("radio", { name: /sim/i });
+        await user.click(radioSim);
+
+        const btnProximo = screen.getByRole("button", { name: /próximo/i });
+        await user.click(btnProximo);
+
+        await waitFor(() => {
+            expect(mockMutate).toHaveBeenCalled();
+            expect(mockOnNext).not.toHaveBeenCalled();
+        });
+    });
+
+    it("deve enviar tem_info_agressor_ou_vitima como 'nao' quando usuário seleciona Não", async () => {
+        const user = userEvent.setup();
+        const mockMutate = vi.fn((_, options) => {
+            if (options?.onSuccess) {
+                options.onSuccess({ success: true, data: {} });
+            }
+        });
+
+        vi.mocked(
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+        ).mockReturnValue({
+            formData: {},
+            savedFormData: {},
+            setFormData: mockSetFormData,
+            setSavedFormData: vi.fn(),
+            ocorrenciaUuid: "test-uuid-123",
+            clearFormData: mockClearFormData,
+        } as never);
+
+        vi.spyOn(
+            useAtualizarSecaoNaoFurtoRouboHook,
+            "useAtualizarSecaoNaoFurtoRoubo"
+        ).mockReturnValue({
+            mutate: mockMutate,
+            isPending: false,
+        } as never);
+
+        render(
+            <SecaoNaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />,
+            { wrapper: createWrapper() }
+        );
+
+        const multiSelectButton = screen.getByRole("button", {
+            name: /selecione os tipos de ocorrência/i,
+        });
+        await user.click(multiSelectButton);
+        const tipoOption = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
+        await user.click(tipoOption);
+
+        const descricaoInput = screen.getByPlaceholderText("Descreva aqui...");
+        await user.type(descricaoInput, "Descrição de teste completa");
+
+        const envolvido = screen.getByRole("combobox", {
+            name: /quem são os envolvidos/i,
+        });
+        await user.click(envolvido);
+        const envolvidoOption = await screen.findByRole("option", {
+            name: /apenas um estudante/i,
+        });
+        await user.click(envolvidoOption);
+
+        const radioNao = screen.getByRole("radio", { name: /não/i });
+        await user.click(radioNao);
+
+        const submitButton = screen.getByRole("button", { name: /próximo/i });
+        await user.click(submitButton);
+
+        await waitFor(() => {
+            expect(mockMutate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        tem_info_agressor_ou_vitima: "nao",
+                    }),
+                }),
+                expect.any(Object)
+            );
         });
     });
 });

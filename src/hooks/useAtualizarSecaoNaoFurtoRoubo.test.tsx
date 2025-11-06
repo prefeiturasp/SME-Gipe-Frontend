@@ -114,8 +114,10 @@ describe("useAtualizarSecaoNaoFurtoRoubo", () => {
 
         result.current.mutate({ uuid: mockUuid, body: mockBody });
 
-        expect(result.current.isPending).toBe(true);
+        await waitFor(() => expect(result.current.isPending).toBe(true));
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(result.current.isPending).toBe(false);
     });
 });
