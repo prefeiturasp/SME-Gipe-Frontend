@@ -126,8 +126,8 @@ export function transformOcorrenciaToFormData(
         }),
         ...(comunicacaoSeguranca && { comunicacaoSeguranca }),
         ...(protocoloAcionado && { protocoloAcionado }),
-        ...(ocorrencia.envolvido_detalhes?.uuid && {
-            envolvidos: ocorrencia.envolvido_detalhes.uuid,
+        ...(ocorrencia.envolvido?.uuid && {
+            envolvidos: ocorrencia.envolvido.uuid,
         }),
         ...(possuiInfoAgressorVitima && { possuiInfoAgressorVitima }),
     };

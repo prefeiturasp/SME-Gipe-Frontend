@@ -180,7 +180,7 @@ describe("transformOcorrenciaToFormData", () => {
     it("deve incluir envolvidos quando presente", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
-            envolvido_detalhes: {
+            envolvido: {
                 uuid: "envolvido-uuid",
                 perfil_dos_envolvidos: "Apenas um estudante",
             },
@@ -223,7 +223,7 @@ describe("transformOcorrenciaToFormData", () => {
             },
             comunicacao_seguranca_publica: "sim_gcm",
             protocolo_acionado: "ameaca",
-            envolvido_detalhes: {
+            envolvido: {
                 uuid: "envolvido-uuid",
                 perfil_dos_envolvidos: "Apenas um estudante",
             },
