@@ -7,7 +7,10 @@ import { SecaoFinalData } from "@/components/dashboard/CadastrarOcorrencia/Secao
 type OcorrenciaFormData = Partial<SecaoInicialData> &
     Partial<SecaoFurtoERouboData> &
     Partial<SecaoNaoFurtoERouboData> &
-    Partial<SecaoFinalData>;
+    Partial<SecaoFinalData> & {
+        nomeDre?: string;
+        nomeUnidade?: string;
+    };
 
 type OcorrenciaFormState = {
     ocorrenciaUuid: string | null;

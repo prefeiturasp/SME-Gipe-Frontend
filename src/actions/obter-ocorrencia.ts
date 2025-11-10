@@ -10,6 +10,8 @@ export type OcorrenciaDetalheAPI = {
     data_ocorrencia: string;
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
+    nome_dre?: string;
+    nome_unidade?: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
     user_username: string;
     criado_em: string;
@@ -25,6 +27,11 @@ export type OcorrenciaDetalheAPI = {
     };
     comunicacao_seguranca_publica?: "sim_gcm" | "sim_pm" | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
+    envolvido?: {
+        uuid: string;
+        perfil_dos_envolvidos: string;
+    };
+    tem_info_agressor_ou_vitima?: "sim" | "nao";
 };
 
 export async function obterOcorrencia(
