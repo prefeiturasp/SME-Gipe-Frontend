@@ -1,100 +1,91 @@
-# Frontend - Next.js SME - GIPE
+# Fluxo de GitFlow + Instalação Manual do Cypress
 
-## 🥞 Stack
+## 📌 Fluxo GitFlow Definido
 
--   [Next.js v14](https://nextjs.org/docs)
--   [NextAuth v5.0.0-beta.28](https://next-auth.js.org/)
--   [React v18](https://react.dev/reference/react)
--   [Tailwindcss v3](https://tailwindcss.com/docs/installation)
--   [Shadcn](https://ui.shadcn.com/docs)
--   [React hook form v7](https://react-hook-form.com/get-started)
--   [Zod v3](https://zod.dev/?id=basic-usage)
--   [TypeScript](https://www.typescriptlang.org/docs/)
--   [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
--   [Vitest](https://vitest.dev/guide/)
+### Branches principais:
 
-## 🚀 Executando o projeto com Docker
+- **main**: Automações da esteira de CI/CD (somente merges de aprovados)
+- **develop**: branch de integração e desenvolvimento contínuo
 
-```base
-docker compose up
-```
+### Branches de apoio:
 
-Após isso, o projeto estará executando no endereço [localhost:3000](http://localhost:3000).
+- **feature/**: novas funcionalidades a partir de `develop`
+- **Exemplo de feature/**: feature/127000-nova-funcionalidade (Nro do card antes da descrição)
+- **bugfix/**: correções de bugs identificados em `develop`
 
-## 🧪 Executando os testes com Docker
-
-### Acesse o container
+### Exemplo de fluxo:
 
 ```bash
-docker-compose exec setup_inicial_app sh
+# Nova funcionalidade
+ git checkout develop
+ git pull origin develop
+ git checkout -b feature/nova-funcionalidade
+ ...
+ git commit -m "feat: nova funcionalidade"
+ git push origin feature/nova-funcionalidade
 ```
-
-### Rode os testes
 
 ```bash
-npm run test
-# or
-yarn run test
+# Corrigir bug em develop
+ git checkout develop
+ git pull origin develop
+ git checkout -b bugfix/corrige-tela-login
+ ...
+ git commit -m "fix: tela de login não carregava"
+ git push origin bugfix/corrige-tela-login
 ```
 
-## 🧪 Executando a cobertura dos testes
+---
 
-### Acesse o container
+## ✅ Solução manual para instalar o Cypress (sem erro de certificado)
+
+### 📥 1. Baixe o instalador manualmente
+
+Buscar a versão desejada para instalação. No exemplo abaixo, está sendo utilizada a versão 13.7.0
+👉 [Download Cypress 13.17.0 (Windows 64-bit)](https://download.cypress.io/desktop/13.17.0?platform=win32\&arch=x64)
+
+### 📁 2. Crie o caminho esperado no cache
+
+Crie a seguinte pasta na sua máquina:
+
+```
+C:\Users\<SEU_USUÁRIO>\AppData\Local\Cypress\Cache\13.17.0
+```
+
+Ou execute no terminal:
+
+```cmd
+mkdir %LOCALAPPDATA%\Cypress\Cache\13.17.0
+```
+
+### 📦 3. Extraia o arquivo baixado na pasta
+
+O download será um `.zip` contendo o Cypress.
+
+Extraia **todo o conteúdo** do `.zip` dentro da pasta:
+
+```
+C:\Users\<SEU_USUÁRIO>\AppData\Local\Cypress\Cache\13.17.0
+```
+
+⚠️ Importante: Após a extração, **dentro da pasta** `13.17.0` **deve conter a pasta** `Cypress`.
+
+### 🔁 4. Reinstale o Cypress sem tentar baixar novamente
+
+Volte ao terminal e execute:
 
 ```bash
-docker-compose exec setup_inicial_app sh
+npm install cypress@13.17.0 --save-dev
 ```
 
-### Rode os testes
+O `npm` vai identificar que a versão já está em cache e **não tentará baixar novamente da internet**, evitando o erro de certificado.
+
+### 🧪 5. Teste a instalação
 
 ```bash
-npm run test:coverage
-# or
-yarn run test:coverage
+npx cypress open
 ```
 
-## 🚀 Executando o projeto sem Docker
+Se tudo estiver certo, a **interface do Cypress** vai abrir normalmente.
 
-### Instale as dependências do projeto
 
-```bash
-npm install
-# or
-yarn
-```
-
-### Execute o projeto
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Após isso, o projeto estará executando no endereço [localhost:3000](http://localhost:3000).
-
-## 🧪 Executando os testes
-
-```bash
-npm run test
-# or
-yarn run test
-```
-
-## 🧪 Executando a cobertura dos testes
-
-```bash
-npm run test:coverage
-# or
-yarn run test:coverage
-```
-
-## ✍️ Iniciando o desenvolvimento utilizando Docker
-
-Pelo fato do projeto estar sendo executado através de um container e com um volume configurado, qualquer alteração feita no código fonte será replicada automaticamente, sem necessidade de reiniciar o container.
-
-##### Para corrigir problemas de dependências na sua IDE, copie a node_modules para dentro do seu container
-
-```bash
-sudo docker cp setup_inicial_app:/app/node_modules .
-```

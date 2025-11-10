@@ -19,12 +19,9 @@ import {
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useMemo } from "react";
 import { Ocorrencia } from "@/types/ocorrencia";
-import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const useOcorrenciasColumns = () => {
     const { isGipe, isPontoFocal } = useUserPermissions();
-    const queryClient = useQueryClient();
 
     const columns = useMemo(() => {
         const dynamicColumns: ColumnDef<Ocorrencia>[] = [];
@@ -236,9 +233,7 @@ export const useOcorrenciasColumns = () => {
                 <div className="font-semibold text-gray-700">Ação</div>
             ),
             size: 49,
-            cell: ({ row }) => {
-                const uuid = row.original.uuid;
-
+            cell: () => {
                 return (
                     <div className="flex h-full items-center justify-center">
                         <TooltipProvider>
@@ -249,16 +244,11 @@ export const useOcorrenciasColumns = () => {
                                         className={
                                             "h-[27px] w-[27px] p-0 rounded-[4px] bg-white border border-[#086397] hover:bg-gray-100"
                                         }
-                                        asChild
                                     >
-                                        <Link
-                                            href={`/dashboard/cadastrar-ocorrencia/${uuid}`}
-                                        >
-                                            <span className="sr-only">
-                                                Visualizar
-                                            </span>
-                                            <Search className="h-3 w-3 text-[#086397]" />
-                                        </Link>
+                                        <span className="sr-only">
+                                            Visualizar
+                                        </span>
+                                        <Search className="h-3 w-3 text-[#086397]" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -272,7 +262,7 @@ export const useOcorrenciasColumns = () => {
         });
 
         return dynamicColumns;
-    }, [isGipe, isPontoFocal, queryClient]);
+    }, [isGipe, isPontoFocal]);
 
     return columns;
 };

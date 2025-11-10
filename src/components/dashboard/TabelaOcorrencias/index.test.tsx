@@ -3,7 +3,6 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface MockUser {
     username: string;
@@ -29,19 +28,6 @@ import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
 
-const renderWithQueryProvider = (ui: React.ReactElement) => {
-    const queryClient = new QueryClient({
-        defaultOptions: { queries: { retry: false } },
-    });
-    return render(ui, {
-        wrapper: ({ children }) => (
-            <QueryClientProvider client={queryClient}>
-                {children}
-            </QueryClientProvider>
-        ),
-    });
-};
-
 const sampleData = [
     {
         protocolo: "P0001",
@@ -50,7 +36,6 @@ const sampleData = [
         tipoViolencia: "Física",
         status: "Incompleta",
         id: "1",
-        uuid: "uuid-test-1",
     },
     {
         protocolo: "P0002",
@@ -59,7 +44,6 @@ const sampleData = [
         tipoViolencia: "Psicológica",
         status: "Finalizada",
         id: "2",
-        uuid: "uuid-test-2",
     },
 ];
 
@@ -73,7 +57,7 @@ describe("TabelaOcorrencias", () => {
             data: sampleData,
             isLoading: false,
         });
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -97,16 +81,12 @@ describe("TabelaOcorrencias", () => {
         expect(incompleta.className).toContain("bg-[#D06D12]");
         expect(finalizada.className).toContain("bg-[#297805]");
 
-        const visualLinks = screen.getAllByRole("link", {
+        const visualBtns = screen.getAllByRole("button", {
             name: /Visualizar/i,
         });
-        expect(visualLinks.length).toBeGreaterThan(0);
-        expect(visualLinks[0]).toHaveAttribute(
-            "href",
-            "/dashboard/cadastrar-ocorrencia/uuid-test-1"
-        );
+        expect(visualBtns.length).toBeGreaterThan(0);
 
-        await userEvent.hover(visualLinks[0]);
+        await userEvent.hover(visualBtns[0]);
         const tooltip = await screen.findByRole("tooltip");
         expect(within(tooltip).getByText(/Visualizar/i)).toBeInTheDocument();
     });
@@ -116,7 +96,7 @@ describe("TabelaOcorrencias", () => {
             data: [],
             isLoading: false,
         });
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -130,7 +110,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: true,
         });
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         expect(screen.getByText("Carregando...")).toBeInTheDocument();
         expect(screen.queryByText("Protocolo")).not.toBeInTheDocument();
@@ -141,7 +121,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: false,
         });
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -222,7 +202,7 @@ describe("TabelaOcorrencias", () => {
             isLoading: false,
         });
         const user = userEvent.setup();
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -236,8 +216,8 @@ describe("TabelaOcorrencias", () => {
         const botoesFiltrar = screen.getAllByRole("button", {
             name: /Filtrar/i,
         });
-        const botaoFiltrarDoPainel = botoesFiltrar.at(-1);
-        await user.click(botaoFiltrarDoPainel!);
+        const botaoFiltrarDoPainel = botoesFiltrar[botoesFiltrar.length - 1];
+        await user.click(botaoFiltrarDoPainel);
 
         await waitFor(() => {
             expect(screen.queryByText("P0001")).not.toBeInTheDocument();
@@ -258,7 +238,7 @@ describe("TabelaOcorrencias", () => {
             isLoading: false,
         });
         const user = userEvent.setup();
-        renderWithQueryProvider(<TabelaOcorrencias />);
+        render(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -285,8 +265,8 @@ describe("TabelaOcorrencias", () => {
         const botoesFiltrar2 = screen.getAllByRole("button", {
             name: /Filtrar/i,
         });
-        const botaoFiltrarDoPainel2 = botoesFiltrar2.at(-1);
-        await user.click(botaoFiltrarDoPainel2!);
+        const botaoFiltrarDoPainel2 = botoesFiltrar2[botoesFiltrar2.length - 1];
+        await user.click(botaoFiltrarDoPainel2);
 
         await waitFor(() => {
             expect(screen.queryByText("P0001")).not.toBeInTheDocument();
