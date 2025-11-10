@@ -8,11 +8,13 @@ import Link from "next/link";
 interface PageHeaderProps {
     title: string;
     showBackButton?: boolean;
+    onClickBack?: () => void;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     showBackButton = true,
+    onClickBack,
 }) => {
     return (
         <div className="flex items-center justify-between w-full px-4">
@@ -21,7 +23,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             </h1>
             {showBackButton && (
                 <Button asChild variant="customOutline" size="sm">
-                    <Link href="/dashboard">
+                    <Link href="/dashboard" onClick={onClickBack}>
                         <ArrowLeft />
                         &nbsp;Voltar
                     </Link>

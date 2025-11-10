@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface MockUser {
     username: string;
@@ -27,6 +28,19 @@ vi.mock("@/hooks/useOcorrencias", () => ({
 import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
+
+const renderWithQueryProvider = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    return render(ui, {
+        wrapper: ({ children }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        ),
+    });
+};
 
 const sampleData = [
     {
@@ -59,7 +73,7 @@ describe("TabelaOcorrencias", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -102,7 +116,7 @@ describe("TabelaOcorrencias", () => {
             data: [],
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -116,7 +130,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: true,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         expect(screen.getByText("Carregando...")).toBeInTheDocument();
         expect(screen.queryByText("Protocolo")).not.toBeInTheDocument();
@@ -127,7 +141,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -208,7 +222,7 @@ describe("TabelaOcorrencias", () => {
             isLoading: false,
         });
         const user = userEvent.setup();
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -244,7 +258,7 @@ describe("TabelaOcorrencias", () => {
             isLoading: false,
         });
         const user = userEvent.setup();
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
