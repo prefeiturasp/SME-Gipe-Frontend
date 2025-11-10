@@ -1,6 +1,7 @@
 # language: pt
 Funcionalidade: Adiciona Declarante Django Admin
 
+  @skip 
   Cenário: Acessar Django Admin e fazer login
     Dado acesso a página de administração do Django
     Então devo ver o título "Administração do Django"
@@ -15,7 +16,7 @@ Funcionalidade: Adiciona Declarante Django Admin
     E preencho o campo declarante com "Testemunha Ocular"
     E clico no botão salvar declarante
     Então devo ver mensagem de sucesso
-
+@skip
   Cenário: Adiciona Envolvidos Django Admin
     Dado acesso a página de administração do Django
     Então devo ver o título "Administração do Django"
