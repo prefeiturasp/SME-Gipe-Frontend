@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+import { Given, When } from 'cypress-cucumber-preprocessor/steps'
 import Login_Gipe_Localizadores from '../locators/login_locators'
 import Alterar_Senha_Localizadores from '../locators/alterar_senha_locators';
 
@@ -17,12 +17,20 @@ Given("o usuário está na página principal do sistema", () => {
   cy.url().should("include", "/dashboard");
 });
 
-When("o usuário clica no botão {string}", () => {
-  cy.xpath(locators_alterar_senha.link_alterar_senha()).click();
+When("o usuário clica no botão {string}", (btnText) => {
+  if (btnText && btnText.toLowerCase().includes('alterar senha')) {
+    cy.xpath(locators_alterar_senha.link_alterar_senha()).click();
+  } else {
+    cy.contains('button', btnText).click()
+  }
 });
 
-When("clica no botão {string}", () => {
-  cy.xpath(locators_alterar_senha.botao_alterar_senha()).click();
+When("clica no botão {string}", (btnText) => {
+  if (btnText && btnText.toLowerCase().includes('alterar senha')) {
+    cy.xpath(locators_alterar_senha.botao_alterar_senha()).click();
+  } else {
+    cy.contains('button', btnText).click()
+  }
 });
 
 When("o usuário preenche o campo Senha atual com {string}", (valor) => {
