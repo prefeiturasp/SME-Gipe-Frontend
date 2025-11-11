@@ -11,13 +11,13 @@ export default function DashboardLayout({
 }) {
     return (
         <HydrationGuard>
-            <div className="flex h-screen">
+            <div className="flex min-h-screen">
                 <SidebarProvider>
                     <AppSidebar />
-                    <div className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex flex-col flex-1 w-full">
                         <AuthGuard>
                             <Navbar />
-                            <main className="flex-1 overflow-auto bg-muted p-4">
+                            <main className="flex-1 bg-muted p-4">
                                 {children}
                                 <footer className="p-4 text-sm text-[#42474a]">
                                     Sistema homologado para navegadores: Google
