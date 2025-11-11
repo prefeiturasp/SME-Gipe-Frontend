@@ -5,6 +5,7 @@ export const formSchema = z.object({
     idadeAgressor: z
         .string()
         .min(1, "Idade é obrigatória")
+        .max(3, "Idade deve ter no máximo 3 dígitos")
         .refine((val) => !Number.isNaN(Number(val)) && Number(val) > 0, {
             message: "Idade deve ser um número válido",
         }),
