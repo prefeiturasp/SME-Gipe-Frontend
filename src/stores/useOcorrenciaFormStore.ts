@@ -3,11 +3,13 @@ import { SecaoInicialData } from "@/components/dashboard/CadastrarOcorrencia/Sec
 import { SecaoFurtoERouboData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFurtoERoubo/schema";
 import { SecaoNaoFurtoERouboData } from "@/components/dashboard/CadastrarOcorrencia/SecaoNaoFurtoERoubo/schema";
 import { SecaoFinalData } from "@/components/dashboard/CadastrarOcorrencia/SecaoFinal/schema";
+import { InformacoesAdicionaisData } from "@/components/dashboard/CadastrarOcorrencia/InformacoesAdicionais/schema";
 
 type OcorrenciaFormData = Partial<SecaoInicialData> &
     Partial<SecaoFurtoERouboData> &
     Partial<SecaoNaoFurtoERouboData> &
-    Partial<SecaoFinalData> & {
+    Partial<SecaoFinalData> &
+    Partial<InformacoesAdicionaisData> & {
         nomeDre?: string;
         nomeUnidade?: string;
     };
