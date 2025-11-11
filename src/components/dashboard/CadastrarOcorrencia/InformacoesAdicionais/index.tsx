@@ -27,6 +27,44 @@ import { formSchema, InformacoesAdicionaisData } from "./schema";
 import { Search } from "lucide-react";
 import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
 
+// Mock data - será substituído quando o backend estiver pronto
+const MOCK_MOTIVOS = [
+    { value: "conflito", label: "Conflito interpessoal" },
+    { value: "bullying", label: "Bullying" },
+    { value: "violencia_fisica", label: "Violência física" },
+    { value: "violencia_verbal", label: "Violência verbal" },
+    { value: "discriminacao", label: "Discriminação" },
+];
+
+const MOCK_GENEROS = [
+    { value: "masculino", label: "Masculino" },
+    { value: "feminino", label: "Feminino" },
+    { value: "nao_binario", label: "Não binário" },
+    { value: "prefiro_nao_informar", label: "Prefiro não informar" },
+];
+
+const MOCK_GRUPOS_ETNICOS = [
+    { value: "branco", label: "Branco" },
+    { value: "preto", label: "Preto" },
+    { value: "pardo", label: "Pardo" },
+    { value: "amarelo", label: "Amarelo" },
+    { value: "indigena", label: "Indígena" },
+];
+
+const MOCK_ETAPAS_ESCOLARES = [
+    { value: "educacao_infantil", label: "Educação Infantil" },
+    { value: "ensino_fundamental_1", label: "Ensino Fundamental I" },
+    { value: "ensino_fundamental_2", label: "Ensino Fundamental II" },
+    { value: "ensino_medio", label: "Ensino Médio" },
+    { value: "eja", label: "EJA" },
+];
+
+const MOCK_FREQUENCIAS = [
+    { value: "regular", label: "Regular" },
+    { value: "irregular", label: "Irregular" },
+    { value: "infrequente", label: "Infrequente" },
+];
+
 export type InformacoesAdicionaisProps = {
     onPrevious: () => void;
     onNext: () => void;
@@ -171,7 +209,7 @@ export default function InformacoesAdicionais({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField
                                 control={form.control}
                                 name="logradouro"
@@ -226,7 +264,7 @@ export default function InformacoesAdicionais({
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField
                                 control={form.control}
                                 name="estado"
@@ -296,36 +334,32 @@ export default function InformacoesAdicionais({
                         </div>
                     </div>
 
-                    <FormField
-                        control={form.control}
-                        name="motivoOcorrencia"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    O que motivou a ocorrência?*
-                                </FormLabel>
-                                <FormControl>
-                                    <MultiSelect
-                                        options={[
-                                            {
-                                                label: "Opções serão implementadas",
-                                                value: "placeholder",
-                                            },
-                                        ]}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        placeholder="Selecione"
-                                    />
-                                </FormControl>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Se necessário, selecione mais de uma opção.
-                                </p>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="motivoOcorrencia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        O que motivou a ocorrência?*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <MultiSelect
+                                            options={MOCK_MOTIVOS}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Selecione"
+                                        />
+                                    </FormControl>
+                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
+                                        Se necessário, selecione mais de uma
+                                        opção
+                                    </p>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="genero"
@@ -342,9 +376,14 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Opções serão implementadas
-                                            </SelectItem>
+                                            {MOCK_GENEROS.map((genero) => (
+                                                <SelectItem
+                                                    key={genero.value}
+                                                    value={genero.value}
+                                                >
+                                                    {genero.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -353,7 +392,7 @@ export default function InformacoesAdicionais({
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
                             control={form.control}
                             name="grupoEtnicoRacial"
@@ -372,9 +411,16 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Opções serão implementadas
-                                            </SelectItem>
+                                            {MOCK_GRUPOS_ETNICOS.map(
+                                                (grupo) => (
+                                                    <SelectItem
+                                                        key={grupo.value}
+                                                        value={grupo.value}
+                                                    >
+                                                        {grupo.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -400,9 +446,16 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Opções serão implementadas
-                                            </SelectItem>
+                                            {MOCK_ETAPAS_ESCOLARES.map(
+                                                (etapa) => (
+                                                    <SelectItem
+                                                        key={etapa.value}
+                                                        value={etapa.value}
+                                                    >
+                                                        {etapa.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -428,9 +481,16 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Opções serão implementadas
-                                            </SelectItem>
+                                            {MOCK_FREQUENCIAS.map(
+                                                (frequencia) => (
+                                                    <SelectItem
+                                                        key={frequencia.value}
+                                                        value={frequencia.value}
+                                                    >
+                                                        {frequencia.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
