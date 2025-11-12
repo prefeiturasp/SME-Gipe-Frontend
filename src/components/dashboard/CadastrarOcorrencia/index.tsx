@@ -10,6 +10,7 @@ import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
 import SecaoFinal from "./SecaoFinal";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
+import InformacoesAdicionais from "./InformacoesAdicionais";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -106,8 +107,15 @@ export default function CadastrarOcorrencia({
                         onPrevious={() => setCurrentStep(1)}
                     />
                 )}
-                {currentStep === 3 && (
+                {currentStep === 3 && !hasAgressorVitimaInfo && (
                     <SecaoFinal
+                        onNext={() => setCurrentStep(4)}
+                        onPrevious={() => setCurrentStep(2)}
+                    />
+                )}
+
+                {currentStep === 3 && hasAgressorVitimaInfo && (
+                    <InformacoesAdicionais
                         onNext={() => setCurrentStep(4)}
                         onPrevious={() => setCurrentStep(2)}
                     />
