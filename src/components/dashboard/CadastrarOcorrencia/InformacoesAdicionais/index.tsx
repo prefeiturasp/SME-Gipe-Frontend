@@ -126,7 +126,7 @@ export default function InformacoesAdicionais({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-6 mt-4"
+                className="flex flex-col gap-4 mt-4"
             >
                 <fieldset className="contents">
                     <FormField
@@ -135,7 +135,7 @@ export default function InformacoesAdicionais({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    Qual o nome da pessoa agressora?*
+                                    Qual o nome da pessoa agressora?
                                 </FormLabel>
                                 <FormControl>
                                     <Input
@@ -154,7 +154,7 @@ export default function InformacoesAdicionais({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    Qual a idade da pessoa agressora?*
+                                    Qual a idade da pessoa agressora?
                                 </FormLabel>
                                 <FormControl>
                                     <Input
@@ -168,7 +168,7 @@ export default function InformacoesAdicionais({
                         )}
                     />
 
-                    <div className="border border-[#DADADA] rounded-md p-6 space-y-3">
+                    <div className="border border-[#DADADA] rounded-md p-6 space-y-3 my-3">
                         <h3 className="text-[14px] font-bold text-[#42474a]">
                             Qual o endereço da pessoa agressora?
                         </h3>
@@ -179,18 +179,22 @@ export default function InformacoesAdicionais({
                                 name="cep"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
-                                        <FormLabel>CEP*</FormLabel>
+                                        <FormLabel>CEP</FormLabel>
                                         <FormControl>
-                                            <Input
-                                                placeholder="Digite o CEP..."
-                                                {...field}
-                                                onChange={(e) =>
-                                                    handleCepChange(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                maxLength={9}
-                                            />
+                                            <div className="relative">
+                                                <Input
+                                                    placeholder="Digite o CEP..."
+                                                    {...field}
+                                                    onChange={(e) =>
+                                                        handleCepChange(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    maxLength={9}
+                                                    className="pr-10"
+                                                />
+                                                <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#717FC7] pointer-events-none" />
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -203,7 +207,6 @@ export default function InformacoesAdicionais({
                                     size="sm"
                                     className="h-10"
                                 >
-                                    <Search className="w-4 h-4 mr-2" />
                                     Pesquisar CEP
                                 </Button>
                             </div>
@@ -215,7 +218,7 @@ export default function InformacoesAdicionais({
                                 name="logradouro"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Logradouro*</FormLabel>
+                                        <FormLabel>Logradouro</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Digite o logradouro..."
@@ -233,7 +236,7 @@ export default function InformacoesAdicionais({
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Número da residência*
+                                            Número da residência
                                         </FormLabel>
                                         <FormControl>
                                             <Input
@@ -270,7 +273,7 @@ export default function InformacoesAdicionais({
                                 name="estado"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Estado*</FormLabel>
+                                        <FormLabel>Estado</FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
@@ -303,7 +306,7 @@ export default function InformacoesAdicionais({
                                 name="cidade"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Cidade*</FormLabel>
+                                        <FormLabel>Cidade</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Digite a cidade..."
@@ -320,7 +323,7 @@ export default function InformacoesAdicionais({
                                 name="bairro"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Bairro*</FormLabel>
+                                        <FormLabel>Bairro</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Digite o bairro..."
@@ -341,7 +344,7 @@ export default function InformacoesAdicionais({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        O que motivou a ocorrência?*
+                                        O que motivou a ocorrência?
                                     </FormLabel>
                                     <FormControl>
                                         <MultiSelect
@@ -365,7 +368,7 @@ export default function InformacoesAdicionais({
                             name="genero"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Qual o gênero?*</FormLabel>
+                                    <FormLabel>Qual o gênero?</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
@@ -399,7 +402,7 @@ export default function InformacoesAdicionais({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Qual o grupo étnico-racial?*
+                                        Qual o grupo étnico-racial?
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
@@ -433,9 +436,7 @@ export default function InformacoesAdicionais({
                             name="etapaEscolar"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
-                                        Qual a etapa escolar?*
-                                    </FormLabel>
+                                    <FormLabel>Qual a etapa escolar?</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
@@ -469,7 +470,7 @@ export default function InformacoesAdicionais({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Qual a frequência escolar?*
+                                        Qual a frequência escolar?
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
@@ -506,7 +507,7 @@ export default function InformacoesAdicionais({
                             <FormItem>
                                 <FormLabel>
                                     Como é a interação da pessoa agressora no
-                                    ambiente escolar?*
+                                    ambiente escolar?
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
@@ -527,7 +528,7 @@ export default function InformacoesAdicionais({
                             <FormItem>
                                 <FormLabel>
                                     Quais as redes de proteção estão
-                                    acompanhando o caso?*
+                                    acompanhando o caso?
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
@@ -548,7 +549,7 @@ export default function InformacoesAdicionais({
                             <FormItem>
                                 <FormLabel>
                                     A ocorrência foi notificada ao Conselho
-                                    Tutelar?*
+                                    Tutelar?
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -583,7 +584,7 @@ export default function InformacoesAdicionais({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    A ocorrência foi acompanhada pelo NAAPA?*
+                                    A ocorrência foi acompanhada pelo NAAPA?
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
