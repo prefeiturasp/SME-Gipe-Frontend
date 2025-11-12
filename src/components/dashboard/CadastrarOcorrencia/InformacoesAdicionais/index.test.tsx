@@ -33,7 +33,9 @@ describe("InformacoesAdicionais", () => {
         expect(
             screen.getByLabelText(/Qual a idade da pessoa agressora\?/i)
         ).toBeInTheDocument();
-        expect(screen.getByLabelText(/CEP/i)).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText(/Digite o CEP\.\.\./i)
+        ).toBeInTheDocument();
         expect(screen.getByLabelText(/Logradouro/i)).toBeInTheDocument();
         expect(
             screen.getByLabelText(/Número da residência/i)
@@ -116,7 +118,7 @@ describe("InformacoesAdicionais", () => {
             />
         );
 
-        const cepInput = screen.getByLabelText(/CEP/i);
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
         await user.type(cepInput, "01310100");
 
         await waitFor(() => {
@@ -162,7 +164,9 @@ describe("InformacoesAdicionais", () => {
         expect(
             screen.getByLabelText(/Qual a idade da pessoa agressora\?/i)
         ).toHaveValue(25);
-        expect(screen.getByLabelText(/CEP/i)).toHaveValue("01310-100");
+        expect(screen.getByPlaceholderText(/Digite o CEP\.\.\./i)).toHaveValue(
+            "01310-100"
+        );
         expect(screen.getByLabelText(/Logradouro/i)).toHaveValue(
             "Avenida Paulista"
         );
@@ -246,7 +250,7 @@ describe("InformacoesAdicionais", () => {
             />
         );
 
-        const cepInput = screen.getByLabelText(/CEP/i);
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
         await user.type(cepInput, "0131010012345");
 
         await waitFor(() => {
@@ -304,10 +308,15 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
             "25"
         );
-        await user.type(screen.getByLabelText(/CEP/i), "01310100");
+        await user.type(
+            screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
+            "01310100"
+        );
 
         await waitFor(() => {
-            expect(screen.getByLabelText(/CEP/i)).toHaveValue("01310-100");
+            expect(
+                screen.getByPlaceholderText(/Digite o CEP\.\.\./i)
+            ).toHaveValue("01310-100");
         });
 
         await user.type(
