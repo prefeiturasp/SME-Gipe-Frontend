@@ -1,0 +1,251 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { formSchema, AnexosData } from "./schema";
+import { Upload } from "lucide-react";
+import { useState } from "react";
+
+// Mock data - será substituído quando o backend estiver pronto
+const TIPOS_DOCUMENTO = [
+    { value: "boletim_ocorrencia", label: "Boletim de Ocorrência" },
+    { value: "relatorio_escolar", label: "Relatório Escolar" },
+    { value: "laudo_medico", label: "Laudo Médico" },
+    { value: "foto", label: "Foto" },
+    { value: "video", label: "Vídeo" },
+    { value: "outro", label: "Outro" },
+];
+
+export type AnexosProps = {
+    onPrevious: () => void;
+    onNext: () => void;
+};
+
+export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
+    const { formData, setFormData } = useOcorrenciaFormStore();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const form = useForm<AnexosData>({
+        resolver: zodResolver(formSchema),
+        mode: "onChange",
+        defaultValues: {
+            tipoDocumento: formData.tipoDocumento || "",
+            arquivo: undefined,
+        },
+    });
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Validar tamanho do arquivo (máx. 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert("O arquivo deve ter no máximo 2MB");
+                return;
+            }
+
+            // Validar tipo do arquivo
+            const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+            if (!allowedTypes.includes(file.type)) {
+                alert("Formato não suportado. Use PDF, JPG ou PNG");
+                return;
+            }
+
+            setSelectedFile(file);
+            form.setValue("arquivo", file, { shouldValidate: true });
+        }
+    };
+
+    const onSubmit = async (data: AnexosData) => {
+        setFormData(data);
+        onNext();
+    };
+
+    return (
+        <div className="mt-4">
+            <h2 className="text-[#42474a] text-[20px] font-bold mb-2">
+                Anexos
+            </h2>
+
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="flex flex-col gap-2"
+                >
+                    <fieldset className="contents">
+                        <div className="mb-4">
+                            <h3 className="text-[14px] font-bold text-[#42474a] mb-1">
+                                Anexar novo arquivo
+                            </h3>
+                            <p className="text-[14px] text-[#42474a]">
+                                Selecione e classifique o tipo de arquivo,
+                                depois clique em &quot;Anexar documento&quot;
+                                para salvá-lo.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <FormField
+                                    control={form.control}
+                                    name="arquivo"
+                                    render={() => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Selecione o arquivo
+                                            </FormLabel>
+                                            <div className="flex">
+                                                <FormControl>
+                                                    <Input
+                                                        value={
+                                                            selectedFile
+                                                                ? selectedFile.name
+                                                                : ""
+                                                        }
+                                                        placeholder="Nenhum arquivo selecionado"
+                                                        readOnly
+                                                        className="cursor-default rounded-r-none border-r-0"
+                                                    />
+                                                </FormControl>
+                                                <input
+                                                    type="file"
+                                                    id="fileInput"
+                                                    className="hidden"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={handleFileSelect}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="submit"
+                                                    size="sm"
+                                                    className="h-10 whitespace-nowrap rounded-l-none"
+                                                    onClick={() =>
+                                                        document
+                                                            .getElementById(
+                                                                "fileInput"
+                                                            )
+                                                            ?.click()
+                                                    }
+                                                >
+                                                    <Upload className="w-3 h-3 mr-2" />
+                                                    Escolher arquivo
+                                                </Button>
+                                            </div>
+                                            <p className="text-[12px] text-[#42474a] mt-1">
+                                                Formatos aceitos: PDF, JPG, PNG
+                                                (máx. 2MB cada)
+                                            </p>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="flex gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="tipoDocumento"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-1">
+                                            <FormLabel>
+                                                Tipo do documento
+                                            </FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {TIPOS_DOCUMENTO.map(
+                                                        (tipo) => (
+                                                            <SelectItem
+                                                                key={tipo.value}
+                                                                value={
+                                                                    tipo.value
+                                                                }
+                                                            >
+                                                                {tipo.label}
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <div className="flex flex-col mt-8">
+                                    <Button
+                                        type="button"
+                                        variant="customOutline"
+                                        size="sm"
+                                        className="w-[151px] h-10"
+                                        disabled={
+                                            !selectedFile ||
+                                            !form.getValues("tipoDocumento")
+                                        }
+                                    >
+                                        Anexar documento
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#F5F5F5] border border-[#DADADA] rounded-md p-4 mt-4">
+                            <p className="text-[14px] text-[#42474a]">
+                                Para conferir mais detalhes sobre os arquivos
+                                suportados,{" "}
+                                <button
+                                    type="button"
+                                    className="font-bold underline"
+                                >
+                                    clique aqui
+                                </button>
+                                {"."}
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-6">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button size="sm" type="submit" variant="submit">
+                                Finalizar
+                            </Button>
+                        </div>
+                    </fieldset>
+                </form>
+            </Form>
+        </div>
+    );
+}
