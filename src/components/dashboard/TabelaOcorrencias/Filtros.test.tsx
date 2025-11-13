@@ -10,6 +10,18 @@ import { describe, it, vi, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import Filtros, { FiltrosValues } from "./filtros";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as useUnidadesHook from "@/hooks/useUnidades";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+
+
+function renderWithQueryProvider(ui: React.ReactElement) {
+    const queryClient = new QueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+}
+
 interface MockUser {
     username: string;
     name: string;
@@ -27,6 +39,8 @@ vi.mock("@/stores/useUserStore", () => ({
         selector({ user: mockUser }),
 }));
 
+vi.mock("@/hooks/useUnidades");
+
 describe("Filtros component", () => {
     beforeEach(() => {
         mockUser = {
@@ -34,6 +48,27 @@ describe("Filtros component", () => {
             name: "JOÃO DA SILVA",
             perfil_acesso: { nome: "GIPE", codigo: 0 },
         };
+
+       vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
+            data: [{ uuid: "dre-1", nome: "DRE 1" }, { uuid: "dre-2", nome: "DRE 2" }, { uuid: "dre-3", nome: "DRE 3"}],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
+
+        vi.spyOn(useUnidadesHook, "useFetchTodasUEs").mockReturnValue({
+            data: [{ uuid: "ue-1", nome: "UE 1" }, { uuid: "ue-2", nome: "UE 2" }, { uuid: "ue-3", nome: "UE 3"}],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
+
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+            data: [{ nome: "Física" },{ nome: "Psicológica" }],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
     });
 
     it("deve chamar onApply com initialValues quando Filtrar for clicado", () => {
@@ -44,11 +79,11 @@ describe("Filtros component", () => {
             dre: "dre-1",
             periodoInicial: "2023-10-01",
             periodoFinal: "2023-10-31",
-            tipoViolencia: "fisica",
+            tiposOcorrencia: "Física",
             status: "incompleta",
         };
 
-        render(<Filtros onApply={onApply} initialValues={initialValues} />);
+        renderWithQueryProvider(<Filtros onApply={onApply} initialValues={initialValues} />);
 
         const filtrar = screen.getByRole("button", { name: /Filtrar/i });
         fireEvent.click(filtrar);
@@ -60,13 +95,13 @@ describe("Filtros component", () => {
         expect(calledWith.dre).toBe(initialValues.dre);
         expect(calledWith.periodoInicial).toBe(initialValues.periodoInicial);
         expect(calledWith.periodoFinal).toBe(initialValues.periodoFinal);
-        expect(calledWith.tipoViolencia).toBe(initialValues.tipoViolencia);
+        expect(calledWith.tiposOcorrencia).toBe(initialValues.tiposOcorrencia);
         expect(calledWith.status).toBe(initialValues.status);
     });
 
     it("deve chamar onClear e limpar os campos", async () => {
         const onClear = vi.fn();
-        render(<Filtros onClear={onClear} />);
+        renderWithQueryProvider(<Filtros onClear={onClear} />);
 
         const codigoInput = screen.getByLabelText(/Código EOL/i);
         fireEvent.change(codigoInput, { target: { value: "10005" } });
@@ -82,11 +117,11 @@ describe("Filtros component", () => {
         const onApply = vi.fn();
         const user = userEvent.setup();
         const initialValues: Partial<FiltrosValues> = {
-            tipoViolencia: "psicologica",
+            tiposOcorrencia: "psicologica",
             status: "em-andamento",
         };
 
-        render(<Filtros onApply={onApply} initialValues={initialValues} />);
+        renderWithQueryProvider(<Filtros onApply={onApply} initialValues={initialValues} />);
 
         const codigoInput = screen.getByLabelText(/Código EOL/i);
         await user.type(codigoInput, "20010");
@@ -106,7 +141,7 @@ describe("Filtros component", () => {
         await user.click(dreOption);
 
         await user.click(
-            screen.getByRole("combobox", { name: /Tipo de violência/i })
+            screen.getByRole("combobox", { name: /Tipo de Ocorrência/i })
         );
         const tvListbox = await screen.findByRole("listbox");
         const tvOption = await within(tvListbox).findByRole("option", {
@@ -145,12 +180,12 @@ describe("Filtros component", () => {
         expect(calledWith.dre).toBe("dre-3");
         expect(calledWith.periodoInicial).toBe("2023-09-01");
         expect(calledWith.periodoFinal).toBe("2023-09-15");
-        expect(calledWith.tipoViolencia).toBe("fisica");
+        expect(calledWith.tiposOcorrencia).toBe("Física");
         expect(calledWith.status).toBe("finalizada");
     });
 
     it("deve habilitar/desabilitar botões com base na seleção de filtros", async () => {
-        render(<Filtros />);
+        renderWithQueryProvider(<Filtros />);
         const user = userEvent.setup();
 
         const filtrarButton = screen.getByRole("button", { name: /Filtrar/i });
@@ -174,7 +209,7 @@ describe("Filtros component", () => {
     });
 
     it("não deve quebrar se onApply e onClear não forem fornecidos", async () => {
-        render(<Filtros />);
+        renderWithQueryProvider(<Filtros />);
         const user = userEvent.setup();
 
         const codigoInput = screen.getByLabelText(/Código EOL/i);
@@ -194,7 +229,7 @@ describe("Filtros component", () => {
             perfil_acesso: { nome: "Ponto Focal", codigo: 1 },
         };
 
-        render(<Filtros />);
+        renderWithQueryProvider(<Filtros />);
 
         expect(screen.getByLabelText(/Código EOL/i)).toBeInTheDocument();
         expect(
@@ -205,7 +240,7 @@ describe("Filtros component", () => {
         ).not.toBeInTheDocument();
         expect(screen.getByText(/Período/i)).toBeInTheDocument();
         expect(
-            screen.getByRole("combobox", { name: /Tipo de violência/i })
+            screen.getByRole("combobox", { name: /Tipo de Ocorrência/i })
         ).toBeInTheDocument();
         expect(
             screen.getByRole("combobox", { name: /Status/i })
@@ -219,7 +254,7 @@ describe("Filtros component", () => {
             perfil_acesso: { nome: "Assistente", codigo: 3085 },
         };
 
-        render(<Filtros />);
+        renderWithQueryProvider(<Filtros />);
 
         expect(screen.queryByLabelText(/Código EOL/i)).not.toBeInTheDocument();
         expect(
@@ -230,10 +265,20 @@ describe("Filtros component", () => {
         ).not.toBeInTheDocument();
         expect(screen.getByText(/Período/i)).toBeInTheDocument();
         expect(
-            screen.getByRole("combobox", { name: /Tipo de violência/i })
+            screen.getByRole("combobox", { name: /Tipo de Ocorrência/i })
         ).toBeInTheDocument();
         expect(
             screen.getByRole("combobox", { name: /Status/i })
         ).toBeInTheDocument();
+    });
+
+    it("mantém botões desabilitados quando nenhum filtro está selecionado", () => {
+    renderWithQueryProvider(<Filtros />);
+
+    const limparButton = screen.getByRole("button", { name: /limpar/i });
+    const filtrarButton = screen.getByRole("button", { name: /filtrar/i });
+
+    expect(limparButton).toBeDisabled();
+    expect(filtrarButton).toBeDisabled();
     });
 });

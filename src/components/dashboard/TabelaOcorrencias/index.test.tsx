@@ -4,6 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+
 
 interface MockUser {
     username: string;
@@ -25,6 +27,19 @@ vi.mock("@/hooks/useOcorrencias", () => ({
     useOcorrencias: vi.fn(),
 }));
 
+vi.mock("@/hooks/useTiposOcorrencia");
+
+const mockTiposOcorrencia = [
+    {
+        uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+        nome: "Física",
+    },
+    {
+        uuid: "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+        nome: "Psicológica",
+    }
+]
+
 import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
@@ -42,12 +57,14 @@ const renderWithQueryProvider = (ui: React.ReactElement) => {
     });
 };
 
+
+
 const sampleData = [
     {
         protocolo: "P0001",
         dataHora: "2025-09-01 10:00",
         codigoEol: "EOL1",
-        tipoViolencia: "Física",
+        tipoOcorrencia: "Física",
         status: "Incompleta",
         id: "1",
         uuid: "uuid-test-1",
@@ -56,7 +73,7 @@ const sampleData = [
         protocolo: "P0002",
         dataHora: "2025-09-02 11:00",
         codigoEol: "EOL2",
-        tipoViolencia: "Psicológica",
+        tipoOcorrencia: "Psicológica",
         status: "Finalizada",
         id: "2",
         uuid: "uuid-test-2",
@@ -66,6 +83,13 @@ const sampleData = [
 describe("TabelaOcorrencias", () => {
     beforeEach(() => {
         (useOcorrencias as Mock).mockClear();
+        
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+                    data: mockTiposOcorrencia,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                } as never);
     });
 
     it("renderiza cabeçalhos e linhas quando existem dados", async () => {
@@ -82,7 +106,7 @@ describe("TabelaOcorrencias", () => {
         expect(screen.getByText("Protocolo")).toBeInTheDocument();
         expect(screen.getByText("Data/Hora")).toBeInTheDocument();
         expect(screen.getByText("Código EOL")).toBeInTheDocument();
-        expect(screen.getByText("Tipo de violência")).toBeInTheDocument();
+        expect(screen.getByText("Tipo de Ocorrência")).toBeInTheDocument();
         expect(screen.getByText("Status")).toBeInTheDocument();
         expect(screen.getByText("Ação")).toBeInTheDocument();
 
@@ -252,7 +276,7 @@ describe("TabelaOcorrencias", () => {
         });
     });
 
-    it("filtra por Tipo de violência e Status", async () => {
+    it("filtra por Tipo de Ocorrência e Status", async () => {
         (useOcorrencias as Mock).mockReturnValue({
             data: sampleData,
             isLoading: false,
@@ -267,7 +291,7 @@ describe("TabelaOcorrencias", () => {
         await user.click(screen.getByRole("button", { name: /Filtrar/i }));
 
         await user.click(
-            screen.getByRole("combobox", { name: /Tipo de violência/i })
+            screen.getByRole("combobox", { name: /Tipo de Ocorrência/i })
         );
         const tvListbox = await screen.findByRole("listbox");
         const tvOption = await within(tvListbox).findByRole("option", {
