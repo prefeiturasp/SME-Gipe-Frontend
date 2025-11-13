@@ -3,15 +3,10 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
-import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
-import SecaoFinal from "./SecaoFinal";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
-import InformacoesAdicionais from "./InformacoesAdicionais";
-import Anexos from "./Anexos";
+import StepRenderer from "./StepRenderer";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -27,6 +22,22 @@ export default function CadastrarOcorrencia({
 
     const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
+
+    const handleClick = async () => {
+        reset();
+
+        await queryClient.invalidateQueries({
+            queryKey: ["ocorrencia", ocorrenciaUuid],
+        });
+    };
+
+    const handleNextStep = () => {
+        setCurrentStep((prev) => prev + 1);
+    };
+
+    const handlePreviousStep = () => {
+        setCurrentStep((prev) => prev - 1);
+    };
 
     const getStep2Label = () => {
         if (!formData.tipoOcorrencia) return "Fase 02";
@@ -58,32 +69,6 @@ export default function CadastrarOcorrencia({
         },
     ];
 
-    const handleClick = async () => {
-        reset();
-
-        await queryClient.invalidateQueries({
-            queryKey: ["ocorrencia", ocorrenciaUuid],
-        });
-    };
-
-    const handleNextStep = () => {
-        setCurrentStep((prev) => {
-            if (prev < steps.length) {
-                return prev + 1;
-            }
-            return prev;
-        });
-    };
-
-    const handlePreviousStep = () => {
-        setCurrentStep((prev) => {
-            if (prev > 1) {
-                return prev - 1;
-            }
-            return prev;
-        });
-    };
-
     return (
         <div className="pt-4">
             <PageHeader
@@ -111,45 +96,13 @@ export default function CadastrarOcorrencia({
                     <Stepper steps={steps} currentStep={currentStep} />
                 </div>
 
-                {currentStep === 1 && (
-                    <SecaoInicial onSuccess={handleNextStep} />
-                )}
-                {currentStep === 2 && isFurtoRoubo && (
-                    <SecaoFurtoERoubo
-                        onNext={handleNextStep}
-                        onPrevious={handlePreviousStep}
-                    />
-                )}
-                {currentStep === 2 && !isFurtoRoubo && (
-                    <SecaoNaoFurtoERoubo
-                        onNext={handleNextStep}
-                        onPrevious={handlePreviousStep}
-                    />
-                )}
-                {((currentStep === 3 && !hasAgressorVitimaInfo) ||
-                    (hasAgressorVitimaInfo && currentStep === 4)) && (
-                    <SecaoFinal
-                        onNext={handleNextStep}
-                        onPrevious={handlePreviousStep}
-                    />
-                )}
-
-                {currentStep === 3 && hasAgressorVitimaInfo && (
-                    <InformacoesAdicionais
-                        onNext={handleNextStep}
-                        onPrevious={handlePreviousStep}
-                    />
-                )}
-
-                {((currentStep === 5 && hasAgressorVitimaInfo) ||
-                    (!hasAgressorVitimaInfo && currentStep === 4)) && (
-                    <Anexos
-                        onNext={() => {
-                            console.log("Ocorrência finalizada!");
-                        }}
-                        onPrevious={handlePreviousStep}
-                    />
-                )}
+                <StepRenderer
+                    currentStep={currentStep}
+                    isFurtoRoubo={isFurtoRoubo}
+                    hasAgressorVitimaInfo={hasAgressorVitimaInfo}
+                    onNext={handleNextStep}
+                    onPrevious={handlePreviousStep}
+                />
             </QuadroBranco>
         </div>
     );
