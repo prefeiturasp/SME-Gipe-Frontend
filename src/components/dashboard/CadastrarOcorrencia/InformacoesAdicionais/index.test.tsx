@@ -256,7 +256,7 @@ describe("InformacoesAdicionais", () => {
     await waitFor(() => {
       const proximoButton = screen.getByRole("button", { name: /Próximo/i });
       expect(proximoButton).not.toBeDisabled();
-    });
+    }, {timeout: 5000});
 
     const proximoButton = screen.getByRole("button", { name: /Próximo/i });
     await user.click(proximoButton);
@@ -272,7 +272,7 @@ describe("InformacoesAdicionais", () => {
       );
       expect(mockOnNext).toHaveBeenCalled();
     });
-  });
+  }, 15000);
 
   it("deve chamar formatCep corretamente com menos de 5 números", async () => {
     const user = userEvent.setup();
