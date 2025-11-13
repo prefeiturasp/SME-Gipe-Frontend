@@ -22,7 +22,7 @@ function TipoArquivoCard({ icon, titulo, extensoes }: TipoArquivoCardProps) {
       <div>{icon}</div>
       <div>
         <p className="text-[14px] font-[700] text-[#42474a] whitespace-nowrap">{titulo}</p>
-        <p className="text-[12px] text-[#6B6B6B]">{extensoes}</p>
+        <p className="text-[14px] text-[#6B6B6B]">{extensoes}</p>
       </div>
     </div>
   );
@@ -52,22 +52,22 @@ export default function ModalTipoArquivos({
                 <TipoArquivoCard
                 icon={<ImageFile className="w-6 h-6 text-[#717FC7]" />}
                 titulo="Imagens"
-                extensoes=".jpg, .png, .gif"
+                extensoes=".jpeg, .jgp e .png"
                 />
                 <TipoArquivoCard
                 icon={<VideoFile className="w-6 h-6 text-[#717FC7]" />}
                 titulo="Vídeos"
-                extensoes=".mp4, .mov, .avi"
+                extensoes=".mp4"
                 />
                 <TipoArquivoCard
                 icon={<ClosedFiles className="w-6 h-6 text-[#717FC7]" />}
                 titulo="Arquivos fechados"
-                extensoes=".zip, .rar, .7z"
+                extensoes=".PDF"
                 />
                 <TipoArquivoCard
                 icon={<OpenedFiles className="w-6 h-6 text-[#717FC7]" />}
                 titulo="Arquivos abertos"
-                extensoes=".pdf, .docx, .xlsx"
+                extensoes=".xlsx, .docx, .txt"
                 />
             </div>
             
