@@ -11,6 +11,7 @@ import SecaoFinal from "./SecaoFinal";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
 import InformacoesAdicionais from "./InformacoesAdicionais";
+import Anexos from "./Anexos";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -65,6 +66,24 @@ export default function CadastrarOcorrencia({
         });
     };
 
+    const handleNextStep = () => {
+        setCurrentStep((prev) => {
+            if (prev < steps.length) {
+                return prev + 1;
+            }
+            return prev;
+        });
+    };
+
+    const handlePreviousStep = () => {
+        setCurrentStep((prev) => {
+            if (prev > 1) {
+                return prev - 1;
+            }
+            return prev;
+        });
+    };
+
     return (
         <div className="pt-4">
             <PageHeader
@@ -93,31 +112,42 @@ export default function CadastrarOcorrencia({
                 </div>
 
                 {currentStep === 1 && (
-                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
+                    <SecaoInicial onSuccess={handleNextStep} />
                 )}
                 {currentStep === 2 && isFurtoRoubo && (
                     <SecaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
+                        onNext={handleNextStep}
+                        onPrevious={handlePreviousStep}
                     />
                 )}
                 {currentStep === 2 && !isFurtoRoubo && (
                     <SecaoNaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
+                        onNext={handleNextStep}
+                        onPrevious={handlePreviousStep}
                     />
                 )}
-                {currentStep === 3 && !hasAgressorVitimaInfo && (
+                {((currentStep === 3 && !hasAgressorVitimaInfo) ||
+                    (hasAgressorVitimaInfo && currentStep === 4)) && (
                     <SecaoFinal
-                        onNext={() => setCurrentStep(4)}
-                        onPrevious={() => setCurrentStep(2)}
+                        onNext={handleNextStep}
+                        onPrevious={handlePreviousStep}
                     />
                 )}
 
                 {currentStep === 3 && hasAgressorVitimaInfo && (
                     <InformacoesAdicionais
-                        onNext={() => setCurrentStep(4)}
-                        onPrevious={() => setCurrentStep(2)}
+                        onNext={handleNextStep}
+                        onPrevious={handlePreviousStep}
+                    />
+                )}
+
+                {((currentStep === 5 && hasAgressorVitimaInfo) ||
+                    (!hasAgressorVitimaInfo && currentStep === 4)) && (
+                    <Anexos
+                        onNext={() => {
+                            console.log("Ocorrência finalizada!");
+                        }}
+                        onPrevious={handlePreviousStep}
                     />
                 )}
             </QuadroBranco>
