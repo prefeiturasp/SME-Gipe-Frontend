@@ -26,45 +26,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 import { Search } from "lucide-react";
 import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
-
-// Mock data - será substituído quando o backend estiver pronto
-const MOCK_MOTIVOS = [
-    { value: "conflito", label: "Conflito interpessoal" },
-    { value: "bullying", label: "Bullying" },
-    { value: "violencia_fisica", label: "Violência física" },
-    { value: "violencia_verbal", label: "Violência verbal" },
-    { value: "discriminacao", label: "Discriminação" },
-];
-
-const MOCK_GENEROS = [
-    { value: "masculino", label: "Masculino" },
-    { value: "feminino", label: "Feminino" },
-    { value: "nao_binario", label: "Não binário" },
-    { value: "prefiro_nao_informar", label: "Prefiro não informar" },
-];
-
-const MOCK_GRUPOS_ETNICOS = [
-    { value: "branco", label: "Branco" },
-    { value: "preto", label: "Preto" },
-    { value: "pardo", label: "Pardo" },
-    { value: "amarelo", label: "Amarelo" },
-    { value: "indigena", label: "Indígena" },
-];
-
-const MOCK_ETAPAS_ESCOLARES = [
-    { value: "educacao_infantil", label: "Educação Infantil" },
-    { value: "ensino_fundamental_1", label: "Ensino Fundamental I" },
-    { value: "ensino_fundamental_2", label: "Ensino Fundamental II" },
-    { value: "ensino_medio", label: "Ensino Médio" },
-    { value: "eja", label: "EJA" },
-];
-
-const MOCK_FREQUENCIAS = [
-    { value: "regular", label: "Regular" },
-    { value: "irregular", label: "Irregular" },
-    { value: "infrequente", label: "Infrequente" },
-];
-
+import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 export type InformacoesAdicionaisProps = {
     onPrevious: () => void;
     onNext: () => void;
@@ -75,7 +37,7 @@ export default function InformacoesAdicionais({
     onNext,
 }: Readonly<InformacoesAdicionaisProps>) {
     const { formData, setFormData } = useOcorrenciaFormStore();
-
+    const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -348,7 +310,7 @@ export default function InformacoesAdicionais({
                                     </FormLabel>
                                     <FormControl>
                                         <MultiSelect
-                                            options={MOCK_MOTIVOS}
+                                            options={categoriasDisponiveis?.motivo_ocorrencia || []}
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Selecione"
@@ -379,7 +341,7 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {MOCK_GENEROS.map((genero) => (
+                                            {categoriasDisponiveis?.genero.map((genero) => (
                                                 <SelectItem
                                                     key={genero.value}
                                                     value={genero.value}
@@ -414,7 +376,7 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {MOCK_GRUPOS_ETNICOS.map(
+                                            {categoriasDisponiveis?.grupo_etnico_racial.map(
                                                 (grupo) => (
                                                     <SelectItem
                                                         key={grupo.value}
@@ -447,7 +409,7 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {MOCK_ETAPAS_ESCOLARES.map(
+                                            {categoriasDisponiveis?.etapa_escolar.map(
                                                 (etapa) => (
                                                     <SelectItem
                                                         key={etapa.value}
@@ -482,7 +444,7 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {MOCK_FREQUENCIAS.map(
+                                            {categoriasDisponiveis?.frequencia_escolar.map(
                                                 (frequencia) => (
                                                     <SelectItem
                                                         key={frequencia.value}
@@ -555,7 +517,7 @@ export default function InformacoesAdicionais({
                                     <div className="pt-2">
                                         <RadioGroup
                                             onValueChange={field.onChange}
-                                            value={field.value ?? ""}
+                                            value={field.value || ""}
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
@@ -590,7 +552,7 @@ export default function InformacoesAdicionais({
                                     <div className="pt-2">
                                         <RadioGroup
                                             onValueChange={field.onChange}
-                                            value={field.value ?? ""}
+                                            value={field.value || ""}
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
