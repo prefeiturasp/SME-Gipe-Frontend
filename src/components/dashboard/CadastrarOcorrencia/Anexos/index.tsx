@@ -142,7 +142,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
             </h2>
 
             {anexos.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-6 pb-8 border-b border-[#DADADA]">
                     <p className="text-[14px] text-[#42474a] mb-5">
                         Estes são os documentos já anexados na ocorrência.
                     </p>
