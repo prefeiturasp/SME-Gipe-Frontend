@@ -86,10 +86,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     };
 
     const handleAnexarDocumento = () => {
-        if (!selectedFile) return;
-
-        const tipoDocumento = form.getValues("tipoDocumento");
-        if (!tipoDocumento) return;
+        const tipoDocumento = form.getValues("tipoDocumento")!;
 
         const tipoLabel =
             TIPOS_DOCUMENTO.find((t) => t.value === tipoDocumento)?.label ||
@@ -103,8 +100,8 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
         ).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
         const novoAnexo: AnexoItem = {
-            id: `${Date.now()}-${selectedFile.name}`,
-            arquivo: selectedFile,
+            id: `${Date.now()}-${selectedFile!.name}`,
+            arquivo: selectedFile!,
             tipoDocumento,
             tipoDocumentoLabel: tipoLabel,
             anexadoPor: user?.name || "Usuário",
@@ -302,7 +299,12 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                                                     )}
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage />
+                                            {selectedFile && !field.value && (
+                                                <p className="text-sm font-medium text-destructive">
+                                                    Selecione o tipo de
+                                                    documento para anexar
+                                                </p>
+                                            )}
                                         </FormItem>
                                     )}
                                 />
