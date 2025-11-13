@@ -41,6 +41,7 @@ const mockTiposOcorrencia = [
 ]
 
 import { useOcorrencias } from "@/hooks/useOcorrencias";
+import * as useUnidadesHook from "@/hooks/useUnidades";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
 
@@ -90,6 +91,20 @@ describe("TabelaOcorrencias", () => {
                     isError: false,
                     error: null,
                 } as never);
+
+        vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
+                    data: [{ uuid: "dre-1", nome: "DRE 1" }, { uuid: "dre-2", nome: "DRE 2" }, { uuid: "dre-3", nome: "DRE 3"}],
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                } as never);
+
+        vi.spyOn(useUnidadesHook, "useFetchTodasUEs").mockReturnValue({
+            data: [{ uuid: "ue-1", nome: "UE 1" }, { uuid: "ue-2", nome: "UE 2" }, { uuid: "ue-3", nome: "UE 3"}],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
     });
 
     it("renderiza cabeçalhos e linhas quando existem dados", async () => {

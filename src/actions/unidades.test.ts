@@ -81,8 +81,8 @@ describe("unidades actions", () => {
 
      it("getTodasUEs lança erro se a API falhar", async () => {
         axiosGetMock.mockRejectedValueOnce(new Error("API error"));
-        await expect(getUEs("dre-uuid")).rejects.toThrow(
-            "Não foi possível buscar as UEs"
+        await expect(getTodasUEs()).rejects.toThrow(
+            "Não foi possível buscar todas as UEs"
         );
     });
 });
