@@ -3,9 +3,6 @@ import { useUserStore } from "@/stores/useUserStore";
 import { Ocorrencia } from "@/types/ocorrencia";
 import { getOcorrenciasAction } from "@/actions/ocorrencias";
 
-function randomFrom<T>(arr: readonly T[]) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
 
 const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
     const response = await getOcorrenciasAction();
@@ -13,10 +10,6 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
     if (!response.success) {
         throw new Error(response.error);
     }
-
-    const tipos = [
-        "Ocorrência com objeto sem ameaça (arma de fogo, arma branca, etc)",
-    ];
 
     return response.data.map((item, index) => {
         const date = new Date(item.data_ocorrencia);
@@ -29,13 +22,15 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
         return {
             id: item.id,
             uuid: item.uuid,
-            protocolo: `PRT-${String(item.id)}`,
+            protocolo: item?.protocolo ?? "",
             dataHora: `${day}/${month}/${year} - ${hour}:${minutes}`,
             codigoEol: item.unidade_codigo_eol,
-            dre: item.dre_codigo_eol,
-            nomeUe: `ESCOLA MUNICIPAL ${index + 1}`,
-            tipoViolencia: randomFrom(tipos),
-            status: "Incompleta" as Ocorrencia["status"],
+            dre: item.nome_dre,
+            nomeUe: item.nome_unidade,
+            tipoOcorrencia: item.tipos_ocorrencia
+                .map((t) => t.nome)
+                .join(", "),
+            status: item.status_extra
         };
     });
 };
