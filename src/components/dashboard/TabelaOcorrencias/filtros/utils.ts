@@ -45,9 +45,9 @@ export function matchCodigo(itemCodigo: string, codigoEol: string) {
     return itemCodigo.includes(codigoEol);
 }
 
-export function matchTipo(itemTipo: string, tipoViolencia: string) {
-    if (!tipoViolencia) return true;
-    return normalizeText(itemTipo).includes(normalizeText(tipoViolencia));
+export function matchTipo(itemTipo: string, tiposOcorrencia: string) {
+    if (!tiposOcorrencia) return true;
+    return normalizeText(itemTipo).includes(normalizeText(tiposOcorrencia));
 }
 
 export function matchStatus(itemStatus: string, status: string) {

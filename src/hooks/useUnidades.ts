@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDREs, getUEs } from "@/actions/unidades";
+import { getDREs, getUEs, getTodasUEs } from "@/actions/unidades";
 
 export function useFetchDREs() {
     return useQuery({
@@ -14,6 +14,14 @@ export function useFetchUEs(dreUuid: string) {
         queryKey: ["get-ues", dreUuid],
         queryFn: () => getUEs(dreUuid),
         enabled: !!dreUuid,
+        refetchOnWindowFocus: false,
+    });
+}
+
+export function useFetchTodasUEs() {
+    return useQuery({
+        queryKey: ["todas-ues"],
+        queryFn: () => getTodasUEs(),
         refetchOnWindowFocus: false,
     });
 }

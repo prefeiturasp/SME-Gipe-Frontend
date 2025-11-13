@@ -6,8 +6,8 @@ export type Ocorrencia = {
     codigoEol: string;
     dre: string;
     nomeUe: string;
-    tipoViolencia: string;
-    status: "Incompleta" | "Finalizada" | "Em andamento";
+    tipoOcorrencia: string;
+    status: string
 };
 
 export interface OcorrenciaAPI {
@@ -20,4 +20,12 @@ export interface OcorrenciaAPI {
     user_username: string;
     criado_em: string;
     atualizado_em: string;
+    nome_dre: string,
+    nome_unidade: string,
+    status_extra: string;
+    tipos_ocorrencia: {
+        uuid: string;
+        nome: string;
+    }[]; 
+    protocolo: string
 }
