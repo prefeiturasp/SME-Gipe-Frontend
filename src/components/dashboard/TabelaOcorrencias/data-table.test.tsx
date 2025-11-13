@@ -36,7 +36,7 @@ function makeRows(n: number): Ocorrencia[] {
         codigoEol: `EOL${i + 1}`,
         dre: `DRE-${i + 1}`,
         nomeUe: `UE-${i + 1}`,
-        tipoViolencia: "Física",
+        tipoOcorrencia: "Física",
         status: "Em andamento",
     }));
 }
