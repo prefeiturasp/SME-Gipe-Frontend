@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const formSchema = z.object({
-    tipoDocumento: z.string().min(1, "Selecione o tipo de documento"),
+    tipoDocumento: z.string().optional(),
     arquivo: z.instanceof(File).optional(),
 });
 
