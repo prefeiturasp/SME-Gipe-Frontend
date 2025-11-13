@@ -61,7 +61,7 @@ vi.mock("./Anexos", () => ({
     )),
 }));
 
-describe("StepRenderer", () => {
+describe("StepRenderer - Renderização de Componentes", () => {
     const mockOnNext = vi.fn();
     const mockOnPrevious = vi.fn();
 
@@ -69,8 +69,8 @@ describe("StepRenderer", () => {
         vi.clearAllMocks();
     });
 
-    describe("getCurrentStepNumber - Step 1", () => {
-        it("deve retornar 1 quando currentStep é 1", () => {
+    describe("Step 1 - SecaoInicial", () => {
+        it("deve renderizar SecaoInicial quando currentStep é 1", () => {
             render(
                 <StepRenderer
                     currentStep={1}
@@ -83,47 +83,11 @@ describe("StepRenderer", () => {
 
             expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
         });
-    });
 
-    describe("getCurrentStepNumber - Step 2", () => {
-        it("deve retornar 2 quando currentStep é 2", () => {
+        it("deve passar callback onSuccess para SecaoInicial", () => {
             render(
                 <StepRenderer
-                    currentStep={2}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
-            ).toBeInTheDocument();
-        });
-    });
-
-    describe("getCurrentStepNumber - Step 3", () => {
-        it("deve retornar 3 quando currentStep é 3 e hasAgressorVitimaInfo é true", () => {
-            render(
-                <StepRenderer
-                    currentStep={3}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-        });
-
-        it("deve retornar 4 quando currentStep é 3 e hasAgressorVitimaInfo é false", () => {
-            render(
-                <StepRenderer
-                    currentStep={3}
+                    currentStep={1}
                     isFurtoRoubo={false}
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
@@ -131,89 +95,14 @@ describe("StepRenderer", () => {
                 />
             );
 
-            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+            fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+
+            expect(mockOnNext).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe("getCurrentStepNumber - Step 4", () => {
-        it("deve retornar 4 quando currentStep é 4 e hasAgressorVitimaInfo é true", () => {
-            render(
-                <StepRenderer
-                    currentStep={4}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
-        });
-
-        it("deve retornar 5 quando currentStep é 4 e hasAgressorVitimaInfo é false", () => {
-            render(
-                <StepRenderer
-                    currentStep={4}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
-        });
-    });
-
-    describe("getCurrentStepNumber - Step 5", () => {
-        it("deve retornar 5 quando currentStep é 5", () => {
-            render(
-                <StepRenderer
-                    currentStep={5}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
-        });
-    });
-
-    describe("getCurrentStepNumber - Default case", () => {
-        it("deve retornar currentStep quando não corresponde a nenhum caso específico", () => {
-            render(
-                <StepRenderer
-                    currentStep={99}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(
-                screen.queryByText("Mock SecaoInicial")
-            ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock SecaoFurtoERoubo")
-            ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock SecaoNaoFurtoERoubo")
-            ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock InformacoesAdicionais")
-            ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock SecaoFinal")
-            ).not.toBeInTheDocument();
-            expect(screen.queryByText("Mock Anexos")).not.toBeInTheDocument();
-        });
-    });
-
-    describe("Renderização condicional - isFurtoRoubo", () => {
-        it("deve renderizar SecaoFurtoERoubo quando isFurtoRoubo é true no step 2", () => {
+    describe("Step 2 - Renderização condicional baseada em isFurtoRoubo", () => {
+        it("deve renderizar SecaoFurtoERoubo quando isFurtoRoubo é true", () => {
             render(
                 <StepRenderer
                     currentStep={2}
@@ -232,7 +121,7 @@ describe("StepRenderer", () => {
             ).not.toBeInTheDocument();
         });
 
-        it("deve renderizar SecaoNaoFurtoERoubo quando isFurtoRoubo é false no step 2", () => {
+        it("deve renderizar SecaoNaoFurtoERoubo quando isFurtoRoubo é false", () => {
             render(
                 <StepRenderer
                     currentStep={2}
@@ -250,10 +139,46 @@ describe("StepRenderer", () => {
                 screen.queryByText("Mock SecaoFurtoERoubo")
             ).not.toBeInTheDocument();
         });
+
+        it("deve passar callbacks onNext e onPrevious para SecaoFurtoERoubo", () => {
+            render(
+                <StepRenderer
+                    currentStep={2}
+                    isFurtoRoubo={true}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+            expect(mockOnNext).toHaveBeenCalledTimes(1);
+
+            fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+            expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+        });
+
+        it("deve passar callbacks onNext e onPrevious para SecaoNaoFurtoERoubo", () => {
+            render(
+                <StepRenderer
+                    currentStep={2}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+            expect(mockOnNext).toHaveBeenCalledTimes(1);
+
+            fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+            expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+        });
     });
 
-    describe("Renderização condicional - hasAgressorVitimaInfo", () => {
-        it("deve renderizar InformacoesAdicionais quando hasAgressorVitimaInfo é true no step 3", () => {
+    describe("Step 3 - Renderização condicional baseada em hasAgressorVitimaInfo", () => {
+        it("deve renderizar InformacoesAdicionais quando hasAgressorVitimaInfo é true", () => {
             render(
                 <StepRenderer
                     currentStep={3}
@@ -272,7 +197,7 @@ describe("StepRenderer", () => {
             ).not.toBeInTheDocument();
         });
 
-        it("não deve renderizar InformacoesAdicionais quando hasAgressorVitimaInfo é false no step 3", () => {
+        it("deve renderizar SecaoFinal quando hasAgressorVitimaInfo é false", () => {
             render(
                 <StepRenderer
                     currentStep={3}
@@ -288,13 +213,45 @@ describe("StepRenderer", () => {
                 screen.queryByText("Mock InformacoesAdicionais")
             ).not.toBeInTheDocument();
         });
-    });
 
-    describe("Callbacks onNext e onPrevious", () => {
-        it("deve chamar onNext quando clicar em Próximo na SecaoInicial", () => {
+        it("deve passar callbacks onNext e onPrevious para InformacoesAdicionais", () => {
             render(
                 <StepRenderer
-                    currentStep={1}
+                    currentStep={3}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={true}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+            expect(mockOnNext).toHaveBeenCalledTimes(1);
+
+            fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+            expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("Step 4 - Renderização baseada em hasAgressorVitimaInfo", () => {
+        it("deve renderizar SecaoFinal quando currentStep é 4 e hasAgressorVitimaInfo é true", () => {
+            render(
+                <StepRenderer
+                    currentStep={4}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={true}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />
+            );
+
+            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+        });
+
+        it("deve renderizar Anexos quando currentStep é 4 e hasAgressorVitimaInfo é false", () => {
+            render(
+                <StepRenderer
+                    currentStep={4}
                     isFurtoRoubo={false}
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
@@ -302,44 +259,44 @@ describe("StepRenderer", () => {
                 />
             );
 
-            fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
-
-            expect(mockOnNext).toHaveBeenCalledTimes(1);
+            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
         });
 
-        it("deve chamar onNext quando clicar em Próximo na SecaoFurtoERoubo", () => {
+        it("deve passar callbacks onNext e onPrevious para SecaoFinal", () => {
             render(
                 <StepRenderer
-                    currentStep={2}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={false}
+                    currentStep={4}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
-
             expect(mockOnNext).toHaveBeenCalledTimes(1);
-        });
-
-        it("deve chamar onPrevious quando clicar em Anterior na SecaoFurtoERoubo", () => {
-            render(
-                <StepRenderer
-                    currentStep={2}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
 
             fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
-
             expect(mockOnPrevious).toHaveBeenCalledTimes(1);
         });
+    });
 
-        it("deve executar console.log quando clicar em Finalizar nos Anexos", () => {
+    describe("Step 5 - Anexos", () => {
+        it("deve renderizar Anexos quando currentStep é 5", () => {
+            render(
+                <StepRenderer
+                    currentStep={5}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={true}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />
+            );
+
+            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
+        });
+
+        it("deve executar console.log ao clicar em Finalizar", () => {
             const consoleSpy = vi
                 .spyOn(console, "log")
                 .mockImplementation(() => {});
@@ -361,7 +318,7 @@ describe("StepRenderer", () => {
             consoleSpy.mockRestore();
         });
 
-        it("deve chamar onPrevious quando clicar em Anterior nos Anexos", () => {
+        it("deve passar callback onPrevious para Anexos", () => {
             render(
                 <StepRenderer
                     currentStep={5}
@@ -378,11 +335,11 @@ describe("StepRenderer", () => {
         });
     });
 
-    describe("Retorno null quando stepConfig não encontrado", () => {
-        it("deve retornar null quando nenhum stepConfig corresponde", () => {
+    describe("Casos de borda", () => {
+        it("deve retornar null quando currentStep não corresponde a nenhuma configuração válida", () => {
             const { container } = render(
                 <StepRenderer
-                    currentStep={999}
+                    currentStep={99}
                     isFurtoRoubo={false}
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
@@ -391,119 +348,6 @@ describe("StepRenderer", () => {
             );
 
             expect(container.textContent).toBe("");
-        });
-    });
-
-    describe("Todos os steps em sequência", () => {
-        it("deve renderizar todos os steps corretamente em sequência (sem InformacoesAdicionais)", () => {
-            const { rerender } = render(
-                <StepRenderer
-                    currentStep={1}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={2}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(
-                screen.getByText("Mock SecaoNaoFurtoERoubo")
-            ).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={3}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={4}
-                    isFurtoRoubo={false}
-                    hasAgressorVitimaInfo={false}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
-        });
-
-        it("deve renderizar todos os steps corretamente em sequência (com InformacoesAdicionais)", () => {
-            const { rerender } = render(
-                <StepRenderer
-                    currentStep={1}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-
-            expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={2}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
-            ).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={3}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={4}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
-
-            rerender(
-                <StepRenderer
-                    currentStep={5}
-                    isFurtoRoubo={true}
-                    hasAgressorVitimaInfo={true}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />
-            );
-            expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
         });
     });
 });
