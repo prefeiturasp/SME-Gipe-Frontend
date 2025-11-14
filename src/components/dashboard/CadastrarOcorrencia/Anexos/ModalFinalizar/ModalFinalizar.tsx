@@ -46,33 +46,32 @@ export default function ModalFinalizarEtapa({
         mode: "onChange",
     });
 
-    function handleClose(v: boolean) {
-        onOpenChange(v);
-        if (!v) {
+    function handleClose(value: boolean) {
+        onOpenChange(value);
+        if (!value) {
             form.reset();
             setSuccess(false);
         }
     }
 
-    async function handleSubmit(values: FormDataMotivoCancelamento) {
+    async function handleSubmit() {
         setSuccess(true);
     }
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[700px] p-8 rounded-[4px]">
+            <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
                 
-                <DialogHeader>
-                    <DialogTitle>Finalizar ocorrência</DialogTitle>
+                <DialogHeader className="pt-2">
+                    <DialogTitle>Conclusão de etapa</DialogTitle>
                 </DialogHeader>
 
                 <Aviso
                     icon={<Exclamation className="w-[50px] text-[#42474a]" />}
                 >
-                    Você está finalizando a intercorrência.
-                    Esta ação registrará o encerramento no sistema e ficará
-                    disponível para consulta e auditoria.
-                    Descreva o motivo pelo qual esta intercorrência está sendo encerrada.
+                    Você está finalizando esta etapa da intercorrência e isso registrará o 
+                    encerramento no sistema e ficará disponível para consulta e auditoria. 
+                    Descreva o motivo pelo qual esta interocorrência está sendo encerrada.
                 </Aviso>
 
                 <Form {...form}>
@@ -89,7 +88,7 @@ export default function ModalFinalizarEtapa({
                                         <Textarea
                                             {...field}
                                             placeholder="Exemplo: Situação resolvida com conversa, medidas disciplinares aplicadas, encaminhamento realizado, etc."
-                                            className="min-h-[110px] text-[14px] font-normal"
+                                            className="min-h-[80px] text-[14px] font-normal"
                                             data-testid="input-motivo"
                                         />
                                     </FormControl>

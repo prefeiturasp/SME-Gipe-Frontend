@@ -19,11 +19,11 @@ describe("ModalFinalizarEtapa", () => {
         setup();
 
         expect(
-            screen.getByText("Finalizar ocorrência")
+            screen.getByText("Conclusão de etapa")
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText(/Você está finalizando a intercorrência/i)
+            screen.getByText(/Você está finalizando esta etapa da intercorrência/i)
         ).toBeInTheDocument();
 
         expect(screen.getByTestId("input-motivo")).toBeInTheDocument();
