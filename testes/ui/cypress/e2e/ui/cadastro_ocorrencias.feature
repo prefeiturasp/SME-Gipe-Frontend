@@ -19,8 +19,8 @@ Funcionalidade: Gestão de Ocorrências no Sistema GIPE
   Cenário: Registrar nova ocorrência de patrimônio envolvendo furto ou roubo
     # === ABA 1: Informações Básicas da Ocorrência ===
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
-    E seleciona "Quando a ocorrência aconteceu?" com a data "10/10/2025"
-    E seleciona hora Atua "10:30"
+    E seleciona "Quando a ocorrência aconteceu?" com a data "14/11/2025"
+    E seleciona hora Atua "15:30"
     E seleciona "A ocorrência é sobre furto, roubo, invasão ou depredação?" como "sim"
     E clica no botão "Próximo"
     Então o sistema deve navegar para a próxima etapa do formulário
@@ -46,8 +46,8 @@ Funcionalidade: Gestão de Ocorrências no Sistema GIPE
   Cenário: Registrar ocorrência geral sem furto/roubo envolvendo estudante
     # === ABA 1: Informações Básicas da Ocorrência ===
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
-    E seleciona "Quando a ocorrência aconteceu?" com a data "10/10/2025"
-    E seleciona hora Atua "13:30"
+    E seleciona "Quando a ocorrência aconteceu?" com a data "10/11/2025"
+    E seleciona hora Atua "09:30"
     E seleciona "A ocorrência é sobre furto, roubo, invasão ou depredação?" como "Não"
     E clica no botão "Próximo"
     Então o sistema deve navegar para a próxima etapa do formulário

@@ -22,15 +22,8 @@ module.exports = defineConfig({
     baseUrl: 'https://qa-gipe.sme.prefeitura.sp.gov.br/',
     viewportWidth: 1600,
     viewportHeight: 1050,
-    video: true,
-    videoCompression: 32,
-    videosFolder: 'cypress/videos',
-    retries: {
-      runMode: 2,
-      openMode: 0,
-    },
-    screenshotOnRunFailure: true,
-    screenshotsFolder: 'cypress/screenshots',
+    video: false,
+    screenshotOnRunFailure: false,
     trashAssetsBeforeRuns: true,
     chromeWebSecurity: false,
     experimentalRunAllSpecs: true,
@@ -46,6 +39,28 @@ module.exports = defineConfig({
 
     env: {
       TAGS: 'not @skip', // Ignora cenários marcados como @wip por padrão
+      
+      // Configurações GIPE Estudantes
+      GIPE_ESTUDANTES_BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br',
+      ALUNO_RA: '5937723',
+      DATA_NASC: '14062011',
+      DISPOSITIVO: 'WEB',
+      
+      // IDs para testes GIPE Estudantes
+      PROVA_TAI_ID: 1,
+      QUESTAO_ID: 1,
+      QUESTAO_LEGADO_ID: 1,
+      ALTERNATIVA_ID: 96034121,
+      DISPOSITIVO_ID: 1,
+      
+      // Dados de submissão GIPE Estudantes
+      STATUS: 1,
+      TIPO_DISPOSITIVO: 1,
+      DATA_INICIO: Date.now(),
+      DATA_FIM: 'null',
+      RESPOSTA: 'A',
+      DATA_HORA_RESPOSTA_TICKS: Date.now(),
+      TEMPO_RESPOSTA_ALUNO: 30
     },
 
     setupNodeEvents(on, config) {
