@@ -27,15 +27,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import Aviso from "@/components/login/FormCadastro/Aviso";
 import Exclamation from "@/assets/icons/Exclamation";
+import { formSchema, FormDataMotivoCancelamento } from "./schema";
 
-const schema = z.object({
-    motivo: z
-        .string()
-        .min(5, "O motivo deve ter pelo menos 5 caracteres.")
-        .max(500, "O motivo pode ter no máximo 500 caracteres."),
-});
-
-type FormData = z.infer<typeof schema>;
 
 type ModalFinalizarEtapaProps = {
     open: boolean;
@@ -48,8 +41,8 @@ export default function ModalFinalizarEtapa({
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
 
-    const form = useForm<FormData>({
-        resolver: zodResolver(schema),
+    const form = useForm<FormDataMotivoCancelamento>({
+        resolver: zodResolver(formSchema),
         mode: "onChange",
     });
 
@@ -61,7 +54,7 @@ export default function ModalFinalizarEtapa({
         }
     }
 
-    async function handleSubmit(values: FormData) {
+    async function handleSubmit(values: FormDataMotivoCancelamento) {
         setSuccess(true);
     }
 
