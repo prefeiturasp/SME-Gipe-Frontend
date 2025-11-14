@@ -3,14 +3,10 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
-import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
-import SecaoFinal from "./SecaoFinal";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
-import InformacoesAdicionais from "./InformacoesAdicionais";
+import StepRenderer from "./StepRenderer";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -26,6 +22,22 @@ export default function CadastrarOcorrencia({
 
     const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
+
+    const handleClick = async () => {
+        reset();
+
+        await queryClient.invalidateQueries({
+            queryKey: ["ocorrencia", ocorrenciaUuid],
+        });
+    };
+
+    const handleNextStep = () => {
+        setCurrentStep((prev) => prev + 1);
+    };
+
+    const handlePreviousStep = () => {
+        setCurrentStep((prev) => prev - 1);
+    };
 
     const getStep2Label = () => {
         if (!formData.tipoOcorrencia) return "Fase 02";
@@ -57,14 +69,6 @@ export default function CadastrarOcorrencia({
         },
     ];
 
-    const handleClick = async () => {
-        reset();
-
-        await queryClient.invalidateQueries({
-            queryKey: ["ocorrencia", ocorrenciaUuid],
-        });
-    };
-
     return (
         <div className="pt-4">
             <PageHeader
@@ -92,34 +96,13 @@ export default function CadastrarOcorrencia({
                     <Stepper steps={steps} currentStep={currentStep} />
                 </div>
 
-                {currentStep === 1 && (
-                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
-                )}
-                {currentStep === 2 && isFurtoRoubo && (
-                    <SecaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
-                    />
-                )}
-                {currentStep === 2 && !isFurtoRoubo && (
-                    <SecaoNaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
-                    />
-                )}
-                {currentStep === 3 && !hasAgressorVitimaInfo && (
-                    <SecaoFinal
-                        onNext={() => setCurrentStep(4)}
-                        onPrevious={() => setCurrentStep(2)}
-                    />
-                )}
-
-                {currentStep === 3 && hasAgressorVitimaInfo && (
-                    <InformacoesAdicionais
-                        onNext={() => setCurrentStep(4)}
-                        onPrevious={() => setCurrentStep(2)}
-                    />
-                )}
+                <StepRenderer
+                    currentStep={currentStep}
+                    isFurtoRoubo={isFurtoRoubo}
+                    hasAgressorVitimaInfo={hasAgressorVitimaInfo}
+                    onNext={handleNextStep}
+                    onPrevious={handlePreviousStep}
+                />
             </QuadroBranco>
         </div>
     );
