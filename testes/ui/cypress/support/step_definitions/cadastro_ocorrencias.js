@@ -497,14 +497,27 @@ When('seleciona protocolo', () => {
     }
   })
   
-  cy.wait(1500)
+  cy.wait(2000)
+  
+  // Clicar fora para fechar o dropdown e validar seleção
+  cy.get('main').click({ force: true })
+  cy.wait(1000)
 })
 
 When('clica em proximo final', () => {
-  cy.wait(2000)
+  cy.wait(3000)
   
-  cy.get('.inline-flex', { timeout: 15000 })
+  // Aguardar botão ficar habilitado
+  cy.get('.inline-flex', { timeout: 20000 })
     .should('be.visible')
+    .then($btn => {
+      // Se ainda estiver desabilitado, aguardar mais tempo
+      if ($btn.is(':disabled') || $btn.hasClass('disabled')) {
+        cy.wait(3000)
+      }
+    })
+  
+  cy.get('.inline-flex')
     .should('not.be.disabled')
     .scrollIntoView()
     .click({ force: true })
