@@ -46,4 +46,5 @@ describe("ModalTipoArquivos", () => {
       screen.queryByText("Formatos e tamanhos suportados")
     ).not.toBeInTheDocument();
   });
+  
 });
