@@ -161,4 +161,28 @@ describe("enviarAnexoAction", () => {
         expect(resultado.success).toBe(false);
         expect(resultado.error).toBe("Arquivo inválido");
     });
+
+    it("deve lidar com error.message quando outros campos não existem", async () => {
+        const mockFormData = new FormData();
+        mockFormData.append("intercorrencia_uuid", "uuid-123");
+        mockFormData.append("perfil", "diretor");
+        mockFormData.append("categoria", "boletim_ocorrencia");
+        mockFormData.append(
+            "arquivo",
+            new File(["conteúdo"], "teste.pdf", {
+                type: "application/pdf",
+            })
+        );
+
+        const mockError = {
+            message: "Network Error",
+        };
+
+        vi.mocked(apiAnexos.post).mockRejectedValue(mockError);
+
+        const resultado = await enviarAnexoAction(mockFormData);
+
+        expect(resultado.success).toBe(false);
+        expect(resultado.error).toBe("Network Error");
+    });
 });
