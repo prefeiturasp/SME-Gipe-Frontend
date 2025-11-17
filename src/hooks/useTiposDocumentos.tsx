@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTiposDocumentoAction } from "@/actions/documentos-anexo";
+import { getTiposDocumentoAction } from "@/actions/tipos-documentos";
 import { TipoDocumento } from "@/types/documentos";
 import { useUserStore } from "@/stores/useUserStore";
 

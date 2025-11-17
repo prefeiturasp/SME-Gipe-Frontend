@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTiposDocumentos } from "./useTiposDocumentos";
 
-import * as documentosAction from "@/actions/documentos-anexo";
+import * as documentosAction from "@/actions/tipos-documentos";
 import * as userStore from "@/stores/useUserStore";
 
 // Mock da action

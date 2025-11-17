@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
 import { cookies } from "next/headers";
 import apiAnexos from "@/lib/axios-anexos";
-import { getTiposDocumentoAction } from "./documentos-anexo";
+import { getTiposDocumentoAction } from "./tipos-documentos";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
