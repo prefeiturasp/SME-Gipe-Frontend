@@ -24,15 +24,34 @@ import { formSchema, AnexosData } from "./schema";
 import { Upload, Trash2, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useUserStore } from "@/stores/useUserStore";
+import { useEnviarAnexo } from "@/hooks/useEnviarAnexo";
+import { toast } from "@/components/ui/headless-toast";
 
 // Mock data - será substituído quando o backend estiver pronto
 const TIPOS_DOCUMENTO = [
-    { value: "boletim_ocorrencia", label: "Boletim de Ocorrência" },
-    { value: "relatorio_escolar", label: "Relatório Escolar" },
-    { value: "laudo_medico", label: "Laudo Médico" },
-    { value: "foto", label: "Foto" },
-    { value: "video", label: "Vídeo" },
-    { value: "outro", label: "Outro" },
+    { value: "boletim_ocorrencia", label: "Boletim de ocorrência" },
+    {
+        value: "registro_ocorrencia_interno",
+        label: "Registro de ocorrência interno",
+    },
+    {
+        value: "protocolo_conselho_tutelar",
+        label: "Protocolo Conselho Tutelar",
+    },
+    {
+        value: "instrucao_normativa_20_2020",
+        label: "Instrução Normativa 20/2020",
+    },
+    { value: "relatorio_naapa", label: "Relatório do NAAPA" },
+    { value: "relatorio_cefai", label: "Relatório do CEFAI" },
+    { value: "relatorio_sts", label: "Relatório do STS" },
+    { value: "relatorio_cpca", label: "Relatório do CPCA" },
+    { value: "oficio_gcm", label: "Ofício Guarda Civil Metropolitana (GCM)" },
+    { value: "registro_intercorrencia", label: "Registro de intercorrência" },
+    {
+        value: "relatorio_supervisao_escolar",
+        label: "Relatório da Supervisão Escolar",
+    },
 ];
 
 type AnexoItem = {
@@ -42,6 +61,8 @@ type AnexoItem = {
     tipoDocumentoLabel: string;
     anexadoPor: string;
     dataHora: string;
+    enviado?: boolean;
+    enviando?: boolean;
 };
 
 export type AnexosProps = {
@@ -50,10 +71,11 @@ export type AnexosProps = {
 };
 
 export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [anexos, setAnexos] = useState<AnexoItem[]>([]);
+    const enviarAnexoMutation = useEnviarAnexo();
 
     const form = useForm<AnexosData>({
         resolver: zodResolver(formSchema),
@@ -85,7 +107,17 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
         }
     };
 
-    const handleAnexarDocumento = () => {
+    const handleAnexarDocumento = async () => {
+        if (!ocorrenciaUuid) {
+            toast({
+                variant: "error",
+                title: "Erro ao anexar documento",
+                description:
+                    "UUID da intercorrência não encontrado. Salve a ocorrência primeiro.",
+            });
+            return;
+        }
+
         const tipoDocumento = form.getValues("tipoDocumento")!;
 
         const tipoLabel =
@@ -99,16 +131,17 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
             now.getHours()
         ).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-        const novoAnexo: AnexoItem = {
+        const novoAnexoTemp: AnexoItem = {
             id: `${Date.now()}-${selectedFile!.name}`,
             arquivo: selectedFile!,
             tipoDocumento,
             tipoDocumentoLabel: tipoLabel,
             anexadoPor: user?.name || "Usuário",
             dataHora,
+            enviando: true,
         };
 
-        setAnexos([...anexos, novoAnexo]);
+        setAnexos([...anexos, novoAnexoTemp]);
         setSelectedFile(null);
         form.reset({
             tipoDocumento: "",
@@ -120,6 +153,49 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
         ) as HTMLInputElement;
         if (fileInput) {
             fileInput.value = "";
+        }
+
+        const perfilMap: Record<
+            string,
+            "diretor" | "assistente" | "dre" | "gipe"
+        > = {
+            "DIRETOR DE ESCOLA": "diretor",
+            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
+            "PONTO FOCAL DRE": "dre",
+            GIPE: "gipe",
+        };
+
+        const perfilUsuario =
+            (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
+            "diretor";
+
+        const response = await enviarAnexoMutation.mutateAsync({
+            intercorrencia_uuid: ocorrenciaUuid,
+            perfil: perfilUsuario,
+            categoria: tipoDocumento,
+            arquivo: novoAnexoTemp.arquivo,
+        });
+
+        if (response.success) {
+            setAnexos((prev) =>
+                prev.map((a) =>
+                    a.id === novoAnexoTemp.id
+                        ? { ...a, enviando: false, enviado: true }
+                        : a
+                )
+            );
+            toast({
+                variant: "success",
+                title: "Anexo enviado com sucesso",
+                description: "O documento foi anexado à intercorrência.",
+            });
+        } else {
+            setAnexos((prev) => prev.filter((a) => a.id !== novoAnexoTemp.id));
+            toast({
+                variant: "error",
+                title: "Erro ao anexar documento",
+                description: response.error,
+            });
         }
     };
 
@@ -181,6 +257,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                                         onClick={() =>
                                             handleRemoverAnexo(anexo.id)
                                         }
+                                        disabled={anexo.enviando}
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
                                         Excluir arquivo
