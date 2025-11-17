@@ -6,10 +6,12 @@ import Anexos from "./index";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
+import * as useObterAnexosHook from "@/hooks/useObterAnexos";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
 vi.mock("@/hooks/useEnviarAnexo");
+vi.mock("@/hooks/useObterAnexos");
 
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
@@ -43,6 +45,7 @@ describe("Anexos", () => {
     const mockOnNext = vi.fn();
     const mockSetFormData = vi.fn();
     const mockMutateAsync = vi.fn();
+    const mockRefetch = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -50,6 +53,7 @@ describe("Anexos", () => {
         mockAlert.mockClear();
         mockSetFormData.mockClear();
         mockMutateAsync.mockClear();
+        mockRefetch.mockClear();
 
         mockMutateAsync.mockResolvedValue({
             success: true,
@@ -66,6 +70,14 @@ describe("Anexos", () => {
             isError: false,
             isSuccess: false,
             isIdle: true,
+        } as never);
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: undefined,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: false,
         } as never);
 
         vi.spyOn(
@@ -322,7 +334,7 @@ describe("Anexos", () => {
         });
     });
 
-    it("deve anexar documento e exibir na lista de preview", async () => {
+    it("deve anexar documento e chamar refetch para atualizar lista da API", async () => {
         const user = userEvent.setup();
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
@@ -361,24 +373,9 @@ describe("Anexos", () => {
             expect(mockMutateAsync).toHaveBeenCalled();
         });
 
-        await waitFor(
-            () => {
-                expect(
-                    screen.getByText(
-                        "Estes são os documentos já anexados na ocorrência."
-                    )
-                ).toBeInTheDocument();
-                expect(screen.getByText("documento.pdf")).toBeInTheDocument();
-                const anexoHeading = screen.getByRole("heading", {
-                    name: /documento\.pdf/i,
-                });
-                expect(anexoHeading).toBeInTheDocument();
-                expect(
-                    screen.getByRole("button", { name: /Excluir arquivo/i })
-                ).toBeInTheDocument();
-            },
-            { timeout: 3000 }
-        );
+        await waitFor(() => {
+            expect(mockRefetch).toHaveBeenCalled();
+        });
     });
 
     it("deve resetar o formulário após anexar documento", async () => {
@@ -419,69 +416,75 @@ describe("Anexos", () => {
         });
     });
 
-    it("deve exibir múltiplos anexos na lista", async () => {
-        const user = userEvent.setup();
+    it("deve exibir múltiplos anexos na lista após refetch", async () => {
+        const mockAnexosData = {
+            count: 2,
+            next: null,
+            previous: null,
+            results: [
+                {
+                    uuid: "anexo-1",
+                    nome_original: "documento1.pdf",
+                    categoria: "boletim_ocorrencia" as const,
+                    categoria_display: "Boletim de ocorrência",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "1.2 MB",
+                    extensao: "pdf",
+                    arquivo_url: "https://example.com/doc1.pdf",
+                    criado_em: "2025-11-17T10:00:00Z",
+                    usuario_username: "usuario1",
+                },
+                {
+                    uuid: "anexo-2",
+                    nome_original: "foto.jpg",
+                    categoria: "registro_ocorrencia_interno" as const,
+                    categoria_display: "Registro de ocorrência interno",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "800 KB",
+                    extensao: "jpg",
+                    arquivo_url: "https://example.com/foto.jpg",
+                    criado_em: "2025-11-17T11:00:00Z",
+                    usuario_username: "usuario1",
+                },
+            ],
+        };
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: mockAnexosData,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
+
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        const file1 = new File(["conteúdo1"], "documento1.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file1);
-
-        let tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        let opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        let anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("documento1.pdf")).toBeInTheDocument();
-        });
-
-        const file2 = new File(["conteúdo2"], "foto.jpg", {
-            type: "image/jpeg",
-        });
-        await user.upload(fileInput, file2);
-
-        tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        opcao = await screen.findByRole("option", {
-            name: /Registro de ocorrência interno/i,
-        });
-        await user.click(opcao);
-
-        anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
         await waitFor(() => {
             expect(screen.getByText("documento1.pdf")).toBeInTheDocument();
             expect(screen.getByText("foto.jpg")).toBeInTheDocument();
-            const anexoCards = screen.getAllByRole("heading", { level: 4 });
-            expect(anexoCards).toHaveLength(2);
-            expect(anexoCards[0]).toHaveTextContent("documento1.pdf");
-            expect(anexoCards[1]).toHaveTextContent("foto.jpg");
+            expect(
+                screen.getByText("Boletim de ocorrência")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("Registro de ocorrência interno")
+            ).toBeInTheDocument();
         });
     });
 
-    it("deve remover anexo ao clicar em Excluir", async () => {
+    it("deve exibir indicador 'Enviando...' durante upload do anexo", async () => {
         const user = userEvent.setup();
+
+        // Mock para simular envio em andamento
+        let resolveUpload: (value: unknown) => void;
+        const uploadPromise = new Promise((resolve) => {
+            resolveUpload = resolve;
+        });
+        mockMutateAsync.mockReturnValue(uploadPromise);
+
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
@@ -508,67 +511,74 @@ describe("Anexos", () => {
         });
         await user.click(anexarButton);
 
+        // Verificar que o anexo local aparece com status "Enviando..."
         await waitFor(() => {
             expect(screen.getByText("documento.pdf")).toBeInTheDocument();
+            expect(screen.getByText("Enviando...")).toBeInTheDocument();
         });
 
         const excluirButton = screen.getByRole("button", {
             name: /Excluir arquivo/i,
         });
-        await user.click(excluirButton);
 
-        await waitFor(() => {
-            expect(screen.queryByText("documento.pdf")).not.toBeInTheDocument();
-            expect(
-                screen.queryByText(
-                    "Estes são os documentos já anexados na ocorrência."
-                )
-            ).not.toBeInTheDocument();
-        });
+        // Botão deve estar desabilitado durante envio
+        expect(excluirButton).toBeDisabled();
+
+        // Finalizar upload
+        resolveUpload!({ success: true });
     });
 
-    it("deve exibir data e hora do anexo", async () => {
-        const user = userEvent.setup();
-        const mockDate = new Date("2025-11-13T14:30:00");
-        vi.setSystemTime(mockDate);
+    it("deve exibir data e hora do anexo da API", async () => {
+        const mockAnexosData = {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [
+                {
+                    uuid: "anexo-1",
+                    nome_original: "documento.pdf",
+                    categoria: "boletim_ocorrencia" as const,
+                    categoria_display: "Boletim de ocorrência",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "1.2 MB",
+                    extensao: "pdf",
+                    arquivo_url: "https://example.com/doc.pdf",
+                    criado_em: "2025-11-13T14:30:00Z",
+                    usuario_username: "usuario1",
+                },
+            ],
+        };
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: mockAnexosData,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
 
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        const opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
         await waitFor(() => {
-            expect(screen.getByText("13/11/2025 14:30")).toBeInTheDocument();
+            expect(screen.getByText("documento.pdf")).toBeInTheDocument();
+            expect(screen.getByText(/13\/11\/2025/)).toBeInTheDocument();
         });
-
-        vi.useRealTimers();
     });
 
-    it("deve usar 'Usuário' quando não há nome de usuário", async () => {
+    it("deve usar 'Usuário' quando não há nome de usuário no anexo local durante envio", async () => {
         vi.spyOn(useUserStoreModule, "useUserStore").mockReturnValue({
             user: null,
         } as never);
+
+        // Mock para simular envio em andamento
+        let resolveUpload: (value: unknown) => void;
+        const uploadPromise = new Promise((resolve) => {
+            resolveUpload = resolve;
+        });
+        mockMutateAsync.mockReturnValue(uploadPromise);
 
         const user = userEvent.setup();
         renderWithProvider(
@@ -602,6 +612,9 @@ describe("Anexos", () => {
                 screen.getByText(/Anexado por: Usuário/i)
             ).toBeInTheDocument();
         });
+
+        // Finalizar upload
+        resolveUpload!({ success: true });
     });
 
     it("deve renderizar todos os tipos de documento", async () => {
@@ -880,13 +893,13 @@ describe("Anexos", () => {
     it("deve usar tipoDocumento como fallback quando label não é encontrado", async () => {
         const user = userEvent.setup();
 
-        const mockMutateAsyncCustom = vi.fn().mockResolvedValue({
-            success: true,
-            data: {
-                id: "123",
-                url: "https://example.com/anexo.pdf",
-            },
+        // Mock para simular envio em andamento para manter anexo local visível
+        let resolveUpload: (value: unknown) => void;
+        const uploadPromise = new Promise((resolve) => {
+            resolveUpload = resolve;
         });
+
+        const mockMutateAsyncCustom = vi.fn().mockReturnValue(uploadPromise);
 
         vi.spyOn(useEnviarAnexoHook, "useEnviarAnexo").mockReturnValue({
             mutateAsync: mockMutateAsyncCustom,
@@ -938,10 +951,16 @@ describe("Anexos", () => {
             );
         });
 
+        // Verificar que o tipo inexistente é usado como label durante o envio
         await waitFor(() => {
-            const tiposExibidos = screen.queryAllByText("tipo_inexistente_xyz");
-            expect(tiposExibidos.length).toBeGreaterThan(0);
+            expect(
+                screen.getByText("tipo_inexistente_xyz")
+            ).toBeInTheDocument();
+            expect(screen.getByText("Enviando...")).toBeInTheDocument();
         });
+
+        // Finalizar upload
+        resolveUpload!({ success: true });
     });
     it("deve exibir erro quando o envio do anexo falha", async () => {
         const user = userEvent.setup();
