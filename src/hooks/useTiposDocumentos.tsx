@@ -8,8 +8,6 @@ const fetchAndTransformTiposDocumento = async (
 ): Promise<TipoDocumento[]> => {
     const response = await getTiposDocumentoAction(perfil);
 
-    console.log("reponse", response)
-
     if (!response.success) {
         throw new Error(response.error);
     }
