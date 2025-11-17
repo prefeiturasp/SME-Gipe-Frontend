@@ -6,10 +6,13 @@ import Anexos from "./index";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
+import * as useTiposDocumentosHook from "@/hooks/useTiposDocumentos";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
 vi.mock("@/hooks/useEnviarAnexo");
+vi.mock("@/hooks/useTiposDocumentos");
+
 
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
@@ -85,6 +88,22 @@ describe("Anexos", () => {
                     nome: "DIRETOR DE ESCOLA",
                 },
             },
+        } as never);
+
+        vi.spyOn(useTiposDocumentosHook, "useTiposDocumentos").mockReturnValue({
+            data: [
+                { 
+                    value: "boletim_ocorrencia",
+                    label: "Boletim de ocorrência"
+                },
+                {
+                    value: "registro_ocorrencia_interno",
+                    label: "Registro de ocorrência interno",
+                },
+            ],
+            isLoading: false,
+            isError: false,
+            error: null,
         } as never);
     });
 
@@ -600,66 +619,6 @@ describe("Anexos", () => {
         await waitFor(() => {
             expect(
                 screen.getByText(/Anexado por: Usuário/i)
-            ).toBeInTheDocument();
-        });
-    });
-
-    it("deve renderizar todos os tipos de documento", async () => {
-        const user = userEvent.setup();
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-
-        await waitFor(() => {
-            expect(
-                screen.getByRole("option", { name: /Boletim de ocorrência/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Registro de ocorrência interno/i,
-                })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Protocolo Conselho Tutelar/i,
-                })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Instrução Normativa 20\/2020/i,
-                })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", { name: /Relatório do NAAPA/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", { name: /Relatório do CEFAI/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", { name: /Relatório do STS/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", { name: /Relatório do CPCA/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Ofício Guarda Civil Metropolitana/i,
-                })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Registro de intercorrência/i,
-                })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("option", {
-                    name: /Relatório da Supervisão Escolar/i,
-                })
             ).toBeInTheDocument();
         });
     });
@@ -1232,4 +1191,20 @@ describe("Anexos", () => {
             );
         });
     });
+
+    it("deve abrir o modal de tipos ao clicar em 'clique aqui'", async () => {
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
+
+        const botao = screen.getByRole("button", { name: /clique aqui/i });
+        await userEvent.click(botao);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(/Formatos e tamanhos suportados/i)
+            ).toBeInTheDocument();
+        });
+    });
+
 });
