@@ -111,7 +111,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
         if (!ocorrenciaUuid) {
             toast({
                 variant: "error",
-                title: "Erro ao anexar documento",
+                title: "Não conseguimos anexar o arquivo",
                 description:
                     "UUID da intercorrência não encontrado. Salve a ocorrência primeiro.",
             });
@@ -186,14 +186,14 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
             );
             toast({
                 variant: "success",
-                title: "Anexo enviado com sucesso",
-                description: "O documento foi anexado à intercorrência.",
+                title: "Tudo certo por aqui!",
+                description: "O documento foi anexado com sucesso!",
             });
         } else {
             setAnexos((prev) => prev.filter((a) => a.id !== novoAnexoTemp.id));
             toast({
                 variant: "error",
-                title: "Erro ao anexar documento",
+                title: "Não conseguimos anexar o arquivo",
                 description: response.error,
             });
         }

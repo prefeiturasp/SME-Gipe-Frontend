@@ -867,7 +867,7 @@ describe("Anexos", () => {
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
-                title: "Erro ao anexar documento",
+                title: "Não conseguimos anexar o arquivo",
                 description:
                     "UUID da intercorrência não encontrado. Salve a ocorrência primeiro.",
                 variant: "error",
@@ -989,7 +989,7 @@ describe("Anexos", () => {
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
-                title: "Erro ao anexar documento",
+                title: "Não conseguimos anexar o arquivo",
                 description: "Erro ao processar o arquivo",
                 variant: "error",
             });
