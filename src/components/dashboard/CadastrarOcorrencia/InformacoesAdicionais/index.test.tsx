@@ -5,15 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import InformacoesAdicionais from "./index";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
-
+import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+import { toast } from "@/components/ui/headless-toast";
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/hooks/useCategoriasDisponiveis");
-
+vi.mock("@/hooks/useEnderecoViaCep");
+vi.mock("@/components/ui/headless-toast");
 describe("InformacoesAdicionais", () => {
   const mockOnPrevious = vi.fn();
   const mockOnNext = vi.fn();
   const mockSetFormData = vi.fn();
-
+  const mockMutateAsync = vi.fn();
   const queryClient = new QueryClient();
 
   const renderComponent = () =>
@@ -47,8 +49,14 @@ describe("InformacoesAdicionais", () => {
       refetch: vi.fn(),
       isSuccess: true,
     } as unknown as ReturnType<typeof useCategoriasDisponiveis>);
-  });
 
+    vi.mocked(useEnderecoPorCep).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+      error: null,
+    } as unknown as ReturnType<typeof useEnderecoPorCep>);
+
+  });
   it("deve renderizar todos os campos do formulário", () => {
     renderComponent();
 
@@ -273,7 +281,7 @@ describe("InformacoesAdicionais", () => {
       expect(mockOnNext).toHaveBeenCalled();
     });
   }, 15000);
-
+  
   it("deve chamar formatCep corretamente com menos de 5 números", async () => {
     const user = userEvent.setup();
     renderComponent();
@@ -309,4 +317,90 @@ describe("InformacoesAdicionais", () => {
 
     expect(screen.getByText(/O que motivou a ocorrência\?/i)).toBeInTheDocument();
   });
+
+  it("deve preencher campos corretamente ao buscar CEP com sucesso", async () => {
+    mockMutateAsync.mockResolvedValue({
+      logradouro: "Rua Teste",
+      bairro: "Bairro Teste",
+      cidade: "Cidade Teste",
+      estado: "SP",
+    });
+    renderComponent();
+    const user = userEvent.setup();
+    const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+    await user.type(cepInput, "12345678");
+    const pesquisarCepButton = screen.getByRole("button", { name: /Pesquisar CEP/i });
+    await user.click(pesquisarCepButton);
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith("12345-678");
+      expect(screen.getByLabelText(/Logradouro/i)).toHaveValue("Rua Teste");
+      expect(screen.getByLabelText(/Bairro/i)).toHaveValue("Bairro Teste");
+      expect(screen.getByLabelText(/Cidade/i)).toHaveValue("Cidade Teste");
+      expect(screen.getByRole("combobox", { name: /Estado/i })).toHaveTextContent("São Paulo");
+    });
+  });
+
+  it("deve mostrar toast de erro para CEP inválido", async () => {
+    mockMutateAsync.mockRejectedValue(new Error("CEP inválido"));
+    renderComponent();
+    const user = userEvent.setup();
+    const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+    await user.type(cepInput, "00000000");
+    const pesquisarCepButton = screen.getByRole("button", { name: /Pesquisar CEP/i });
+    await user.click(pesquisarCepButton);
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({
+        variant: "error",
+        title: "Número de CEP inválido!",
+      }));
+    });
+  });
+
+  it("deve mostrar toast de erro genérico se houver outro problema ao buscar CEP", async () => {
+    mockMutateAsync.mockRejectedValue(new Error("Erro de rede"));
+    renderComponent();
+    const user = userEvent.setup();
+    const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+    await user.type(cepInput, "12345678");
+    const pesquisarCepButton = screen.getByRole("button", { name: /Pesquisar CEP/i });
+    await user.click(pesquisarCepButton);
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({
+        variant: "error",
+        title: "Houve um erro...",
+      }));
+    });
+  });
+  
+  it("deve mostrar toast de erro genérico quando o erro não é uma instância de Error", async () => {
+    mockMutateAsync.mockRejectedValue("Erro genérico não estruturado");
+    renderComponent();
+    const user = userEvent.setup();
+    const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+    await user.type(cepInput, "12345678");
+    const pesquisarCepButton = screen.getByRole("button", { name: /Pesquisar CEP/i });
+    await user.click(pesquisarCepButton);
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({
+        variant: "error",
+        title: "Houve um erro...",
+        description: "Não conseguimos buscar o CEP. Por favor, tente novamente.",
+      }));
+    });
+  });
+
+  it("deve mostrar 'Buscando...' no botão enquanto isPending é true", async () => {
+    vi.mocked(useEnderecoPorCep).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isPending: true,
+      error: null,
+    } as unknown as ReturnType<typeof useEnderecoPorCep>);
+
+    renderComponent();
+    
+    const pesquisarCepButton = screen.getByRole("button", { name: /Buscando.../i });
+    expect(pesquisarCepButton).toBeInTheDocument();
+    expect(pesquisarCepButton).toHaveTextContent("Buscando...");
+  });
+  
 });
