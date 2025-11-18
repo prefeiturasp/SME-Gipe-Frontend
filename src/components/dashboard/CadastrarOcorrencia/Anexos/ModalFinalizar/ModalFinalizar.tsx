@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -11,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    DialogDescription
 } from "@/components/ui/dialog";
 
 import {
@@ -27,7 +27,32 @@ import { Textarea } from "@/components/ui/textarea";
 
 import Aviso from "@/components/login/FormCadastro/Aviso";
 import Exclamation from "@/assets/icons/Exclamation";
-import { formSchema, FormDataMotivoCancelamento } from "./schema";
+
+import {
+    formSchema,
+    FormDataMotivoCancelamento,
+} from "./schema";
+
+
+export type FinalizacaoEtapaResponse = {
+    nomeResponsavel: string;
+    cpf: string;
+    email: string;
+    perfilAcesso: string;
+    dre: string;
+    unidade: string;
+    protocolo: string
+};
+
+const mockApiResponse: FinalizacaoEtapaResponse = {
+    nomeResponsavel: "Marcus Paulo de Souza Andrade",
+    cpf: "123.456.789",
+    email: "marcus.andrade@sme.prefeitura.sp.gov.br",
+    perfilAcesso: "Diretor(a) Pedagógico",
+    dre: "DRE Butantã",
+    unidade: "EMEF Prof. Alípio Correa Neto",
+    protocolo: "GIPE-2025/0042",
+};
 
 
 type ModalFinalizarEtapaProps = {
@@ -40,6 +65,7 @@ export default function ModalFinalizarEtapa({
     onOpenChange,
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
+    const [apiData, setApiData] = useState<FinalizacaoEtapaResponse | null>(null);
 
     const form = useForm<FormDataMotivoCancelamento>({
         resolver: zodResolver(formSchema),
@@ -48,62 +74,67 @@ export default function ModalFinalizarEtapa({
 
     function handleClose(value: boolean) {
         onOpenChange(value);
+
         if (!value) {
             form.reset();
             setSuccess(false);
+            setApiData(null);
         }
     }
 
     async function handleSubmit() {
+        await new Promise((r) => setTimeout(r, 800)); 
+
+        setApiData(mockApiResponse);
         setSuccess(true);
     }
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
-                
-                <DialogHeader className="pt-2">
-                    <DialogTitle>Conclusão de etapa</DialogTitle>
-                </DialogHeader>
 
-                <Aviso
-                    icon={<Exclamation className="w-[50px] text-[#42474a]" />}
-                >
-                    Você está finalizando esta etapa da intercorrência e isso registrará o 
-                    encerramento no sistema e ficará disponível para consulta e auditoria. 
-                    Descreva o motivo pelo qual esta interocorrência está sendo encerrada.
-                </Aviso>
+                {!success && (
+                    <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
+                            
+                        <DialogHeader className="pt-2">
+                            <DialogTitle>Conclusão de etapa</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescription className="sr-only">
+                            Etapa finalizada, intercorrência criada.
+                        </DialogDescription>
+                        <Aviso icon={<Exclamation className="w-[50px] text-[#42474a]" />}>
+                            Você está finalizando esta etapa da intercorrência e isso registrará o 
+                            encerramento no sistema e ficará disponível para consulta e auditoria. 
+                            Descreva o motivo pelo qual esta intercorrência está sendo encerrada.
+                        </Aviso>
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)}>
-                        <FormField
-                            control={form.control}
-                            name="motivo"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-[14px] font-[700] text-[#42474a]">
-                                        Motivo do encerramento*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            {...field}
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(handleSubmit)}>
+                                <FormField
+                                    control={form.control}
+                                    name="motivo"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[14px] font-[700] text-[#42474a]">
+                                                Motivo do encerramento*
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    {...field}
                                             placeholder="Exemplo: Situação resolvida com conversa, medidas disciplinares aplicadas, encaminhamento realizado, etc."
-                                            className="min-h-[80px] text-[14px] font-normal"
-                                            data-testid="input-motivo"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
+                                                    className="min-h-[80px] text-[14px] font-normal"
+                                                    data-testid="input-motivo"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
 
-                                    <p className="text-[12px] text-[#6B6B6B] mt-1">
-                                        Esta justificativa será registrada permanentemente no histórico da intercorrência.
-                                    </p>
-                                </FormItem>
-                            )}
-                        />
+                                            <p className="text-[12px] text-[#6B6B6B] mt-1">
+                                                Esta justificativa será registrada permanentemente no histórico da intercorrência.
+                                            </p>
+                                        </FormItem>
+                                    )}
+                                />
 
-                        <DialogFooter className="mt-6">
-                            {!success ? (
-                                <>
+                                <DialogFooter className="mt-6">
                                     <Button
                                         type="button"
                                         size="sm"
@@ -121,20 +152,55 @@ export default function ModalFinalizarEtapa({
                                     >
                                         Finalizar
                                     </Button>
-                                </>
-                            ) : (
-                                <Button
-                                    size="sm"
-                                    className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                    onClick={() => handleClose(false)}
-                                >
-                                    Fechar
-                                </Button>
-                            )}
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                )}
+
+
+                {success && apiData && (
+                <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
+                
+                    <DialogHeader className="pt-2">
+                        <DialogTitle className="text-[20px]">Ocorrência registrada com sucesso!</DialogTitle>
+                    </DialogHeader>
+                        <DialogDescription className="sr-only">
+                            Confira os dados o protocolo da sua intercorrência.
+                        </DialogDescription>
+                        <Aviso>
+                            <span className="text-[14px] font-[700]">
+                                Protocolo da intercorrência: <strong>{apiData.protocolo}</strong>
+                            </span>
+                        </Aviso>
+
+                        <Aviso>
+                            <div className="text-[14px] leading-5 text-[#42474a]">
+                                <p><strong>Responsável:</strong> {apiData.nomeResponsavel}</p>
+                                <p><strong>CPF:</strong> {apiData.cpf}</p>
+                                <p><strong>E-mail:</strong> {apiData.email}</p>
+                                <p><strong>Perfil de acesso:</strong> {apiData.perfilAcesso}</p>
+                                <p><strong>Diretoria Regional:</strong> {apiData.dre}</p>
+                                <p><strong>Unidade Educacional:</strong> {apiData.unidade}</p>
+                            </div>
+                        </Aviso>
+
+                        <p className="text-[12px] text-[#6B6B6B] mt-2 px-1">
+                            Você pode acompanhar o status no histórico de ocorrência registradas.
+                        </p>
+
+                        <DialogFooter className="mt-6">
+                            <Button
+                                size="sm"
+                                className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                                onClick={() => handleClose(false)}
+                            >
+                                Fechar
+                            </Button>
                         </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
+                    </DialogContent>
+                )}
+
         </Dialog>
     );
 }

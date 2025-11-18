@@ -30,6 +30,7 @@ import { useTiposDocumentos } from "@/hooks/useTiposDocumentos";
 import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
 import { useObterAnexos } from "@/hooks/useObterAnexos";
 import { ListagemAnexos } from "./ListagemAnexos";
+import ModalFinalizarEtapa from "./ModalFinalizar/ModalFinalizar";
 
 export type AnexosProps = {
     onPrevious: () => void;
@@ -43,6 +44,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     const enviarAnexoMutation = useEnviarAnexo();
     const { data: tiposDocumento = [] } = useTiposDocumentos();
     const [openModalTipos, setOpenModalTipos] = useState(false);
+    const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] = useState(false);
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
         intercorrenciaUuid: ocorrenciaUuid ?? "",
@@ -316,17 +318,20 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                             >
                                 Anterior
                             </Button>
-                            <Button size="sm" type="submit" variant="submit">
+                            <Button size="sm" type="submit" variant="submit" onClick={() => setOpenModalFinalizarEtapa(true)}>
                                 Finalizar
                             </Button>
                         </div>
                     </fieldset>
                 </form>
             </Form>
-
             <ModalTipoArquivos
                 open={openModalTipos}
                 onOpenChange={setOpenModalTipos}
+            />
+            <ModalFinalizarEtapa 
+                open={openModalFinalizarEtapa} 
+                onOpenChange={setOpenModalFinalizarEtapa}
             />
         </div>
     );
