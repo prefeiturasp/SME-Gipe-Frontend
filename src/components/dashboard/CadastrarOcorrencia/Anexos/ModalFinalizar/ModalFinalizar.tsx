@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import {
     Dialog,
@@ -67,6 +68,8 @@ export default function ModalFinalizarEtapa({
     const [success, setSuccess] = useState(false);
     const [apiData, setApiData] = useState<FinalizacaoEtapaResponse | null>(null);
 
+    const router = useRouter();
+
     const form = useForm<FormDataMotivoCancelamento>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -79,6 +82,9 @@ export default function ModalFinalizarEtapa({
             form.reset();
             setSuccess(false);
             setApiData(null);
+
+            router.push("/dashboard");
+
         }
     }
 
