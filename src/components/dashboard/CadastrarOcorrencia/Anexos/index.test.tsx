@@ -21,6 +21,21 @@ vi.mock("@/hooks/useEnviarAnexo");
 vi.mock("@/hooks/useObterAnexos");
 vi.mock("@/hooks/useTiposDocumentos");
 
+const mockPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: mockPush,
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => "/",
+    useSearchParams: () => ({ get: () => null }),
+    useParams: () => ({}),
+    redirect: vi.fn(),
+    notFound: vi.fn(),
+}));
+
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: (params: unknown) => mockToast(params),
@@ -1169,4 +1184,22 @@ describe("Anexos", () => {
             ).toBeInTheDocument();
         });
     });
+
+    
+    it("deve abrir o modal de tipos ao clicar em 'Finalizar'", async () => {
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
+
+        const botao = screen.getByRole("button", { name: /finalizar/i });
+        await userEvent.click(botao);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(/Conclusão de etapa/i)
+            ).toBeInTheDocument();
+        });
+    });
+
+    
 });
