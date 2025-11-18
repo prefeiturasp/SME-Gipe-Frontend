@@ -21,24 +21,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, AnexosData } from "./schema";
-import { Upload, Trash2, Paperclip } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEnviarAnexo } from "@/hooks/useEnviarAnexo";
 import { toast } from "@/components/ui/headless-toast";
 import { useTiposDocumentos } from "@/hooks/useTiposDocumentos";
 import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
-
-type AnexoItem = {
-    id: string;
-    arquivo: File;
-    tipoDocumento: string;
-    tipoDocumentoLabel: string;
-    anexadoPor: string;
-    dataHora: string;
-    enviado?: boolean;
-    enviando?: boolean;
-};
+import { useObterAnexos } from "@/hooks/useObterAnexos";
+import { ListagemAnexos } from "./ListagemAnexos";
 
 export type AnexosProps = {
     onPrevious: () => void;
@@ -49,10 +40,13 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [anexos, setAnexos] = useState<AnexoItem[]>([]);
     const enviarAnexoMutation = useEnviarAnexo();
     const { data: tiposDocumento = [] } = useTiposDocumentos();
     const [openModalTipos, setOpenModalTipos] = useState(false);
+
+    const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
+        intercorrenciaUuid: ocorrenciaUuid ?? "",
+    });
 
     const form = useForm<AnexosData>({
         resolver: zodResolver(formSchema),
@@ -97,28 +91,6 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
 
         const tipoDocumento = form.getValues("tipoDocumento")!;
 
-        const tipoLabel =
-            tiposDocumento.find((t) => t.value === tipoDocumento)?.label ||
-            tipoDocumento;
-
-        const now = new Date();
-        const dataHora = `${String(now.getDate()).padStart(2, "0")}/${String(
-            now.getMonth() + 1
-        ).padStart(2, "0")}/${now.getFullYear()} ${String(
-            now.getHours()
-        ).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-        const novoAnexoTemp: AnexoItem = {
-            id: `${Date.now()}-${selectedFile!.name}`,
-            arquivo: selectedFile!,
-            tipoDocumento,
-            tipoDocumentoLabel: tipoLabel,
-            anexadoPor: user?.name || "Usuário",
-            dataHora,
-            enviando: true,
-        };
-
-        setAnexos([...anexos, novoAnexoTemp]);
         setSelectedFile(null);
         form.reset({
             tipoDocumento: "",
@@ -150,34 +122,23 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
             intercorrencia_uuid: ocorrenciaUuid,
             perfil: perfilUsuario,
             categoria: tipoDocumento,
-            arquivo: novoAnexoTemp.arquivo,
+            arquivo: selectedFile!,
         });
 
         if (response.success) {
-            setAnexos((prev) =>
-                prev.map((a) =>
-                    a.id === novoAnexoTemp.id
-                        ? { ...a, enviando: false, enviado: true }
-                        : a
-                )
-            );
+            await refetchAnexos();
             toast({
                 variant: "success",
                 title: "Tudo certo por aqui!",
                 description: "O documento foi anexado com sucesso!",
             });
         } else {
-            setAnexos((prev) => prev.filter((a) => a.id !== novoAnexoTemp.id));
             toast({
                 variant: "error",
                 title: "Não conseguimos anexar o arquivo",
                 description: response.error,
             });
         }
-    };
-
-    const handleRemoverAnexo = (id: string) => {
-        setAnexos(anexos.filter((anexo) => anexo.id !== id));
     };
 
     const onSubmit = async (data: AnexosData) => {
@@ -191,60 +152,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                 Anexos
             </h2>
 
-            {anexos.length > 0 && (
-                <div className="mb-6 pb-8 border-b border-[#DADADA]">
-                    <p className="text-[14px] text-[#42474a] mb-5">
-                        Estes são os documentos já anexados na ocorrência.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {anexos.map((anexo) => (
-                            <div
-                                key={anexo.id}
-                                className="border border-[#DADADA] rounded-md p-6"
-                            >
-                                <div className="flex items-start gap-3 mb-3">
-                                    <div className="flex-shrink-0">
-                                        <div className="w-8 h-8 bg-[#E8F0FE] rounded-[4px] flex items-center justify-center">
-                                            <Paperclip className="w-4 h-4 text-[#717FC7]" />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-[14px] font-bold text-[#42474a] truncate">
-                                            {anexo.arquivo.name}
-                                        </h4>
-                                        <p className="text-[14px] text-[#86858D] mt-1">
-                                            {anexo.tipoDocumentoLabel}
-                                        </p>
-                                        <div className="flex items-center justify-between mt-1">
-                                            <p className="text-[12px] text-[#86858D]">
-                                                Anexado por: {anexo.anexadoPor}
-                                            </p>
-                                            <span className="text-[12px] text-[#86858D]">
-                                                {anexo.dataHora}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                        onClick={() =>
-                                            handleRemoverAnexo(anexo.id)
-                                        }
-                                        disabled={anexo.enviando}
-                                    >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Excluir arquivo
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            <ListagemAnexos anexosAPI={anexosData?.results} />
 
             <Form {...form}>
                 <form
@@ -389,7 +297,6 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                                     type="button"
                                     className="font-bold underline"
                                     onClick={() => setOpenModalTipos(true)}
-
                                 >
                                     clique aqui
                                 </button>
@@ -417,7 +324,10 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                 </form>
             </Form>
 
-        <ModalTipoArquivos open={openModalTipos} onOpenChange={setOpenModalTipos} />
+            <ModalTipoArquivos
+                open={openModalTipos}
+                onOpenChange={setOpenModalTipos}
+            />
         </div>
     );
 }

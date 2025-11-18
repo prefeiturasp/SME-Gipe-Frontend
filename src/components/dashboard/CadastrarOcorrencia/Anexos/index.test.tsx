@@ -1,4 +1,10 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import {
+    render,
+    screen,
+    waitFor,
+    fireEvent,
+    act,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,13 +12,14 @@ import Anexos from "./index";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
+import * as useObterAnexosHook from "@/hooks/useObterAnexos";
 import * as useTiposDocumentosHook from "@/hooks/useTiposDocumentos";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
 vi.mock("@/hooks/useEnviarAnexo");
+vi.mock("@/hooks/useObterAnexos");
 vi.mock("@/hooks/useTiposDocumentos");
-
 
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
@@ -46,6 +53,7 @@ describe("Anexos", () => {
     const mockOnNext = vi.fn();
     const mockSetFormData = vi.fn();
     const mockMutateAsync = vi.fn();
+    const mockRefetch = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -53,6 +61,7 @@ describe("Anexos", () => {
         mockAlert.mockClear();
         mockSetFormData.mockClear();
         mockMutateAsync.mockClear();
+        mockRefetch.mockClear();
 
         mockMutateAsync.mockResolvedValue({
             success: true,
@@ -69,6 +78,14 @@ describe("Anexos", () => {
             isError: false,
             isSuccess: false,
             isIdle: true,
+        } as never);
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: undefined,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: false,
         } as never);
 
         vi.spyOn(
@@ -92,9 +109,9 @@ describe("Anexos", () => {
 
         vi.spyOn(useTiposDocumentosHook, "useTiposDocumentos").mockReturnValue({
             data: [
-                { 
+                {
                     value: "boletim_ocorrencia",
-                    label: "Boletim de ocorrência"
+                    label: "Boletim de ocorrência",
                 },
                 {
                     value: "registro_ocorrencia_interno",
@@ -107,12 +124,15 @@ describe("Anexos", () => {
         } as never);
     });
 
-    it("deve renderizar o título e descrições", () => {
+    it("deve renderizar o título e descrições", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        expect(screen.getByText("Anexos")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         expect(screen.getByText("Anexar novo arquivo")).toBeInTheDocument();
         expect(
             screen.getByText(
@@ -121,14 +141,17 @@ describe("Anexos", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar todos os campos do formulário", () => {
+    it("deve renderizar todos os campos do formulário", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        expect(
-            screen.getByLabelText(/Selecione o arquivo/i)
-        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(
+                screen.getByLabelText(/Selecione o arquivo/i)
+            ).toBeInTheDocument();
+        });
+
         expect(
             screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
         ).toBeInTheDocument();
@@ -144,28 +167,33 @@ describe("Anexos", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar os botões Anterior e Finalizar", () => {
+    it("deve renderizar os botões Anterior e Finalizar", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        expect(
-            screen.getByRole("button", { name: /Anterior/i })
-        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(
+                screen.getByRole("button", { name: /Anterior/i })
+            ).toBeInTheDocument();
+        });
+
         expect(
             screen.getByRole("button", { name: /Finalizar/i })
         ).toBeInTheDocument();
     });
 
-    it("deve desabilitar o botão Anexar documento quando não há arquivo selecionado", () => {
+    it("deve desabilitar o botão Anexar documento quando não há arquivo selecionado", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
+        await waitFor(() => {
+            const anexarButton = screen.getByRole("button", {
+                name: /Anexar documento/i,
+            });
+            expect(anexarButton).toBeDisabled();
         });
-        expect(anexarButton).toBeDisabled();
     });
 
     it("deve selecionar um arquivo válido", async () => {
@@ -173,6 +201,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
@@ -195,6 +227,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const largeFile = new File(
             ["x".repeat(3 * 1024 * 1024)],
@@ -225,6 +261,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const invalidFile = new File(["conteúdo"], "documento.txt", {
             type: "text/plain",
         });
@@ -252,6 +292,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -274,6 +318,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "foto.jpg", {
             type: "image/jpeg",
         });
@@ -294,6 +342,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "imagem.png", {
             type: "image/png",
         });
@@ -313,6 +365,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
@@ -341,11 +397,15 @@ describe("Anexos", () => {
         });
     });
 
-    it("deve anexar documento e exibir na lista de preview", async () => {
+    it("deve anexar documento e chamar refetch para atualizar lista da API", async () => {
         const user = userEvent.setup();
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
@@ -374,30 +434,14 @@ describe("Anexos", () => {
             expect(anexarButton).not.toBeDisabled();
         });
 
-        await user.click(anexarButton);
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(mockMutateAsync).toHaveBeenCalled();
+            expect(mockRefetch).toHaveBeenCalled();
         });
-
-        await waitFor(
-            () => {
-                expect(
-                    screen.getByText(
-                        "Estes são os documentos já anexados na ocorrência."
-                    )
-                ).toBeInTheDocument();
-                expect(screen.getByText("documento.pdf")).toBeInTheDocument();
-                const anexoHeading = screen.getByRole("heading", {
-                    name: /documento\.pdf/i,
-                });
-                expect(anexoHeading).toBeInTheDocument();
-                expect(
-                    screen.getByRole("button", { name: /Excluir arquivo/i })
-                ).toBeInTheDocument();
-            },
-            { timeout: 3000 }
-        );
     });
 
     it("deve resetar o formulário após anexar documento", async () => {
@@ -405,6 +449,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
@@ -428,7 +476,10 @@ describe("Anexos", () => {
         const anexarButton = screen.getByRole("button", {
             name: /Anexar documento/i,
         });
-        await user.click(anexarButton);
+
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(
@@ -438,188 +489,104 @@ describe("Anexos", () => {
         });
     });
 
-    it("deve exibir múltiplos anexos na lista", async () => {
-        const user = userEvent.setup();
+    it("deve exibir múltiplos anexos na lista após refetch", async () => {
+        const mockAnexosData = {
+            count: 2,
+            next: null,
+            previous: null,
+            results: [
+                {
+                    uuid: "anexo-1",
+                    nome_original: "documento1.pdf",
+                    categoria: "boletim_ocorrencia" as const,
+                    categoria_display: "Boletim de ocorrência",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "1.2 MB",
+                    extensao: "pdf",
+                    arquivo_url: "https://example.com/doc1.pdf",
+                    criado_em: "2025-11-17T10:00:00Z",
+                    usuario_username: "usuario1",
+                },
+                {
+                    uuid: "anexo-2",
+                    nome_original: "foto.jpg",
+                    categoria: "registro_ocorrencia_interno" as const,
+                    categoria_display: "Registro de ocorrência interno",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "800 KB",
+                    extensao: "jpg",
+                    arquivo_url: "https://example.com/foto.jpg",
+                    criado_em: "2025-11-17T11:00:00Z",
+                    usuario_username: "usuario1",
+                },
+            ],
+        };
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: mockAnexosData,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
+
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
-
-        const file1 = new File(["conteúdo1"], "documento1.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file1);
-
-        let tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        let opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        let anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("documento1.pdf")).toBeInTheDocument();
-        });
-
-        const file2 = new File(["conteúdo2"], "foto.jpg", {
-            type: "image/jpeg",
-        });
-        await user.upload(fileInput, file2);
-
-        tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        opcao = await screen.findByRole("option", {
-            name: /Registro de ocorrência interno/i,
-        });
-        await user.click(opcao);
-
-        anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
 
         await waitFor(() => {
             expect(screen.getByText("documento1.pdf")).toBeInTheDocument();
             expect(screen.getByText("foto.jpg")).toBeInTheDocument();
-            const anexoCards = screen.getAllByRole("heading", { level: 4 });
-            expect(anexoCards).toHaveLength(2);
-            expect(anexoCards[0]).toHaveTextContent("documento1.pdf");
-            expect(anexoCards[1]).toHaveTextContent("foto.jpg");
+
+            const boletimTexts = screen.getAllByText("Boletim de ocorrência");
+            expect(boletimTexts.length).toBeGreaterThan(0);
+
+            const registroTexts = screen.getAllByText(
+                "Registro de ocorrência interno"
+            );
+            expect(registroTexts.length).toBeGreaterThan(0);
         });
     });
 
-    it("deve remover anexo ao clicar em Excluir", async () => {
-        const user = userEvent.setup();
+    it("deve exibir data e hora do anexo da API", async () => {
+        const mockAnexosData = {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [
+                {
+                    uuid: "anexo-1",
+                    nome_original: "documento.pdf",
+                    categoria: "boletim_ocorrencia" as const,
+                    categoria_display: "Boletim de ocorrência",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "1.2 MB",
+                    extensao: "pdf",
+                    arquivo_url: "https://example.com/doc.pdf",
+                    criado_em: "2025-11-13T14:30:00Z",
+                    usuario_username: "usuario1",
+                },
+            ],
+        };
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: mockAnexosData,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
+
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
-
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        const opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
 
         await waitFor(() => {
             expect(screen.getByText("documento.pdf")).toBeInTheDocument();
-        });
-
-        const excluirButton = screen.getByRole("button", {
-            name: /Excluir arquivo/i,
-        });
-        await user.click(excluirButton);
-
-        await waitFor(() => {
-            expect(screen.queryByText("documento.pdf")).not.toBeInTheDocument();
-            expect(
-                screen.queryByText(
-                    "Estes são os documentos já anexados na ocorrência."
-                )
-            ).not.toBeInTheDocument();
-        });
-    });
-
-    it("deve exibir data e hora do anexo", async () => {
-        const user = userEvent.setup();
-        const mockDate = new Date("2025-11-13T14:30:00");
-        vi.setSystemTime(mockDate);
-
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
-
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        const opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(screen.getByText("13/11/2025 14:30")).toBeInTheDocument();
-        });
-
-        vi.useRealTimers();
-    });
-
-    it("deve usar 'Usuário' quando não há nome de usuário", async () => {
-        vi.spyOn(useUserStoreModule, "useUserStore").mockReturnValue({
-            user: null,
-        } as never);
-
-        const user = userEvent.setup();
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
-
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        const opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(
-                screen.getByText(/Anexado por: Usuário/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/13\/11\/2025/)).toBeInTheDocument();
         });
     });
 
@@ -628,6 +595,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const anteriorButton = screen.getByRole("button", {
             name: /Anterior/i,
@@ -643,6 +614,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const form = document.querySelector("form") as HTMLFormElement;
 
         fireEvent.submit(form);
@@ -653,7 +628,7 @@ describe("Anexos", () => {
         });
     });
 
-    it("deve preencher campos com dados do store", () => {
+    it("deve preencher campos com dados do store", async () => {
         vi.spyOn(
             useOcorrenciaFormStoreModule,
             "useOcorrenciaFormStore"
@@ -669,54 +644,65 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        const tipoSelect = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
+        await waitFor(() => {
+            const tipoSelect = screen.getByRole("combobox", {
+                name: /Tipo do documento/i,
+            });
+            expect(tipoSelect).toHaveTextContent("Boletim de ocorrência");
         });
-        expect(tipoSelect).toHaveTextContent("Boletim de ocorrência");
     });
 
-    it("deve exibir link de ajuda sobre arquivos suportados", () => {
+    it("deve exibir link de ajuda sobre arquivos suportados", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
-        expect(
-            screen.getByText(
-                /Para conferir mais detalhes sobre os arquivos suportados/i
-            )
-        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    /Para conferir mais detalhes sobre os arquivos suportados/i
+                )
+            ).toBeInTheDocument();
+        });
+
         expect(
             screen.getByRole("button", { name: /clique aqui/i })
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar ícone de anexo no preview", async () => {
-        const user = userEvent.setup();
+    it("deve renderizar ícone de anexo no preview da API", async () => {
+        const mockAnexosData = {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [
+                {
+                    uuid: "anexo-1",
+                    nome_original: "documento.pdf",
+                    categoria: "boletim_ocorrencia" as const,
+                    categoria_display: "Boletim de ocorrência",
+                    perfil: "diretor" as const,
+                    perfil_display: "Diretor de Escola",
+                    tamanho_formatado: "1.2 MB",
+                    extensao: "pdf",
+                    arquivo_url: "https://example.com/doc.pdf",
+                    criado_em: "2025-11-17T10:00:00Z",
+                    usuario_username: "usuario1",
+                },
+            ],
+        };
+
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: mockAnexosData,
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
+
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
-
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const tipoTrigger = screen.getByRole("combobox", {
-            name: /Tipo do documento/i,
-        });
-        await user.click(tipoTrigger);
-        const opcao = await screen.findByRole("option", {
-            name: /Boletim de Ocorrência/i,
-        });
-        await user.click(opcao);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-        await user.click(anexarButton);
 
         await waitFor(() => {
             const container = screen.getByText("documento.pdf").closest("div");
@@ -729,6 +715,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const tipoTrigger = screen.getByRole("combobox", {
             name: /Tipo do documento/i,
@@ -751,6 +741,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -770,6 +764,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const escolherButton = screen.getByRole("button", {
             name: /Escolher arquivo/i,
@@ -801,6 +799,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -822,7 +824,10 @@ describe("Anexos", () => {
         const anexarButton = screen.getByRole("button", {
             name: /Anexar documento/i,
         });
-        await user.click(anexarButton);
+
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
@@ -836,72 +841,6 @@ describe("Anexos", () => {
         expect(mockMutateAsync).not.toHaveBeenCalled();
     });
 
-    it("deve usar tipoDocumento como fallback quando label não é encontrado", async () => {
-        const user = userEvent.setup();
-
-        const mockMutateAsyncCustom = vi.fn().mockResolvedValue({
-            success: true,
-            data: {
-                id: "123",
-                url: "https://example.com/anexo.pdf",
-            },
-        });
-
-        vi.spyOn(useEnviarAnexoHook, "useEnviarAnexo").mockReturnValue({
-            mutateAsync: mockMutateAsyncCustom,
-            mutate: vi.fn(),
-            isPending: false,
-            isError: false,
-            isSuccess: false,
-            isIdle: true,
-        } as never);
-
-        vi.spyOn(
-            useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
-        ).mockReturnValue({
-            formData: {
-                tipoDocumento: "tipo_inexistente_xyz",
-            },
-            setFormData: mockSetFormData,
-            ocorrenciaUuid: "test-uuid-123",
-        } as never);
-
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
-
-        const file = new File(["conteúdo"], "documento.pdf", {
-            type: "application/pdf",
-        });
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, file);
-
-        const anexarButton = screen.getByRole("button", {
-            name: /Anexar documento/i,
-        });
-
-        await waitFor(() => {
-            expect(anexarButton).not.toBeDisabled();
-        });
-
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(mockMutateAsyncCustom).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    categoria: "tipo_inexistente_xyz",
-                })
-            );
-        });
-
-        await waitFor(() => {
-            const tiposExibidos = screen.queryAllByText("tipo_inexistente_xyz");
-            expect(tiposExibidos.length).toBeGreaterThan(0);
-        });
-    });
     it("deve exibir erro quando o envio do anexo falha", async () => {
         const user = userEvent.setup();
 
@@ -913,6 +852,10 @@ describe("Anexos", () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
+
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
 
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
@@ -940,22 +883,17 @@ describe("Anexos", () => {
             expect(anexarButton).not.toBeDisabled();
         });
 
-        await user.click(anexarButton);
-
-        await waitFor(() => {
-            expect(mockMutateAsync).toHaveBeenCalled();
+        await act(async () => {
+            await user.click(anexarButton);
         });
 
         await waitFor(() => {
+            expect(mockMutateAsync).toHaveBeenCalled();
             expect(mockToast).toHaveBeenCalledWith({
                 title: "Não conseguimos anexar o arquivo",
                 description: "Erro ao processar o arquivo",
                 variant: "error",
             });
-        });
-
-        await waitFor(() => {
-            expect(screen.queryByText("documento.pdf")).not.toBeInTheDocument();
         });
     });
 
@@ -976,6 +914,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -997,7 +939,10 @@ describe("Anexos", () => {
         const anexarButton = screen.getByRole("button", {
             name: /Anexar documento/i,
         });
-        await user.click(anexarButton);
+
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
@@ -1065,6 +1010,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -1114,6 +1063,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -1135,7 +1088,10 @@ describe("Anexos", () => {
         const anexarButton = screen.getByRole("button", {
             name: /Anexar documento/i,
         });
-        await user.click(anexarButton);
+
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
@@ -1160,6 +1116,10 @@ describe("Anexos", () => {
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
         );
 
+        await waitFor(() => {
+            expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+
         const file = new File(["conteúdo"], "documento.pdf", {
             type: "application/pdf",
         });
@@ -1181,7 +1141,10 @@ describe("Anexos", () => {
         const anexarButton = screen.getByRole("button", {
             name: /Anexar documento/i,
         });
-        await user.click(anexarButton);
+
+        await act(async () => {
+            await user.click(anexarButton);
+        });
 
         await waitFor(() => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
@@ -1206,5 +1169,4 @@ describe("Anexos", () => {
             ).toBeInTheDocument();
         });
     });
-
 });

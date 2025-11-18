@@ -59,8 +59,9 @@ describe("useOcorrencias", () => {
             ],
         };
 
-        useUserStoreMock.mockImplementation((selector: any) =>
-            selector({ user: mockUser })
+        useUserStoreMock.mockImplementation(
+            <T,>(selector: (state: { user: User | null }) => T) =>
+                selector({ user: mockUser })
         );
 
         getOcorrenciasActionMock.mockResolvedValueOnce(mockApiResponse);
@@ -85,7 +86,6 @@ describe("useOcorrencias", () => {
             status: "Finalizada",
         });
     });
-
 
     it("deve lançar um erro se a action falhar", async () => {
         const mockUser = { username: "testuser" } as User;
