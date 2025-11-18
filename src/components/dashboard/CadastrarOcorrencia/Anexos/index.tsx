@@ -56,17 +56,6 @@ const TIPOS_DOCUMENTO = [
     },
 ];
 
-type AnexoItem = {
-    id: string;
-    arquivo: File;
-    tipoDocumento: string;
-    tipoDocumentoLabel: string;
-    anexadoPor: string;
-    dataHora: string;
-    enviado?: boolean;
-    enviando?: boolean;
-};
-
 export type AnexosProps = {
     onPrevious: () => void;
     onNext: () => void;
@@ -76,11 +65,10 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [anexos, setAnexos] = useState<AnexoItem[]>([]);
     const enviarAnexoMutation = useEnviarAnexo();
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
-        intercorrenciaUuid: ocorrenciaUuid,
+        intercorrenciaUuid: ocorrenciaUuid ?? "",
     });
 
     const form = useForm<AnexosData>({
@@ -126,28 +114,6 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
 
         const tipoDocumento = form.getValues("tipoDocumento")!;
 
-        const tipoLabel =
-            TIPOS_DOCUMENTO.find((t) => t.value === tipoDocumento)?.label ||
-            tipoDocumento;
-
-        const now = new Date();
-        const dataHora = `${String(now.getDate()).padStart(2, "0")}/${String(
-            now.getMonth() + 1
-        ).padStart(2, "0")}/${now.getFullYear()} ${String(
-            now.getHours()
-        ).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-        const novoAnexoTemp: AnexoItem = {
-            id: `${Date.now()}-${selectedFile!.name}`,
-            arquivo: selectedFile!,
-            tipoDocumento,
-            tipoDocumentoLabel: tipoLabel,
-            anexadoPor: user?.name || "Usuário",
-            dataHora,
-            enviando: true,
-        };
-
-        setAnexos([...anexos, novoAnexoTemp]);
         setSelectedFile(null);
         form.reset({
             tipoDocumento: "",
@@ -179,11 +145,10 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
             intercorrencia_uuid: ocorrenciaUuid,
             perfil: perfilUsuario,
             categoria: tipoDocumento,
-            arquivo: novoAnexoTemp.arquivo,
+            arquivo: selectedFile!,
         });
 
         if (response.success) {
-            setAnexos((prev) => prev.filter((a) => a.id !== novoAnexoTemp.id));
             await refetchAnexos();
             toast({
                 variant: "success",
@@ -191,17 +156,12 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                 description: "O documento foi anexado com sucesso!",
             });
         } else {
-            setAnexos((prev) => prev.filter((a) => a.id !== novoAnexoTemp.id));
             toast({
                 variant: "error",
                 title: "Não conseguimos anexar o arquivo",
                 description: response.error,
             });
         }
-    };
-
-    const handleRemoverAnexo = (id: string) => {
-        setAnexos(anexos.filter((anexo) => anexo.id !== id));
     };
 
     const onSubmit = async (data: AnexosData) => {
@@ -215,11 +175,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                 Anexos
             </h2>
 
-            <ListagemAnexos
-                anexosLocais={anexos}
-                anexosAPI={anexosData?.results}
-                onRemoverAnexoLocal={handleRemoverAnexo}
-            />
+            <ListagemAnexos anexosAPI={anexosData?.results} />
 
             <Form {...form}>
                 <form
