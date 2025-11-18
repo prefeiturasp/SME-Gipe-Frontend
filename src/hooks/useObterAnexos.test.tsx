@@ -86,23 +86,6 @@ describe("useObterAnexos", () => {
         });
     });
 
-    it("não deve fazer a requisição quando intercorrenciaUuid é null", async () => {
-        const { result } = renderHook(
-            () =>
-                useObterAnexos({
-                    intercorrenciaUuid: null,
-                }),
-            { wrapper }
-        );
-
-        await waitFor(() => {
-            expect(result.current.isFetching).toBe(false);
-        });
-
-        expect(obterAnexosMock).not.toHaveBeenCalled();
-        expect(result.current.data).toBeUndefined();
-    });
-
     it("deve lidar com erro quando obterAnexos retorna success: false", async () => {
         obterAnexosMock.mockResolvedValue({
             success: false,

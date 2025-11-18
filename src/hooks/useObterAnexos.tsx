@@ -2,17 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { obterAnexos } from "@/actions/obter-anexos";
 
 type UseObterAnexosParams = {
-    intercorrenciaUuid: string | null;
+    intercorrenciaUuid: string;
 };
 
 export function useObterAnexos({ intercorrenciaUuid }: UseObterAnexosParams) {
     return useQuery({
         queryKey: ["anexos", intercorrenciaUuid],
         queryFn: async () => {
-            if (!intercorrenciaUuid) {
-                throw new Error("UUID da intercorrência não fornecido");
-            }
-
             const result = await obterAnexos({ intercorrenciaUuid });
 
             if (!result.success) {
