@@ -9,8 +9,22 @@ import * as userStore from "@/stores/useUserStore";
 // Mock da action
 vi.mock("@/actions/documentos-anexo");
 
-vi.spyOn(userStore, "useUserStore").mockImplementation((selector: any) =>
-    selector({ user: null })
+vi.spyOn(userStore, "useUserStore").mockImplementation((selector) =>
+    selector({
+        user: {
+            username: "",
+            name: "João",
+            email: "",
+            cpf: "",
+            rede: "",
+            is_core_sso: false,
+            is_validado: true,
+            perfil_acesso: { codigo: 1, nome: "DIRETOR DE ESCOLA" },
+            unidades: [],
+        },
+        setUser: vi.fn(),
+        clearUser: vi.fn(),
+    })
 );
 
 
@@ -51,10 +65,23 @@ describe("useTiposDocumentos", () => {
             data: mockApiResponse
         } as const);
 
-        // mock da store com user presente
-        vi.spyOn(userStore, "useUserStore").mockReturnValue({
-            user: { nome: "João" },
-        } as any);
+        vi.spyOn(userStore, "useUserStore").mockImplementation((selector) =>
+            selector({
+                user: {
+                    username: "",
+                    name: "João",
+                    email: "",
+                    cpf: "",
+                    rede: "",
+                    is_core_sso: false,
+                    is_validado: true,
+                    perfil_acesso: { codigo: 1, nome: "DIRETOR DE ESCOLA" },
+                    unidades: [],
+                },
+                setUser: vi.fn(),
+                clearUser: vi.fn(),
+            })
+        );
 
         const { result } = renderHook(() => useTiposDocumentos(), {
             wrapper: createWrapper(),
@@ -75,9 +102,24 @@ describe("useTiposDocumentos", () => {
                 error: "Erro ao buscar documentos",
             });
 
-        vi.spyOn(userStore, "useUserStore").mockReturnValue({
-            user: { nome: "Maria" },
-        } as any);
+        vi.spyOn(userStore, "useUserStore").mockImplementation((selector) =>
+            selector({
+                user: {
+                    username: "",
+                    name: "João",
+                    email: "",
+                    cpf: "",
+                    rede: "",
+                    is_core_sso: false,
+                    is_validado: true,
+                    perfil_acesso: { codigo: 1, nome: "DIRETOR DE ESCOLA" },
+                    unidades: [],
+                },
+                setUser: vi.fn(),
+                clearUser: vi.fn(),
+            })
+        );
+
 
         const { result } = renderHook(() => useTiposDocumentos(), {
             wrapper: createWrapper(),
@@ -94,8 +136,12 @@ describe("useTiposDocumentos", () => {
     it("não deve executar a query quando não há usuário", async () => {
         const spy = vi.spyOn(documentosAction, "getTiposDocumentoAction");
 
-        vi.spyOn(userStore, "useUserStore").mockImplementation((selector: any) =>
-            selector({ user: null })
+        vi.spyOn(userStore, "useUserStore").mockImplementation((selector) =>
+            selector({
+                user: null,
+                setUser: vi.fn(),
+                clearUser: vi.fn(),
+            })
         );
 
         renderHook(() => useTiposDocumentos(), {

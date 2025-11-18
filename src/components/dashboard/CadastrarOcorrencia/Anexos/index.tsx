@@ -51,7 +51,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [anexos, setAnexos] = useState<AnexoItem[]>([]);
     const enviarAnexoMutation = useEnviarAnexo();
-    const { data: tiposDocumento = [], isLoading } = useTiposDocumentos();
+    const { data: tiposDocumento = [] } = useTiposDocumentos();
     const [openModalTipos, setOpenModalTipos] = useState(false);
 
     const form = useForm<AnexosData>({
