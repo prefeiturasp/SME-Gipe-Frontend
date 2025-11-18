@@ -1,6 +1,23 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ModalFinalizar from "./ModalFinalizar";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
+
+const mockPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: mockPush,
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => "/",
+    useSearchParams: () => ({ get: () => null }),
+    useParams: () => ({}),
+    redirect: vi.fn(),
+    notFound: vi.fn(),
+}));
+
 
 describe("ModalFinalizarEtapa", () => {
     const onOpenChange = vi.fn();
@@ -145,5 +162,24 @@ describe("ModalFinalizarEtapa", () => {
 
         expect(onOpenChangeMock).toHaveBeenCalledWith(false);
     });
+
+    it("redireciona para /dashboard ao clicar em Fechar", async () => {
+        const onOpenChange = vi.fn();
+
+        render(<ModalFinalizar open={true} onOpenChange={onOpenChange} />);
+
+        const input = screen.getByTestId("input-motivo");
+        await userEvent.type(input, "motivo válido");
+
+        const finalizar = screen.getByRole("button", { name: /finalizar/i });
+        await userEvent.click(finalizar);
+
+        const fechar = await screen.findByRole("button", { name: /fechar/i });
+        await userEvent.click(fechar);
+
+        expect(onOpenChange).toHaveBeenCalledWith(false);
+        expect(mockPush).toHaveBeenCalledWith("/dashboard");
+    });
+
 
 });

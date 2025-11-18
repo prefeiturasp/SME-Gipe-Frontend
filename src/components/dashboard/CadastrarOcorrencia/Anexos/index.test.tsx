@@ -21,6 +21,21 @@ vi.mock("@/hooks/useEnviarAnexo");
 vi.mock("@/hooks/useObterAnexos");
 vi.mock("@/hooks/useTiposDocumentos");
 
+const mockPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: mockPush,
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => "/",
+    useSearchParams: () => ({ get: () => null }),
+    useParams: () => ({}),
+    redirect: vi.fn(),
+    notFound: vi.fn(),
+}));
+
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: (params: unknown) => mockToast(params),
