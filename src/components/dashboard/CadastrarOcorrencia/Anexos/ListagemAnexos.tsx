@@ -2,29 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Paperclip, Trash2 } from "lucide-react";
 import { AnexoAPI } from "@/types/anexo";
 
-type AnexoItem = {
-    id: string;
-    arquivo: File;
-    tipoDocumento: string;
-    tipoDocumentoLabel: string;
-    anexadoPor: string;
-    dataHora: string;
-    enviado?: boolean;
-    enviando?: boolean;
-};
-
 type ListagemAnexosProps = {
-    anexosLocais: AnexoItem[];
     anexosAPI?: AnexoAPI[];
-    onRemoverAnexoLocal: (id: string) => void;
-    onRemoverAnexoAPI?: (uuid: string) => void;
 };
 
 export function ListagemAnexos({
-    anexosLocais,
     anexosAPI = [],
-    onRemoverAnexoLocal,
-    onRemoverAnexoAPI,
 }: Readonly<ListagemAnexosProps>) {
     const formatarDataHora = (dataISO: string) => {
         const data = new Date(dataISO);
@@ -36,9 +19,7 @@ export function ListagemAnexos({
         return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
     };
 
-    const temAnexos = anexosLocais.length > 0 || anexosAPI.length > 0;
-
-    if (!temAnexos) {
+    if (anexosAPI.length === 0) {
         return null;
     }
 
@@ -82,56 +63,6 @@ export function ListagemAnexos({
                                 variant="ghost"
                                 size="sm"
                                 className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                onClick={() => onRemoverAnexoAPI?.(anexo.uuid)}
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir arquivo
-                            </Button>
-                        </div>
-                    </div>
-                ))}
-
-                {anexosLocais.map((anexo) => (
-                    <div
-                        key={anexo.id}
-                        className="border border-[#DADADA] rounded-md p-6"
-                    >
-                        <div className="flex items-start gap-3 mb-3">
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-[#E8F0FE] rounded-[4px] flex items-center justify-center">
-                                    <Paperclip className="w-4 h-4 text-[#717FC7]" />
-                                </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-[14px] font-bold text-[#42474a] truncate">
-                                    {anexo.arquivo.name}
-                                </h4>
-                                <p className="text-[14px] text-[#86858D] mt-1">
-                                    {anexo.tipoDocumentoLabel}
-                                </p>
-                                <div className="flex items-center justify-between mt-1">
-                                    <p className="text-[12px] text-[#86858D]">
-                                        Anexado por: {anexo.anexadoPor}
-                                    </p>
-                                    <span className="text-[12px] text-[#86858D]">
-                                        {anexo.dataHora}
-                                    </span>
-                                </div>
-                                {anexo.enviando && (
-                                    <p className="text-[12px] text-[#717FC7] mt-1 font-semibold">
-                                        Enviando...
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                onClick={() => onRemoverAnexoLocal(anexo.id)}
-                                disabled={anexo.enviando}
                             >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Excluir arquivo
