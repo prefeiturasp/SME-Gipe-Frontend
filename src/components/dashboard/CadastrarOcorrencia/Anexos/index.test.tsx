@@ -1169,4 +1169,22 @@ describe("Anexos", () => {
             ).toBeInTheDocument();
         });
     });
+
+    
+    it("deve abrir o modal de tipos ao clicar em 'Finalizar'", async () => {
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
+
+        const botao = screen.getByRole("button", { name: /finalizar/i });
+        await userEvent.click(botao);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(/Conclusão de etapa/i)
+            ).toBeInTheDocument();
+        });
+    });
+
+    
 });
