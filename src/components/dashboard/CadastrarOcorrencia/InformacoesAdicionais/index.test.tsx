@@ -54,7 +54,7 @@ describe("InformacoesAdicionais", () => {
       mutateAsync: mockMutateAsync,
       isPending: false,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof useEnderecoPorCep>);
 
   });
   it("deve renderizar todos os campos do formulário", () => {
@@ -394,7 +394,7 @@ describe("InformacoesAdicionais", () => {
       mutateAsync: mockMutateAsync,
       isPending: true,
       error: null,
-    } as any);
+    } as unknown as ReturnType<typeof useEnderecoPorCep>);
 
     renderComponent();
     
