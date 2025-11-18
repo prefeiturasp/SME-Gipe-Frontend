@@ -19,13 +19,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { DateTimeInput } from "@/components/ui/date-time-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, SecaoInicialData } from "./schema";
 import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
+import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoInicialProps = {
     onSuccess: () => void;
@@ -40,8 +41,14 @@ export default function SecaoInicial({
     const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
         useAtualizarSecaoInicial();
 
-    const { formData, setFormData, setOcorrenciaUuid, ocorrenciaUuid } =
-        useOcorrenciaFormStore();
+    const {
+        formData,
+        savedFormData,
+        setFormData,
+        setSavedFormData,
+        setOcorrenciaUuid,
+        ocorrenciaUuid,
+    } = useOcorrenciaFormStore();
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -54,6 +61,7 @@ export default function SecaoInicial({
         mode: "onChange",
         defaultValues: {
             dataOcorrencia: formData.dataOcorrencia || "",
+            horaOcorrencia: formData.horaOcorrencia || "",
             dre: formData.dre ?? user?.unidades[0]?.dre.codigo_eol ?? undefined,
             unidadeEducacional:
                 formData.unidadeEducacional ??
@@ -65,29 +73,27 @@ export default function SecaoInicial({
 
     const { isValid } = form.formState;
 
-    const hasFormChanged = (data: SecaoInicialData) => {
-        return (
-            formData.dataOcorrencia !== data.dataOcorrencia ||
-            formData.dre !== data.dre ||
-            formData.unidadeEducacional !== data.unidadeEducacional ||
-            formData.tipoOcorrencia !== data.tipoOcorrencia
-        );
-    };
+    const dreNome = formData.nomeDre || user?.unidades[0]?.dre.nome || "";
+
+    const unidadeNome =
+        formData.nomeUnidade || user?.unidades[0]?.ue.nome || "";
 
     const onSubmit = async (data: SecaoInicialData) => {
         setFormData(data);
 
         if (ocorrenciaUuid) {
-            if (!hasFormChanged(data)) {
+            if (!hasFormDataChanged(data, savedFormData)) {
                 return onSuccess();
             }
 
-            const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+            const dataHoraOcorrencia = new Date(
+                `${data.dataOcorrencia}T${data.horaOcorrencia}`
+            ).toISOString();
 
             const response = await atualizarOcorrencia({
                 uuid: ocorrenciaUuid,
                 body: {
-                    data_ocorrencia: dataOcorrencia,
+                    data_ocorrencia: dataHoraOcorrencia,
                     unidade_codigo_eol: data.unidadeEducacional,
                     dre_codigo_eol: data.dre,
                     sobre_furto_roubo_invasao_depredacao:
@@ -96,6 +102,7 @@ export default function SecaoInicial({
             });
 
             if (response.success) {
+                setSavedFormData(data);
                 onSuccess();
                 return;
             }
@@ -108,10 +115,12 @@ export default function SecaoInicial({
             return;
         }
 
-        const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+        const dataHoraOcorrencia = new Date(
+            `${data.dataOcorrencia}T${data.horaOcorrencia}`
+        ).toISOString();
 
         const response = await criarOcorrencia({
-            data_ocorrencia: dataOcorrencia,
+            data_ocorrencia: dataHoraOcorrencia,
             unidade_codigo_eol: data.unidadeEducacional,
             dre_codigo_eol: data.dre,
             sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
@@ -128,6 +137,7 @@ export default function SecaoInicial({
 
         if (response.data?.uuid) {
             setOcorrenciaUuid(response.data.uuid);
+            setSavedFormData(data);
             onSuccess();
         }
     };
@@ -149,12 +159,20 @@ export default function SecaoInicial({
                                         Quando a ocorrência aconteceu?*
                                     </FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="date"
-                                            placeholder="dd/mm/aaaa"
-                                            {...field}
-                                            max={maxDate}
-                                            className="has-calendar"
+                                        <DateTimeInput
+                                            dateValue={field.value}
+                                            timeValue={
+                                                form.watch("horaOcorrencia") ||
+                                                ""
+                                            }
+                                            onDateChange={field.onChange}
+                                            onTimeChange={(value) =>
+                                                form.setValue(
+                                                    "horaOcorrencia",
+                                                    value
+                                                )
+                                            }
+                                            maxDate={maxDate}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -181,15 +199,9 @@ export default function SecaoInicial({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {user?.unidades[0]?.dre
-                                                ?.codigo_eol && (
-                                                <SelectItem
-                                                    value={
-                                                        user.unidades[0].dre
-                                                            .codigo_eol
-                                                    }
-                                                >
-                                                    {user.unidades[0].dre.nome}
+                                            {field.value && dreNome && (
+                                                <SelectItem value={field.value}>
+                                                    {dreNome}
                                                 </SelectItem>
                                             )}
                                         </SelectContent>
@@ -219,14 +231,9 @@ export default function SecaoInicial({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {user?.unidades[0]?.ue?.codigo_eol && (
-                                            <SelectItem
-                                                value={
-                                                    user.unidades[0].ue
-                                                        .codigo_eol
-                                                }
-                                            >
-                                                {user.unidades[0].ue.nome}
+                                        {field.value && unidadeNome && (
+                                            <SelectItem value={field.value}>
+                                                {unidadeNome}
                                             </SelectItem>
                                         )}
                                     </SelectContent>
@@ -271,7 +278,7 @@ export default function SecaoInicial({
                         )}
                     />
                     <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" disabled>
+                        <Button size="sm" variant="customOutline" disabled>
                             Anterior
                         </Button>
                         <Button

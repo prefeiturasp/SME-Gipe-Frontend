@@ -1,349 +1,346 @@
-import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import CadastrarOcorrencia from "./index";
+import "./__tests__/setup";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { renderWithClient, mockUseUserStore } from "./__tests__/helpers";
 
-vi.mock("next/navigation", () => ({
-    useRouter: () => ({
-        back: vi.fn(),
-    }),
+vi.mock("./SecaoInicial", () => ({
+    default: vi.fn(({ onSuccess }) => (
+        <div>
+            <span>Mock SecaoInicial</span>
+            <button onClick={onSuccess}>Próximo</button>
+        </div>
+    )),
 }));
 
-const mockTiposOcorrencia = [
-    {
-        uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
-        nome: "Violência física",
-    },
-    {
-        uuid: "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
-        nome: "Violência psicológica",
-    },
-    {
-        uuid: "4d30a69e-e0b1-4d33-aee9-47636728bf44",
-        nome: "Violência sexual",
-    },
-    {
-        uuid: "263f33e0-36e3-45ec-b886-aa775ed1bd7e",
-        nome: "Negligência",
-    },
-    {
-        uuid: "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
-        nome: "Bullying",
-    },
-    {
-        uuid: "252ebf03-c661-4195-b42e-455376e10396",
-        nome: "Cyberbullying",
-    },
-];
+vi.mock("./SecaoFurtoERoubo", () => ({
+    default: vi.fn(({ onNext, onPrevious }) => (
+        <div>
+            <span>Mock SecaoFurtoERoubo</span>
+            <button onClick={onNext}>Próximo</button>
+            <button onClick={onPrevious}>Anterior</button>
+        </div>
+    )),
+}));
 
-function mockUseTiposOcorrencia() {
-    return {
-        useTiposOcorrencia: () => ({
-            data: mockTiposOcorrencia,
-            isLoading: false,
-            isError: false,
-            error: null,
-        }),
-    };
-}
+vi.mock("./SecaoNaoFurtoERoubo", () => ({
+    default: vi.fn(({ onNext, onPrevious }) => (
+        <div>
+            <span>Mock SecaoNaoFurtoERoubo</span>
+            <button onClick={onNext}>Próximo</button>
+            <button onClick={onPrevious}>Anterior</button>
+        </div>
+    )),
+}));
 
+vi.mock("./SecaoFinal", () => ({
+    default: vi.fn(({ onNext, onPrevious }) => (
+        <div>
+            <span>Mock SecaoFinal</span>
+            <button onClick={onNext}>Próximo</button>
+            <button onClick={onPrevious}>Anterior</button>
+        </div>
+    )),
+}));
+
+vi.mock("../PageHeader/PageHeader", () => ({
+    default: vi.fn(({ onClickBack }) => (
+        <div>
+            <button onClick={onClickBack}>Voltar</button>
+        </div>
+    )),
+}));
+
+vi.mock("@/components/stepper/Stepper", () => ({
+    Stepper: vi.fn(({ steps, currentStep }) => (
+        <div data-testid="mock-stepper">
+            <span data-testid="current-step">{currentStep}</span>
+            {steps.map((step: { label: string }) => (
+                <span key={step.label}>{step.label}</span>
+            ))}
+        </div>
+    )),
+}));
+
+const mockReset = vi.fn();
+const mockInvalidateQueries = vi.fn();
 const queryClient = new QueryClient();
 
-const renderWithClient = (ui: React.ReactElement) => {
-    return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
-    );
-};
-
-const fakeUser = {
-    nome: "Usuário Teste",
-    username: "382888888",
-    perfil_acesso: { nome: "DRE Teste", codigo: 123 },
-    unidades: [
-        {
-            dre: {
-                codigo_eol: "001",
-                nome: "DRE Teste",
-                sigla: "DRT",
-            },
-            ue: {
-                codigo_eol: "0001",
-                nome: "EMEF Teste",
-                sigla: "EMEF",
-            },
-        },
-    ],
-    email: "a@b.com",
-    cpf: "12345678900",
-};
-
-type UseUserSelector = (state: { user: typeof fakeUser }) => unknown;
-
-function mockUseUserStore() {
-    return {
-        useUserStore: (selector: UseUserSelector) =>
-            selector({
-                user: fakeUser,
-            }),
-    };
-}
-
-function mockUseOcorrenciaFormStore() {
-    const mockStoreState = {
-        formData: {},
+const setupStoreMock = (
+    formData: Record<string, unknown>,
+    uuid: string | null = null
+) => {
+    const mockStore = {
+        formData,
+        ocorrenciaUuid: uuid,
+        reset: mockReset,
         setFormData: vi.fn(),
+        setSavedFormData: vi.fn(),
         setOcorrenciaUuid: vi.fn(),
-        ocorrenciaUuid: null,
-        reset: vi.fn(),
+        savedFormData: {},
     };
 
-    return {
+    vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
         useOcorrenciaFormStore: (
-            selector?: (state: typeof mockStoreState) => unknown
+            selector?: (state: typeof mockStore) => unknown
         ) => {
             if (typeof selector === "function") {
-                return selector(mockStoreState);
+                return selector(mockStore);
             }
-            return mockStoreState;
+            return mockStore;
         },
-    };
-}
+    }));
+};
 
-function mockUseCadastrarOcorrencia() {
+vi.doMock("@tanstack/react-query", async () => {
+    const actual = await vi.importActual("@tanstack/react-query");
     return {
-        useCadastrarOcorrencia: () => ({
-            mutateAsync: async () => ({
-                success: true,
-                data: { uuid: "test-uuid" },
-            }),
-            isPending: false,
+        ...(actual as object),
+        useQueryClient: () => ({
+            ...queryClient,
+            invalidateQueries: mockInvalidateQueries,
         }),
     };
-}
+});
 
-function mockUseSecaoInicial() {
-    return {
-        useSecaoInicial: () => ({
-            mutateAsync: async () => ({
-                success: true,
-                data: { uuid: "test-uuid" },
-            }),
-            isPending: false,
-        }),
-    };
-}
+vi.doMock("@/stores/useUserStore", mockUseUserStore);
 
-function mockUseAtualizarSecaoInicial() {
-    return {
-        useAtualizarSecaoInicial: () => ({
-            mutateAsync: async () => ({
-                success: true,
-            }),
-            isPending: false,
-        }),
-    };
-}
-
-function mockUseAtualizarSecaoFurtoRoubo() {
-    return {
-        useAtualizarSecaoFurtoRoubo: () => ({
-            mutate: vi.fn(),
-            mutateAsync: vi.fn(),
-            isPending: false,
-        }),
-    };
-}
-
-describe("CadastrarOcorrencia", () => {
-    it("deve renderizar o PageHeader com o título correto", () => {
-        renderWithClient(<CadastrarOcorrencia />);
-        const heading = screen.getByRole("heading", {
-            name: /Nova ocorrência/i,
-        });
-        expect(heading).toBeInTheDocument();
+describe("CadastrarOcorrencia - Coordenador de Steps", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockInvalidateQueries.mockResolvedValue(undefined);
     });
 
-    it("deve renderizar o Stepper com os passos corretos", () => {
-        renderWithClient(<CadastrarOcorrencia />);
-        expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
-        expect(screen.getByText("Formulário patrimonial")).toBeInTheDocument();
-        expect(screen.getByText("Fase 03")).toBeInTheDocument();
-        expect(screen.getByText("Anexos")).toBeInTheDocument();
-    });
-
-    it("avança de step quando a mutation do filho retorna sucesso (integração)", async () => {
+    afterEach(() => {
         vi.resetModules();
+    });
 
-        vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock(
-            "@/stores/useOcorrenciaFormStore",
-            mockUseOcorrenciaFormStore
-        );
-        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
-        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoInicial",
-            mockUseAtualizarSecaoInicial
-        );
-        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoFurtoRoubo",
-            mockUseAtualizarSecaoFurtoRoubo
-        );
+    it("1. deve renderizar SecaoInicial no step 1 por padrão", async () => {
+        setupStoreMock({});
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
-
-        const nextButton = screen.getByRole("button", { name: /Próximo/i });
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
-
-        const checks = await screen.findAllByTestId("check-icon");
-        expect(checks.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
+        expect(screen.getByTestId("current-step")).toHaveTextContent("1");
     });
 
-    it("deve avançar do step 2 (SecaoFurtoERoubo) para o step 3 ao clicar em Próximo", async () => {
-        vi.resetModules();
-
-        vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock(
-            "@/stores/useOcorrenciaFormStore",
-            mockUseOcorrenciaFormStore
-        );
-        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
-        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoInicial",
-            mockUseAtualizarSecaoInicial
-        );
-        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoFurtoRoubo",
-            mockUseAtualizarSecaoFurtoRoubo
-        );
+    it("2. deve navegar para SecaoFurtoERoubo (step 2) se tipoOcorrencia é 'Sim'", async () => {
+        setupStoreMock({ tipoOcorrencia: "Sim" });
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
-
-        const nextButton = screen.getByRole("button", { name: /Próximo/i });
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
 
         await waitFor(() => {
             expect(
-                screen.getByText("Qual o tipo de ocorrência?*")
+                screen.getByText("Mock SecaoFurtoERoubo")
             ).toBeInTheDocument();
         });
-
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
-        });
-        fireEvent.click(multiSelectButton);
-
-        const opcaoViolencia = await screen.findByRole("option", {
-            name: /violência física/i,
-        });
-        fireEvent.click(opcaoViolencia);
-
-        const descricaoField = screen.getByPlaceholderText("Descreva aqui...");
-        fireEvent.change(descricaoField, {
-            target: {
-                value: "Descrição detalhada da ocorrência com mais de dez caracteres",
-            },
-        });
-
-        const radioSmartSampa = screen.getByRole("radio", {
-            name: /A UE não faz parte do Smart Sampa/i,
-        });
-        fireEvent.click(radioSmartSampa);
-
-        const nextButtonStep2 = screen.getByRole("button", {
-            name: /Próximo/i,
-        });
-        await waitFor(() => expect(nextButtonStep2).toBeEnabled());
-        fireEvent.click(nextButtonStep2);
-
-        await waitFor(() => {
-            expect(
-                screen.queryByText("Qual o tipo de ocorrência?*")
-            ).not.toBeInTheDocument();
-        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("2");
     });
 
-    it("deve voltar do step 2 (SecaoFurtoERoubo) para o step 1 ao clicar em Anterior", async () => {
-        vi.resetModules();
-
-        vi.doMock("@/stores/useUserStore", mockUseUserStore);
-        vi.doMock(
-            "@/stores/useOcorrenciaFormStore",
-            mockUseOcorrenciaFormStore
-        );
-        vi.doMock("@/hooks/useCadastrarOcorrencia", mockUseCadastrarOcorrencia);
-        vi.doMock("@/hooks/useSecaoInicial", mockUseSecaoInicial);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoInicial",
-            mockUseAtualizarSecaoInicial
-        );
-        vi.doMock("@/hooks/useTiposOcorrencia", mockUseTiposOcorrencia);
-        vi.doMock(
-            "@/hooks/useAtualizarSecaoFurtoRoubo",
-            mockUseAtualizarSecaoFurtoRoubo
-        );
+    it("3. deve navegar para SecaoNaoFurtoERoubo (step 2) se tipoOcorrencia é 'Não'", async () => {
+        setupStoreMock({ tipoOcorrencia: "Não" });
 
         const mod = await import("./index");
         const CadastrarOcorrencia = mod.default;
         renderWithClient(<CadastrarOcorrencia />);
 
-        const dateInput = screen.getByLabelText(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
-
-        const nextButton = screen.getByRole("button", { name: /Próximo/i });
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
 
         await waitFor(() => {
             expect(
-                screen.getByText("Qual o tipo de ocorrência?*")
+                screen.getByText("Mock SecaoNaoFurtoERoubo")
             ).toBeInTheDocument();
         });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("2");
+    });
 
-        const previousButton = screen.getByRole("button", {
-            name: /Anterior/i,
-        });
-        fireEvent.click(previousButton);
+    it("4. deve navegar para SecaoFinal (step 3) ao avançar do step 2 (Não furto/roubo)", async () => {
+        setupStoreMock({ tipoOcorrencia: "Não" });
 
-        await waitFor(() => {
-            expect(
-                screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
-            ).toBeInTheDocument();
-        });
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={2} />);
 
         expect(
-            screen.queryByText("Qual o tipo de ocorrência?*")
-        ).not.toBeInTheDocument();
+            screen.getByText("Mock SecaoNaoFurtoERoubo")
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("3");
+    });
+
+    it("4b. deve navegar para SecaoFinal (step 3) ao avançar do step 2 (Furto/roubo)", async () => {
+        setupStoreMock({ tipoOcorrencia: "Sim" });
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={2} />);
+
+        expect(screen.getByText("Mock SecaoFurtoERoubo")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("3");
+    });
+
+    it("5. deve voltar para SecaoInicial (step 1) ao retroceder do step 2 (Furto/roubo)", async () => {
+        setupStoreMock({ tipoOcorrencia: "Sim" });
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={2} />);
+
+        expect(screen.getByText("Mock SecaoFurtoERoubo")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
+        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("1");
+    });
+
+    it("5a. deve voltar para SecaoInicial (step 1) ao retroceder do step 2 (Não furto/roubo)", async () => {
+        setupStoreMock({ tipoOcorrencia: "Não" });
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={2} />);
+
+        expect(
+            screen.getByText("Mock SecaoNaoFurtoERoubo")
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
+        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("1");
+    });
+
+    it("5b. deve avançar do step 3 ao clicar em Próximo na SecaoFinal", async () => {
+        setupStoreMock({ possuiInfoAgressorVitima: "Não" });
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={3} />);
+
+        expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+        expect(screen.getByTestId("current-step")).toHaveTextContent("3");
+
+        fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
+
+        await waitFor(() => {
+            expect(screen.getByTestId("current-step")).toHaveTextContent("4");
+        });
+    });
+
+    it("5c. deve voltar para step 2 ao clicar em Anterior na SecaoFinal", async () => {
+        setupStoreMock({ tipoOcorrencia: "Sim" });
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia initialStep={3} />);
+
+        expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
+        expect(screen.getByTestId("current-step")).toHaveTextContent("3");
+
+        fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Mock SecaoFurtoERoubo")
+            ).toBeInTheDocument();
+        });
+        expect(screen.getByTestId("current-step")).toHaveTextContent("2");
+    });
+
+    it("6. deve chamar reset e invalidateQueries ao clicar no 'Voltar' do PageHeader", async () => {
+        const testUuid = "uuid-123";
+        setupStoreMock({}, testUuid);
+
+        const mod = await import("./index");
+        const CadastrarOcorrencia = mod.default;
+        renderWithClient(<CadastrarOcorrencia />);
+
+        const voltarButton = screen.getByRole("button", { name: "Voltar" });
+        fireEvent.click(voltarButton);
+
+        await waitFor(() => {
+            expect(mockReset).toHaveBeenCalledTimes(1);
+            expect(mockInvalidateQueries).toHaveBeenCalledWith({
+                queryKey: ["ocorrencia", testUuid],
+            });
+        });
+    });
+
+    describe("7. Labels Dinâmicos do Stepper", () => {
+        it("deve exibir 'Fase 02' quando tipoOcorrencia não está definido", async () => {
+            setupStoreMock({});
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+            renderWithClient(<CadastrarOcorrencia />);
+
+            expect(screen.getByText("Fase 02")).toBeInTheDocument();
+        });
+
+        it("deve exibir 'Formulário patrimonial' se tipoOcorrencia é 'Sim'", async () => {
+            setupStoreMock({ tipoOcorrencia: "Sim" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+            renderWithClient(<CadastrarOcorrencia />);
+
+            expect(
+                screen.getByText("Formulário patrimonial")
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir 'Formulário geral' se tipoOcorrencia é 'Não'", async () => {
+            setupStoreMock({ tipoOcorrencia: "Não" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+            renderWithClient(<CadastrarOcorrencia />);
+
+            expect(screen.getByText("Formulário geral")).toBeInTheDocument();
+        });
+
+        it("deve exibir 'Informações adicionais' no step 3 se possuiInfoAgressorVitima é 'Sim'", async () => {
+            setupStoreMock({ possuiInfoAgressorVitima: "Sim" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+            renderWithClient(<CadastrarOcorrencia initialStep={3} />);
+
+            expect(
+                screen.getByText("Informações adicionais")
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir 'Seção final' no step 3 se possuiInfoAgressorVitima é 'Não'", async () => {
+            setupStoreMock({ possuiInfoAgressorVitima: "Não" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+            renderWithClient(<CadastrarOcorrencia initialStep={3} />);
+
+            expect(screen.getByText("Seção final")).toBeInTheDocument();
+        });
     });
 });

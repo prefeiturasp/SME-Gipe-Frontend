@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { DataTable } from "./data-table";
 import { Ocorrencia } from "@/types/ocorrencia";
@@ -12,6 +13,19 @@ vi.mock("@/hooks/useUserPermissions", () => ({
         isAssistenteOuDiretor: false,
     }),
 }));
+
+const renderWithQueryProvider = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    return render(ui, {
+        wrapper: ({ children }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        ),
+    });
+};
 
 function makeRows(n: number): Ocorrencia[] {
     return Array.from({ length: n }).map((_, i) => ({
@@ -30,7 +44,7 @@ function makeRows(n: number): Ocorrencia[] {
 describe("DataTable - paginação e empty", () => {
     it("mostra botão de paginação correto para mais de uma página", async () => {
         const rows = makeRows(11);
-        render(<DataTable data={rows} />);
+        renderWithQueryProvider(<DataTable data={rows} />);
 
         expect(screen.getByRole("button", { name: "1" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
@@ -43,7 +57,7 @@ describe("DataTable - paginação e empty", () => {
 
     it("navega com next e prev buttons", async () => {
         const rows = makeRows(11);
-        render(<DataTable data={rows} />);
+        renderWithQueryProvider(<DataTable data={rows} />);
 
         const user = userEvent.setup();
 
@@ -59,7 +73,7 @@ describe("DataTable - paginação e empty", () => {
     });
 
     it("renderiza mensagem de 'Nenhum resultado encontrado.' quando data é vazia", () => {
-        render(<DataTable data={[]} />);
+        renderWithQueryProvider(<DataTable data={[]} />);
         expect(
             screen.getByText("Nenhum resultado encontrado.")
         ).toBeInTheDocument();

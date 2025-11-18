@@ -11,7 +11,6 @@ import {
     CommandList,
     CommandEmpty,
 } from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
@@ -36,7 +35,7 @@ export function MultiSelect({
     placeholder = "Selecione...",
     disabled = false,
     className,
-}: MultiSelectProps) {
+}: Readonly<MultiSelectProps>) {
     const [open, setOpen] = React.useState(false);
 
     const handleSelect = (optionValue: string) => {
@@ -46,35 +45,65 @@ export function MultiSelect({
         onChange(newValue);
     };
 
-    const getDisplayText = () => {
-        if (value.length === 0) {
-            return placeholder;
-        }
-
-        const selectedLabels = value
-            .map((val) => options.find((opt) => opt.value === val)?.label)
-            .filter(Boolean);
-
-        return selectedLabels.join(", ");
+    const handleRemove = (
+        optionValue: string,
+        e: React.MouseEvent | React.KeyboardEvent
+    ) => {
+        e.stopPropagation();
+        const newValue = value.filter((v) => v !== optionValue);
+        onChange(newValue);
     };
+
+    const selectedOptions = value
+        .map((val) => options.find((opt) => opt.value === val))
+        .filter(Boolean) as Option[];
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button
+                <button
                     type="button"
-                    variant="outline"
                     aria-expanded={open}
                     aria-haspopup="listbox"
+                    disabled={disabled}
                     className={cn(
-                        "w-full justify-between text-[14px] text-[#42474A] font-[400]",
-                        value.length === 0 && "text-muted-foreground",
+                        "flex w-full min-h-[40px] items-start rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        disabled && "cursor-not-allowed opacity-50",
+                        !disabled && "cursor-pointer",
                         className
                     )}
-                    disabled={disabled}
                 >
-                    {getDisplayText()}
-                </Button>
+                    <div className="flex flex-wrap gap-1 w-full pointer-events-none">
+                        {value.length === 0 ? (
+                            <span className="text-muted-foreground text-[14px] text-[#42474A] font-[400]">
+                                {placeholder}
+                            </span>
+                        ) : (
+                            selectedOptions.map((opt) => (
+                                <span
+                                    key={opt.value}
+                                    className="inline-flex items-center gap-1 bg-[#FFFFFF] border border-[#DADADA] text-[#42474A] rounded px-2 py-1 text-xs"
+                                >
+                                    {opt.label}
+                                    <input
+                                        type="button"
+                                        value="×"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!disabled) {
+                                                handleRemove(opt.value, e);
+                                            }
+                                        }}
+                                        className="hover:bg-[#F5F5F5] rounded-full w-4 h-4 text-center leading-none border-0 bg-transparent cursor-pointer pointer-events-auto transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                        aria-label={`Remover ${opt.label}`}
+                                        disabled={disabled}
+                                    />
+                                </span>
+                            ))
+                        )}
+                    </div>
+                </button>
             </PopoverTrigger>
             <PopoverContent
                 align="start"

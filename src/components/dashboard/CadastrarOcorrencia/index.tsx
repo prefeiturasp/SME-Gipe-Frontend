@@ -6,25 +6,10 @@ import { Stepper } from "@/components/stepper/Stepper";
 import SecaoInicial from "./SecaoInicial";
 import { useState } from "react";
 import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-
-const steps = [
-    {
-        label: "Cadastro de ocorrência",
-        description: "",
-    },
-    {
-        label: "Formulário patrimonial",
-        description: "",
-    },
-    {
-        label: "Fase 03",
-        description: "",
-    },
-    {
-        label: "Anexos",
-        description: "",
-    },
-];
+import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
+import SecaoFinal from "./SecaoFinal";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -34,10 +19,57 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const { formData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const queryClient = useQueryClient();
+    const reset = useOcorrenciaFormStore((state) => state.reset);
+
+    const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
+    const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
+
+    const getStep2Label = () => {
+        if (!formData.tipoOcorrencia) return "Fase 02";
+        return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    };
+
+    const getStep3Label = () => {
+        if (!formData.possuiInfoAgressorVitima && currentStep < 3)
+            return "Fase 03";
+        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
+    };
+
+    const steps = [
+        {
+            label: "Cadastro de ocorrência",
+            description: "",
+        },
+        {
+            label: getStep2Label(),
+            description: "",
+        },
+        {
+            label: getStep3Label(),
+            description: "",
+        },
+        {
+            label: "Anexos",
+            description: "",
+        },
+    ];
+
+    const handleClick = async () => {
+        reset();
+
+        await queryClient.invalidateQueries({
+            queryKey: ["ocorrencia", ocorrenciaUuid],
+        });
+    };
 
     return (
         <div className="pt-4">
-            <PageHeader title="Intercorrências Institucionais" />
+            <PageHeader
+                title="Intercorrências Institucionais"
+                onClickBack={handleClick}
+            />
             <QuadroBranco>
                 <div className="flex flex-col">
                     <h1 className="text-[#42474a] text-[24px] font-bold m-0">
@@ -62,10 +94,22 @@ export default function CadastrarOcorrencia({
                 {currentStep === 1 && (
                     <SecaoInicial onSuccess={() => setCurrentStep(2)} />
                 )}
-                {currentStep === 2 && (
+                {currentStep === 2 && isFurtoRoubo && (
                     <SecaoFurtoERoubo
                         onNext={() => setCurrentStep(3)}
                         onPrevious={() => setCurrentStep(1)}
+                    />
+                )}
+                {currentStep === 2 && !isFurtoRoubo && (
+                    <SecaoNaoFurtoERoubo
+                        onNext={() => setCurrentStep(3)}
+                        onPrevious={() => setCurrentStep(1)}
+                    />
+                )}
+                {currentStep === 3 && (
+                    <SecaoFinal
+                        onNext={() => setCurrentStep(4)}
+                        onPrevious={() => setCurrentStep(2)}
                     />
                 )}
             </QuadroBranco>
