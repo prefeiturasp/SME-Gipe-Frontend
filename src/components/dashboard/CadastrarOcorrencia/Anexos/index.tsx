@@ -26,35 +26,10 @@ import { useState } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEnviarAnexo } from "@/hooks/useEnviarAnexo";
 import { toast } from "@/components/ui/headless-toast";
+import { useTiposDocumentos } from "@/hooks/useTiposDocumentos";
+import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
 import { useObterAnexos } from "@/hooks/useObterAnexos";
 import { ListagemAnexos } from "./ListagemAnexos";
-
-// Mock data - será substituído quando o backend estiver pronto
-const TIPOS_DOCUMENTO = [
-    { value: "boletim_ocorrencia", label: "Boletim de ocorrência" },
-    {
-        value: "registro_ocorrencia_interno",
-        label: "Registro de ocorrência interno",
-    },
-    {
-        value: "protocolo_conselho_tutelar",
-        label: "Protocolo Conselho Tutelar",
-    },
-    {
-        value: "instrucao_normativa_20_2020",
-        label: "Instrução Normativa 20/2020",
-    },
-    { value: "relatorio_naapa", label: "Relatório do NAAPA" },
-    { value: "relatorio_cefai", label: "Relatório do CEFAI" },
-    { value: "relatorio_sts", label: "Relatório do STS" },
-    { value: "relatorio_cpca", label: "Relatório do CPCA" },
-    { value: "oficio_gcm", label: "Ofício Guarda Civil Metropolitana (GCM)" },
-    { value: "registro_intercorrencia", label: "Registro de intercorrência" },
-    {
-        value: "relatorio_supervisao_escolar",
-        label: "Relatório da Supervisão Escolar",
-    },
-];
 
 export type AnexosProps = {
     onPrevious: () => void;
@@ -66,6 +41,8 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
     const user = useUserStore((state) => state.user);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const enviarAnexoMutation = useEnviarAnexo();
+    const { data: tiposDocumento = [] } = useTiposDocumentos();
+    const [openModalTipos, setOpenModalTipos] = useState(false);
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
         intercorrenciaUuid: ocorrenciaUuid ?? "",
@@ -270,7 +247,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {TIPOS_DOCUMENTO.map(
+                                                    {tiposDocumento.map(
                                                         (tipo) => (
                                                             <SelectItem
                                                                 key={tipo.value}
@@ -319,6 +296,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                                 <button
                                     type="button"
                                     className="font-bold underline"
+                                    onClick={() => setOpenModalTipos(true)}
                                 >
                                     clique aqui
                                 </button>
@@ -345,6 +323,11 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                     </fieldset>
                 </form>
             </Form>
+
+            <ModalTipoArquivos
+                open={openModalTipos}
+                onOpenChange={setOpenModalTipos}
+            />
         </div>
     );
 }
