@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
+import VisualizarOcorrencia from "@/components/dashboard/VisualizarOcorrencia";
 import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
@@ -55,10 +56,16 @@ export default function EditarOcorrenciaPage() {
         return <LoadingSpinner />;
     }
 
+    const isEmPreenchimento = ocorrencia.status === "em_preenchimento_diretor";
+
     const getInitialStep = () => {
         // função futura para implementar lógica baseada no status da ocorrência
         return 1;
     };
 
-    return <CadastrarOcorrencia initialStep={getInitialStep()} />;
+    return isEmPreenchimento ? (
+        <CadastrarOcorrencia initialStep={getInitialStep()} />
+    ) : (
+        <VisualizarOcorrencia />
+    );
 }
