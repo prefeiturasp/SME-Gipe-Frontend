@@ -7,10 +7,13 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import * as useAtualizarInfoAgressorHook from "@/hooks/useAtualizarInfoAgressor";
 import { toast } from "@/components/ui/headless-toast";
+import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/hooks/useCategoriasDisponiveis");
 vi.mock("@/hooks/useAtualizarInfoAgressor");
+vi.mock("@/components/ui/headless-toast");
+vi.mock("@/hooks/useEnderecoViaCep");
 vi.mock("@/components/ui/headless-toast");
 
 describe("InformacoesAdicionais", () => {
@@ -19,6 +22,7 @@ describe("InformacoesAdicionais", () => {
     const mockSetFormData = vi.fn();
     const mockSetSavedFormData = vi.fn();
     const mockMutate = vi.fn();
+    const mockMutateAsync = vi.fn();
 
     const queryClient = new QueryClient();
 
@@ -34,6 +38,11 @@ describe("InformacoesAdicionais", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(useEnderecoPorCep).mockReturnValue({
+            mutateAsync: mockMutateAsync,
+            isPending: false,
+            error: null,
+        } as unknown as ReturnType<typeof useEnderecoPorCep>);
         vi.mocked(useOcorrenciaFormStore).mockReturnValue({
             formData: {},
             savedFormData: {},
@@ -1252,5 +1261,115 @@ describe("InformacoesAdicionais", () => {
                 expect(mockOnNext).toHaveBeenCalled();
             });
         }, 15000);
+    });
+
+    it("deve preencher campos corretamente ao buscar CEP com sucesso", async () => {
+        mockMutateAsync.mockResolvedValue({
+            logradouro: "Rua Teste",
+            bairro: "Bairro Teste",
+            cidade: "Cidade Teste",
+            estado: "SP",
+        });
+        renderComponent();
+        const user = userEvent.setup();
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+        await user.type(cepInput, "12345678");
+        const pesquisarCepButton = screen.getByRole("button", {
+            name: /Pesquisar CEP/i,
+        });
+        await user.click(pesquisarCepButton);
+        await waitFor(() => {
+            expect(mockMutateAsync).toHaveBeenCalledWith("12345-678");
+            expect(screen.getByLabelText(/Logradouro/i)).toHaveValue(
+                "Rua Teste"
+            );
+            expect(screen.getByLabelText(/Bairro/i)).toHaveValue(
+                "Bairro Teste"
+            );
+            expect(screen.getByLabelText(/Cidade/i)).toHaveValue(
+                "Cidade Teste"
+            );
+            expect(
+                screen.getByRole("combobox", { name: /Estado/i })
+            ).toHaveTextContent("São Paulo");
+        });
+    });
+
+    it("deve mostrar toast de erro para CEP inválido", async () => {
+        mockMutateAsync.mockRejectedValue(new Error("CEP inválido"));
+        renderComponent();
+        const user = userEvent.setup();
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+        await user.type(cepInput, "00000000");
+        const pesquisarCepButton = screen.getByRole("button", {
+            name: /Pesquisar CEP/i,
+        });
+        await user.click(pesquisarCepButton);
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "error",
+                    title: "Número de CEP inválido!",
+                })
+            );
+        });
+    });
+
+    it("deve mostrar toast de erro genérico se houver outro problema ao buscar CEP", async () => {
+        mockMutateAsync.mockRejectedValue(new Error("Erro de rede"));
+        renderComponent();
+        const user = userEvent.setup();
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+        await user.type(cepInput, "12345678");
+        const pesquisarCepButton = screen.getByRole("button", {
+            name: /Pesquisar CEP/i,
+        });
+        await user.click(pesquisarCepButton);
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "error",
+                    title: "Houve um erro...",
+                })
+            );
+        });
+    });
+
+    it("deve mostrar toast de erro genérico quando o erro não é uma instância de Error", async () => {
+        mockMutateAsync.mockRejectedValue("Erro genérico não estruturado");
+        renderComponent();
+        const user = userEvent.setup();
+        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+        await user.type(cepInput, "12345678");
+        const pesquisarCepButton = screen.getByRole("button", {
+            name: /Pesquisar CEP/i,
+        });
+        await user.click(pesquisarCepButton);
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "error",
+                    title: "Houve um erro...",
+                    description:
+                        "Não conseguimos buscar o CEP. Por favor, tente novamente.",
+                })
+            );
+        });
+    });
+
+    it("deve mostrar 'Buscando...' no botão enquanto isPending é true", async () => {
+        vi.mocked(useEnderecoPorCep).mockReturnValue({
+            mutateAsync: mockMutateAsync,
+            isPending: true,
+            error: null,
+        } as unknown as ReturnType<typeof useEnderecoPorCep>);
+
+        renderComponent();
+
+        const pesquisarCepButton = screen.getByRole("button", {
+            name: /Buscando.../i,
+        });
+        expect(pesquisarCepButton).toBeInTheDocument();
+        expect(pesquisarCepButton).toHaveTextContent("Buscando...");
     });
 });

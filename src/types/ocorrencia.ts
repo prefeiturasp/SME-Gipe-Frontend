@@ -27,5 +27,5 @@ export interface OcorrenciaAPI {
         uuid: string;
         nome: string;
     }[]; 
-    protocolo: string
+    protocolo_da_intercorrencia: string
 }

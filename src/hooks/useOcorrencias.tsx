@@ -21,7 +21,7 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
         return {
             id: item.id,
             uuid: item.uuid,
-            protocolo: item?.protocolo ?? "",
+            protocolo: item?.protocolo_da_intercorrencia ?? "",
             dataHora: `${day}/${month}/${year} - ${hour}:${minutes}`,
             codigoEol: item.unidade_codigo_eol,
             dre: item.nome_dre,

@@ -1,6 +1,23 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ModalFinalizar from "./ModalFinalizar";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
+
+const mockPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: mockPush,
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => "/",
+    useSearchParams: () => ({ get: () => null }),
+    useParams: () => ({}),
+    redirect: vi.fn(),
+    notFound: vi.fn(),
+}));
+
 
 describe("ModalFinalizarEtapa", () => {
     const onOpenChange = vi.fn();
@@ -15,7 +32,7 @@ describe("ModalFinalizarEtapa", () => {
         vi.clearAllMocks();
     });
 
-    it("Renderiza o modal corretamente", () => {
+    it("Renderiza o modal corretamente na primeira fase", () => {
         setup();
 
         expect(
@@ -59,7 +76,7 @@ describe("ModalFinalizarEtapa", () => {
         });
     });
 
-    it("Mostra o botão 'Fechar' após finalizar", async () => {
+    it("Mostra a segunda fase após finalizar", async () => {
         setup();
 
         const input = screen.getByTestId("input-motivo");
@@ -67,11 +84,38 @@ describe("ModalFinalizarEtapa", () => {
         await userEvent.type(input, "Motivo correto de encerramento");
 
         const finalizar = screen.getByRole("button", { name: /Finalizar/i });
-
         await userEvent.click(finalizar);
 
         expect(
-            await screen.findByRole("button", { name: "Fechar" })
+            await screen.findByText("Ocorrência registrada com sucesso!")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText(/Protocolo da intercorrência:/i)
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("GIPE-2025/0042")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Marcus Paulo de Souza Andrade")
+        ).toBeInTheDocument();
+    });
+
+    it("Renderiza a frase final na segunda fase", async () => {
+        setup();
+
+        const input = screen.getByTestId("input-motivo");
+        await userEvent.type(input, "Algum motivo válido");
+
+        const finalizar = screen.getByRole("button", { name: /Finalizar/i });
+        await userEvent.click(finalizar);
+
+        expect(
+            await screen.findByText(
+                "Esta justificativa será registrada permanentemente no histórico da intercorrência."
+            )
         ).toBeInTheDocument();
     });
 
@@ -102,24 +146,39 @@ describe("ModalFinalizarEtapa", () => {
         expect(screen.getByTestId("input-motivo")).toHaveValue("");
     });
 
-    it("Chama handleClose ao clicar em Fechar após sucesso", async () => {
-        const onOpenChange = vi.fn();
-        render(<ModalFinalizar open={true} onOpenChange={onOpenChange} />);
+    it("Chama onOpenChange(false) ao clicar em Fechar na segunda fase", async () => {
+        const onOpenChangeMock = vi.fn();
+        render(<ModalFinalizar open={true} onOpenChange={onOpenChangeMock} />);
 
         const textarea = screen.getByTestId("input-motivo");
         await userEvent.type(textarea, "Motivo válido para encerramento");
 
-        // envia o formulário
         const finalizarButton = screen.getByRole("button", { name: /finalizar/i });
         await userEvent.click(finalizarButton);
 
-        // agora existe o botão "Fechar"
         const fecharButton = await screen.findByRole("button", { name: /fechar/i });
 
         await userEvent.click(fecharButton);
 
-        // handleClose deve ter sido chamado com "false"
+        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
+    });
+
+    it("redireciona para /dashboard ao clicar em Fechar", async () => {
+        const onOpenChange = vi.fn();
+
+        render(<ModalFinalizar open={true} onOpenChange={onOpenChange} />);
+
+        const input = screen.getByTestId("input-motivo");
+        await userEvent.type(input, "motivo válido");
+
+        const finalizar = screen.getByRole("button", { name: /finalizar/i });
+        await userEvent.click(finalizar);
+
+        const fechar = await screen.findByRole("button", { name: /fechar/i });
+        await userEvent.click(fechar);
+
         expect(onOpenChange).toHaveBeenCalledWith(false);
+        expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
 
 

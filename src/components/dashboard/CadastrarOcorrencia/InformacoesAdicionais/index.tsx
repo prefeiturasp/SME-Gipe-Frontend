@@ -1,9 +1,7 @@
 "use client";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/headless-toast";
 import {
     Form,
     FormControl,
@@ -20,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/components/ui/headless-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -30,6 +29,8 @@ import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { hasFormDataChanged } from "@/lib/formUtils";
+import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+
 export type InformacoesAdicionaisProps = {
     onPrevious: () => void;
     onNext: () => void;
@@ -48,6 +49,7 @@ export default function InformacoesAdicionais({
     } = useOcorrenciaFormStore();
     const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
     const { mutate: atualizarInfoAgressor } = useAtualizarInfoAgressor();
+    const { mutateAsync: buscarCep, isPending } = useEnderecoPorCep();
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -179,7 +181,33 @@ export default function InformacoesAdicionais({
             onNext();
         }
     };
+    const handleBuscarCep = async () => {
+        const cep = form.getValues("cep");
+        try {
+            const endereco = await buscarCep(cep);
+            form.setValue("logradouro", endereco.logradouro);
+            form.setValue("bairro", endereco.bairro);
+            form.setValue("cidade", endereco.cidade);
+            form.setValue("estado", endereco.estado);
+        } catch (err) {
+            const mensagemErro = err instanceof Error ? err.message : "";
 
+            if (mensagemErro.includes("CEP")) {
+                toast({
+                    variant: "error",
+                    title: "Número de CEP inválido!",
+                    description: "Verifique o número e tente novamente.",
+                });
+            } else {
+                toast({
+                    variant: "error",
+                    title: "Houve um erro...",
+                    description:
+                        "Não conseguimos buscar o CEP. Por favor, tente novamente.",
+                });
+            }
+        }
+    };
     return (
         <Form {...form}>
             <form
@@ -264,8 +292,12 @@ export default function InformacoesAdicionais({
                                     variant="customOutline"
                                     size="sm"
                                     className="h-10"
+                                    onClick={handleBuscarCep}
+                                    disabled={isPending}
                                 >
-                                    Pesquisar CEP
+                                    {isPending
+                                        ? "Buscando..."
+                                        : "Pesquisar CEP"}
                                 </Button>
                             </div>
                         </div>

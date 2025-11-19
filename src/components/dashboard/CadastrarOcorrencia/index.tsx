@@ -45,28 +45,27 @@ export default function CadastrarOcorrencia({
     };
 
     const getStep3Label = () => {
-        if (!formData.possuiInfoAgressorVitima && currentStep < 3)
+        if (!formData.possuiInfoAgressorVitima && currentStep < 3) {
             return "Fase 03";
-        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
+        }
+
+        return hasAgressorVitimaInfo
+            ? "Informações adicionais"
+            : "Seção final";
     };
 
     const steps = [
-        {
-            label: "Cadastro de ocorrência",
-            description: "",
-        },
-        {
-            label: getStep2Label(),
-            description: "",
-        },
-        {
-            label: getStep3Label(),
-            description: "",
-        },
-        {
-            label: "Anexos",
-            description: "",
-        },
+        { label: "Cadastro de ocorrência", description: "" },
+        { label: getStep2Label(), description: "" },
+
+        ...(hasAgressorVitimaInfo
+            ? [
+                  { label: getStep3Label(), description: "" },
+                  { label: "Seção final", description: "" },
+              ]
+            : [{ label: getStep3Label(), description: "" }]),
+
+        { label: "Anexos", description: "" },
     ];
 
     return (
@@ -91,6 +90,7 @@ export default function CadastrarOcorrencia({
                     </p>
                 </div>
             </QuadroBranco>
+
             <QuadroBranco>
                 <div className="mt-4">
                     <Stepper steps={steps} currentStep={currentStep} />
