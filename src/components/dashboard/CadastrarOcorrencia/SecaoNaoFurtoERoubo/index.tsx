@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,12 +36,16 @@ export type SecaoNaoFurtoERouboProps = {
     onFormChange?: (data: Partial<SecaoNaoFurtoERouboData>) => void;
 };
 
-export default function SecaoNaoFurtoERoubo({
-    onPrevious,
-    onNext,
-    showButtons = true,
-    onFormChange,
-}: Readonly<SecaoNaoFurtoERouboProps>) {
+export type SecaoNaoFurtoERouboRef = {
+    getFormData: () => SecaoNaoFurtoERouboData;
+    submitForm: () => Promise<boolean>;
+    getFormInstance: () => UseFormReturn<SecaoNaoFurtoERouboData>;
+};
+
+const SecaoNaoFurtoERoubo = forwardRef<
+    SecaoNaoFurtoERouboRef,
+    SecaoNaoFurtoERouboProps
+>(({ onPrevious, onNext, showButtons = true, onFormChange }, ref) => {
     const { formData, setFormData, setSavedFormData, ocorrenciaUuid } =
         useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
@@ -74,11 +78,26 @@ export default function SecaoNaoFurtoERoubo({
 
     // Notifica mudanças em tempo real
     const watchedValues = form.watch();
-    React.useEffect(() => {
+    useEffect(() => {
         onFormChange?.(watchedValues);
     }, [watchedValues, onFormChange]);
 
-    const onSubmit = async (data: SecaoNaoFurtoERouboData) => {
+    // Expõe métodos para o componente pai via ref
+    useImperativeHandle(ref, () => ({
+        getFormData: () => form.getValues(),
+        submitForm: async () => {
+            const isValid = await form.trigger();
+            if (!isValid) return false;
+
+            const data = form.getValues();
+            await handleSubmit(data);
+            return true;
+        },
+        getFormInstance: () => form,
+    }));
+
+    // Função de submit isolada para ser chamada programaticamente
+    const handleSubmit = async (data: SecaoNaoFurtoERouboData) => {
         if (!ocorrenciaUuid) {
             toast({
                 title: "Erro",
@@ -130,7 +149,7 @@ export default function SecaoNaoFurtoERoubo({
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(handleSubmit)}
                 className="flex flex-col gap-6 mt-4"
             >
                 <fieldset className="contents">
@@ -284,4 +303,8 @@ export default function SecaoNaoFurtoERoubo({
             </form>
         </Form>
     );
-}
+});
+
+SecaoNaoFurtoERoubo.displayName = "SecaoNaoFurtoERoubo";
+
+export default SecaoNaoFurtoERoubo;

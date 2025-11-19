@@ -1,5 +1,6 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,11 +38,16 @@ export type InformacoesAdicionaisProps = {
     showButtons?: boolean;
 };
 
-export default function InformacoesAdicionais({
-    onPrevious,
-    onNext,
-    showButtons = true,
-}: Readonly<InformacoesAdicionaisProps>) {
+export type InformacoesAdicionaisRef = {
+    getFormData: () => InformacoesAdicionaisData;
+    submitForm: () => Promise<boolean>;
+    getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
+};
+
+const InformacoesAdicionais = forwardRef<
+    InformacoesAdicionaisRef,
+    InformacoesAdicionaisProps
+>(({ onPrevious, onNext, showButtons = true }, ref) => {
     const {
         formData,
         savedFormData,
@@ -80,6 +86,20 @@ export default function InformacoesAdicionais({
 
     const { isValid } = form.formState;
 
+    // Expõe métodos para o componente pai via ref
+    useImperativeHandle(ref, () => ({
+        getFormData: () => form.getValues(),
+        submitForm: async () => {
+            const isValid = await form.trigger();
+            if (!isValid) return false;
+
+            const data = form.getValues();
+            await handleSubmit(data);
+            return true;
+        },
+        getFormInstance: () => form,
+    }));
+
     const formatCep = (value: string) => {
         const numbers = value.replaceAll(/\D/g, "");
         if (numbers.length <= 5) {
@@ -93,7 +113,8 @@ export default function InformacoesAdicionais({
         form.setValue("cep", formatted, { shouldValidate: true });
     };
 
-    const onSubmit = async (data: InformacoesAdicionaisData) => {
+    // Função de submit isolada para ser chamada programaticamente
+    const handleSubmit = async (data: InformacoesAdicionaisData) => {
         const currentValues = form.getValues();
 
         if (ocorrenciaUuid) {
@@ -183,6 +204,7 @@ export default function InformacoesAdicionais({
             onNext?.();
         }
     };
+
     const handleBuscarCep = async () => {
         const cep = form.getValues("cep");
         try {
@@ -213,7 +235,7 @@ export default function InformacoesAdicionais({
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(handleSubmit)}
                 className="flex flex-col gap-4 mt-4"
             >
                 <fieldset className="contents">
@@ -733,4 +755,8 @@ export default function InformacoesAdicionais({
             </form>
         </Form>
     );
-}
+});
+
+InformacoesAdicionais.displayName = "InformacoesAdicionais";
+
+export default InformacoesAdicionais;
