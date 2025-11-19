@@ -3,7 +3,7 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
 import StepRenderer from "./StepRenderer";
@@ -16,12 +16,45 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
-    const { formData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const formData = useOcorrenciaFormStore((state) => state.formData);
+    const ocorrenciaUuid = useOcorrenciaFormStore(
+        (state) => state.ocorrenciaUuid
+    );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
 
-    const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
-    const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
+    // Estados locais que refletem os valores dos formulários em tempo real
+    const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
+        string | undefined
+    >(formData.tipoOcorrencia);
+    const [currentPossuiInfoAgressor, setCurrentPossuiInfoAgressor] = useState<
+        string | undefined
+    >(formData.possuiInfoAgressorVitima);
+
+    // Valores reativos baseados nos estados locais
+    const isFurtoRoubo = currentTipoOcorrencia === "Sim";
+    const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    // Callbacks para receber mudanças dos formulários
+    const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
+        if (data.tipoOcorrencia !== undefined) {
+            setCurrentTipoOcorrencia(data.tipoOcorrencia);
+        }
+    };
+
+    const handleSecaoNaoFurtoChange = (data: {
+        possuiInfoAgressorVitima?: string;
+    }) => {
+        if (data.possuiInfoAgressorVitima !== undefined) {
+            setCurrentPossuiInfoAgressor(data.possuiInfoAgressorVitima);
+        }
+    };
+
+    // Inicializa com valores do formData
+    useEffect(() => {
+        setCurrentTipoOcorrencia(formData.tipoOcorrencia);
+        setCurrentPossuiInfoAgressor(formData.possuiInfoAgressorVitima);
+    }, [formData.tipoOcorrencia, formData.possuiInfoAgressorVitima]);
 
     const handleClick = async () => {
         reset();
@@ -49,9 +82,7 @@ export default function CadastrarOcorrencia({
             return "Fase 03";
         }
 
-        return hasAgressorVitimaInfo
-            ? "Informações adicionais"
-            : "Seção final";
+        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
     };
 
     const steps = [
@@ -102,6 +133,8 @@ export default function CadastrarOcorrencia({
                     hasAgressorVitimaInfo={hasAgressorVitimaInfo}
                     onNext={handleNextStep}
                     onPrevious={handlePreviousStep}
+                    onSecaoInicialChange={handleSecaoInicialChange}
+                    onSecaoNaoFurtoChange={handleSecaoNaoFurtoChange}
                 />
             </QuadroBranco>
         </div>
