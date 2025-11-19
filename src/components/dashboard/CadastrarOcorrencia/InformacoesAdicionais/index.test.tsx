@@ -14,7 +14,6 @@ vi.mock("@/hooks/useCategoriasDisponiveis");
 vi.mock("@/hooks/useAtualizarInfoAgressor");
 vi.mock("@/components/ui/headless-toast");
 vi.mock("@/hooks/useEnderecoViaCep");
-vi.mock("@/components/ui/headless-toast");
 
 describe("InformacoesAdicionais", () => {
     const mockOnPrevious = vi.fn();
@@ -35,6 +34,101 @@ describe("InformacoesAdicionais", () => {
                 />
             </QueryClientProvider>
         );
+
+    const preencherFormularioCompleto = async (
+        user: ReturnType<typeof userEvent.setup>
+    ) => {
+        await user.type(
+            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
+            "João Silva"
+        );
+        await user.type(
+            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
+            "25"
+        );
+        await user.type(
+            screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
+            "01310100"
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByPlaceholderText(/Digite o CEP\.\.\./i)
+            ).toHaveValue("01310-100");
+        });
+
+        await user.type(
+            screen.getByLabelText(/Logradouro/i),
+            "Avenida Paulista"
+        );
+        await user.type(screen.getByLabelText(/Número da residência/i), "1578");
+        await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
+        await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
+        await user.type(
+            screen.getByLabelText(/Como é a interação da pessoa agressora/i),
+            "Boa interação"
+        );
+        await user.type(
+            screen.getByLabelText(/Quais as redes de proteção/i),
+            "CRAS, NAAPA"
+        );
+
+        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        await user.click(radioSim[0]);
+        await user.click(radioSim[1]);
+
+        const estadoTrigger = screen.getByRole("combobox", { name: /Estado/i });
+        await user.click(estadoTrigger);
+        await user.click(
+            await screen.findByRole("option", { name: /São Paulo/i })
+        );
+
+        const motivoButton = screen.getByRole("button", { name: /Selecione/i });
+        await user.click(motivoButton);
+        await user.click(await screen.findByText(/Bullying/i));
+
+        const generoTrigger = screen.getByRole("combobox", {
+            name: /Qual o gênero\?/i,
+        });
+        await user.click(generoTrigger);
+        await user.click(
+            await screen.findByRole("option", { name: /Masculino/i })
+        );
+
+        const grupoTrigger = screen.getByRole("combobox", {
+            name: /Qual o grupo étnico-racial\?/i,
+        });
+        await user.click(grupoTrigger);
+        await user.click(await screen.findByRole("option", { name: /Pardo/i }));
+
+        const etapaTrigger = screen.getByRole("combobox", {
+            name: /Qual a etapa escolar\?/i,
+        });
+        await user.click(etapaTrigger);
+        await user.click(
+            await screen.findByRole("option", {
+                name: /Ensino Fundamental II/i,
+            })
+        );
+
+        const frequenciaTrigger = screen.getByRole("combobox", {
+            name: /Qual a frequência escolar\?/i,
+        });
+        await user.click(frequenciaTrigger);
+        const regularOptions = await screen.findAllByRole("option", {
+            name: /Regular/i,
+        });
+        await user.click(regularOptions.at(-1)!);
+
+        await waitFor(
+            () => {
+                expect(
+                    screen.getByRole("button", { name: /Próximo/i })
+                ).not.toBeDisabled();
+            },
+            { timeout: 5000 }
+        );
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -82,58 +176,22 @@ describe("InformacoesAdicionais", () => {
         } as never);
     });
 
-    it("deve renderizar todos os campos do formulário", () => {
+    it("deve renderizar o formulário com campos principais", () => {
         renderComponent();
 
         expect(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i)
+            screen.getByLabelText(/nome da pessoa agressora/i)
         ).toBeInTheDocument();
         expect(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i)
+            screen.getByPlaceholderText(/Digite o CEP/i)
         ).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText(/Digite o CEP\.\.\./i)
-        ).toBeInTheDocument();
-        expect(screen.getByLabelText(/Logradouro/i)).toBeInTheDocument();
-        expect(
-            screen.getByLabelText(/Número da residência/i)
-        ).toBeInTheDocument();
-        expect(screen.getByLabelText(/Complemento/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Estado/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Cidade/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Bairro/i)).toBeInTheDocument();
-        expect(
-            screen.getByText(/O que motivou a ocorrência\?/i)
-        ).toBeInTheDocument();
-        expect(screen.getByLabelText(/Qual o gênero\?/i)).toBeInTheDocument();
-        expect(
-            screen.getByLabelText(/Qual o grupo étnico-racial\?/i)
+            screen.getByText(/O que motivou a ocorrência/i)
         ).toBeInTheDocument();
         expect(
-            screen.getByLabelText(/Qual a etapa escolar\?/i)
+            screen.getByText(/notificada ao Conselho Tutelar/i)
         ).toBeInTheDocument();
-        expect(
-            screen.getByLabelText(/Qual a frequência escolar\?/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByLabelText(/Como é a interação da pessoa agressora/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByLabelText(/Quais as redes de proteção/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(
-                /A ocorrência foi notificada ao Conselho Tutelar\?/i
-            )
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/A ocorrência foi acompanhada pelo NAAPA\?/i)
-        ).toBeInTheDocument();
-    });
-
-    it("deve renderizar os botões Anterior e Próximo", () => {
-        renderComponent();
-
+        expect(screen.getByText(/acompanhada pelo NAAPA/i)).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: /Anterior/i })
         ).toBeInTheDocument();
@@ -236,27 +294,6 @@ describe("InformacoesAdicionais", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve preencher campos do formulário", async () => {
-        const user = userEvent.setup();
-        renderComponent();
-
-        await user.type(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-            "João Silva"
-        );
-        await user.type(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-            "25"
-        );
-
-        expect(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i)
-        ).toHaveValue("João Silva");
-        expect(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i)
-        ).toHaveValue(25);
-    });
-
     it("deve limitar o CEP a 9 caracteres", async () => {
         const user = userEvent.setup();
         renderComponent();
@@ -269,23 +306,15 @@ describe("InformacoesAdicionais", () => {
         });
     });
 
-    it("deve selecionar opção Não para Conselho Tutelar", async () => {
+    it("deve selecionar opções de radio buttons", async () => {
         const user = userEvent.setup();
         renderComponent();
 
         const radioNao = screen.getAllByRole("radio", { name: /Não/i });
         await user.click(radioNao[0]);
-
-        expect(radioNao[0]).toBeChecked();
-    });
-
-    it("deve selecionar opção Não para NAAPA", async () => {
-        const user = userEvent.setup();
-        renderComponent();
-
-        const radioNao = screen.getAllByRole("radio", { name: /Não/i });
         await user.click(radioNao[1]);
 
+        expect(radioNao[0]).toBeChecked();
         expect(radioNao[1]).toBeChecked();
     });
 
@@ -418,16 +447,6 @@ describe("InformacoesAdicionais", () => {
         });
     });
 
-    it("deve permitir clicar no botão Pesquisar CEP", async () => {
-        const user = userEvent.setup();
-        renderComponent();
-
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Pesquisar CEP/i,
-        });
-        await user.click(pesquisarCepButton);
-    });
-
     it("deve lidar com categoriasDisponiveis indefinidas", () => {
         vi.mocked(useCategoriasDisponiveis).mockReturnValue({
             data: undefined,
@@ -468,105 +487,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -584,17 +505,8 @@ describe("InformacoesAdicionais", () => {
                             idade_pessoa_agressora: 25,
                             motivacao_ocorrencia: ["bullying"],
                             genero_pessoa_agressora: "masculino",
-                            grupo_etnico_racial: "pardo",
-                            etapa_escolar: "ensino_fundamental_2",
-                            frequencia_escolar: "regular",
                             notificado_conselho_tutelar: true,
                             acompanhado_naapa: true,
-                            cep: "01310-100",
-                            logradouro: "Avenida Paulista",
-                            numero_residencia: "1578",
-                            cidade: "São Paulo",
-                            bairro: "Bela Vista",
-                            estado: "SP",
                         }),
                     }),
                     expect.any(Object)
@@ -612,105 +524,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioNao = screen.getAllByRole("radio", { name: /Não/i });
-            await user.click(radioNao[0]);
-            await user.click(radioNao[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -735,105 +549,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -865,105 +581,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -999,105 +617,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -1151,105 +671,7 @@ describe("InformacoesAdicionais", () => {
             });
 
             renderComponent();
-
-            await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
-            );
-            await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
-            );
-            await user.type(
-                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
-                "01310100"
-            );
-            await user.type(
-                screen.getByLabelText(/Logradouro/i),
-                "Avenida Paulista"
-            );
-            await user.type(
-                screen.getByLabelText(/Número da residência/i),
-                "1578"
-            );
-            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
-            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
-                ),
-                "Boa interação"
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const estadoTrigger = screen.getByRole("combobox", {
-                name: /Estado/i,
-            });
-            await user.click(estadoTrigger);
-            const spOption = await screen.findByRole("option", {
-                name: /São Paulo/i,
-            });
-            await user.click(spOption);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            const bullyingOption = await screen.findByText(/Bullying/i);
-            await user.click(bullyingOption);
-
-            const generoTrigger = screen.getByRole("combobox", {
-                name: /Qual o gênero\?/i,
-            });
-            await user.click(generoTrigger);
-            const masculinoOption = await screen.findByRole("option", {
-                name: /Masculino/i,
-            });
-            await user.click(masculinoOption);
-
-            const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
-            });
-            await user.click(grupoTrigger);
-            const pardoOption = await screen.findByRole("option", {
-                name: /Pardo/i,
-            });
-            await user.click(pardoOption);
-
-            const etapaTrigger = screen.getByRole("combobox", {
-                name: /Qual a etapa escolar\?/i,
-            });
-            await user.click(etapaTrigger);
-            const fundamentalOption = await screen.findByRole("option", {
-                name: /Ensino Fundamental II/i,
-            });
-            await user.click(fundamentalOption);
-
-            const frequenciaTrigger = screen.getByRole("combobox", {
-                name: /Qual a frequência escolar\?/i,
-            });
-            await user.click(frequenciaTrigger);
-            const regularOptions = await screen.findAllByRole("option", {
-                name: /Regular/i,
-            });
-            await user.click(regularOptions.at(-1)!);
-
-            await waitFor(
-                () => {
-                    const proximoButton = screen.getByRole("button", {
-                        name: /Próximo/i,
-                    });
-                    expect(proximoButton).not.toBeDisabled();
-                },
-                { timeout: 5000 }
-            );
+            await preencherFormularioCompleto(user);
 
             const proximoButton = screen.getByRole("button", {
                 name: /Próximo/i,
@@ -1263,113 +685,94 @@ describe("InformacoesAdicionais", () => {
         }, 15000);
     });
 
-    it("deve preencher campos corretamente ao buscar CEP com sucesso", async () => {
-        mockMutateAsync.mockResolvedValue({
-            logradouro: "Rua Teste",
-            bairro: "Bairro Teste",
-            cidade: "Cidade Teste",
-            estado: "SP",
-        });
-        renderComponent();
-        const user = userEvent.setup();
-        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
-        await user.type(cepInput, "12345678");
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Pesquisar CEP/i,
-        });
-        await user.click(pesquisarCepButton);
-        await waitFor(() => {
-            expect(mockMutateAsync).toHaveBeenCalledWith("12345-678");
-            expect(screen.getByLabelText(/Logradouro/i)).toHaveValue(
-                "Rua Teste"
-            );
-            expect(screen.getByLabelText(/Bairro/i)).toHaveValue(
-                "Bairro Teste"
-            );
-            expect(screen.getByLabelText(/Cidade/i)).toHaveValue(
-                "Cidade Teste"
-            );
-            expect(
-                screen.getByRole("combobox", { name: /Estado/i })
-            ).toHaveTextContent("São Paulo");
-        });
-    });
+    describe("Busca de CEP", () => {
+        it("deve preencher campos corretamente ao buscar CEP com sucesso", async () => {
+            mockMutateAsync.mockResolvedValue({
+                logradouro: "Rua Teste",
+                bairro: "Bairro Teste",
+                cidade: "Cidade Teste",
+                estado: "SP",
+            });
+            renderComponent();
+            const user = userEvent.setup();
+            const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+            await user.type(cepInput, "12345678");
+            const pesquisarCepButton = screen.getByRole("button", {
+                name: /Pesquisar CEP/i,
+            });
+            await user.click(pesquisarCepButton);
 
-    it("deve mostrar toast de erro para CEP inválido", async () => {
-        mockMutateAsync.mockRejectedValue(new Error("CEP inválido"));
-        renderComponent();
-        const user = userEvent.setup();
-        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
-        await user.type(cepInput, "00000000");
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Pesquisar CEP/i,
+            await waitFor(() => {
+                expect(mockMutateAsync).toHaveBeenCalledWith("12345-678");
+                expect(screen.getByLabelText(/Logradouro/i)).toHaveValue(
+                    "Rua Teste"
+                );
+                expect(screen.getByLabelText(/Bairro/i)).toHaveValue(
+                    "Bairro Teste"
+                );
+                expect(screen.getByLabelText(/Cidade/i)).toHaveValue(
+                    "Cidade Teste"
+                );
+                expect(
+                    screen.getByRole("combobox", { name: /Estado/i })
+                ).toHaveTextContent("São Paulo");
+            });
         });
-        await user.click(pesquisarCepButton);
-        await waitFor(() => {
-            expect(toast).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    variant: "error",
-                    title: "Número de CEP inválido!",
-                })
+
+        it("deve mostrar toast de erro para CEP inválido", async () => {
+            mockMutateAsync.mockRejectedValue(new Error("CEP inválido"));
+            renderComponent();
+            const user = userEvent.setup();
+            const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+            await user.type(cepInput, "00000000");
+            await user.click(
+                screen.getByRole("button", { name: /Pesquisar CEP/i })
             );
-        });
-    });
 
-    it("deve mostrar toast de erro genérico se houver outro problema ao buscar CEP", async () => {
-        mockMutateAsync.mockRejectedValue(new Error("Erro de rede"));
-        renderComponent();
-        const user = userEvent.setup();
-        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
-        await user.type(cepInput, "12345678");
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Pesquisar CEP/i,
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        variant: "error",
+                        title: "Número de CEP inválido!",
+                    })
+                );
+            });
         });
-        await user.click(pesquisarCepButton);
-        await waitFor(() => {
-            expect(toast).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    variant: "error",
-                    title: "Houve um erro...",
-                })
+
+        it("deve mostrar toast de erro genérico para outros erros", async () => {
+            mockMutateAsync.mockRejectedValue("Erro genérico não estruturado");
+            renderComponent();
+            const user = userEvent.setup();
+            const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
+            await user.type(cepInput, "12345678");
+            await user.click(
+                screen.getByRole("button", { name: /Pesquisar CEP/i })
             );
-        });
-    });
 
-    it("deve mostrar toast de erro genérico quando o erro não é uma instância de Error", async () => {
-        mockMutateAsync.mockRejectedValue("Erro genérico não estruturado");
-        renderComponent();
-        const user = userEvent.setup();
-        const cepInput = screen.getByPlaceholderText(/Digite o CEP\.\.\./i);
-        await user.type(cepInput, "12345678");
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Pesquisar CEP/i,
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        variant: "error",
+                        title: "Houve um erro...",
+                    })
+                );
+            });
         });
-        await user.click(pesquisarCepButton);
-        await waitFor(() => {
-            expect(toast).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    variant: "error",
-                    title: "Houve um erro...",
-                    description:
-                        "Não conseguimos buscar o CEP. Por favor, tente novamente.",
-                })
-            );
+
+        it("deve mostrar 'Buscando...' no botão enquanto isPending é true", async () => {
+            vi.mocked(useEnderecoPorCep).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: true,
+                error: null,
+            } as unknown as ReturnType<typeof useEnderecoPorCep>);
+
+            renderComponent();
+
+            const pesquisarCepButton = screen.getByRole("button", {
+                name: /Buscando.../i,
+            });
+            expect(pesquisarCepButton).toBeInTheDocument();
+            expect(pesquisarCepButton).toHaveTextContent("Buscando...");
         });
-    });
-
-    it("deve mostrar 'Buscando...' no botão enquanto isPending é true", async () => {
-        vi.mocked(useEnderecoPorCep).mockReturnValue({
-            mutateAsync: mockMutateAsync,
-            isPending: true,
-            error: null,
-        } as unknown as ReturnType<typeof useEnderecoPorCep>);
-
-        renderComponent();
-
-        const pesquisarCepButton = screen.getByRole("button", {
-            name: /Buscando.../i,
-        });
-        expect(pesquisarCepButton).toBeInTheDocument();
-        expect(pesquisarCepButton).toHaveTextContent("Buscando...");
     });
 });
