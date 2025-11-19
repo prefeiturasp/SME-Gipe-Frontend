@@ -32,13 +32,15 @@ import { hasFormDataChanged } from "@/lib/formUtils";
 import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
 
 export type InformacoesAdicionaisProps = {
-    onPrevious: () => void;
-    onNext: () => void;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    showButtons?: boolean;
 };
 
 export default function InformacoesAdicionais({
     onPrevious,
     onNext,
+    showButtons = true,
 }: Readonly<InformacoesAdicionaisProps>) {
     const {
         formData,
@@ -117,7 +119,7 @@ export default function InformacoesAdicionais({
                     "acompanhadoNAAPA",
                 ])
             ) {
-                onNext();
+                onNext?.();
                 return;
             }
 
@@ -164,7 +166,7 @@ export default function InformacoesAdicionais({
 
                         setFormData(data);
                         setSavedFormData(data);
-                        onNext();
+                        onNext?.();
                     },
                     onError: () => {
                         toast({
@@ -178,7 +180,7 @@ export default function InformacoesAdicionais({
             );
         } else {
             setFormData(data);
-            onNext();
+            onNext?.();
         }
     };
     const handleBuscarCep = async () => {
@@ -704,27 +706,29 @@ export default function InformacoesAdicionais({
                         )}
                     />
 
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            size="sm"
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => {
-                                setFormData(form.getValues());
-                                onPrevious();
-                            }}
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious?.();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={!isValid}
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>

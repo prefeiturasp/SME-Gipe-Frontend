@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -22,13 +23,17 @@ import { formSchema, SecaoFurtoERouboData } from "./schema";
 import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoFurtoERouboProps = {
-    onPrevious: () => void;
-    onNext: () => void;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    showButtons?: boolean;
+    onFormChange?: (data: Partial<SecaoFurtoERouboData>) => void;
 };
 
 export default function SecaoFurtoERoubo({
     onPrevious,
     onNext,
+    showButtons = true,
+    onFormChange,
 }: Readonly<SecaoFurtoERouboProps>) {
     const {
         formData,
@@ -59,6 +64,12 @@ export default function SecaoFurtoERoubo({
 
     const { isValid } = form.formState;
 
+    // Notifica mudanças em tempo real
+    const watchedValues = form.watch();
+    React.useEffect(() => {
+        onFormChange?.(watchedValues);
+    }, [watchedValues, onFormChange]);
+
     const onSubmit = async (data: SecaoFurtoERouboData) => {
         const currentValues = form.getValues();
 
@@ -68,7 +79,7 @@ export default function SecaoFurtoERoubo({
                     "tiposOcorrencia",
                 ])
             ) {
-                onNext();
+                onNext?.();
                 return;
             }
 
@@ -96,7 +107,7 @@ export default function SecaoFurtoERoubo({
 
                         setFormData(data);
                         setSavedFormData(data);
-                        onNext();
+                        onNext?.();
                     },
                     onError: () => {
                         toast({
@@ -110,7 +121,7 @@ export default function SecaoFurtoERoubo({
             );
         } else {
             setFormData(data);
-            onNext();
+            onNext?.();
         }
     };
 
@@ -213,27 +224,29 @@ export default function SecaoFurtoERoubo({
                         )}
                     />
 
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            size="sm"
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => {
-                                setFormData(form.getValues());
-                                onPrevious();
-                            }}
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious?.();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={!isValid}
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -29,11 +30,15 @@ import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
 import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoInicialProps = {
-    onSuccess: () => void;
+    onSuccess?: () => void;
+    showButtons?: boolean;
+    onFormChange?: (data: Partial<SecaoInicialData>) => void;
 };
 
 export default function SecaoInicial({
     onSuccess,
+    showButtons = true,
+    onFormChange,
 }: Readonly<SecaoInicialProps>) {
     const user = useUserStore((state) => state.user);
     const { mutateAsync: criarOcorrencia, isPending: isCriando } =
@@ -73,6 +78,12 @@ export default function SecaoInicial({
 
     const { isValid } = form.formState;
 
+    // Notifica mudanças em tempo real
+    const watchedValues = form.watch();
+    React.useEffect(() => {
+        onFormChange?.(watchedValues);
+    }, [watchedValues, onFormChange]);
+
     const dreNome = formData.nomeDre || user?.unidades[0]?.dre.nome || "";
 
     const unidadeNome =
@@ -83,7 +94,7 @@ export default function SecaoInicial({
 
         if (ocorrenciaUuid) {
             if (!hasFormDataChanged(data, savedFormData)) {
-                return onSuccess();
+                return onSuccess?.();
             }
 
             const dataHoraOcorrencia = new Date(
@@ -103,7 +114,7 @@ export default function SecaoInicial({
 
             if (response.success) {
                 setSavedFormData(data);
-                onSuccess();
+                onSuccess?.();
                 return;
             }
 
@@ -138,7 +149,7 @@ export default function SecaoInicial({
         if (response.data?.uuid) {
             setOcorrenciaUuid(response.data.uuid);
             setSavedFormData(data);
-            onSuccess();
+            onSuccess?.();
         }
     };
 
@@ -277,19 +288,23 @@ export default function SecaoInicial({
                             </FormItem>
                         )}
                     />
-                    <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="customOutline" disabled>
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid || isCriando || isAtualizando}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="customOutline" disabled>
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={
+                                    !isValid || isCriando || isAtualizando
+                                }
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>

@@ -33,18 +33,24 @@ import { ListagemAnexos } from "./ListagemAnexos";
 import ModalFinalizarEtapa from "./ModalFinalizar/ModalFinalizar";
 
 export type AnexosProps = {
-    onPrevious: () => void;
-    onNext: () => void;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    showButtons?: boolean;
 };
 
-export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
+export default function Anexos({
+    onPrevious,
+    onNext,
+    showButtons = true,
+}: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const enviarAnexoMutation = useEnviarAnexo();
     const { data: tiposDocumento = [] } = useTiposDocumentos();
     const [openModalTipos, setOpenModalTipos] = useState(false);
-    const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] = useState(false);
+    const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
+        useState(false);
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
         intercorrenciaUuid: ocorrenciaUuid ?? "",
@@ -145,7 +151,7 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
 
     const onSubmit = async (data: AnexosData) => {
         setFormData(data);
-        onNext();
+        onNext?.();
     };
 
     return (
@@ -306,22 +312,31 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                             </p>
                         </div>
 
-                        <div className="flex justify-end gap-2 mt-6">
-                            <Button
-                                size="sm"
-                                variant="customOutline"
-                                type="button"
-                                onClick={() => {
-                                    setFormData(form.getValues());
-                                    onPrevious();
-                                }}
-                            >
-                                Anterior
-                            </Button>
-                            <Button size="sm" type="submit" variant="submit" onClick={() => setOpenModalFinalizarEtapa(true)}>
-                                Finalizar
-                            </Button>
-                        </div>
+                        {showButtons && (
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button
+                                    size="sm"
+                                    variant="customOutline"
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData(form.getValues());
+                                        onPrevious?.();
+                                    }}
+                                >
+                                    Anterior
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    type="submit"
+                                    variant="submit"
+                                    onClick={() =>
+                                        setOpenModalFinalizarEtapa(true)
+                                    }
+                                >
+                                    Finalizar
+                                </Button>
+                            </div>
+                        )}
                     </fieldset>
                 </form>
             </Form>
@@ -329,8 +344,8 @@ export default function Anexos({ onPrevious, onNext }: Readonly<AnexosProps>) {
                 open={openModalTipos}
                 onOpenChange={setOpenModalTipos}
             />
-            <ModalFinalizarEtapa 
-                open={openModalFinalizarEtapa} 
+            <ModalFinalizarEtapa
+                open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
             />
         </div>

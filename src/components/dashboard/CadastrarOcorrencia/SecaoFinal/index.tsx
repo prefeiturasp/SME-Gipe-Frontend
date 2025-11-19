@@ -25,13 +25,15 @@ import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
 import { toast } from "@/components/ui/headless-toast";
 
 export type SecaoFinalProps = {
-    onNext: () => void;
-    onPrevious: () => void;
+    onNext?: () => void;
+    onPrevious?: () => void;
+    showButtons?: boolean;
 };
 
 export default function SecaoFinal({
     onNext,
     onPrevious,
+    showButtons = true,
 }: Readonly<SecaoFinalProps>) {
     const {
         formData,
@@ -95,7 +97,7 @@ export default function SecaoFinal({
         setFormData(data);
 
         if (!ocorrenciaUuid || !hasChanges()) {
-            onNext();
+            onNext?.();
             return;
         }
 
@@ -107,7 +109,7 @@ export default function SecaoFinal({
                 onSuccess: (response) => {
                     if (response.success) {
                         setSavedFormData(data);
-                        onNext();
+                        onNext?.();
                     } else {
                         toast({
                             title: "Erro ao atualizar seção final",
@@ -242,28 +244,30 @@ export default function SecaoFinal({
                             de enviá-las
                         </p>
                     </div>
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            size="sm"
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => {
-                                setFormData(form.getValues());
-                                onPrevious();
-                            }}
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid || isPending}
-                            loading={isPending}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious?.();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={!isValid || isPending}
+                                loading={isPending}
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>
