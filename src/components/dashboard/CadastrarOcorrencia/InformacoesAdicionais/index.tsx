@@ -27,7 +27,10 @@ import { formSchema, InformacoesAdicionaisData } from "./schema";
 import { Search } from "lucide-react";
 import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
+import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
+import { hasFormDataChanged } from "@/lib/formUtils";
 import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+
 export type InformacoesAdicionaisProps = {
     onPrevious: () => void;
     onNext: () => void;
@@ -37,9 +40,16 @@ export default function InformacoesAdicionais({
     onPrevious,
     onNext,
 }: Readonly<InformacoesAdicionaisProps>) {
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const {
+        formData,
+        savedFormData,
+        setFormData,
+        setSavedFormData,
+        ocorrenciaUuid,
+    } = useOcorrenciaFormStore();
     const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
-    const { mutateAsync: buscarCep, isPending, error } = useEnderecoPorCep();
+    const { mutate: atualizarInfoAgressor } = useAtualizarInfoAgressor();
+    const { mutateAsync: buscarCep, isPending } = useEnderecoPorCep();
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -82,8 +92,94 @@ export default function InformacoesAdicionais({
     };
 
     const onSubmit = async (data: InformacoesAdicionaisData) => {
-        setFormData(data);
-        onNext();
+        const currentValues = form.getValues();
+
+        if (ocorrenciaUuid) {
+            if (
+                !hasFormDataChanged(currentValues, savedFormData, [
+                    "nomeAgressor",
+                    "idadeAgressor",
+                    "cep",
+                    "logradouro",
+                    "numero",
+                    "complemento",
+                    "estado",
+                    "cidade",
+                    "bairro",
+                    "motivoOcorrencia",
+                    "genero",
+                    "grupoEtnicoRacial",
+                    "etapaEscolar",
+                    "frequenciaEscolar",
+                    "interacaoAmbienteEscolar",
+                    "redesProtecao",
+                    "notificadoConselhoTutelar",
+                    "acompanhadoNAAPA",
+                ])
+            ) {
+                onNext();
+                return;
+            }
+
+            atualizarInfoAgressor(
+                {
+                    uuid: ocorrenciaUuid,
+                    body: {
+                        unidade_codigo_eol: formData.unidadeEducacional || "",
+                        dre_codigo_eol: formData.dre || "",
+                        nome_pessoa_agressora: data.nomeAgressor,
+                        idade_pessoa_agressora: Number.parseInt(
+                            data.idadeAgressor
+                        ),
+                        motivacao_ocorrencia: data.motivoOcorrencia,
+                        genero_pessoa_agressora: data.genero,
+                        grupo_etnico_racial: data.grupoEtnicoRacial,
+                        etapa_escolar: data.etapaEscolar,
+                        frequencia_escolar: data.frequenciaEscolar,
+                        interacao_ambiente_escolar:
+                            data.interacaoAmbienteEscolar,
+                        redes_protecao_acompanhamento: data.redesProtecao,
+                        notificado_conselho_tutelar:
+                            data.notificadoConselhoTutelar === "Sim",
+                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim",
+                        cep: data.cep,
+                        logradouro: data.logradouro,
+                        numero_residencia: data.numero,
+                        complemento: data.complemento || "",
+                        bairro: data.bairro,
+                        cidade: data.cidade,
+                        estado: data.estado,
+                    },
+                },
+                {
+                    onSuccess: (response) => {
+                        if (!response.success) {
+                            toast({
+                                title: "Erro ao atualizar informações adicionais",
+                                description: response.error,
+                                variant: "error",
+                            });
+                            return;
+                        }
+
+                        setFormData(data);
+                        setSavedFormData(data);
+                        onNext();
+                    },
+                    onError: () => {
+                        toast({
+                            title: "Erro ao atualizar informações adicionais",
+                            description:
+                                "Não foi possível atualizar os dados. Tente novamente.",
+                            variant: "error",
+                        });
+                    },
+                }
+            );
+        } else {
+            setFormData(data);
+            onNext();
+        }
     };
     const handleBuscarCep = async () => {
         const cep = form.getValues("cep");
@@ -95,7 +191,7 @@ export default function InformacoesAdicionais({
             form.setValue("estado", endereco.estado);
         } catch (err) {
             const mensagemErro = err instanceof Error ? err.message : "";
-            
+
             if (mensagemErro.includes("CEP")) {
                 toast({
                     variant: "error",
@@ -106,7 +202,8 @@ export default function InformacoesAdicionais({
                 toast({
                     variant: "error",
                     title: "Houve um erro...",
-                    description: "Não conseguimos buscar o CEP. Por favor, tente novamente.",
+                    description:
+                        "Não conseguimos buscar o CEP. Por favor, tente novamente.",
                 });
             }
         }
@@ -162,7 +259,7 @@ export default function InformacoesAdicionais({
                             Qual o endereço da pessoa agressora?
                         </h3>
 
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-2 mt-4 items-start">
                             <FormField
                                 control={form.control}
                                 name="cep"
@@ -189,18 +286,16 @@ export default function InformacoesAdicionais({
                                     </FormItem>
                                 )}
                             />
-                            <div className="flex items-end">
-                                <Button
-                                    type="button"
-                                    variant="customOutline"
-                                    size="sm"
-                                    className="h-10"
-                                    onClick={handleBuscarCep}
-                                    disabled={isPending}
-                                    >
-                                    {isPending ? "Buscando..." : "Pesquisar CEP"}
-                                </Button>
-                            </div>
+                            <Button
+                                type="button"
+                                variant="customOutline"
+                                size="sm"
+                                className="h-10 mt-8"
+                                onClick={handleBuscarCep}
+                                disabled={isPending}
+                            >
+                                {isPending ? "Buscando..." : "Pesquisar CEP"}
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -339,7 +434,10 @@ export default function InformacoesAdicionais({
                                     </FormLabel>
                                     <FormControl>
                                         <MultiSelect
-                                            options={categoriasDisponiveis?.motivo_ocorrencia || []}
+                                            options={
+                                                categoriasDisponiveis?.motivo_ocorrencia ||
+                                                []
+                                            }
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Selecione"
@@ -370,14 +468,16 @@ export default function InformacoesAdicionais({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {categoriasDisponiveis?.genero.map((genero) => (
-                                                <SelectItem
-                                                    key={genero.value}
-                                                    value={genero.value}
-                                                >
-                                                    {genero.label}
-                                                </SelectItem>
-                                            ))}
+                                            {categoriasDisponiveis?.genero.map(
+                                                (genero) => (
+                                                    <SelectItem
+                                                        key={genero.value}
+                                                        value={genero.value}
+                                                    >
+                                                        {genero.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

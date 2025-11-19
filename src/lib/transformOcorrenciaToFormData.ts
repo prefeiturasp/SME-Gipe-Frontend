@@ -79,6 +79,95 @@ function getPossuiInfoAgressorVitima(
 }
 
 /**
+ * Converte valor booleano para formato do formulário ("Sim" | "Não")
+ */
+function getBooleanAsSimNao(value?: boolean): "Sim" | "Não" | undefined {
+    if (value === undefined) return undefined;
+    return value ? "Sim" : "Não";
+}
+
+/**
+ * Extrai dados pessoais do agressor
+ */
+function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
+    return {
+        ...(ocorrencia.nome_pessoa_agressora && {
+            nomeAgressor: ocorrencia.nome_pessoa_agressora,
+        }),
+        ...(ocorrencia.idade_pessoa_agressora !== undefined && {
+            idadeAgressor: String(ocorrencia.idade_pessoa_agressora),
+        }),
+        ...(ocorrencia.genero_pessoa_agressora && {
+            genero: ocorrencia.genero_pessoa_agressora,
+        }),
+        ...(ocorrencia.grupo_etnico_racial && {
+            grupoEtnicoRacial: ocorrencia.grupo_etnico_racial,
+        }),
+    };
+}
+
+/**
+ * Extrai dados de endereço do agressor
+ */
+function extractEnderecoAgressor(ocorrencia: OcorrenciaDetalheAPI) {
+    return {
+        ...(ocorrencia.cep && { cep: ocorrencia.cep }),
+        ...(ocorrencia.logradouro && { logradouro: ocorrencia.logradouro }),
+        ...(ocorrencia.numero_residencia && {
+            numero: ocorrencia.numero_residencia,
+        }),
+        ...(ocorrencia.complemento && { complemento: ocorrencia.complemento }),
+        ...(ocorrencia.estado && { estado: ocorrencia.estado }),
+        ...(ocorrencia.cidade && { cidade: ocorrencia.cidade }),
+        ...(ocorrencia.bairro && { bairro: ocorrencia.bairro }),
+    };
+}
+
+/**
+ * Extrai dados escolares e acompanhamento do agressor
+ */
+function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
+    const notificadoConselhoTutelar = getBooleanAsSimNao(
+        ocorrencia.notificado_conselho_tutelar
+    );
+    const acompanhadoNAAPA = getBooleanAsSimNao(ocorrencia.acompanhado_naapa);
+    const motivoOcorrencia = ocorrencia.motivacao_ocorrencia_display?.map(
+        (item) => item.value
+    );
+
+    return {
+        ...(motivoOcorrencia && {
+            motivoOcorrencia,
+        }),
+        ...(ocorrencia.etapa_escolar && {
+            etapaEscolar: ocorrencia.etapa_escolar,
+        }),
+        ...(ocorrencia.frequencia_escolar && {
+            frequenciaEscolar: ocorrencia.frequencia_escolar,
+        }),
+        ...(ocorrencia.interacao_ambiente_escolar && {
+            interacaoAmbienteEscolar: ocorrencia.interacao_ambiente_escolar,
+        }),
+        ...(ocorrencia.redes_protecao_acompanhamento && {
+            redesProtecao: ocorrencia.redes_protecao_acompanhamento,
+        }),
+        ...(notificadoConselhoTutelar && { notificadoConselhoTutelar }),
+        ...(acompanhadoNAAPA && { acompanhadoNAAPA }),
+    };
+}
+
+/**
+ * Extrai campos de informações adicionais da API
+ */
+function extractInfoAdicionais(ocorrencia: OcorrenciaDetalheAPI) {
+    return {
+        ...extractDadosPessoaisAgressor(ocorrencia),
+        ...extractEnderecoAgressor(ocorrencia),
+        ...extractDadosEscolaresAgressor(ocorrencia),
+    };
+}
+
+/**
  * Transforma dados da API de ocorrência para o formato esperado pelo formulário
  */
 export function transformOcorrenciaToFormData(
@@ -105,6 +194,7 @@ export function transformOcorrenciaToFormData(
     const possuiInfoAgressorVitima = getPossuiInfoAgressorVitima(
         ocorrencia.tem_info_agressor_ou_vitima
     );
+    const infoAdicionais = extractInfoAdicionais(ocorrencia);
 
     return {
         dataOcorrencia,
@@ -130,5 +220,6 @@ export function transformOcorrenciaToFormData(
             envolvidos: ocorrencia.envolvido.uuid,
         }),
         ...(possuiInfoAgressorVitima && { possuiInfoAgressorVitima }),
+        ...infoAdicionais,
     };
 }
