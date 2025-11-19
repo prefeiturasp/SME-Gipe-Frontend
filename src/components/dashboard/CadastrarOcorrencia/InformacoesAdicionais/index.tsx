@@ -259,7 +259,7 @@ export default function InformacoesAdicionais({
                             Qual o endereço da pessoa agressora?
                         </h3>
 
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-2 mt-4 items-start">
                             <FormField
                                 control={form.control}
                                 name="cep"
@@ -286,20 +286,16 @@ export default function InformacoesAdicionais({
                                     </FormItem>
                                 )}
                             />
-                            <div className="flex items-end">
-                                <Button
-                                    type="button"
-                                    variant="customOutline"
-                                    size="sm"
-                                    className="h-10"
-                                    onClick={handleBuscarCep}
-                                    disabled={isPending}
-                                >
-                                    {isPending
-                                        ? "Buscando..."
-                                        : "Pesquisar CEP"}
-                                </Button>
-                            </div>
+                            <Button
+                                type="button"
+                                variant="customOutline"
+                                size="sm"
+                                className="h-10 mt-8"
+                                onClick={handleBuscarCep}
+                                disabled={isPending}
+                            >
+                                {isPending ? "Buscando..." : "Pesquisar CEP"}
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
