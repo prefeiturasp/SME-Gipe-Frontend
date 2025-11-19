@@ -5,15 +5,23 @@ import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
-import SecaoInicial from "../CadastrarOcorrencia/SecaoInicial";
-import SecaoFurtoERoubo from "../CadastrarOcorrencia/SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo from "../CadastrarOcorrencia/SecaoNaoFurtoERoubo";
-import SecaoFinal from "../CadastrarOcorrencia/SecaoFinal";
-import InformacoesAdicionais from "../CadastrarOcorrencia/InformacoesAdicionais";
+import SecaoInicial, {
+    SecaoInicialRef,
+} from "../CadastrarOcorrencia/SecaoInicial";
+import SecaoFurtoERoubo, {
+    SecaoFurtoERouboRef,
+} from "../CadastrarOcorrencia/SecaoFurtoERoubo";
+import SecaoNaoFurtoERoubo, {
+    SecaoNaoFurtoERouboRef,
+} from "../CadastrarOcorrencia/SecaoNaoFurtoERoubo";
+import SecaoFinal, { SecaoFinalRef } from "../CadastrarOcorrencia/SecaoFinal";
+import InformacoesAdicionais, {
+    InformacoesAdicionaisRef,
+} from "../CadastrarOcorrencia/InformacoesAdicionais";
 import Anexos from "../CadastrarOcorrencia/Anexos";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function VisualizarOcorrencia() {
     const formData = useOcorrenciaFormStore((state) => state.formData);
@@ -22,6 +30,13 @@ export default function VisualizarOcorrencia() {
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
+
+    // Refs para acessar os métodos dos formulários
+    const secaoInicialRef = useRef<SecaoInicialRef>(null);
+    const secaoFurtoERouboRef = useRef<SecaoFurtoERouboRef>(null);
+    const secaoNaoFurtoERouboRef = useRef<SecaoNaoFurtoERouboRef>(null);
+    const informacoesAdicionaisRef = useRef<InformacoesAdicionaisRef>(null);
+    const secaoFinalRef = useRef<SecaoFinalRef>(null);
 
     // Estados locais que refletem os valores dos formulários em tempo real
     const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
@@ -64,13 +79,123 @@ export default function VisualizarOcorrencia() {
         });
     };
 
-    const handleSaveAll = () => {
-        toast({
-            title: "Alterações salvas",
-            description:
-                "As alterações nos formulários são salvas automaticamente ao preencher cada seção.",
-            variant: "success",
-        });
+    const handleSaveAll = async () => {
+        try {
+            // Coleta dados de todos os formulários sem fazer submit individual
+            const secaoInicialData = secaoInicialRef.current?.getFormData();
+
+            // Valida a Seção Inicial
+            const secaoInicialValid = await secaoInicialRef.current
+                ?.getFormInstance()
+                .trigger();
+            if (!secaoInicialValid) {
+                toast({
+                    title: "Erro ao validar Seção Inicial",
+                    description:
+                        "Verifique os campos da Seção Inicial e tente novamente.",
+                    variant: "error",
+                });
+                return;
+            }
+
+            // Coleta dados da seção de furto/roubo ou não furto/roubo
+            let secaoTipoData;
+            let secaoTipoValid;
+
+            if (isFurtoRoubo) {
+                secaoTipoData = secaoFurtoERouboRef.current?.getFormData();
+                secaoTipoValid = await secaoFurtoERouboRef.current
+                    ?.getFormInstance()
+                    .trigger();
+                if (!secaoTipoValid) {
+                    toast({
+                        title: "Erro ao validar Formulário Patrimonial",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            } else {
+                secaoTipoData = secaoNaoFurtoERouboRef.current?.getFormData();
+                secaoTipoValid = await secaoNaoFurtoERouboRef.current
+                    ?.getFormInstance()
+                    .trigger();
+                if (!secaoTipoValid) {
+                    toast({
+                        title: "Erro ao validar Formulário Geral",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            }
+
+            // Coleta dados das Informações Adicionais (se houver)
+            let informacoesAdicionaisData;
+            if (hasAgressorVitimaInfo) {
+                informacoesAdicionaisData =
+                    informacoesAdicionaisRef.current?.getFormData();
+                const infoAdicionaisValid =
+                    await informacoesAdicionaisRef.current
+                        ?.getFormInstance()
+                        .trigger();
+                if (!infoAdicionaisValid) {
+                    toast({
+                        title: "Erro ao validar Informações Adicionais",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            }
+
+            // Coleta dados da Seção Final
+            const secaoFinalData = secaoFinalRef.current?.getFormData();
+            const secaoFinalValid = await secaoFinalRef.current
+                ?.getFormInstance()
+                .trigger();
+            if (!secaoFinalValid) {
+                toast({
+                    title: "Erro ao validar Seção Final",
+                    description: "Verifique os campos e tente novamente.",
+                    variant: "error",
+                });
+                return;
+            }
+
+            // Monta o payload completo que será enviado ao backend no futuro
+            const payloadCompleto = {
+                secaoInicial: secaoInicialData,
+                ...(isFurtoRoubo
+                    ? { secaoFurtoERoubo: secaoTipoData }
+                    : { secaoNaoFurtoERoubo: secaoTipoData }),
+                ...(hasAgressorVitimaInfo && {
+                    informacoesAdicionais: informacoesAdicionaisData,
+                }),
+                secaoFinal: secaoFinalData,
+            };
+
+            // Log para validar os valores coletados
+            console.log("=== DADOS COLETADOS DE TODOS OS FORMULÁRIOS ===");
+            console.log("UUID da Ocorrência:", ocorrenciaUuid);
+            console.log("Payload completo:", payloadCompleto);
+            console.log("============================================");
+
+            toast({
+                title: "Validação concluída",
+                description:
+                    "Todos os formulários foram validados. Confira os dados no console.",
+                variant: "success",
+            });
+        } catch (err) {
+            console.error("Erro ao validar:", err);
+            toast({
+                title: "Erro ao validar",
+                description:
+                    "Ocorreu um erro ao validar os formulários. Tente novamente.",
+                variant: "error",
+            });
+        }
     };
 
     const getStep2Label = () => {
@@ -123,6 +248,7 @@ export default function VisualizarOcorrencia() {
                 <div className="flex flex-col mt-8">
                     <div className="">
                         <SecaoInicial
+                            ref={secaoInicialRef}
                             showButtons={false}
                             onFormChange={handleSecaoInicialChange}
                         />
@@ -130,9 +256,13 @@ export default function VisualizarOcorrencia() {
 
                     <div className="">
                         {isFurtoRoubo ? (
-                            <SecaoFurtoERoubo showButtons={false} />
+                            <SecaoFurtoERoubo
+                                ref={secaoFurtoERouboRef}
+                                showButtons={false}
+                            />
                         ) : (
                             <SecaoNaoFurtoERoubo
+                                ref={secaoNaoFurtoERouboRef}
                                 showButtons={false}
                                 onFormChange={handleSecaoNaoFurtoChange}
                             />
@@ -141,12 +271,15 @@ export default function VisualizarOcorrencia() {
 
                     {hasAgressorVitimaInfo && (
                         <div className="">
-                            <InformacoesAdicionais showButtons={false} />
+                            <InformacoesAdicionais
+                                ref={informacoesAdicionaisRef}
+                                showButtons={false}
+                            />
                         </div>
                     )}
 
                     <div className="">
-                        <SecaoFinal showButtons={false} />
+                        <SecaoFinal ref={secaoFinalRef} showButtons={false} />
                     </div>
 
                     <div className="">
