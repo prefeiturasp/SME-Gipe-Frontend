@@ -1,9 +1,9 @@
 import { vi } from "vitest";
 import React from "react";
-import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { QueryClient } from "@tanstack/react-query";
 import { renderWithClient } from "../__tests__/helpers";
-import SecaoFinal from "./index";
+import SecaoFinal, { SecaoFinalRef } from "./index";
 
 const setFormDataMock = vi.fn();
 const setSavedFormDataMock = vi.fn();
@@ -790,6 +790,120 @@ describe("SecaoFinal", () => {
                 expect(mockOnNext).not.toHaveBeenCalled();
                 expect(setSavedFormDataMock).not.toHaveBeenCalled();
             });
+        });
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(<SecaoFinal ref={ref} />);
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toBeDefined();
+            expect(formData).toHaveProperty("declarante");
+            expect(formData).toHaveProperty("comunicacaoSeguranca");
+            expect(formData).toHaveProperty("protocoloAcionado");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(<SecaoFinal ref={ref} />);
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance).toHaveProperty("getValues");
+            expect(formInstance).toHaveProperty("trigger");
+            expect(formInstance).toHaveProperty("formState");
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            mockOcorrenciaUuid = "test-uuid-123";
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            const ref = React.createRef<SecaoFinalRef>();
+            const onNext = vi.fn();
+
+            renderWithClient(<SecaoFinal ref={ref} onNext={onNext} />);
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            await act(async () => {
+                fireEvent.click(declaranteSelect);
+            });
+
+            const declaranteOption = await screen.findByRole("option", {
+                name: /NAAPA/i,
+            });
+            await act(async () => {
+                fireEvent.click(declaranteOption);
+            });
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            await act(async () => {
+                fireEvent.click(comunicacaoSelect);
+            });
+
+            const comunicacaoOption = await screen.findByRole("option", {
+                name: /Sim, com a GCM/i,
+            });
+            await act(async () => {
+                fireEvent.click(comunicacaoOption);
+            });
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            await act(async () => {
+                fireEvent.click(protocoloSelect);
+            });
+
+            const protocoloOption = await screen.findByRole("option", {
+                name: /Alerta/i,
+            });
+            await act(async () => {
+                fireEvent.click(protocoloOption);
+            });
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(true);
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve retornar false em submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(<SecaoFinal ref={ref} />);
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(false);
+            expect(mockMutate).not.toHaveBeenCalled();
         });
     });
 });

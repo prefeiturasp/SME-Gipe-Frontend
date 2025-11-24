@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoFurtoERoubo from "./index";
+import SecaoFurtoERoubo, { SecaoFurtoERouboRef } from "./index";
 import userEvent from "@testing-library/user-event";
 import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useAtualizarSecaoFurtoRouboHook from "@/hooks/useAtualizarSecaoFurtoRoubo";
@@ -725,8 +725,6 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            // Busca pelo botão do MultiSelect que contém a tag "Violência física"
-            // Evita o botão de remover buscando pelo atributo aria-haspopup
             const multiSelectButton = screen.getByRole("button", {
                 expanded: false,
             });
@@ -1081,6 +1079,241 @@ describe("SecaoFurtoERoubo", () => {
                     })
                 );
                 expect(mockOnNext).toHaveBeenCalledTimes(1);
+            });
+        });
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toHaveProperty("tiposOcorrencia");
+            expect(formData).toHaveProperty("descricao");
+            expect(formData).toHaveProperty("smartSampa");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance?.getValues).toBeDefined();
+            expect(formInstance?.trigger).toBeDefined();
+            expect(formInstance?.formState).toBeDefined();
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            const user = userEvent.setup();
+            const mockMutate = vi.fn((_, options) => {
+                if (options?.onSuccess) {
+                    options.onSuccess({ success: true, data: {} });
+                }
+            });
+
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+            ).mockReturnValue({
+                formData: {},
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useAtualizarSecaoFurtoRouboHook,
+                "useAtualizarSecaoFurtoRoubo"
+            ).mockReturnValue({
+                mutate: mockMutate,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const multiSelectButton = screen.getByRole("button", {
+                name: /selecione os tipos de ocorrência/i,
+            });
+            await user.click(multiSelectButton);
+
+            const tipoOption = await screen.findByRole("option", {
+                name: /violência física/i,
+            });
+            await user.click(tipoOption);
+
+            const descricaoField =
+                screen.getByPlaceholderText("Descreva aqui...");
+            await user.type(
+                descricaoField,
+                "Esta é uma descrição detalhada com mais de dez caracteres"
+            );
+
+            const radioNaoFazParte = screen.getByRole("radio", {
+                name: /a ue não faz parte do smart sampa/i,
+            });
+            await user.click(radioNaoFazParte);
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
+
+            expect(mockMutate).toHaveBeenCalled();
+        });
+
+        it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(false);
+            });
+
+            expect(mockOnNext).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("onFormChange callback", () => {
+        it("deve chamar onFormChange quando um campo é alterado", async () => {
+            const mockOnFormChange = vi.fn();
+            const user = userEvent.setup();
+
+            render(
+                <SecaoFurtoERoubo
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    onFormChange={mockOnFormChange}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const descricaoField =
+                screen.getByPlaceholderText("Descreva aqui...");
+            await user.type(descricaoField, "Nova descrição");
+
+            await waitFor(() => {
+                expect(mockOnFormChange).toHaveBeenCalled();
+                expect(mockOnFormChange).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        descricao: expect.stringContaining("Nova descrição"),
+                    })
+                );
+            });
+        });
+
+        it("deve chamar onFormChange quando multiselect é alterado", async () => {
+            const mockOnFormChange = vi.fn();
+            const user = userEvent.setup();
+
+            render(
+                <SecaoFurtoERoubo
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    onFormChange={mockOnFormChange}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const multiSelectButton = screen.getByRole("button", {
+                name: /selecione os tipos de ocorrência/i,
+            });
+            await user.click(multiSelectButton);
+
+            const tipoOption = await screen.findByRole("option", {
+                name: /violência física/i,
+            });
+            await user.click(tipoOption);
+
+            await waitFor(() => {
+                expect(mockOnFormChange).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        tiposOcorrencia: expect.arrayContaining([
+                            "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        ]),
+                    })
+                );
+            });
+        });
+
+        it("deve chamar onFormChange quando radio button é alterado", async () => {
+            const mockOnFormChange = vi.fn();
+            const user = userEvent.setup();
+
+            render(
+                <SecaoFurtoERoubo
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    onFormChange={mockOnFormChange}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const radioSimComDano = screen.getByRole("radio", {
+                name: /sim e houve dano/i,
+            });
+            await user.click(radioSimComDano);
+
+            await waitFor(() => {
+                expect(mockOnFormChange).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        smartSampa: "sim_com_dano",
+                    })
+                );
+            });
+        });
+
+        it("não deve chamar onFormChange quando callback não é fornecido", async () => {
+            const user = userEvent.setup();
+
+            render(
+                <SecaoFurtoERoubo
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const descricaoField =
+                screen.getByPlaceholderText("Descreva aqui...");
+            await user.type(descricaoField, "Texto qualquer");
+
+            await waitFor(() => {
+                expect(descricaoField).toHaveValue("Texto qualquer");
             });
         });
     });
