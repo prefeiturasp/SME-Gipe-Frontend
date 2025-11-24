@@ -25,40 +25,27 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/headless-toast";
+
 
 import Aviso from "@/components/login/FormCadastro/Aviso";
 import Exclamation from "@/assets/icons/Exclamation";
 
 import {
     formSchema,
-    FormDataMotivoCancelamento,
+    FormDataMotivoEncerramento,
 } from "./schema";
 
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useFinalizarEtapa } from "@/hooks/useFinalizarEtapa";
+import { FinalizarOcorrenciaResponse } from "@/types/finalizar-etapa";
 
-export type FinalizacaoEtapaResponse = {
-    nomeResponsavel: string;
-    cpf: string;
-    email: string;
-    perfilAcesso: string;
-    dre: string;
-    unidade: string;
-    protocolo: string
-};
-
-const mockApiResponse: FinalizacaoEtapaResponse = {
-    nomeResponsavel: "Marcus Paulo de Souza Andrade",
-    cpf: "123.456.789",
-    email: "marcus.andrade@sme.prefeitura.sp.gov.br",
-    perfilAcesso: "Diretor(a) Pedagógico",
-    dre: "DRE Butantã",
-    unidade: "EMEF Prof. Alípio Correa Neto",
-    protocolo: "GIPE-2025/0042",
-};
 
 
 type ModalFinalizarEtapaProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
+
 };
 
 export default function ModalFinalizarEtapa({
@@ -66,11 +53,17 @@ export default function ModalFinalizarEtapa({
     onOpenChange,
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
-    const [apiData, setApiData] = useState<FinalizacaoEtapaResponse | null>(null);
+    const [apiData, setApiData] = useState<FinalizarOcorrenciaResponse | null>(null);
+    const {
+        formData,
+        ocorrenciaUuid
+    } = useOcorrenciaFormStore();
+
+    const { mutateAsync, isPending } = useFinalizarEtapa();
 
     const router = useRouter();
 
-    const form = useForm<FormDataMotivoCancelamento>({
+    const form = useForm<FormDataMotivoEncerramento>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
     });
@@ -81,18 +74,37 @@ export default function ModalFinalizarEtapa({
         if (!value) {
             form.reset();
             setSuccess(false);
-            setApiData(null);
-
             router.push("/dashboard");
 
         }
     }
 
-    async function handleSubmit() {
-        await new Promise((r) => setTimeout(r, 800)); 
+    async function handleSubmit(values: FormDataMotivoEncerramento) {
+        const body = {
+            unidade_codigo_eol: formData.unidadeEducacional,
+            dre_codigo_eol: formData.dre,
+            motivo_encerramento_ue: values.motivo,
+        };
 
-        setApiData(mockApiResponse);
-        setSuccess(true);
+        const response = await mutateAsync({
+            ocorrenciaUuid: ocorrenciaUuid!,
+            body,
+        });
+        
+        if (!response.success) {
+            toast({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: response.error,
+            });
+            return;
+        }
+
+        if (response.data?.uuid) {
+            setApiData(response.data);
+            setSuccess(true);
+        }
+
     }
 
     return (
@@ -153,8 +165,8 @@ export default function ModalFinalizarEtapa({
                                     <Button
                                         type="submit"
                                         size="sm"
-                                        className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                        disabled={!form.formState.isValid}
+                                        className="min-w-[86px] text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                                        disabled={!form.formState.isValid || isPending}
                                     >
                                         Finalizar
                                     </Button>
@@ -165,7 +177,7 @@ export default function ModalFinalizarEtapa({
                 )}
 
 
-                {success && apiData && (
+                {success && (
                 <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
                 
                     <DialogHeader className="pt-2">
@@ -176,18 +188,18 @@ export default function ModalFinalizarEtapa({
                         </DialogDescription>
                         <Aviso>
                             <span className="text-[14px] font-[700]">
-                                Protocolo da intercorrência: <strong>{apiData.protocolo}</strong>
+                                Protocolo da intercorrência: <strong>{apiData?.protocolo_da_intercorrencia}</strong>
                             </span>
                         </Aviso>
 
                         <Aviso>
                             <div className="text-[14px] leading-5 text-[#42474a]">
-                                <p><strong>Responsável:</strong> {apiData.nomeResponsavel}</p>
-                                <p><strong>CPF:</strong> {apiData.cpf}</p>
-                                <p><strong>E-mail:</strong> {apiData.email}</p>
-                                <p><strong>Perfil de acesso:</strong> {apiData.perfilAcesso}</p>
-                                <p><strong>Diretoria Regional:</strong> {apiData.dre}</p>
-                                <p><strong>Unidade Educacional:</strong> {apiData.unidade}</p>
+                                <p><strong>Responsável:</strong> {apiData?.responsavel_nome}</p>
+                                <p><strong>CPF:</strong> {apiData?.responsavel_cpf}</p>
+                                <p><strong>E-mail:</strong> {apiData?.responsavel_email}</p>
+                                <p><strong>Perfil de acesso:</strong> {apiData?.perfil_acesso}</p>
+                                <p><strong>Diretoria Regional:</strong> {apiData?.nome_dre}</p>
+                                <p><strong>Unidade Educacional:</strong> {apiData?.nome_unidade}</p>
                             </div>
                         </Aviso>
 
