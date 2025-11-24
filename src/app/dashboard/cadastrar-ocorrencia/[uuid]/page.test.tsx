@@ -62,6 +62,7 @@ describe("EditarOcorrenciaPage", () => {
                 dre_codigo_eol: "108300",
                 sobre_furto_roubo_invasao_depredacao: false,
                 user_username: "20090388003",
+                status: "em_preenchimento_diretor",
                 criado_em: "2025-10-15T14:48:04.383569-03:00",
                 atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             },
@@ -107,6 +108,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108300",
             sobre_furto_roubo_invasao_depredacao: true,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -162,6 +164,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108300",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -308,6 +311,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108500",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -356,6 +360,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108600",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             smart_sampa_situacao: "valor-invalido" as
@@ -456,6 +461,7 @@ describe("EditarOcorrenciaPage", () => {
                 dre_codigo_eol: "108700",
                 sobre_furto_roubo_invasao_depredacao: false,
                 user_username: "20090388003",
+                status: "em_preenchimento_diretor",
                 criado_em: "2025-10-15T14:48:04.383569-03:00",
                 atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             },
@@ -500,6 +506,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108800",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -548,6 +555,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "109200",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             comunicacao_seguranca_publica: "sim_pm" as const,
