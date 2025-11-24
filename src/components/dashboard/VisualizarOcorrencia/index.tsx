@@ -20,7 +20,6 @@ import InformacoesAdicionais, {
 } from "../CadastrarOcorrencia/InformacoesAdicionais";
 import Anexos from "../CadastrarOcorrencia/Anexos";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/headless-toast";
 import { useEffect, useState, useRef } from "react";
 
 export default function VisualizarOcorrencia() {
@@ -79,138 +78,21 @@ export default function VisualizarOcorrencia() {
         });
     };
 
-    const handleSaveAll = async () => {
-        try {
-            // Coleta dados de todos os formulários sem fazer submit individual
-            const secaoInicialData = secaoInicialRef.current?.getFormData();
-
-            // Valida a Seção Inicial
-            const secaoInicialValid = await secaoInicialRef.current
-                ?.getFormInstance()
-                .trigger();
-            if (!secaoInicialValid) {
-                toast({
-                    title: "Erro ao validar Seção Inicial",
-                    description:
-                        "Verifique os campos da Seção Inicial e tente novamente.",
-                    variant: "error",
-                });
-                return;
-            }
-
-            // Coleta dados da seção de furto/roubo ou não furto/roubo
-            let secaoTipoData;
-            let secaoTipoValid;
-
-            if (isFurtoRoubo) {
-                secaoTipoData = secaoFurtoERouboRef.current?.getFormData();
-                secaoTipoValid = await secaoFurtoERouboRef.current
-                    ?.getFormInstance()
-                    .trigger();
-                if (!secaoTipoValid) {
-                    toast({
-                        title: "Erro ao validar Formulário Patrimonial",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            } else {
-                secaoTipoData = secaoNaoFurtoERouboRef.current?.getFormData();
-                secaoTipoValid = await secaoNaoFurtoERouboRef.current
-                    ?.getFormInstance()
-                    .trigger();
-                if (!secaoTipoValid) {
-                    toast({
-                        title: "Erro ao validar Formulário Geral",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            }
-
-            // Coleta dados das Informações Adicionais (se houver)
-            let informacoesAdicionaisData;
-            if (hasAgressorVitimaInfo) {
-                informacoesAdicionaisData =
-                    informacoesAdicionaisRef.current?.getFormData();
-                const infoAdicionaisValid =
-                    await informacoesAdicionaisRef.current
-                        ?.getFormInstance()
-                        .trigger();
-                if (!infoAdicionaisValid) {
-                    toast({
-                        title: "Erro ao validar Informações Adicionais",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            }
-
-            // Coleta dados da Seção Final
-            const secaoFinalData = secaoFinalRef.current?.getFormData();
-            const secaoFinalValid = await secaoFinalRef.current
-                ?.getFormInstance()
-                .trigger();
-            if (!secaoFinalValid) {
-                toast({
-                    title: "Erro ao validar Seção Final",
-                    description: "Verifique os campos e tente novamente.",
-                    variant: "error",
-                });
-                return;
-            }
-
-            // Monta o payload completo que será enviado ao backend no futuro
-            const payloadCompleto = {
-                secaoInicial: secaoInicialData,
-                ...(isFurtoRoubo
-                    ? { secaoFurtoERoubo: secaoTipoData }
-                    : { secaoNaoFurtoERoubo: secaoTipoData }),
-                ...(hasAgressorVitimaInfo && {
-                    informacoesAdicionais: informacoesAdicionaisData,
-                }),
-                secaoFinal: secaoFinalData,
-            };
-
-            // Log para validar os valores coletados
-            console.log("=== DADOS COLETADOS DE TODOS OS FORMULÁRIOS ===");
-            console.log("UUID da Ocorrência:", ocorrenciaUuid);
-            console.log("Payload completo:", payloadCompleto);
-            console.log("============================================");
-
-            toast({
-                title: "Validação concluída",
-                description:
-                    "Todos os formulários foram validados. Confira os dados no console.",
-                variant: "success",
-            });
-        } catch (err) {
-            console.error("Erro ao validar:", err);
-            toast({
-                title: "Erro ao validar",
-                description:
-                    "Ocorreu um erro ao validar os formulários. Tente novamente.",
-                variant: "error",
-            });
-        }
-    };
-
     const getStep2Label = () => {
         return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
     };
 
     const getStep3Label = () => {
-        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
+        return hasAgressorVitimaInfo && !isFurtoRoubo
+            ? "Informações adicionais"
+            : "Seção final";
     };
 
     const steps = [
         { label: "Cadastro de ocorrência", description: "" },
         { label: getStep2Label(), description: "" },
 
-        ...(hasAgressorVitimaInfo
+        ...(hasAgressorVitimaInfo && !isFurtoRoubo
             ? [
                   { label: getStep3Label(), description: "" },
                   { label: "Seção final", description: "" },
@@ -269,7 +151,7 @@ export default function VisualizarOcorrencia() {
                         )}
                     </div>
 
-                    {hasAgressorVitimaInfo && (
+                    {hasAgressorVitimaInfo && !isFurtoRoubo && (
                         <div className="">
                             <InformacoesAdicionais
                                 ref={informacoesAdicionaisRef}
@@ -287,11 +169,7 @@ export default function VisualizarOcorrencia() {
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            size="sm"
-                            variant="submit"
-                            onClick={handleSaveAll}
-                        >
+                        <Button size="sm" variant="submit">
                             Finalizar
                         </Button>
                     </div>

@@ -73,7 +73,7 @@ export default function StepRenderer({
         },
         {
             step: 3,
-            condition: hasAgressorVitimaInfo,
+            condition: hasAgressorVitimaInfo && !isFurtoRoubo,
             component: (
                 <InformacoesAdicionais
                     onNext={onNext}

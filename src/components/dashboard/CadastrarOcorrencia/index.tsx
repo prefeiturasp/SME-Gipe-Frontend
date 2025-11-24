@@ -23,7 +23,6 @@ export default function CadastrarOcorrencia({
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
 
-    // Estados locais que refletem os valores dos formulários em tempo real
     const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
         string | undefined
     >(formData.tipoOcorrencia);
@@ -31,11 +30,9 @@ export default function CadastrarOcorrencia({
         string | undefined
     >(formData.possuiInfoAgressorVitima);
 
-    // Valores reativos baseados nos estados locais
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
 
-    // Callbacks para receber mudanças dos formulários
     const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
         if (data.tipoOcorrencia !== undefined) {
             setCurrentTipoOcorrencia(data.tipoOcorrencia);
@@ -50,7 +47,6 @@ export default function CadastrarOcorrencia({
         }
     };
 
-    // Inicializa com valores do formData
     useEffect(() => {
         setCurrentTipoOcorrencia(formData.tipoOcorrencia);
         setCurrentPossuiInfoAgressor(formData.possuiInfoAgressorVitima);
@@ -82,14 +78,16 @@ export default function CadastrarOcorrencia({
             return "Fase 03";
         }
 
-        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
+        return hasAgressorVitimaInfo && !isFurtoRoubo
+            ? "Informações adicionais"
+            : "Seção final";
     };
 
     const steps = [
         { label: "Cadastro de ocorrência", description: "" },
         { label: getStep2Label(), description: "" },
 
-        ...(hasAgressorVitimaInfo
+        ...(hasAgressorVitimaInfo && !isFurtoRoubo
             ? [
                   { label: getStep3Label(), description: "" },
                   { label: "Seção final", description: "" },
