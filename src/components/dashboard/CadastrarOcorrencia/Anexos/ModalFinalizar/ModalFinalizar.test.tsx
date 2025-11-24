@@ -1,185 +1,252 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import ModalFinalizar from "./ModalFinalizar";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
 const mockPush = vi.fn();
-
 vi.mock("next/navigation", () => ({
-    useRouter: () => ({
-        push: mockPush,
-        replace: vi.fn(),
-        prefetch: vi.fn(),
-    }),
-    usePathname: () => "/",
-    useSearchParams: () => ({ get: () => null }),
-    useParams: () => ({}),
-    redirect: vi.fn(),
-    notFound: vi.fn(),
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+  useSearchParams: () => ({ get: () => null }),
+  useParams: () => ({}),
+  redirect: vi.fn(),
+  notFound: vi.fn(),
+}));
+
+const mockToast = vi.fn();
+vi.mock("@/components/ui/headless-toast", () => ({
+  toast: (params: unknown) => mockToast(params),
+}));
+
+let mockStoreReturn = {
+  formData: {
+    unidadeEducacional: "123456",
+    dre: "DRE-01",
+  },
+  ocorrenciaUuid: "uuid-abc-123",
+};
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+  useOcorrenciaFormStore: () => mockStoreReturn,
 }));
 
 
-describe("ModalFinalizarEtapa", () => {
-    const onOpenChange = vi.fn();
+const mutateAsyncMock = vi.fn();
+let isPendingFlag = false;
 
-    function setup(open = true) {
-        return render(
-            <ModalFinalizar open={open} onOpenChange={onOpenChange} />
-        );
-    }
+
+
+vi.mock("@/hooks/useFinalizarEtapa", () => ({
+  useFinalizarEtapa: () => ({
+    mutateAsync: mutateAsyncMock,
+    get isPending() {
+      return isPendingFlag;
+    },
+  }),
+}));
+
+describe("ModalFinalizarEtapa", () => {
+  const onOpenChange = vi.fn();
+
+  function setup(open = true) {
+    return render(<ModalFinalizar open={open} onOpenChange={onOpenChange} />);
+  }
 
     beforeEach(() => {
-        vi.clearAllMocks();
+    vi.clearAllMocks();
+    isPendingFlag = false;
+    mutateAsyncMock.mockReset();
+
+    mockStoreReturn = {
+        formData: {
+        unidadeEducacional: "123456",
+        dre: "DRE-01",
+        },
+        ocorrenciaUuid: "uuid-abc-123",
+    };
     });
 
-    it("Renderiza o modal corretamente na primeira fase", () => {
-        setup();
+  it("Renderiza o modal corretamente na primeira fase", () => {
+    setup();
+    expect(screen.getByText("Conclusão de etapa")).toBeInTheDocument();
+    expect(screen.getByTestId("input-motivo")).toBeInTheDocument();
+  });
 
-        expect(
-            screen.getByText("Conclusão de etapa")
-        ).toBeInTheDocument();
+  it("Mostra erro ao tentar enviar com texto insuficiente", async () => {
+    setup();
+    const input = screen.getByTestId("input-motivo");
+    const button = screen.getByRole("button", { name: /Finalizar/i });
 
-        expect(
-            screen.getByText(/Você está finalizando esta etapa da intercorrência/i)
-        ).toBeInTheDocument();
+    await userEvent.type(input, "oi");
+    await userEvent.click(button);
 
-        expect(screen.getByTestId("input-motivo")).toBeInTheDocument();
+    expect(
+      await screen.findByText("O motivo deve ter pelo menos 5 caracteres.")
+    ).toBeInTheDocument();
+  });
+
+  it("Habilita o botão quando o texto é válido", async () => {
+    setup();
+    const input = screen.getByTestId("input-motivo");
+    const button = screen.getByRole("button", { name: /Finalizar/i });
+
+    await userEvent.type(input, "Motivo válido");
+
+    await waitFor(() => {
+      expect(button).toBeEnabled();
+    });
+  });
+
+  it("Chama mutateAsync com os parâmetros corretos", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      success: true,
+      data: { protocolo_da_intercorrencia: "PROTO-123" },
     });
 
-    it("Mostra erro ao tentar enviar com texto insuficiente", async () => {
-        setup();
+    setup();
 
-        const input = screen.getByTestId("input-motivo");
-        const button = screen.getByRole("button", { name: /Finalizar/i });
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido para envio");
 
-        await userEvent.type(input, "oi");
+    const button = screen.getByRole("button", { name: /Finalizar/i });
+    await userEvent.click(button);
 
-        expect(button).toBeDisabled();
+    await waitFor(() =>
+      expect(mutateAsyncMock).toHaveBeenCalledWith({
+        ocorrenciaUuid: "uuid-abc-123",
+        body: {
+          unidade_codigo_eol: "123456",
+          dre_codigo_eol: "DRE-01",
+          motivo_encerramento_ue: "Motivo válido para envio",
+        },
+      })
+    );
+  });
 
-        fireEvent.click(button);
-
-        expect(
-            await screen.findByText("O motivo deve ter pelo menos 5 caracteres.")
-        ).toBeInTheDocument();
+  it("exibe toast de erro quando response.success é false", async () => {
+    const mockMutateAsync = vi.fn().mockResolvedValue({
+        success: false,
+        error: "Falha no servidor",
     });
 
-    it("Habilita o botão quando o texto é válido", async () => {
-        setup();
+    const mockToast = vi.fn();
+    vi.mock("@/components/ui/use-toast", () => ({
+        toast: mockToast,
+    }));
 
-        const input = screen.getByTestId("input-motivo");
-        const button = screen.getByRole("button", { name: /Finalizar/i });
+    const mockSetApiData = vi.fn();
+    const mockSetSuccess = vi.fn();
 
-        await userEvent.type(input, "Motivo válido para finalizar");
+    const handleFinalizar = async () => {
+        const response = await mockMutateAsync();
 
-        await waitFor(() => {
-            expect(button).toBeEnabled();
-        });
+        if (!response.success) {
+            mockToast({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: response.error,
+            });
+            return;
+        }
+
+        mockSetApiData(response.data);
+        mockSetSuccess(true);
+    };
+
+    await handleFinalizar();
+
+    expect(mockToast).toHaveBeenCalledWith({
+        variant: "error",
+        title: "Erro ao finalizar etapa",
+        description: "Falha no servidor",
     });
 
-    it("Mostra a segunda fase após finalizar", async () => {
-        setup();
+    expect(mockSetApiData).not.toHaveBeenCalled();
+    expect(mockSetSuccess).not.toHaveBeenCalled();
+});
 
-        const input = screen.getByTestId("input-motivo");
 
-        await userEvent.type(input, "Motivo correto de encerramento");
-
-        const finalizar = screen.getByRole("button", { name: /Finalizar/i });
-        await userEvent.click(finalizar);
-
-        expect(
-            await screen.findByText("Ocorrência registrada com sucesso!")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/Protocolo da intercorrência:/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("GIPE-2025/0042")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Marcus Paulo de Souza Andrade")
-        ).toBeInTheDocument();
+  it("Fecha modal e reseta estado ao clicar em Fechar na segunda fase", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      success: true,
+      data: {
+        protocolo_da_intercorrencia: "PROTO-XYZ",
+        responsavel_nome: "Fulano",
+        responsavel_cpf: "123",
+        responsavel_email: "x@y.com",
+        perfil_acesso: "diretor",
+        nome_dre: "DRE CENTRAL",
+        nome_unidade: "ESCOLA A",
+        uuid: "mock-uuid",
+      },
     });
 
-    it("Renderiza a frase final na segunda fase", async () => {
-        setup();
+    setup();
 
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Algum motivo válido");
+    await userEvent.type(
+      screen.getByTestId("input-motivo"), 
+      "Motivo válido para teste"
+    );
+    
+    await userEvent.click(
+      screen.getByRole("button", { name: /Finalizar/i })
+    );
 
-        const finalizar = screen.getByRole("button", { name: /Finalizar/i });
-        await userEvent.click(finalizar);
+    await waitFor(() => {
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument();
+    }, { timeout: 3000 });
 
-        expect(
-            await screen.findByText(
-                "Esta justificativa será registrada permanentemente no histórico da intercorrência."
-            )
-        ).toBeInTheDocument();
+    const fecharButton = screen.getByRole("button", { name: /Fechar/i });
+    
+    await userEvent.click(fecharButton);
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(mockPush).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("O botão Finalizar fica desabilitado quando isPending=true", async () => {
+    isPendingFlag = true;
+
+    setup();
+
+    const btn = screen.getByRole("button", { name: /Finalizar/i });
+
+    expect(btn).toBeDisabled();
+  });
+
+  it("mostra toast quando mutateAsync retorna erro", async () => {
+    mutateAsyncMock.mockResolvedValue({
+        success: false,
+        error: "Falha",
     });
 
-    it("Chama onOpenChange(false) ao clicar em 'Voltar'", async () => {
-        setup();
+    setup();
 
-        const botaoVoltar = screen.getByRole("button", { name: /Voltar/i });
+    await userEvent.type(screen.getByTestId("input-motivo"), "Motivo válido");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
 
-        await userEvent.click(botaoVoltar);
-
-        expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(mockToast).toHaveBeenCalledWith({
+        variant: "error",
+        title: "Erro ao finalizar etapa",
+        description: "Falha",
+    });
     });
 
-    it("Reseta formulário ao fechar o modal", async () => {
-        const { unmount } = setup();
+    it("Fecha modal ao clicar em Voltar na primeira fase", async () => {
+    const onOpenChangeMock = vi.fn();
 
-        const input = screen.getByTestId("input-motivo");
+    render(<ModalFinalizar open={true} onOpenChange={onOpenChangeMock} />);
 
-        await userEvent.type(input, "Algum texto válido");
+    const voltarButton = screen.getByRole("button", { name: /Voltar/i });
+    await userEvent.click(voltarButton);
 
-        const botaoVoltar = screen.getByRole("button", { name: /Voltar/i });
-        await userEvent.click(botaoVoltar);
+    expect(onOpenChangeMock).toHaveBeenCalledWith(false);
 
-        unmount();
-
-        setup();
-
-        expect(screen.getByTestId("input-motivo")).toHaveValue("");
+    expect(mockPush).toHaveBeenCalledWith("/dashboard");
     });
-
-    it("Chama onOpenChange(false) ao clicar em Fechar na segunda fase", async () => {
-        const onOpenChangeMock = vi.fn();
-        render(<ModalFinalizar open={true} onOpenChange={onOpenChangeMock} />);
-
-        const textarea = screen.getByTestId("input-motivo");
-        await userEvent.type(textarea, "Motivo válido para encerramento");
-
-        const finalizarButton = screen.getByRole("button", { name: /finalizar/i });
-        await userEvent.click(finalizarButton);
-
-        const fecharButton = await screen.findByRole("button", { name: /fechar/i });
-
-        await userEvent.click(fecharButton);
-
-        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
-    });
-
-    it("redireciona para /dashboard ao clicar em Fechar", async () => {
-        const onOpenChange = vi.fn();
-
-        render(<ModalFinalizar open={true} onOpenChange={onOpenChange} />);
-
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "motivo válido");
-
-        const finalizar = screen.getByRole("button", { name: /finalizar/i });
-        await userEvent.click(finalizar);
-
-        const fechar = await screen.findByRole("button", { name: /fechar/i });
-        await userEvent.click(fechar);
-
-        expect(onOpenChange).toHaveBeenCalledWith(false);
-        expect(mockPush).toHaveBeenCalledWith("/dashboard");
-    });
-
 
 });

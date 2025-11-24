@@ -7,4 +7,4 @@ export const formSchema = z.object({
         .max(500, "O motivo pode ter no máximo 500 caracteres."),
 });
 
-export type FormDataMotivoCancelamento = z.infer<typeof formSchema>;
+export type FormDataMotivoEncerramento = z.infer<typeof formSchema>;
