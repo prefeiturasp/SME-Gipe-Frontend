@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, act, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { forwardRef } from "react";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
@@ -136,6 +136,12 @@ vi.mock("@tanstack/react-query", async () => {
     };
 });
 
+const mockUseUserPermissions = vi.fn();
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: () => mockUseUserPermissions(),
+}));
+
 describe("VisualizarOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -144,6 +150,9 @@ describe("VisualizarOcorrencia", () => {
             possuiInfoAgressorVitima: "Sim",
         };
         mockStoreState.ocorrenciaUuid = "test-uuid";
+        mockUseUserPermissions.mockReturnValue({
+            isAssistenteOuDiretor: false,
+        });
     });
 
     it("deve renderizar o título 'Nova ocorrência'", () => {
@@ -377,6 +386,120 @@ describe("VisualizarOcorrencia", () => {
 
             expect(capturedSecaoNaoFurtoCallback).not.toBeNull();
             expect(capturedSecaoNaoFurtoCallback).toBeDefined();
+        });
+
+        it("não deve atualizar currentPossuiInfoAgressor quando possuiInfoAgressorVitima é undefined no callback", () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
+
+            expect(
+                screen.getByText("Mock InformacoesAdicionais")
+            ).toBeInTheDocument();
+
+            if (capturedSecaoNaoFurtoCallback) {
+                capturedSecaoNaoFurtoCallback({});
+            }
+
+            rerender(<VisualizarOcorrencia />);
+
+            expect(
+                screen.getByText("Mock InformacoesAdicionais")
+            ).toBeInTheDocument();
+        });
+
+        it("deve chamar setCurrentPossuiInfoAgressor quando callback recebe valor definido", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Não",
+            };
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            expect(
+                screen.queryByText("Mock InformacoesAdicionais")
+            ).not.toBeInTheDocument();
+
+            act(() => {
+                if (capturedSecaoNaoFurtoCallback) {
+                    capturedSecaoNaoFurtoCallback({
+                        possuiInfoAgressorVitima: "Sim",
+                    });
+                }
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Mock InformacoesAdicionais")
+                ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("Botões de navegação baseados em permissão", () => {
+        it("deve exibir botão 'Finalizar' quando isAssistenteOuDiretor é true", () => {
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: true,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoFinalizar = screen.getByRole("link", {
+                name: /finalizar/i,
+            });
+            expect(botaoFinalizar).toBeInTheDocument();
+            expect(botaoFinalizar).toHaveAttribute("href", "/dashboard");
+
+            expect(
+                screen.queryByRole("button", { name: /anterior/i })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole("link", { name: /próximo/i })
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir botões 'Anterior' e 'Próximo' quando isAssistenteOuDiretor é false", () => {
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoAnterior = screen.getByRole("button", {
+                name: /anterior/i,
+            });
+            const botaoProximo = screen.getByRole("link", { name: /próximo/i });
+
+            expect(botaoAnterior).toBeInTheDocument();
+            expect(botaoAnterior).toBeDisabled();
+
+            expect(botaoProximo).toBeInTheDocument();
+            expect(botaoProximo).toHaveAttribute(
+                "href",
+                "/dashboard/cadastrar-ocorrencia/test-uuid/dre"
+            );
+
+            expect(
+                screen.queryByRole("link", { name: /finalizar/i })
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve construir corretamente o link para o formulário DRE com ocorrenciaUuid", () => {
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+            mockStoreState.ocorrenciaUuid = "uuid-123-teste";
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoProximo = screen.getByRole("link", { name: /próximo/i });
+            expect(botaoProximo).toHaveAttribute(
+                "href",
+                "/dashboard/cadastrar-ocorrencia/uuid-123-teste/dre"
+            );
         });
     });
 });
