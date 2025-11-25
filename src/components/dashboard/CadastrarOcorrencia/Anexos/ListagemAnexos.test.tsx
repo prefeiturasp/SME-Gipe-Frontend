@@ -1,7 +1,22 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
 import { ListagemAnexos } from "./ListagemAnexos";
 import { AnexoAPI } from "@/types/anexo";
+import { toast } from "@/components/ui/headless-toast";
+
+const mutateAsyncMock = vi.fn();
+
+vi.mock("@/hooks/useExcluirAnexo", () => ({
+    useExcluirAnexo: () => ({
+        mutateAsync: mutateAsyncMock,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: vi.fn(),
+}));
+
 
 describe("ListagemAnexos", () => {
     const anexoAPIMock: AnexoAPI = {
@@ -237,12 +252,37 @@ describe("ListagemAnexos", () => {
         });
         expect(excluirButtons).toHaveLength(2);
 
-        const nomes = [
-            screen.getByText("relatorio.pdf"),
-            screen.getByText("documento2.pdf"),
-        ];
-        for (const nome of nomes) {
-            expect(nome).toBeInTheDocument();
-        }
+        expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
+        expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
     });
+
+    it("deve chamar mutateAsync ao clicar em Excluir", async () => {
+        mutateAsyncMock.mockResolvedValue({ success: true });
+
+        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+        const button = screen.getByRole("button", { name: /Excluir arquivo/i });
+        fireEvent.click(button);
+
+        expect(mutateAsyncMock).toHaveBeenCalledWith("api-uuid-1");
+    });
+
+    it("deve exibir toast de erro quando a exclusão falhar", async () => {
+        mutateAsyncMock.mockResolvedValue({ success: false });
+
+        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+        const button = screen.getByRole("button", { name: /Excluir arquivo/i });
+        fireEvent.click(button);
+
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith({
+                variant: "error",
+                title: "Não conseguimos excluir o arquivo.",
+                description: "Por favor, tente novamente.",
+            });
+        });
+    });
+
+
 });
