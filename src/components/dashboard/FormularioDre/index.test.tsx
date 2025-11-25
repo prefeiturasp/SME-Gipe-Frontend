@@ -104,7 +104,6 @@ describe("FormularioDrePage", () => {
 
         expect(mockReset).toHaveBeenCalledTimes(1);
 
-        // Aguarda a promise do invalidateQueries
         await vi.waitFor(() => {
             expect(mockInvalidateQueries).toHaveBeenCalledWith({
                 queryKey: ["ocorrencia", "test-uuid-123"],

@@ -138,20 +138,16 @@ describe("DetalhamentoDre", () => {
             name: /salvar informações/i,
         });
 
-        // Inicialmente desabilitado
         expect(botaoSalvar).toBeDisabled();
 
-        // Preenche os campos obrigatórios (radio buttons) todos com "Não"
         const radiosSeguranca = screen.getAllByRole("radio");
 
-        // Seleciona "Não" para cada grupo de radio (índices ímpares)
-        await user.click(radiosSeguranca[1]); // acionamentoSegurancaPublica - Não
-        await user.click(radiosSeguranca[3]); // interlocucaoSTS - Não
-        await user.click(radiosSeguranca[5]); // interlocucaoCPCA - Não
-        await user.click(radiosSeguranca[7]); // interlocucaoSupervisaoEscolar - Não
-        await user.click(radiosSeguranca[9]); // interlocucaoNAAPA - Não
+        await user.click(radiosSeguranca[1]);
+        await user.click(radiosSeguranca[3]);
+        await user.click(radiosSeguranca[5]);
+        await user.click(radiosSeguranca[7]);
+        await user.click(radiosSeguranca[9]);
 
-        // Aguarda validação do formulário
         await waitFor(() => {
             expect(botaoSalvar).not.toBeDisabled();
         });
@@ -161,7 +157,6 @@ describe("DetalhamentoDre", () => {
         render(<DetalhamentoDre />);
 
         const radios = screen.getAllByRole("radio");
-        // 5 perguntas x 2 opções (Sim/Não) = 10 radio buttons
         expect(radios).toHaveLength(10);
     });
 
@@ -197,7 +192,6 @@ describe("DetalhamentoDre", () => {
     it("deve organizar os campos em 3 QuadroBranco distintos", () => {
         render(<DetalhamentoDre />);
 
-        // Verifica se há múltiplas seções pelo conteúdo
         expect(
             screen.getByText(/acionamento da secretaria de seguranças pública/i)
         ).toBeInTheDocument();
@@ -215,15 +209,12 @@ describe("DetalhamentoDre", () => {
 
         const radios = screen.getAllByRole("radio");
 
-        // Preenche todos os radios com "Não" (índices ímpares)
-        await user.click(radios[1]); // acionamentoSegurancaPublica - Não
-        await user.click(radios[3]); // interlocucaoSTS - Não
-        await user.click(radios[5]); // interlocucaoCPCA - Não
-        await user.click(radios[7]); // interlocucaoSupervisaoEscolar - Não
-        await user.click(radios[9]); // interlocucaoNAAPA - Não
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
 
-        // Botão deve estar habilitado pois todos os radios obrigatórios estão preenchidos
-        // e os textareas não são obrigatórios quando os radios são "Não"
         await waitFor(() => {
             const botaoSalvar = screen.getByRole("button", {
                 name: /salvar informações/i,
@@ -238,14 +229,12 @@ describe("DetalhamentoDre", () => {
 
         const radios = screen.getAllByRole("radio");
 
-        // Preenche 4 campos com "Não" e 1 com "Sim" (interlocucaoSTS)
-        await user.click(radios[1]); // acionamentoSegurancaPublica - Não
-        await user.click(radios[2]); // interlocucaoSTS - Sim
-        await user.click(radios[5]); // interlocucaoCPCA - Não
-        await user.click(radios[7]); // interlocucaoSupervisaoEscolar - Não
-        await user.click(radios[9]); // interlocucaoNAAPA - Não
+        await user.click(radios[1]);
+        await user.click(radios[2]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
 
-        // Botão ainda deve estar desabilitado porque textarea STS é obrigatório
         const botaoSalvar = screen.getByRole("button", {
             name: /salvar informações/i,
         });
@@ -254,12 +243,10 @@ describe("DetalhamentoDre", () => {
             expect(botaoSalvar).toBeDisabled();
         });
 
-        // Preenche o textarea correspondente
         const textareas = screen.getAllByRole("textbox");
-        const textareaSTS = textareas[0]; // informacoesComplementaresSTS
+        const textareaSTS = textareas[0];
         await user.type(textareaSTS, "Informações complementares STS");
 
-        // Agora o botão deve estar habilitado
         await waitFor(() => {
             expect(botaoSalvar).not.toBeDisabled();
         });
