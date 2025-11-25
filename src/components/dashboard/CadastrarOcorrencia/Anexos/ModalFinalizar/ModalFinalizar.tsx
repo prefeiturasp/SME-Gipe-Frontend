@@ -45,12 +45,46 @@ import { FinalizarOcorrenciaResponse } from "@/types/finalizar-etapa";
 type ModalFinalizarEtapaProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-
+    perfilUsuario: string;
 };
+
+const mockDREApiResponse: FinalizarOcorrenciaResponse = {
+    uuid: "abc123",
+    responsavel_nome: "Juliana Martins",
+    responsavel_cpf: "987.654.321",
+    responsavel_email: "juliana.martins@sme.prefeitura.sp.gov.br",
+    nome_dre: "DRE Butantã",
+    protocolo_da_intercorrencia: "GIPE-2025/0099",
+    perfil_acesso: "dre",
+    nome_unidade: "",
+    unidade_codigo_eol: "123",
+    dre_codigo_eol: "456",
+    finalizado_diretor_em: "",
+    finalizado_diretor_por: "diretor teste",
+    motivo_encerramento_ue: "",
+    status_display: "em_andamento",
+    status_extra: "em_andamento"
+};
+
+type CamposFinalizarEtapaProps = {
+  label: string;
+  key: keyof FinalizarOcorrenciaResponse;
+  perfisVisiveis: string[];
+};
+
+const camposFinalizarEtapa: CamposFinalizarEtapaProps[] = [
+  { label: "Responsável", key: "responsavel_nome", perfisVisiveis: ["diretor", "assistente", "dre"] },
+  { label: "CPF", key: "responsavel_cpf", perfisVisiveis: ["diretor", "assistente", "dre"] },
+  { label: "E-mail", key: "responsavel_email", perfisVisiveis: ["diretor", "assistente", "dre"] },
+  { label: "Perfil de acesso", key: "perfil_acesso", perfisVisiveis: ["diretor", "assistente"] },
+  { label: "Diretoria Regional", key: "nome_dre", perfisVisiveis: ["diretor", "assistente", "dre"] },
+  { label: "Unidade Educacional", key: "nome_unidade", perfisVisiveis: ["diretor", "assistente"] },
+];
 
 export default function ModalFinalizarEtapa({
     open,
     onOpenChange,
+    perfilUsuario
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
     const [apiData, setApiData] = useState<FinalizarOcorrenciaResponse | null>(null);
@@ -79,7 +113,7 @@ export default function ModalFinalizarEtapa({
         }
     }
 
-    async function handleSubmit(values: FormDataMotivoEncerramento) {
+    async function encerrarIntercorrenciaUE(values: FormDataMotivoEncerramento) {
         const body = {
             unidade_codigo_eol: formData.unidadeEducacional,
             dre_codigo_eol: formData.dre,
@@ -98,13 +132,35 @@ export default function ModalFinalizarEtapa({
                 description: response.error,
             });
             return;
-        }
+        } 
 
         if (response.data?.uuid) {
             setApiData(response.data);
             setSuccess(true);
         }
+    }
 
+    async function encerrarIntercorrenciaDRE(values: FormDataMotivoEncerramento) {
+        setApiData(mockDREApiResponse);
+        setSuccess(true);
+    }
+
+    function getApiResponseByPerfil(perfil: string, values: FormDataMotivoEncerramento) {
+        switch (perfil) {
+            case "diretor":
+            case "assistente":
+                return encerrarIntercorrenciaUE(values);
+            case "dre":
+                return encerrarIntercorrenciaDRE(values);
+            default:
+                return null;
+        }
+    }
+
+    async function handleSubmit(values: FormDataMotivoEncerramento) {
+        const response = getApiResponseByPerfil(perfilUsuario, values);
+        if (!response) return;
+        await response;
     }
 
     return (
@@ -187,19 +243,20 @@ export default function ModalFinalizarEtapa({
                             Confira os dados o protocolo da sua intercorrência.
                         </DialogDescription>
                         <Aviso>
-                            <span className="text-[14px] font-[700]">
+                            <span data-testid="protocolo-text" className="text-[14px] font-[700]">
                                 Protocolo da intercorrência: <strong>{apiData?.protocolo_da_intercorrencia}</strong>
                             </span>
                         </Aviso>
 
                         <Aviso>
                             <div className="text-[14px] leading-5 text-[#42474a]">
-                                <p><strong>Responsável:</strong> {apiData?.responsavel_nome}</p>
-                                <p><strong>CPF:</strong> {apiData?.responsavel_cpf}</p>
-                                <p><strong>E-mail:</strong> {apiData?.responsavel_email}</p>
-                                <p><strong>Perfil de acesso:</strong> {apiData?.perfil_acesso}</p>
-                                <p><strong>Diretoria Regional:</strong> {apiData?.nome_dre}</p>
-                                <p><strong>Unidade Educacional:</strong> {apiData?.nome_unidade}</p>
+                                {camposFinalizarEtapa.map((campo) =>
+                                    campo.perfisVisiveis.includes(perfilUsuario) ? (
+                                        <p key={campo.key} data-testid={`campo-${campo.key}`}>
+                                            <strong>{campo.label}:</strong> {apiData?.[campo.key] ?? ""}
+                                        </p>
+                                    ) : null
+                                )}
                             </div>
                         </Aviso>
 
