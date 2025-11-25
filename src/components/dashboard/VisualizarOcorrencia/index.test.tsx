@@ -1,4 +1,5 @@
 import { screen, act, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { forwardRef } from "react";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
@@ -79,8 +80,9 @@ vi.mock("../CadastrarOcorrencia/Anexos", () => ({
 }));
 
 vi.mock("../PageHeader/PageHeader", () => ({
-    default: vi.fn(({ onClickBack }) => (
+    default: vi.fn(({ onClickBack, title }) => (
         <div>
+            <h1>{title}</h1>
             <button onClick={onClickBack}>Voltar</button>
         </div>
     )),
@@ -100,6 +102,7 @@ vi.mock("@/components/stepper/Stepper", () => ({
 
 const mockReset = vi.fn();
 const mockInvalidateQueries = vi.fn();
+const mockRouterBack = vi.fn();
 
 let capturedSecaoInicialCallback:
     | ((data: { tipoOcorrencia?: string }) => void)
@@ -107,6 +110,25 @@ let capturedSecaoInicialCallback:
 let capturedSecaoNaoFurtoCallback:
     | ((data: { possuiInfoAgressorVitima?: string }) => void)
     | null = null;
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        back: mockRouterBack,
+        push: vi.fn(),
+    }),
+}));
+
+vi.mock("../FormularioDre", () => ({
+    default: vi.fn(({ onPrevious }) => (
+        <div>
+            <h1>
+                Detalhes da Intercorrência - Diretoria Regional de Educação
+                (DRE)
+            </h1>
+            <button onClick={onPrevious}>Anterior (Mock)</button>
+        </div>
+    )),
+}));
 
 const mockStoreState = {
     formData: {
@@ -471,35 +493,68 @@ describe("VisualizarOcorrencia", () => {
             const botaoAnterior = screen.getByRole("button", {
                 name: /anterior/i,
             });
-            const botaoProximo = screen.getByRole("link", { name: /próximo/i });
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
 
             expect(botaoAnterior).toBeInTheDocument();
             expect(botaoAnterior).toBeDisabled();
 
             expect(botaoProximo).toBeInTheDocument();
-            expect(botaoProximo).toHaveAttribute(
-                "href",
-                "/dashboard/cadastrar-ocorrencia/test-uuid/dre"
-            );
 
             expect(
                 screen.queryByRole("link", { name: /finalizar/i })
             ).not.toBeInTheDocument();
         });
 
-        it("deve construir corretamente o link para o formulário DRE com ocorrenciaUuid", () => {
+        it("deve alternar para FormularioDre ao clicar em Próximo", async () => {
+            const user = userEvent.setup();
             mockUseUserPermissions.mockReturnValue({
                 isAssistenteOuDiretor: false,
             });
-            mockStoreState.ocorrenciaUuid = "uuid-123-teste";
 
             renderWithClient(<VisualizarOcorrencia />);
 
-            const botaoProximo = screen.getByRole("link", { name: /próximo/i });
-            expect(botaoProximo).toHaveAttribute(
-                "href",
-                "/dashboard/cadastrar-ocorrencia/uuid-123-teste/dre"
-            );
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            await user.click(botaoProximo);
+
+            expect(
+                screen.getByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).toBeInTheDocument();
+        });
+
+        it("deve voltar para FormularioUE ao clicar em Anterior no FormularioDre", async () => {
+            const user = userEvent.setup();
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            await user.click(botaoProximo);
+
+            expect(
+                screen.getByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).toBeInTheDocument();
+
+            const botaoAnterior = screen.getByText("Anterior (Mock)");
+            await user.click(botaoAnterior);
+
+            expect(screen.getByText("Nova ocorrência")).toBeInTheDocument();
+            expect(
+                screen.queryByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).not.toBeInTheDocument();
         });
     });
 });

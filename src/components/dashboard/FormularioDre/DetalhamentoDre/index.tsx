@@ -2,7 +2,6 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
@@ -10,30 +9,38 @@ import Anexos from "../../CadastrarOcorrencia/Anexos";
 import { formSchema, FormularioDreData } from "./schema";
 import { RadioForm } from "./RadioForm";
 import { TextareaForm } from "./TextareaForm";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 
-export function DetalhamentoDre() {
-    const router = useRouter();
+export type DetalhamentoDreProps = {
+    readonly onPrevious?: () => void;
+};
+
+export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
+    const { formData, setFormData } = useOcorrenciaFormStore();
+
     const form = useForm<FormularioDreData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            acionamentoSegurancaPublica: undefined,
-            interlocucaoSTS: undefined,
-            informacoesComplementaresSTS: "",
-            interlocucaoCPCA: undefined,
-            informacoesComplementaresCPCA: "",
-            interlocucaoSupervisaoEscolar: undefined,
-            informacoesComplementaresSupervisaoEscolar: "",
-            interlocucaoNAAPA: undefined,
-            informacoesComplementaresNAAPA: "",
+            acionamentoSegurancaPublica:
+                formData.acionamentoSegurancaPublica || undefined,
+            interlocucaoSTS: formData.interlocucaoSTS || undefined,
+            informacoesComplementaresSTS:
+                formData.informacoesComplementaresSTS || "",
+            interlocucaoCPCA: formData.interlocucaoCPCA || undefined,
+            informacoesComplementaresCPCA:
+                formData.informacoesComplementaresCPCA || "",
+            interlocucaoSupervisaoEscolar:
+                formData.interlocucaoSupervisaoEscolar || undefined,
+            informacoesComplementaresSupervisaoEscolar:
+                formData.informacoesComplementaresSupervisaoEscolar || "",
+            interlocucaoNAAPA: formData.interlocucaoNAAPA || undefined,
+            informacoesComplementaresNAAPA:
+                formData.informacoesComplementaresNAAPA || "",
         },
     });
 
     const { isValid } = form.formState;
-
-    const handlePrevious = () => {
-        router.back();
-    };
 
     return (
         <>
@@ -117,7 +124,10 @@ export function DetalhamentoDre() {
                     <Button
                         variant="customOutline"
                         type="button"
-                        onClick={handlePrevious}
+                        onClick={() => {
+                            setFormData(form.getValues());
+                            onPrevious?.();
+                        }}
                     >
                         Anterior
                     </Button>

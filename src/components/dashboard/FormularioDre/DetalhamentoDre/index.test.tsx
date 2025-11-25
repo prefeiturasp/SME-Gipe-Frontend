@@ -119,14 +119,15 @@ describe("DetalhamentoDre", () => {
         expect(botaoSalvar).toBeDisabled();
     });
 
-    it("deve chamar router.back ao clicar no botão Anterior", async () => {
+    it("deve chamar onPrevious ao clicar no botão Anterior", async () => {
         const user = userEvent.setup();
-        render(<DetalhamentoDre />);
+        const mockOnPrevious = vi.fn();
+        render(<DetalhamentoDre onPrevious={mockOnPrevious} />);
 
         const botaoAnterior = screen.getByRole("button", { name: /anterior/i });
         await user.click(botaoAnterior);
 
-        expect(mockRouterBack).toHaveBeenCalledTimes(1);
+        expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
     it("deve habilitar o botão Salvar quando todos os campos obrigatórios forem preenchidos com 'Não'", async () => {
