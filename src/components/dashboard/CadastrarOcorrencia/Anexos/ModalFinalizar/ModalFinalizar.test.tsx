@@ -52,23 +52,29 @@ vi.mock("@/hooks/useFinalizarEtapa", () => ({
 describe("ModalFinalizarEtapa", () => {
   const onOpenChange = vi.fn();
 
-  function setup(open = true) {
-    return render(<ModalFinalizar open={open} onOpenChange={onOpenChange} />);
+  function setup(open = true, perfilUsuario = "diretor") {
+    return render(
+      <ModalFinalizar
+        open={open}
+        onOpenChange={onOpenChange}
+        perfilUsuario={perfilUsuario}
+      />
+    );
   }
 
-    beforeEach(() => {
+  beforeEach(() => {
     vi.clearAllMocks();
     isPendingFlag = false;
     mutateAsyncMock.mockReset();
 
     mockStoreReturn = {
-        formData: {
+      formData: {
         unidadeEducacional: "123456",
         dre: "DRE-01",
-        },
-        ocorrenciaUuid: "uuid-abc-123",
+      },
+      ocorrenciaUuid: "uuid-abc-123",
     };
-    });
+  });
 
   it("Renderiza o modal corretamente na primeira fase", () => {
     setup();
@@ -128,46 +134,22 @@ describe("ModalFinalizarEtapa", () => {
   });
 
   it("exibe toast de erro quando response.success é false", async () => {
-    const mockMutateAsync = vi.fn().mockResolvedValue({
-        success: false,
-        error: "Falha no servidor",
+    mutateAsyncMock.mockResolvedValue({
+      success: false,
+      error: "Falha no servidor",
     });
-
-    const mockToast = vi.fn();
-    vi.mock("@/components/ui/use-toast", () => ({
-        toast: mockToast,
-    }));
-
-    const mockSetApiData = vi.fn();
-    const mockSetSuccess = vi.fn();
-
-    const handleFinalizar = async () => {
-        const response = await mockMutateAsync();
-
-        if (!response.success) {
-            mockToast({
-                variant: "error",
-                title: "Erro ao finalizar etapa",
-                description: response.error,
-            });
-            return;
-        }
-
-        mockSetApiData(response.data);
-        mockSetSuccess(true);
-    };
-
-    await handleFinalizar();
-
-    expect(mockToast).toHaveBeenCalledWith({
+    setup();
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
         variant: "error",
         title: "Erro ao finalizar etapa",
         description: "Falha no servidor",
+      });
     });
-
-    expect(mockSetApiData).not.toHaveBeenCalled();
-    expect(mockSetSuccess).not.toHaveBeenCalled();
-});
+  });
 
 
   it("Fecha modal e reseta estado ao clicar em Fechar na segunda fase", async () => {
@@ -188,7 +170,7 @@ describe("ModalFinalizarEtapa", () => {
     setup();
 
     await userEvent.type(
-      screen.getByTestId("input-motivo"), 
+      screen.getByTestId("input-motivo"),
       "Motivo válido para teste"
     );
     
@@ -218,35 +200,198 @@ describe("ModalFinalizarEtapa", () => {
     expect(btn).toBeDisabled();
   });
 
-  it("mostra toast quando mutateAsync retorna erro", async () => {
+  it("retorna dados do mockDREApiResponse quando perfilUsuario é 'dre'", async () => {
+    setup(true, "dre");
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido");
+    const finalizarButton = screen.getByRole("button", { name: /Finalizar/i });
+    await userEvent.click(finalizarButton);
+    await waitFor(() => {
+      expect(screen.getByText("GIPE-2025/0099")).toBeInTheDocument();
+    });
+  });
+
+  it("não faz nada quando perfilUsuario não é reconhecido", async () => {
+    setup(true, "perfilInexistente");
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido");
+    const finalizarButton = screen.getByRole("button", { name: /Finalizar/i });
+    await userEvent.click(finalizarButton);
+    await waitFor(() => {
+      expect(screen.getByText("Conclusão de etapa")).toBeInTheDocument();
+    });
+  });
+
+  it("renderiza null para campos que não incluem o perfilUsuario", async () => {
+    setup(true, "perfilInexistente");
     mutateAsyncMock.mockResolvedValue({
-        success: false,
-        error: "Falha",
+      success: true,
+      data: { protocolo_da_intercorrencia: "PROTO-123" },
     });
-
-    setup();
-
-    await userEvent.type(screen.getByTestId("input-motivo"), "Motivo válido");
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido");
     await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
-
-    expect(mockToast).toHaveBeenCalledWith({
-        variant: "error",
-        title: "Erro ao finalizar etapa",
-        description: "Falha",
+    await waitFor(() => {
+      const camposRenderizados = screen.queryAllByText(
+        /Responsável|CPF|E-mail|Perfil de acesso|Diretoria Regional|Unidade Educacional/
+      );
+      expect(camposRenderizados.length).toBe(0);
     });
-    });
+  });
 
-    it("Fecha modal ao clicar em Voltar na primeira fase", async () => {
+  it("Fecha modal ao clicar em Voltar na primeira fase", async () => {
     const onOpenChangeMock = vi.fn();
-
-    render(<ModalFinalizar open={true} onOpenChange={onOpenChangeMock} />);
-
+    render(
+      <ModalFinalizar
+        open={true}
+        onOpenChange={onOpenChangeMock}
+        perfilUsuario="diretor"
+      />
+    );
     const voltarButton = screen.getByRole("button", { name: /Voltar/i });
     await userEvent.click(voltarButton);
 
     expect(onOpenChangeMock).toHaveBeenCalledWith(false);
 
     expect(mockPush).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("renderiza todos os campos para perfil 'diretor' com dados completos", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      success: true,
+      data: {
+        uuid: "abc123",
+        responsavel_nome: "João Silva",
+        responsavel_cpf: "123.456.789-00",
+        responsavel_email: "joao@email.com",
+        perfil_acesso: "diretor",
+        nome_dre: "DRE Sul",
+        nome_unidade: "EMEF Teste",
+        protocolo_da_intercorrencia: "PROTO-2025-001",
+        unidade_codigo_eol: "123",
+        dre_codigo_eol: "456",
+        finalizado_diretor_em: "",
+        finalizado_diretor_por: "",
+        motivo_encerramento_ue: "",
+        status_display: "finalizado",
+        status_extra: "finalizado"
+      },
     });
 
+    setup(true, "diretor");
+    
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido para finalizar");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("campo-responsavel_nome")).toHaveTextContent("João Silva");
+    expect(screen.getByTestId("campo-responsavel_cpf")).toHaveTextContent("123.456.789-00");
+    expect(screen.getByTestId("campo-responsavel_email")).toHaveTextContent("joao@email.com");
+    expect(screen.getByTestId("campo-perfil_acesso")).toHaveTextContent("diretor");
+    expect(screen.getByTestId("campo-nome_dre")).toHaveTextContent("DRE Sul");
+    expect(screen.getByTestId("campo-nome_unidade")).toHaveTextContent("EMEF Teste");
+  });
+
+  it("renderiza campos para perfil 'assistente' com dados completos", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      success: true,
+      data: {
+        uuid: "xyz789",
+        responsavel_nome: "Maria Santos",
+        responsavel_cpf: "987.654.321-00",
+        responsavel_email: "maria@email.com",
+        perfil_acesso: "assistente",
+        nome_dre: "DRE Norte",
+        nome_unidade: "EMEI Exemplo",
+        protocolo_da_intercorrencia: "PROTO-2025-002",
+        unidade_codigo_eol: "789",
+        dre_codigo_eol: "012",
+        finalizado_diretor_em: "",
+        finalizado_diretor_por: "",
+        motivo_encerramento_ue: "",
+        status_display: "finalizado",
+        status_extra: "finalizado"
+      },
+    });
+
+    setup(true, "assistente");
+    
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo de encerramento válido");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("campo-responsavel_nome")).toHaveTextContent("Maria Santos");
+    expect(screen.getByTestId("campo-responsavel_cpf")).toHaveTextContent("987.654.321-00");
+    expect(screen.getByTestId("campo-responsavel_email")).toHaveTextContent("maria@email.com");
+    expect(screen.getByTestId("campo-perfil_acesso")).toHaveTextContent("assistente");
+    expect(screen.getByTestId("campo-nome_dre")).toHaveTextContent("DRE Norte");
+    expect(screen.getByTestId("campo-nome_unidade")).toHaveTextContent("EMEI Exemplo");
+  });
+
+  it("renderiza campos para perfil 'dre' exibindo apenas campos permitidos", async () => {
+    setup(true, "dre");
+    
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido DRE");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("campo-responsavel_nome")).toHaveTextContent("Juliana Martins");
+    expect(screen.getByTestId("campo-responsavel_cpf")).toHaveTextContent("987.654.321");
+    expect(screen.getByTestId("campo-responsavel_email")).toHaveTextContent("juliana.martins@sme.prefeitura.sp.gov.br");
+    expect(screen.getByTestId("campo-nome_dre")).toHaveTextContent("DRE Butantã");
+    
+    expect(screen.queryByTestId("campo-perfil_acesso")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("campo-nome_unidade")).not.toBeInTheDocument();
+  });
+
+  it("renderiza campos vazios quando apiData tem valores null ou undefined", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      success: true,
+      data: {
+        uuid: "test-uuid",
+        responsavel_nome: null,
+        responsavel_cpf: undefined,
+        responsavel_email: "",
+        perfil_acesso: "diretor",
+        nome_dre: null,
+        nome_unidade: undefined,
+        protocolo_da_intercorrencia: "PROTO-2025-003",
+        unidade_codigo_eol: "111",
+        dre_codigo_eol: "222",
+        finalizado_diretor_em: "",
+        finalizado_diretor_por: "",
+        motivo_encerramento_ue: "",
+        status_display: "finalizado",
+        status_extra: "finalizado"
+      },
+    });
+
+    setup(true, "diretor");
+    
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo com campos vazios");
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument();
+    });
+
+    const campoNome = screen.getByTestId("campo-responsavel_nome");
+    expect(campoNome).toHaveTextContent("Responsável:");
+    
+    const campoCpf = screen.getByTestId("campo-responsavel_cpf");
+    expect(campoCpf).toHaveTextContent("CPF:");
+  });
 });

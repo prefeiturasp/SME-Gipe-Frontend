@@ -86,6 +86,15 @@ export default function Anexos({
         }
     };
 
+    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> = {
+            "DIRETOR DE ESCOLA": "diretor",
+            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
+            "PONTO FOCAL DRE": "dre",
+            GIPE: "gipe",
+        };
+
+        const perfilUsuario = (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) || "diretor";
+
     const handleAnexarDocumento = async () => {
         if (!ocorrenciaUuid) {
             toast({
@@ -111,20 +120,6 @@ export default function Anexos({
         if (fileInput) {
             fileInput.value = "";
         }
-
-        const perfilMap: Record<
-            string,
-            "diretor" | "assistente" | "dre" | "gipe"
-        > = {
-            "DIRETOR DE ESCOLA": "diretor",
-            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
-            "PONTO FOCAL DRE": "dre",
-            GIPE: "gipe",
-        };
-
-        const perfilUsuario =
-            (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
-            "diretor";
 
         const response = await enviarAnexoMutation.mutateAsync({
             intercorrencia_uuid: ocorrenciaUuid,
@@ -314,17 +309,17 @@ export default function Anexos({
 
                         {showButtons && (
                             <div className="flex justify-end gap-2 mt-4">
-                                <Button
-                                    size="sm"
-                                    variant="customOutline"
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData(form.getValues());
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
                                         onPrevious?.();
-                                    }}
-                                >
-                                    Anterior
-                                </Button>
+                                }}
+                            >
+                                Anterior
+                            </Button>
                                 <Button
                                     size="sm"
                                     type="submit"
@@ -333,9 +328,9 @@ export default function Anexos({
                                         setOpenModalFinalizarEtapa(true)
                                     }
                                 >
-                                    Finalizar
-                                </Button>
-                            </div>
+                                Finalizar
+                            </Button>
+                        </div>
                         )}
                     </fieldset>
                 </form>
@@ -344,9 +339,10 @@ export default function Anexos({
                 open={openModalTipos}
                 onOpenChange={setOpenModalTipos}
             />
-            <ModalFinalizarEtapa
-                open={openModalFinalizarEtapa}
+            <ModalFinalizarEtapa 
+                open={openModalFinalizarEtapa} 
                 onOpenChange={setOpenModalFinalizarEtapa}
+                perfilUsuario={perfilUsuario}
             />
         </div>
     );
