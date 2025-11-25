@@ -21,8 +21,11 @@ import InformacoesAdicionais, {
 import Anexos from "../CadastrarOcorrencia/Anexos";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import Link from "next/link";
 
 export default function VisualizarOcorrencia() {
+    const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
         (state) => state.ocorrenciaUuid
@@ -113,12 +116,17 @@ export default function VisualizarOcorrencia() {
             <QuadroBranco>
                 <div className="flex flex-col">
                     <h1 className="text-[#42474a] text-[24px] font-bold m-0">
-                        Visualizar ocorrência
+                        Nova ocorrência
                     </h1>
                     <span className="text-[14px] text-[#42474a] my-4">
-                        Confira abaixo todas as informações registradas nesta
-                        ocorrência.
+                        Preencha as informações abaixo para registrar uma nova
+                        ocorrência. Lembre-se de colocar a maior quantidade de
+                        detalhes possíveis para nos ajudar a planejar ações de
+                        prevenção e solução de problemas de segurança.
                     </span>
+                    <p className="text-[14px] text-[#42474a]">
+                        *Respostas obrigatórias
+                    </p>
                 </div>
             </QuadroBranco>
 
@@ -128,7 +136,7 @@ export default function VisualizarOcorrencia() {
                 </div>
 
                 <div className="flex flex-col mt-8">
-                    <div className="">
+                    <div>
                         <SecaoInicial
                             ref={secaoInicialRef}
                             showButtons={false}
@@ -136,7 +144,7 @@ export default function VisualizarOcorrencia() {
                         />
                     </div>
 
-                    <div className="">
+                    <div>
                         {isFurtoRoubo ? (
                             <SecaoFurtoERoubo
                                 ref={secaoFurtoERouboRef}
@@ -152,7 +160,7 @@ export default function VisualizarOcorrencia() {
                     </div>
 
                     {hasAgressorVitimaInfo && !isFurtoRoubo && (
-                        <div className="">
+                        <div>
                             <InformacoesAdicionais
                                 ref={informacoesAdicionaisRef}
                                 showButtons={false}
@@ -160,18 +168,38 @@ export default function VisualizarOcorrencia() {
                         </div>
                     )}
 
-                    <div className="">
+                    <div>
                         <SecaoFinal ref={secaoFinalRef} showButtons={false} />
                     </div>
 
-                    <div className="">
+                    <div>
                         <Anexos showButtons={false} />
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button size="sm" variant="submit">
-                            Finalizar
-                        </Button>
+                        {isAssistenteOuDiretor ? (
+                            <Button asChild variant="submit">
+                                <Link href="/dashboard">Finalizar</Link>
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    size="sm"
+                                    variant="customOutline"
+                                    type="button"
+                                    disabled
+                                >
+                                    Anterior
+                                </Button>
+                                <Button asChild size="sm" variant="submit">
+                                    <Link
+                                        href={`/dashboard/cadastrar-ocorrencia/${ocorrenciaUuid}/dre`}
+                                    >
+                                        Próximo
+                                    </Link>
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             </QuadroBranco>
