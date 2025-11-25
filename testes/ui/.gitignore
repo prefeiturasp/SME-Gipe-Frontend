@@ -11,10 +11,6 @@ cypress/e2e/ui/cadastro_ue.feature
 cypress/support/step_definitions/cadastro_ue.js
 cypress/support/locators/cadastro_ue_locators.js
 
-# Testes de API (não subir)
-cypress/e2e/api/
-cypress/support/step_definitions/api_intercorrencias.js
-cypress/support/api/
 
 # Scripts auxiliares
 obter_token.cy.js
