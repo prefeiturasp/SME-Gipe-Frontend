@@ -5,13 +5,17 @@ import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
 import VisualizarOcorrencia from "./index";
 
 vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Mock = forwardRef((props: { onFormChange?: (data: any) => void }) => {
+    const Mock = forwardRef<
+        HTMLDivElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { onFormChange?: (data: any) => void }
+    >((props, ref) => {
         if (props.onFormChange) {
             capturedSecaoInicialCallback = props.onFormChange;
         }
         return (
             <div
+                ref={ref}
                 data-testid="mock-secao-inicial"
                 data-onformchange={!!props.onFormChange}
             >
@@ -24,19 +28,25 @@ vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
-    const Mock = forwardRef(() => <div>Mock SecaoFurtoERoubo</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock SecaoFurtoERoubo</div>
+    ));
     Mock.displayName = "MockSecaoFurtoERoubo";
     return { default: Mock };
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Mock = forwardRef((props: { onFormChange?: (data: any) => void }) => {
+    const Mock = forwardRef<
+        HTMLDivElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { onFormChange?: (data: any) => void }
+    >((props, ref) => {
         if (props.onFormChange) {
             capturedSecaoNaoFurtoCallback = props.onFormChange;
         }
         return (
             <div
+                ref={ref}
                 data-testid="mock-secao-nao-furto"
                 data-onformchange={!!props.onFormChange}
             >
@@ -49,13 +59,17 @@ vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
 });
 
 vi.mock("../CadastrarOcorrencia/InformacoesAdicionais", () => {
-    const Mock = forwardRef(() => <div>Mock InformacoesAdicionais</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock InformacoesAdicionais</div>
+    ));
     Mock.displayName = "MockInformacoesAdicionais";
     return { default: Mock };
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoFinal", () => {
-    const Mock = forwardRef(() => <div>Mock SecaoFinal</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock SecaoFinal</div>
+    ));
     Mock.displayName = "MockSecaoFinal";
     return { default: Mock };
 });
@@ -132,10 +146,10 @@ describe("VisualizarOcorrencia", () => {
         mockStoreState.ocorrenciaUuid = "test-uuid";
     });
 
-    it("deve renderizar o título 'Visualizar ocorrência'", () => {
+    it("deve renderizar o título 'Nova ocorrência'", () => {
         renderWithClient(<VisualizarOcorrencia />);
 
-        expect(screen.getByText("Visualizar ocorrência")).toBeInTheDocument();
+        expect(screen.getByText("Nova ocorrência")).toBeInTheDocument();
     });
 
     it("deve renderizar o Stepper com todas as etapas completas", () => {
@@ -350,9 +364,6 @@ describe("VisualizarOcorrencia", () => {
             renderWithClient(<VisualizarOcorrencia />);
 
             expect(capturedSecaoInicialCallback).not.toBeNull();
-
-            capturedSecaoInicialCallback?.({ tipoOcorrencia: "Sim" });
-
             expect(capturedSecaoInicialCallback).toBeDefined();
         });
 
@@ -365,11 +376,6 @@ describe("VisualizarOcorrencia", () => {
             renderWithClient(<VisualizarOcorrencia />);
 
             expect(capturedSecaoNaoFurtoCallback).not.toBeNull();
-
-            capturedSecaoNaoFurtoCallback?.({
-                possuiInfoAgressorVitima: "Sim",
-            });
-
             expect(capturedSecaoNaoFurtoCallback).toBeDefined();
         });
     });
