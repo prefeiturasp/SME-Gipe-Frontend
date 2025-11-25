@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import { formSchema, FormularioDreData } from "./schema";
-import { QuestaoRadio } from "./QuestaoRadio";
-import { QuestaoTextarea } from "./QuestaoTextarea";
+import { RadioForm } from "./RadioForm";
+import { TextareaForm } from "./TextareaForm";
 
 export function DetalhamentoDre() {
     const router = useRouter();
@@ -44,31 +44,31 @@ export function DetalhamentoDre() {
                             Continuação da ocorrência
                         </h2>
                         <div className="flex flex-col gap-6">
-                            <QuestaoRadio
+                            <RadioForm
                                 control={form.control}
                                 name="acionamentoSegurancaPublica"
                                 label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?"
                             />
 
-                            <QuestaoRadio
+                            <RadioForm
                                 control={form.control}
                                 name="interlocucaoSTS"
                                 label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?"
                             />
 
-                            <QuestaoTextarea
+                            <TextareaForm
                                 control={form.control}
                                 name="informacoesComplementaresSTS"
                                 label="Existe alguma informação complementar da atuação conjunta entre a DRE e o STS?"
                             />
 
-                            <QuestaoRadio
+                            <RadioForm
                                 control={form.control}
                                 name="interlocucaoCPCA"
                                 label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?"
                             />
 
-                            <QuestaoTextarea
+                            <TextareaForm
                                 control={form.control}
                                 name="informacoesComplementaresCPCA"
                                 label="Existe alguma informação complementar da atuação conjunta entre a DRE e o CPCA?"
@@ -78,13 +78,13 @@ export function DetalhamentoDre() {
 
                     <QuadroBranco>
                         <div className="flex flex-col gap-6">
-                            <QuestaoRadio
+                            <RadioForm
                                 control={form.control}
                                 name="interlocucaoSupervisaoEscolar"
                                 label="Houve interlocução com a Supervisão Escolar?"
                             />
 
-                            <QuestaoTextarea
+                            <TextareaForm
                                 control={form.control}
                                 name="informacoesComplementaresSupervisaoEscolar"
                                 label="Existe alguma informação complementar da atuação conjunta entre a DRE e o Supervisão Escolar? Algum planejamento ou estratégias de ação?"
@@ -94,13 +94,13 @@ export function DetalhamentoDre() {
 
                     <QuadroBranco>
                         <div className="flex flex-col gap-6">
-                            <QuestaoRadio
+                            <RadioForm
                                 control={form.control}
                                 name="interlocucaoNAAPA"
                                 label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?"
                             />
 
-                            <QuestaoTextarea
+                            <TextareaForm
                                 control={form.control}
                                 name="informacoesComplementaresNAAPA"
                                 label="Existe alguma informação complementar da atuação conjunta entre a DRE e o NAAPA?"
