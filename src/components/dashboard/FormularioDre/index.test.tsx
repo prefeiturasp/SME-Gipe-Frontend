@@ -6,6 +6,7 @@ import FormularioDrePage from "./index";
 const mockReset = vi.fn();
 const mockInvalidateQueries = vi.fn();
 const mockRouterBack = vi.fn();
+const mockOnPrevious = vi.fn();
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: vi.fn((selector) => {
@@ -47,8 +48,13 @@ vi.mock("../PageHeader/PageHeader", () => ({
 }));
 
 vi.mock("./DetalhamentoDre", () => ({
-    DetalhamentoDre: vi.fn(() => (
-        <div data-testid="mock-detalhamento-dre">Mock DetalhamentoDre</div>
+    DetalhamentoDre: vi.fn(({ onPrevious }) => (
+        <div data-testid="mock-detalhamento-dre">
+            Mock DetalhamentoDre
+            {onPrevious && (
+                <button onClick={onPrevious}>Anterior (Mock)</button>
+            )}
+        </div>
     )),
 }));
 
@@ -66,7 +72,7 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o título correto do PageHeader", () => {
-        renderWithClient(<FormularioDrePage />);
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
         expect(
             screen.getByText(
@@ -76,20 +82,22 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o componente DetalhamentoDre", () => {
-        renderWithClient(<FormularioDrePage />);
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
         expect(screen.getByTestId("mock-detalhamento-dre")).toBeInTheDocument();
     });
 
-    it("deve ter a estrutura de layout com padding-top", () => {
-        const { container } = renderWithClient(<FormularioDrePage />);
+    it("deve passar onPrevious para DetalhamentoDre", () => {
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
-        const divWithPadding = container.querySelector(".pt-4");
-        expect(divWithPadding).toBeInTheDocument();
+        const botaoAnterior = screen.getByText("Anterior (Mock)");
+        botaoAnterior.click();
+
+        expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
     it("deve chamar reset, invalidateQueries e router.back ao clicar em Voltar", async () => {
-        renderWithClient(<FormularioDrePage />);
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
@@ -107,7 +115,7 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve usar o ocorrenciaUuid correto na invalidação de queries", async () => {
-        renderWithClient(<FormularioDrePage />);
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
@@ -120,7 +128,7 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o botão Voltar do PageHeader", () => {
-        renderWithClient(<FormularioDrePage />);
+        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByRole("button", { name: /voltar/i });
         expect(botaoVoltar).toBeInTheDocument();

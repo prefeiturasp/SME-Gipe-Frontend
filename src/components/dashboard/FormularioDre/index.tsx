@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import PageHeader from "../PageHeader/PageHeader";
 import { DetalhamentoDre } from "./DetalhamentoDre";
 
-export default function FormularioDrePage() {
+export default function FormularioDrePage({
+    onPrevious,
+}: {
+    onPrevious: () => void;
+}) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
         (state) => state.ocorrenciaUuid
@@ -25,12 +29,12 @@ export default function FormularioDrePage() {
     };
 
     return (
-        <div className="pt-4">
+        <div>
             <PageHeader
                 title="Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
                 onClickBack={handleClickBack}
             />
-            <DetalhamentoDre />
+            <DetalhamentoDre onPrevious={onPrevious} />
         </div>
     );
 }
