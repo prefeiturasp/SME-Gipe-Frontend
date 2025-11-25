@@ -6,6 +6,45 @@ const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
 const RF_PADRAO = '05481179342'
 const SENHA_PADRAO = 'Sgp9342'
 
+// ==================== FUNÇÕES AUXILIARES ====================
+
+const waitAndGet = (selector, options = {}) => {
+  const { timeout = 15000, wait = 2000, checkEnabled = true } = options
+  cy.wait(wait)
+  const element = cy.get(selector, { timeout }).should('be.visible')
+  return checkEnabled ? element.should('be.enabled') : element
+}
+
+const clickElement = (selector, options = {}) => {
+  const { force = true, wait = 1500, checkEnabled = false } = options
+  waitAndGet(selector, { ...options, checkEnabled }).click({ force })
+  cy.wait(wait)
+}
+
+const selectDropdownOption = (optionText, waitTime = 1500) => {
+  cy.wait(2000)
+  cy.get('body').then($body => {
+    const selector = $body.find('div[role="option"]').length > 0 
+      ? 'div[role="option"]' 
+      : 'span, div'
+    
+    cy.contains(selector, optionText, { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true })
+  })
+  cy.wait(waitTime)
+}
+
+const clickButtonByIndex = (index, waitAfter = 2500) => {
+  waitAndGet('button[id*="form-item"]', { wait: 2000, checkEnabled: true })
+    .eq(index)
+    .click({ force: true })
+  cy.wait(waitAfter)
+}
+
+// ==================== STEPS ====================
+
 Given('que eu acesso o sistema', () => {
   cy.clearCookies()
   cy.clearLocalStorage()
@@ -259,17 +298,9 @@ When('Selecionar {string}', (opcao) => {
 })
 
 When('Descreva a ocorrencia - Descreva a ocorrência', () => {
-  cy.wait(1000)
-  
-  cy.get('textarea').filter((_, el) => {
-    const id = Cypress.$(el).attr('id')
-    return id && id.includes('form-item')
-  }).first()
-    .should('be.visible')
-    .should('be.enabled')
+  waitAndGet('textarea[id*="form-item"]', { wait: 1000 })
     .clear({ force: true })
     .type('Ocorrência registrada para teste de automação - Patrimônio', { delay: 100, force: true })
-  
   cy.wait(1000)
 })
 
@@ -376,7 +407,7 @@ When('seleciona {string}', (opcao) => {
       .click({ force: true })
     cy.wait(1500)
   } else if (opcao.includes('Apenas um estudante')) {
-    cy.get('body').then(($body) => {
+    cy.get('body').then($body => {
       if ($body.find('#\\:rfd\\:-form-item').length > 0) {
         cy.get('#\\:rfd\\:-form-item', { timeout: 15000 })
           .should('be.visible')
@@ -393,113 +424,31 @@ When('seleciona {string}', (opcao) => {
     cy.contains('span,label', opcao, { timeout: 15000 })
       .first()
       .should('be.visible')
+      .scrollIntoView()
       .click({ force: true })
     cy.wait(1500)
   }
 })
 
 When('clica em Proximo', () => {
-  cy.wait(2000)
-  
-  cy.get('button.inline-flex', { timeout: 15000 })
-    .should('be.visible')
+  waitAndGet('button.inline-flex', { wait: 2000 })
     .should('not.be.disabled')
-    .scrollIntoView()
     .click({ force: true })
-  
   cy.wait(3000)
 })
 
-When('clica no campo do declarante', () => {
-  cy.wait(2000)
-  
-  cy.get('button[id*="form-item"]', { timeout: 15000 })
-    .first()
-    .should('be.visible')
-    .should('be.enabled')
-    .scrollIntoView()
-    .click({ force: true })
-  
-  cy.wait(2500)
-})
+When('clica no campo do declarante', () => clickButtonByIndex(0))
 
-When('seleciona GIPE', () => {
-  cy.wait(2000)
-  
-  cy.get('div.relative:nth-child(3)', { timeout: 15000 })
-    .should('be.visible')
-    .scrollIntoView()
-    .click({ force: true })
-  
-  cy.wait(1500)
-})
+When('seleciona GIPE', () => clickElement('div.relative:nth-child(3)'))
 
-When('clica no campo de seguranca publica', () => {
-  cy.wait(2000)
-  
-  cy.get('button[id*="form-item"]', { timeout: 15000 })
-    .eq(1)
-    .should('be.visible')
-    .should('be.enabled')
-    .scrollIntoView()
-    .click({ force: true })
-  
-  cy.wait(2500)
-})
+When('clica no campo de seguranca publica', () => clickButtonByIndex(1))
 
-When('seleciona opcao seguranca', () => {
-  cy.wait(2000)
-  
-  cy.get('body').then(($body) => {
-    if ($body.find('div[role="option"]').length > 0) {
-      cy.get('div[role="option"]', { timeout: 15000 })
-        .first()
-        .should('be.visible')
-        .click({ force: true })
-    } else {
-      cy.contains('span, div', /Sim|Não/i, { timeout: 15000 })
-        .first()
-        .should('be.visible')
-        .click({ force: true })
-    }
-  })
-  
-  cy.wait(1500)
-})
+When('seleciona opcao seguranca', () => selectDropdownOption(/Sim|Não/i))
 
-When('clica no campo de protocolo', () => {
-  cy.wait(2000)
-  
-  cy.get('button[id*="form-item"]', { timeout: 15000 })
-    .eq(2)
-    .should('be.visible')
-    .should('be.enabled')
-    .scrollIntoView()
-    .click({ force: true })
-  
-  cy.wait(2500)
-})
+When('clica no campo de protocolo', () => clickButtonByIndex(2))
 
 When('seleciona protocolo', () => {
-  cy.wait(2000)
-  
-  cy.get('body').then(($body) => {
-    if ($body.find('div[role="option"]').length > 0) {
-      cy.get('div[role="option"]', { timeout: 15000 })
-        .first()
-        .should('be.visible')
-        .click({ force: true })
-    } else {
-      cy.contains('span, div', /.+/, { timeout: 15000 })
-        .first()
-        .should('be.visible')
-        .click({ force: true })
-    }
-  })
-  
-  cy.wait(2000)
-  
-  // Clicar fora para fechar o dropdown e validar seleção
+  selectDropdownOption(/.+/, 2000)
   cy.get('main').click({ force: true })
   cy.wait(1000)
 })
@@ -562,11 +511,7 @@ When('clica no Campo {string}', (campo) => {
 })
 
 When('preenche com {string}', (texto) => {
-  cy.wait(1000)
-  
-  cy.get('textarea[id*="form-item"]', { timeout: 15000 })
-    .should('be.visible')
-    .should('be.enabled')
+  waitAndGet('textarea[id*="form-item"]', { wait: 1000 })
     .clear({ force: true })
     .type(texto, { delay: 100, force: true })
     .blur()
@@ -579,30 +524,18 @@ When('preenche com {string}', (texto) => {
 
 When('clica em opcao {string}', (opcao) => {
   cy.wait(1000)
-  
-  if (opcao === 'Não') {
-    cy.get('label.flex:nth-child(2) > span:nth-child(3)', { timeout: 15000 })
-      .should('be.visible')
-      .scrollIntoView()
-      .click({ force: true })
-  } else if (opcao === 'Sim') {
-    cy.get('label.flex:nth-child(1) > span:nth-child(3)', { timeout: 15000 })
-      .should('be.visible')
-      .scrollIntoView()
-      .click({ force: true })
-  }
-  
+  const childIndex = opcao === 'Não' ? 2 : 1
+  cy.get(`label.flex:nth-child(${childIndex}) > span:nth-child(3)`, { timeout: 15000 })
+    .should('be.visible')
+    .scrollIntoView()
+    .click({ force: true })
   cy.wait(1500)
 })
 
 When('clica em {string}', (texto) => {
-  cy.wait(2000)
-  
   if (texto.toLowerCase() === 'proximo') {
-    cy.get('button.inline-flex', { timeout: 15000 })
-      .should('be.visible')
+    waitAndGet('button.inline-flex', { wait: 2000 })
       .should('not.be.disabled')
-      .scrollIntoView()
       .click({ force: true })
     cy.wait(3000)
   }
