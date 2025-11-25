@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import React, { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,14 +30,22 @@ import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 
 export type SecaoNaoFurtoERouboProps = {
-    onPrevious: () => void;
-    onNext: () => void;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    showButtons?: boolean;
+    onFormChange?: (data: Partial<SecaoNaoFurtoERouboData>) => void;
 };
 
-export default function SecaoNaoFurtoERoubo({
-    onPrevious,
-    onNext,
-}: Readonly<SecaoNaoFurtoERouboProps>) {
+export type SecaoNaoFurtoERouboRef = {
+    getFormData: () => SecaoNaoFurtoERouboData;
+    submitForm: () => Promise<boolean>;
+    getFormInstance: () => UseFormReturn<SecaoNaoFurtoERouboData>;
+};
+
+const SecaoNaoFurtoERoubo = forwardRef<
+    SecaoNaoFurtoERouboRef,
+    SecaoNaoFurtoERouboProps
+>(({ onPrevious, onNext, showButtons = true, onFormChange }, ref) => {
     const { formData, setFormData, setSavedFormData, ocorrenciaUuid } =
         useOcorrenciaFormStore();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
@@ -67,7 +76,28 @@ export default function SecaoNaoFurtoERoubo({
 
     const { isValid } = form.formState;
 
-    const onSubmit = async (data: SecaoNaoFurtoERouboData) => {
+    // Notifica mudanças em tempo real
+    const watchedValues = form.watch();
+    useEffect(() => {
+        onFormChange?.(watchedValues);
+    }, [watchedValues, onFormChange]);
+
+    // Expõe métodos para o componente pai via ref
+    useImperativeHandle(ref, () => ({
+        getFormData: () => form.getValues(),
+        submitForm: async () => {
+            const isValid = await form.trigger();
+            if (!isValid) return false;
+
+            const data = form.getValues();
+            await handleSubmit(data);
+            return true;
+        },
+        getFormInstance: () => form,
+    }));
+
+    // Função de submit isolada para ser chamada programaticamente
+    const handleSubmit = async (data: SecaoNaoFurtoERouboData) => {
         if (!ocorrenciaUuid) {
             toast({
                 title: "Erro",
@@ -102,7 +132,7 @@ export default function SecaoNaoFurtoERoubo({
 
                     setFormData(data);
                     setSavedFormData(data);
-                    onNext();
+                    onNext?.();
                 },
                 onError: () => {
                     toast({
@@ -119,7 +149,7 @@ export default function SecaoNaoFurtoERoubo({
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(handleSubmit)}
                 className="flex flex-col gap-6 mt-4"
             >
                 <fieldset className="contents">
@@ -246,29 +276,35 @@ export default function SecaoNaoFurtoERoubo({
                         )}
                     />
 
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            size="sm"
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => {
-                                setFormData(form.getValues());
-                                onPrevious();
-                            }}
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid || isPending}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious?.();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={!isValid || isPending}
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>
     );
-}
+});
+
+SecaoNaoFurtoERoubo.displayName = "SecaoNaoFurtoERoubo";
+
+export default SecaoNaoFurtoERoubo;

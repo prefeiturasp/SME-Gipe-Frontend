@@ -2,12 +2,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import InformacoesAdicionais from "./index";
+import InformacoesAdicionais, { InformacoesAdicionaisRef } from "./index";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import * as useAtualizarInfoAgressorHook from "@/hooks/useAtualizarInfoAgressor";
 import { toast } from "@/components/ui/headless-toast";
 import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+import React from "react";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/hooks/useCategoriasDisponiveis");
@@ -773,6 +774,222 @@ describe("InformacoesAdicionais", () => {
             });
             expect(pesquisarCepButton).toBeInTheDocument();
             expect(pesquisarCepButton).toHaveTextContent("Buscando...");
+        });
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>
+            );
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toHaveProperty("nomeAgressor");
+            expect(formData).toHaveProperty("idadeAgressor");
+            expect(formData).toHaveProperty("cep");
+            expect(formData).toHaveProperty("logradouro");
+            expect(formData).toHaveProperty("numero");
+            expect(formData).toHaveProperty("complemento");
+            expect(formData).toHaveProperty("estado");
+            expect(formData).toHaveProperty("cidade");
+            expect(formData).toHaveProperty("bairro");
+            expect(formData).toHaveProperty("motivoOcorrencia");
+            expect(formData).toHaveProperty("genero");
+            expect(formData).toHaveProperty("grupoEtnicoRacial");
+            expect(formData).toHaveProperty("etapaEscolar");
+            expect(formData).toHaveProperty("frequenciaEscolar");
+            expect(formData).toHaveProperty("interacaoAmbienteEscolar");
+            expect(formData).toHaveProperty("redesProtecao");
+            expect(formData).toHaveProperty("notificadoConselhoTutelar");
+            expect(formData).toHaveProperty("acompanhadoNAAPA");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>
+            );
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance?.getValues).toBeDefined();
+            expect(formInstance?.trigger).toBeDefined();
+            expect(formInstance?.formState).toBeDefined();
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            const user = userEvent.setup();
+            const mockMutate = vi.fn((_, options) => {
+                if (options?.onSuccess) {
+                    options.onSuccess({ success: true, data: {} });
+                }
+            });
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            vi.spyOn(
+                useAtualizarInfoAgressorHook,
+                "useAtualizarInfoAgressor"
+            ).mockReturnValue({
+                mutate: mockMutate,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>
+            );
+
+            await user.type(
+                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
+                "João Silva"
+            );
+            await user.type(
+                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
+                "25"
+            );
+            await user.type(
+                screen.getByPlaceholderText(/Digite o CEP\.\.\./i),
+                "01310100"
+            );
+
+            await waitFor(() => {
+                expect(
+                    screen.getByPlaceholderText(/Digite o CEP\.\.\./i)
+                ).toHaveValue("01310-100");
+            });
+
+            await user.type(
+                screen.getByLabelText(/Logradouro/i),
+                "Avenida Paulista"
+            );
+            await user.type(
+                screen.getByLabelText(/Número da residência/i),
+                "1578"
+            );
+            await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
+            await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
+            await user.type(
+                screen.getByLabelText(/Como é a interação da pessoa agressora/i),
+                "Boa interação"
+            );
+            await user.type(
+                screen.getByLabelText(/Quais as redes de proteção/i),
+                "CRAS, NAAPA"
+            );
+
+            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+            await user.click(radioSim[0]);
+            await user.click(radioSim[1]);
+
+            const estadoTrigger = screen.getByRole("combobox", {
+                name: /Estado/i,
+            });
+            await user.click(estadoTrigger);
+            await user.click(
+                await screen.findByRole("option", { name: /São Paulo/i })
+            );
+
+            const motivoButton = screen.getByRole("button", {
+                name: /Selecione/i,
+            });
+            await user.click(motivoButton);
+            await user.click(await screen.findByText(/Bullying/i));
+
+            const generoTrigger = screen.getByRole("combobox", {
+                name: /Qual o gênero\?/i,
+            });
+            await user.click(generoTrigger);
+            await user.click(
+                await screen.findByRole("option", { name: /Masculino/i })
+            );
+
+            const grupoTrigger = screen.getByRole("combobox", {
+                name: /Qual o grupo étnico-racial\?/i,
+            });
+            await user.click(grupoTrigger);
+            await user.click(
+                await screen.findByRole("option", { name: /Pardo/i })
+            );
+
+            const etapaTrigger = screen.getByRole("combobox", {
+                name: /Qual a etapa escolar\?/i,
+            });
+            await user.click(etapaTrigger);
+            await user.click(
+                await screen.findByRole("option", {
+                    name: /Ensino Fundamental II/i,
+                })
+            );
+
+            const frequenciaTrigger = screen.getByRole("combobox", {
+                name: /Qual a frequência escolar\?/i,
+            });
+            await user.click(frequenciaTrigger);
+            const regularOptions = await screen.findAllByRole("option", {
+                name: /Regular/i,
+            });
+            await user.click(regularOptions.at(-1)!);
+
+            await waitFor(
+                async () => {
+                    const result = await ref.current?.submitForm();
+                    expect(result).toBe(true);
+                },
+                { timeout: 5000 }
+            );
+
+            expect(mockMutate).toHaveBeenCalled();
+        }, 15000);
+
+        it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(false);
+            });
+
+            expect(mockOnNext).not.toHaveBeenCalled();
         });
     });
 });

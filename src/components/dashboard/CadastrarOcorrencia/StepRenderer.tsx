@@ -11,6 +11,10 @@ type StepRendererProps = {
     hasAgressorVitimaInfo: boolean;
     onNext: () => void;
     onPrevious: () => void;
+    onSecaoInicialChange?: (data: { tipoOcorrencia?: string }) => void;
+    onSecaoNaoFurtoChange?: (data: {
+        possuiInfoAgressorVitima?: string;
+    }) => void;
 };
 
 export default function StepRenderer({
@@ -19,6 +23,8 @@ export default function StepRenderer({
     hasAgressorVitimaInfo,
     onNext,
     onPrevious,
+    onSecaoInicialChange,
+    onSecaoNaoFurtoChange,
 }: Readonly<StepRendererProps>) {
     const getCurrentStepNumber = () => {
         if (currentStep === 1) return 1;
@@ -40,7 +46,12 @@ export default function StepRenderer({
     const stepComponents = [
         {
             step: 1,
-            component: <SecaoInicial onSuccess={onNext} />,
+            component: (
+                <SecaoInicial
+                    onSuccess={onNext}
+                    onFormChange={onSecaoInicialChange}
+                />
+            ),
         },
         {
             step: 2,
@@ -53,12 +64,16 @@ export default function StepRenderer({
             step: 2,
             condition: !isFurtoRoubo,
             component: (
-                <SecaoNaoFurtoERoubo onNext={onNext} onPrevious={onPrevious} />
+                <SecaoNaoFurtoERoubo
+                    onNext={onNext}
+                    onPrevious={onPrevious}
+                    onFormChange={onSecaoNaoFurtoChange}
+                />
             ),
         },
         {
             step: 3,
-            condition: hasAgressorVitimaInfo,
+            condition: hasAgressorVitimaInfo && !isFurtoRoubo,
             component: (
                 <InformacoesAdicionais
                     onNext={onNext}

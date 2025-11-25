@@ -1,5 +1,5 @@
 import "./__tests__/setup";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, act } from "@testing-library/react";
 import { vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 import { renderWithClient, mockUseUserStore } from "./__tests__/helpers";
@@ -517,10 +517,121 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             expect(
                 screen.getByText("Formulário patrimonial")
             ).toBeInTheDocument();
-            expect(
-                screen.getByText("Informações adicionais")
-            ).toBeInTheDocument();
+            expect(screen.getByText("Seção final")).toBeInTheDocument();
             expect(screen.getByText("Anexos")).toBeInTheDocument();
+        });
+    });
+
+    describe("Callbacks onFormChange", () => {
+        it("deve atualizar currentTipoOcorrencia quando SecaoInicial chama onSecaoInicialChange", async () => {
+            setupStoreMock({});
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default
+            );
+
+            renderWithClient(<CadastrarOcorrencia />);
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            act(() => {
+                props?.onSecaoInicialChange?.({ tipoOcorrencia: "Sim" });
+            });
+
+            await waitFor(() => {
+                const updatedCall = mockStepRenderer.mock.calls.at(-1);
+                expect(updatedCall?.[0].isFurtoRoubo).toBe(true);
+            });
+        });
+
+        it("deve atualizar currentPossuiInfoAgressor quando SecaoNaoFurtoRoubo chama onSecaoNaoFurtoChange", async () => {
+            setupStoreMock({ tipoOcorrencia: "Não" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default
+            );
+
+            renderWithClient(<CadastrarOcorrencia initialStep={2} />);
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            act(() => {
+                props?.onSecaoNaoFurtoChange?.({
+                    possuiInfoAgressorVitima: "Sim",
+                });
+            });
+
+            await waitFor(() => {
+                const updatedCall = mockStepRenderer.mock.calls.at(-1);
+                expect(updatedCall?.[0].hasAgressorVitimaInfo).toBe(true);
+            });
+        });
+
+        it("não deve atualizar currentTipoOcorrencia quando data.tipoOcorrencia é undefined", async () => {
+            setupStoreMock({ tipoOcorrencia: "Sim" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default
+            );
+
+            renderWithClient(<CadastrarOcorrencia />);
+
+            const initialIsFurtoRoubo =
+                mockStepRenderer.mock.calls.at(-1)?.[0].isFurtoRoubo;
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            props?.onSecaoInicialChange?.({ tipoOcorrencia: undefined });
+
+            await waitFor(() => {
+                const updatedCall = mockStepRenderer.mock.calls.at(-1);
+                expect(updatedCall?.[0].isFurtoRoubo).toBe(initialIsFurtoRoubo);
+            });
+        });
+
+        it("não deve atualizar currentPossuiInfoAgressor quando data.possuiInfoAgressorVitima é undefined", async () => {
+            setupStoreMock({
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default
+            );
+
+            renderWithClient(<CadastrarOcorrencia initialStep={2} />);
+
+            const initialHasAgressorVitimaInfo =
+                mockStepRenderer.mock.calls.at(-1)?.[0].hasAgressorVitimaInfo;
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            props?.onSecaoNaoFurtoChange?.({
+                possuiInfoAgressorVitima: undefined,
+            });
+
+            await waitFor(() => {
+                const updatedCall = mockStepRenderer.mock.calls.at(-1);
+                expect(updatedCall?.[0].hasAgressorVitimaInfo).toBe(
+                    initialHasAgressorVitimaInfo
+                );
+            });
         });
     });
 });

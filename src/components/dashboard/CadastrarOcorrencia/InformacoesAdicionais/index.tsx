@@ -1,5 +1,6 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,14 +33,21 @@ import { hasFormDataChanged } from "@/lib/formUtils";
 import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
 
 export type InformacoesAdicionaisProps = {
-    onPrevious: () => void;
-    onNext: () => void;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    showButtons?: boolean;
 };
 
-export default function InformacoesAdicionais({
-    onPrevious,
-    onNext,
-}: Readonly<InformacoesAdicionaisProps>) {
+export type InformacoesAdicionaisRef = {
+    getFormData: () => InformacoesAdicionaisData;
+    submitForm: () => Promise<boolean>;
+    getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
+};
+
+const InformacoesAdicionais = forwardRef<
+    InformacoesAdicionaisRef,
+    InformacoesAdicionaisProps
+>(({ onPrevious, onNext, showButtons = true }, ref) => {
     const {
         formData,
         savedFormData,
@@ -78,6 +86,20 @@ export default function InformacoesAdicionais({
 
     const { isValid } = form.formState;
 
+    // Expõe métodos para o componente pai via ref
+    useImperativeHandle(ref, () => ({
+        getFormData: () => form.getValues(),
+        submitForm: async () => {
+            const isValid = await form.trigger();
+            if (!isValid) return false;
+
+            const data = form.getValues();
+            await handleSubmit(data);
+            return true;
+        },
+        getFormInstance: () => form,
+    }));
+
     const formatCep = (value: string) => {
         const numbers = value.replaceAll(/\D/g, "");
         if (numbers.length <= 5) {
@@ -91,7 +113,8 @@ export default function InformacoesAdicionais({
         form.setValue("cep", formatted, { shouldValidate: true });
     };
 
-    const onSubmit = async (data: InformacoesAdicionaisData) => {
+    // Função de submit isolada para ser chamada programaticamente
+    const handleSubmit = async (data: InformacoesAdicionaisData) => {
         const currentValues = form.getValues();
 
         if (ocorrenciaUuid) {
@@ -117,7 +140,7 @@ export default function InformacoesAdicionais({
                     "acompanhadoNAAPA",
                 ])
             ) {
-                onNext();
+                onNext?.();
                 return;
             }
 
@@ -164,7 +187,7 @@ export default function InformacoesAdicionais({
 
                         setFormData(data);
                         setSavedFormData(data);
-                        onNext();
+                        onNext?.();
                     },
                     onError: () => {
                         toast({
@@ -178,9 +201,10 @@ export default function InformacoesAdicionais({
             );
         } else {
             setFormData(data);
-            onNext();
+            onNext?.();
         }
     };
+
     const handleBuscarCep = async () => {
         const cep = form.getValues("cep");
         try {
@@ -211,7 +235,7 @@ export default function InformacoesAdicionais({
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(handleSubmit)}
                 className="flex flex-col gap-4 mt-4"
             >
                 <fieldset className="contents">
@@ -704,29 +728,35 @@ export default function InformacoesAdicionais({
                         )}
                     />
 
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            size="sm"
-                            variant="customOutline"
-                            type="button"
-                            onClick={() => {
-                                setFormData(form.getValues());
-                                onPrevious();
-                            }}
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
+                    {showButtons && (
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="customOutline"
+                                type="button"
+                                onClick={() => {
+                                    setFormData(form.getValues());
+                                    onPrevious?.();
+                                }}
+                            >
+                                Anterior
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                variant="submit"
+                                disabled={!isValid}
+                            >
+                                Próximo
+                            </Button>
+                        </div>
+                    )}
                 </fieldset>
             </form>
         </Form>
     );
-}
+});
+
+InformacoesAdicionais.displayName = "InformacoesAdicionais";
+
+export default InformacoesAdicionais;

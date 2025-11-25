@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoNaoFurtoERoubo from "./index";
+import SecaoNaoFurtoERoubo, { SecaoNaoFurtoERouboRef } from "./index";
 import userEvent from "@testing-library/user-event";
 import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useEnvolvidosHook from "@/hooks/useEnvolvidos";
@@ -784,6 +784,140 @@ describe("SecaoNaoFurtoERoubo", () => {
                 }),
                 expect.any(Object)
             );
+        });
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<SecaoNaoFurtoERouboRef>();
+            render(
+                <SecaoNaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toHaveProperty("tiposOcorrencia");
+            expect(formData).toHaveProperty("envolvidos");
+            expect(formData).toHaveProperty("descricao");
+            expect(formData).toHaveProperty("possuiInfoAgressorVitima");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<SecaoNaoFurtoERouboRef>();
+            render(
+                <SecaoNaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance?.getValues).toBeDefined();
+            expect(formInstance?.trigger).toBeDefined();
+            expect(formInstance?.formState).toBeDefined();
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            const user = userEvent.setup();
+            const mockMutate = vi.fn((_, options) => {
+                if (options?.onSuccess) {
+                    options.onSuccess({ success: true, data: {} });
+                }
+            });
+
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+            ).mockReturnValue({
+                formData: {},
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: "test-uuid-123",
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useAtualizarSecaoNaoFurtoRouboHook,
+                "useAtualizarSecaoNaoFurtoRoubo"
+            ).mockReturnValue({
+                mutate: mockMutate,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<SecaoNaoFurtoERouboRef>();
+            render(
+                <SecaoNaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            const multiSelectButton = screen.getByRole("button", {
+                name: /selecione os tipos de ocorrência/i,
+            });
+            await user.click(multiSelectButton);
+
+            const tipoOption = await screen.findByRole("option", {
+                name: /violência física/i,
+            });
+            await user.click(tipoOption);
+
+            const envolvidosButton = screen.getByRole("combobox", {
+                name: /Quem são os envolvidos\?\*/i,
+            });
+            await user.click(envolvidosButton);
+
+            const envolvidoOption = await screen.findByRole("option", {
+                name: /Apenas um estudante/i,
+            });
+            await user.click(envolvidoOption);
+
+            const descricaoField =
+                screen.getByPlaceholderText("Descreva aqui...");
+            await user.type(
+                descricaoField,
+                "Esta é uma descrição detalhada com mais de dez caracteres"
+            );
+
+            const radioSim = screen.getByRole("radio", { name: /sim/i });
+            await user.click(radioSim);
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
+
+            expect(mockMutate).toHaveBeenCalled();
+        });
+
+        it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<SecaoNaoFurtoERouboRef>();
+            render(
+                <SecaoNaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(false);
+            });
+
+            expect(mockOnNext).not.toHaveBeenCalled();
         });
     });
 });
