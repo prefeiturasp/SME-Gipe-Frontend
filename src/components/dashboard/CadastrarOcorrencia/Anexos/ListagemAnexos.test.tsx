@@ -1,11 +1,25 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { vi } from "vitest";
 import { ListagemAnexos } from "./ListagemAnexos";
 import { AnexoAPI } from "@/types/anexo";
-import { toast } from "@/components/ui/headless-toast";
+import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
+
+
+vi.mock("@/components/dashboard/CadastrarOcorrencia/Anexos/ModalExcluir/ModalExcluir", () => ({
+    ModalExcluir: vi.fn(({ open, onOpenChange, uuid }) => (
+        <div data-testid="modal-excluir">
+            {open && (
+                <>
+                    <p>Modal Aberto</p>
+                    <p>UUID: {uuid}</p>
+                    <button onClick={() => onOpenChange(false)}>Fechar Modal</button>
+                </>
+            )}
+        </div>
+    )),
+}));
 
 const mutateAsyncMock = vi.fn();
-
 vi.mock("@/hooks/useExcluirAnexo", () => ({
     useExcluirAnexo: () => ({
         mutateAsync: mutateAsyncMock,
@@ -256,33 +270,45 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
     });
 
-    it("deve chamar mutateAsync ao clicar em Excluir", async () => {
-        mutateAsyncMock.mockResolvedValue({ success: true });
+    it("abre o modal ao clicar em Excluir arquivo e envia o UUID correto", () => {
+    render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
+    const button = screen.getByRole("button", { name: /Excluir arquivo/i });
+    fireEvent.click(button);
+
+    expect(ModalExcluir).toHaveBeenCalledWith(
+        expect.objectContaining({
+            open: true,
+            uuid: "api-uuid-1",
+        }),
+        {}
+    );
+
+    expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
+    expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
+    });
+
+    it("fecha o modal quando onOpenChange é acionado pelo modal", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
         const button = screen.getByRole("button", { name: /Excluir arquivo/i });
         fireEvent.click(button);
 
-        expect(mutateAsyncMock).toHaveBeenCalledWith("api-uuid-1");
+        const fechar = screen.getByRole("button", { name: /Fechar Modal/i });
+        fireEvent.click(fechar);
+
+        expect(ModalExcluir).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                open: false,
+            }),
+            {}
+        );
     });
 
-    it("deve exibir toast de erro quando a exclusão falhar", async () => {
-        mutateAsyncMock.mockResolvedValue({ success: false });
-
+    it("não renderiza o conteúdo do modal quando open=false", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
-        const button = screen.getByRole("button", { name: /Excluir arquivo/i });
-        fireEvent.click(button);
-
-        await waitFor(() => {
-            expect(toast).toHaveBeenCalledWith({
-                variant: "error",
-                title: "Não conseguimos excluir o arquivo.",
-                description: "Por favor, tente novamente.",
-            });
-        });
+        expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
     });
-
 
 });
