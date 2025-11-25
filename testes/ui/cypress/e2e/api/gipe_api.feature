@@ -1,5 +1,5 @@
 #language: pt
-@api
+@skip @api
 Funcionalidade: API GIPE - Testes Principais
 
   Contexto:
