@@ -1,0 +1,19 @@
+node_modules
+
+package-lock.json
+
+screenshots/
+
+videos/
+
+# Testes cadastro_ue (não subir)
+cypress/e2e/ui/cadastro_ue.feature
+cypress/support/step_definitions/cadastro_ue.js
+cypress/support/locators/cadastro_ue_locators.js
+
+# Scripts auxiliares
+obter_token.cy.js
+token.txt
+token.json
+run-api-tests.js
+run-api-tests.bat
