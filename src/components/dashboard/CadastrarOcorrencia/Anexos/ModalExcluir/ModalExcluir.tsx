@@ -54,8 +54,8 @@ export function ModalExcluir({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[500px] p-6 rounded-[4px]">
-                <DialogHeader>
+            <DialogContent className="max-w-[672px] p-6 rounded-[4px]">
+                <DialogHeader className="pt-2">
                     <DialogTitle>Excluir Documento</DialogTitle>
                     <DialogDescription className="sr-only">
                         Excluir documento anexado à intercorrência.
