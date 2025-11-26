@@ -176,7 +176,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     </div>
 
                     <div>
-                        <Anexos showButtons={false} />
+                        <Anexos showButtons={false} modoVisualizacao/>
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">

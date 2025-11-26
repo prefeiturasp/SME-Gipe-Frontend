@@ -36,12 +36,14 @@ export type AnexosProps = {
     onPrevious?: () => void;
     onNext?: () => void;
     showButtons?: boolean;
+    modoVisualizacao?: boolean
 };
 
 export default function Anexos({
     onPrevious,
     onNext,
     showButtons = true,
+    modoVisualizacao,
 }: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
@@ -155,7 +157,7 @@ export default function Anexos({
                 Anexos
             </h2>
 
-            <ListagemAnexos anexosAPI={anexosData?.results} />
+            <ListagemAnexos anexosAPI={anexosData?.results} modoVisualizacao={modoVisualizacao} />
 
             <Form {...form}>
                 <form
