@@ -118,12 +118,10 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("Relatório do NAAPA")).toBeInTheDocument();
         expect(screen.getByText("Boletim de ocorrência")).toBeInTheDocument();
         
-        // Busca específica pelo botão de excluir do modo não-visualização
         expect(
             screen.getAllByRole("button", { name: /Excluir arquivo/i })
         ).toHaveLength(2);
         
-        // Verifica que NÃO há botões de baixar (modoVisualizacao não está ativo)
         expect(
             screen.queryByRole("button", { name: /Baixar arquivo/i })
         ).not.toBeInTheDocument();
@@ -132,12 +130,11 @@ describe("ListagemAnexos", () => {
     it("deve renderizar botão de excluir para cada anexo", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
-        // Agora buscamos pelo texto específico do botão de excluir (modo não-visualização)
         const excluirButton = screen.getByRole("button", {
             name: /Excluir arquivo/i,
         });
         expect(excluirButton).toBeInTheDocument();
-        expect(screen.getByText("Excluir arquivo")).toBeInTheDocument(); // Texto específico
+        expect(screen.getByText("Excluir arquivo")).toBeInTheDocument();
     });
 
     it("deve renderizar ícone de anexo (Paperclip) para cada item", () => {
@@ -153,14 +150,12 @@ describe("ListagemAnexos", () => {
     it("deve renderizar ícone de lixeira (Trash2) em cada botão de excluir", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
-        // Busca específica pelo botão de excluir do modo não-visualização
         const excluirButtons = screen.getAllByRole("button", {
             name: /Excluir arquivo/i,
         });
 
         expect(excluirButtons).toHaveLength(1);
         
-        // Verifica que o botão contém o texto "Excluir arquivo"
         expect(excluirButtons[0]).toHaveTextContent("Excluir arquivo");
     });
 
@@ -292,7 +287,6 @@ describe("ListagemAnexos", () => {
 
         render(<ListagemAnexos anexosAPI={[anexoAPIMock, anexo2]} />);
 
-        // Busca específica pelo botão de excluir do modo não-visualização
         const excluirButtons = screen.getAllByRole("button", {
             name: /Excluir arquivo/i,
         });
@@ -301,7 +295,6 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
         expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
         
-        // Verifica que cada card tem seu próprio botão de excluir
         excluirButtons.forEach(button => {
             expect(button).toHaveTextContent(/Excluir arquivo/);
         });
@@ -310,7 +303,6 @@ describe("ListagemAnexos", () => {
     it("abre o modal ao clicar em Excluir arquivo e envia o UUID correto", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
-        // Busca específica pelo botão de excluir do modo não-visualização
         const button = screen.getByRole("button", { name: /Excluir arquivo/i });
         fireEvent.click(button);
 
@@ -329,7 +321,6 @@ describe("ListagemAnexos", () => {
     it("fecha o modal quando onOpenChange é acionado pelo modal", () => {
         render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
 
-        // Busca específica pelo botão de excluir do modo não-visualização
         const button = screen.getByRole("button", { name: /Excluir arquivo/i });
         fireEvent.click(button);
 
@@ -350,7 +341,6 @@ describe("ListagemAnexos", () => {
         expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
     });
 
-// Novos testes para a funcionalidade de modoVisualizacao
 describe("ListagemAnexos - modoVisualizacao", () => {
     const anexoAPIMock: AnexoAPI = {
         uuid: "api-uuid-1",
@@ -371,7 +361,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
 
         expect(screen.getByRole("button", { name: /Baixar arquivo/i })).toBeInTheDocument();
         
-        // Busca por botões com a classe específica do botão de excluir no modo visualização
         const excluirButtons = container.querySelectorAll('button.border-\\[\\#B40C02\\].w-10');
         expect(excluirButtons.length).toBeGreaterThan(0);
     });
@@ -389,17 +378,9 @@ describe("ListagemAnexos - modoVisualizacao", () => {
         expect(screen.getByRole("button", { name: /Excluir arquivo/i })).toBeInTheDocument();
     });
 
-    // it("deve aplicar estilos corretos no botão de baixar no modo visualização", () => {
-    //     render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
-
-    //     const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
-    //     expect(baixarButton).toHaveClass("border-[#717FC7]", "text-[#717FC7]");
-    // });
-
     it("deve aplicar estilos corretos no botão de excluir no modo visualização", () => {
         const { container } = render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
 
-        // Busca específica pelo botão de excluir no modo visualização
         const excluirButton = container.querySelector('button.border-\\[\\#B40C02\\].w-10') as HTMLButtonElement;
         expect(excluirButton).toBeInTheDocument();
         expect(excluirButton).toHaveClass("border-[#B40C02]", "text-[#B40C02]");
@@ -415,7 +396,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
     it("deve manter funcionalidade de abrir modal no modo visualização", () => {
         const { container } = render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
 
-        // Busca específica pelo botão de excluir no modo visualização
         const excluirButton = container.querySelector('button.border-\\[\\#B40C02\\].w-10') as HTMLButtonElement;
         expect(excluirButton).toBeInTheDocument();
         
@@ -446,8 +426,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
 
         const baixarButtons = screen.getAllByRole("button", { name: /Baixar arquivo/i });
         
-        // Para o botão de excluir no modo visualização, buscamos pelo aria-label ou testid
-        // Como não temos, podemos buscar pelos botões que contêm o ícone de lixeira
         const excluirButtons = screen.getAllByRole("button").filter(button => 
             button.innerHTML.includes('Trash2') || 
             button.className.includes('border-[#B40C02]')
@@ -501,7 +479,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
         const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
         fireEvent.click(baixarButton);
 
-        // Simula o erro chamando o onError callback
         const onErrorCallback = baixarMock.mock.calls[0][1].onError;
         onErrorCallback();
 
@@ -530,7 +507,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
 
         const baixarButtons = screen.getAllByRole("button", { name: /Baixar arquivo/i });
         
-        // Clica no primeiro botão
         fireEvent.click(baixarButtons[0]);
         expect(baixarMock).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -540,7 +516,6 @@ describe("ListagemAnexos - modoVisualizacao", () => {
             expect.any(Object)
         );
 
-        // Clica no segundo botão
         fireEvent.click(baixarButtons[1]);
         expect(baixarMock).toHaveBeenCalledWith(
             expect.objectContaining({
