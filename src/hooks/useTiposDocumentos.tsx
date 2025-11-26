@@ -20,7 +20,20 @@ const fetchAndTransformTiposDocumento = async (
 
 export const useTiposDocumentos = () => {
     const user = useUserStore((state) => state.user);
-    const perfilUser = "diretor";
+
+    const perfilMap: Record<
+        string,
+        "diretor" | "assistente" | "dre" | "gipe"
+    > = {
+        "DIRETOR DE ESCOLA": "diretor",
+        "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
+        "PONTO FOCAL DRE": "dre",
+        GIPE: "gipe",
+    };
+
+    const perfilUser =
+        (user?.perfil_acesso?.nome &&
+            perfilMap[user.perfil_acesso.nome]) || "diretor";
 
     return useQuery<TipoDocumento[]>({
         queryKey: ["tiposDocumento", perfilUser],
