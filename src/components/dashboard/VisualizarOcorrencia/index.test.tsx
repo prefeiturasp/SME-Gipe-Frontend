@@ -1,17 +1,22 @@
-import { screen } from "@testing-library/react";
+import { screen, act, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { forwardRef } from "react";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
 import VisualizarOcorrencia from "./index";
 
 vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Mock = forwardRef((props: { onFormChange?: (data: any) => void }) => {
+    const Mock = forwardRef<
+        HTMLDivElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { onFormChange?: (data: any) => void }
+    >((props, ref) => {
         if (props.onFormChange) {
             capturedSecaoInicialCallback = props.onFormChange;
         }
         return (
             <div
+                ref={ref}
                 data-testid="mock-secao-inicial"
                 data-onformchange={!!props.onFormChange}
             >
@@ -24,19 +29,25 @@ vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
-    const Mock = forwardRef(() => <div>Mock SecaoFurtoERoubo</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock SecaoFurtoERoubo</div>
+    ));
     Mock.displayName = "MockSecaoFurtoERoubo";
     return { default: Mock };
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Mock = forwardRef((props: { onFormChange?: (data: any) => void }) => {
+    const Mock = forwardRef<
+        HTMLDivElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { onFormChange?: (data: any) => void }
+    >((props, ref) => {
         if (props.onFormChange) {
             capturedSecaoNaoFurtoCallback = props.onFormChange;
         }
         return (
             <div
+                ref={ref}
                 data-testid="mock-secao-nao-furto"
                 data-onformchange={!!props.onFormChange}
             >
@@ -49,13 +60,17 @@ vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
 });
 
 vi.mock("../CadastrarOcorrencia/InformacoesAdicionais", () => {
-    const Mock = forwardRef(() => <div>Mock InformacoesAdicionais</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock InformacoesAdicionais</div>
+    ));
     Mock.displayName = "MockInformacoesAdicionais";
     return { default: Mock };
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoFinal", () => {
-    const Mock = forwardRef(() => <div>Mock SecaoFinal</div>);
+    const Mock = forwardRef<HTMLDivElement>((props, ref) => (
+        <div ref={ref}>Mock SecaoFinal</div>
+    ));
     Mock.displayName = "MockSecaoFinal";
     return { default: Mock };
 });
@@ -65,8 +80,9 @@ vi.mock("../CadastrarOcorrencia/Anexos", () => ({
 }));
 
 vi.mock("../PageHeader/PageHeader", () => ({
-    default: vi.fn(({ onClickBack }) => (
+    default: vi.fn(({ onClickBack, title }) => (
         <div>
+            <h1>{title}</h1>
             <button onClick={onClickBack}>Voltar</button>
         </div>
     )),
@@ -86,6 +102,7 @@ vi.mock("@/components/stepper/Stepper", () => ({
 
 const mockReset = vi.fn();
 const mockInvalidateQueries = vi.fn();
+const mockRouterBack = vi.fn();
 
 let capturedSecaoInicialCallback:
     | ((data: { tipoOcorrencia?: string }) => void)
@@ -93,6 +110,25 @@ let capturedSecaoInicialCallback:
 let capturedSecaoNaoFurtoCallback:
     | ((data: { possuiInfoAgressorVitima?: string }) => void)
     | null = null;
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        back: mockRouterBack,
+        push: vi.fn(),
+    }),
+}));
+
+vi.mock("../FormularioDre", () => ({
+    default: vi.fn(({ onPrevious }) => (
+        <div>
+            <h1>
+                Detalhes da Intercorrência - Diretoria Regional de Educação
+                (DRE)
+            </h1>
+            <button onClick={onPrevious}>Anterior (Mock)</button>
+        </div>
+    )),
+}));
 
 const mockStoreState = {
     formData: {
@@ -122,6 +158,12 @@ vi.mock("@tanstack/react-query", async () => {
     };
 });
 
+const mockUseUserPermissions = vi.fn();
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: () => mockUseUserPermissions(),
+}));
+
 describe("VisualizarOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -130,12 +172,15 @@ describe("VisualizarOcorrencia", () => {
             possuiInfoAgressorVitima: "Sim",
         };
         mockStoreState.ocorrenciaUuid = "test-uuid";
+        mockUseUserPermissions.mockReturnValue({
+            isAssistenteOuDiretor: false,
+        });
     });
 
-    it("deve renderizar o título 'Visualizar ocorrência'", () => {
+    it("deve renderizar o título 'Nova ocorrência'", () => {
         renderWithClient(<VisualizarOcorrencia />);
 
-        expect(screen.getByText("Visualizar ocorrência")).toBeInTheDocument();
+        expect(screen.getByText("Nova ocorrência")).toBeInTheDocument();
     });
 
     it("deve renderizar o Stepper com todas as etapas completas", () => {
@@ -350,9 +395,6 @@ describe("VisualizarOcorrencia", () => {
             renderWithClient(<VisualizarOcorrencia />);
 
             expect(capturedSecaoInicialCallback).not.toBeNull();
-
-            capturedSecaoInicialCallback?.({ tipoOcorrencia: "Sim" });
-
             expect(capturedSecaoInicialCallback).toBeDefined();
         });
 
@@ -365,12 +407,154 @@ describe("VisualizarOcorrencia", () => {
             renderWithClient(<VisualizarOcorrencia />);
 
             expect(capturedSecaoNaoFurtoCallback).not.toBeNull();
+            expect(capturedSecaoNaoFurtoCallback).toBeDefined();
+        });
 
-            capturedSecaoNaoFurtoCallback?.({
+        it("não deve atualizar currentPossuiInfoAgressor quando possuiInfoAgressorVitima é undefined no callback", () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
                 possuiInfoAgressorVitima: "Sim",
+            };
+
+            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
+
+            expect(
+                screen.getByText("Mock InformacoesAdicionais")
+            ).toBeInTheDocument();
+
+            if (capturedSecaoNaoFurtoCallback) {
+                capturedSecaoNaoFurtoCallback({});
+            }
+
+            rerender(<VisualizarOcorrencia />);
+
+            expect(
+                screen.getByText("Mock InformacoesAdicionais")
+            ).toBeInTheDocument();
+        });
+
+        it("deve chamar setCurrentPossuiInfoAgressor quando callback recebe valor definido", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Não",
+            };
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            expect(
+                screen.queryByText("Mock InformacoesAdicionais")
+            ).not.toBeInTheDocument();
+
+            act(() => {
+                if (capturedSecaoNaoFurtoCallback) {
+                    capturedSecaoNaoFurtoCallback({
+                        possuiInfoAgressorVitima: "Sim",
+                    });
+                }
             });
 
-            expect(capturedSecaoNaoFurtoCallback).toBeDefined();
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Mock InformacoesAdicionais")
+                ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("Botões de navegação baseados em permissão", () => {
+        it("deve exibir botão 'Finalizar' quando isAssistenteOuDiretor é true", () => {
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: true,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoFinalizar = screen.getByRole("link", {
+                name: /finalizar/i,
+            });
+            expect(botaoFinalizar).toBeInTheDocument();
+            expect(botaoFinalizar).toHaveAttribute("href", "/dashboard");
+
+            expect(
+                screen.queryByRole("button", { name: /anterior/i })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole("link", { name: /próximo/i })
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir botões 'Anterior' e 'Próximo' quando isAssistenteOuDiretor é false", () => {
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoAnterior = screen.getByRole("button", {
+                name: /anterior/i,
+            });
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+
+            expect(botaoAnterior).toBeInTheDocument();
+            expect(botaoAnterior).toBeDisabled();
+
+            expect(botaoProximo).toBeInTheDocument();
+
+            expect(
+                screen.queryByRole("link", { name: /finalizar/i })
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve alternar para FormularioDre ao clicar em Próximo", async () => {
+            const user = userEvent.setup();
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            await user.click(botaoProximo);
+
+            expect(
+                screen.getByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).toBeInTheDocument();
+        });
+
+        it("deve voltar para FormularioUE ao clicar em Anterior no FormularioDre", async () => {
+            const user = userEvent.setup();
+            mockUseUserPermissions.mockReturnValue({
+                isAssistenteOuDiretor: false,
+            });
+
+            renderWithClient(<VisualizarOcorrencia />);
+
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+            await user.click(botaoProximo);
+
+            expect(
+                screen.getByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).toBeInTheDocument();
+
+            const botaoAnterior = screen.getByText("Anterior (Mock)");
+            await user.click(botaoAnterior);
+
+            expect(screen.getByText("Nova ocorrência")).toBeInTheDocument();
+            expect(
+                screen.queryByText(
+                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                )
+            ).not.toBeInTheDocument();
         });
     });
 });

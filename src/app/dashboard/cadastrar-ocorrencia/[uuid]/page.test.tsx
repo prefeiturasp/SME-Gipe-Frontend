@@ -710,13 +710,9 @@ describe("EditarOcorrenciaPage", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByRole("heading", { name: /visualizar ocorrência/i })
+                screen.getByRole("heading", { name: /Nova ocorrência/i })
             ).toBeInTheDocument();
         });
-
-        expect(
-            screen.queryByRole("heading", { name: /nova ocorrência/i })
-        ).not.toBeInTheDocument();
     });
 
     it("deve renderizar VisualizarOcorrencia quando status é 'aguardando_validacao'", async () => {
@@ -768,7 +764,7 @@ describe("EditarOcorrenciaPage", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByRole("heading", { name: /visualizar ocorrência/i })
+                screen.getByRole("heading", { name: /Nova ocorrência/i })
             ).toBeInTheDocument();
         });
     });

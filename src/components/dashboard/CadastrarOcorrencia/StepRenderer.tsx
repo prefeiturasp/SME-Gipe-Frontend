@@ -31,11 +31,11 @@ export default function StepRenderer({
         if (currentStep === 2) return 2;
 
         if (currentStep === 3) {
-            return hasAgressorVitimaInfo ? 3 : 4;
+            return hasAgressorVitimaInfo && !isFurtoRoubo ? 3 : 4;
         }
 
         if (currentStep === 4) {
-            return hasAgressorVitimaInfo ? 4 : 5;
+            return hasAgressorVitimaInfo && !isFurtoRoubo ? 4 : 5;
         }
 
         if (currentStep === 5) return 5;
