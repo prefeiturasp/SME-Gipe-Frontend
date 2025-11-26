@@ -434,7 +434,7 @@ describe("InformacoesAdicionais", () => {
             );
             expect(mockOnNext).toHaveBeenCalled();
         });
-    }, 150000);
+    });
 
     it("deve chamar formatCep corretamente com menos de 5 números", async () => {
         const user = userEvent.setup();
@@ -513,16 +513,14 @@ describe("InformacoesAdicionais", () => {
                     expect.any(Object)
                 );
             });
-        }, 150000);
+        });
 
         it("deve exibir toast de erro quando ocorre erro na mutation", async () => {
             const user = userEvent.setup();
             const mockToast = vi.fn();
             vi.mocked(toast).mockImplementation(mockToast);
 
-            // Mock da mutation para chamar onError imediatamente
             mockMutate.mockImplementation((_, options) => {
-                // Simula um erro chamando onError sincronamente
                 if (options?.onError) {
                     options.onError(new Error("Erro de teste"));
                 }
@@ -531,16 +529,18 @@ describe("InformacoesAdicionais", () => {
             renderComponent();
             await preencherFormularioCompleto(user);
 
-            const proximoButton = screen.getByRole("button", { name: /Próximo/i });
+            const proximoButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
             await user.click(proximoButton);
 
-            // Remove o waitFor ou ajusta para uma condição mais específica
             expect(mockToast).toHaveBeenCalledWith({
                 title: "Erro ao atualizar informações adicionais",
-                description: "Não foi possível atualizar os dados. Tente novamente.",
+                description:
+                    "Não foi possível atualizar os dados. Tente novamente.",
                 variant: "error",
             });
-        }, 15000); // Reduz o timeout também
+        });
 
         it("deve converter corretamente complemento vazio para string vazia", async () => {
             const user = userEvent.setup();
@@ -567,7 +567,7 @@ describe("InformacoesAdicionais", () => {
                     expect.any(Object)
                 );
             });
-        }, 150000);
+        });
 
         it("deve exibir toast de erro quando response.success é false", async () => {
             const user = userEvent.setup();
@@ -597,7 +597,7 @@ describe("InformacoesAdicionais", () => {
                 });
                 expect(mockOnNext).not.toHaveBeenCalled();
             });
-        }, 150000);
+        });
 
         it("deve enviar strings vazias quando unidadeEducacional e dre são undefined", async () => {
             const user = userEvent.setup();
@@ -628,7 +628,9 @@ describe("InformacoesAdicionais", () => {
             renderComponent();
             await preencherFormularioCompleto(user);
 
-            const proximoButton = screen.getByRole("button", { name: /Próximo/i });
+            const proximoButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
             await user.click(proximoButton);
 
             // Espera a mutation ser chamada (mais confiável que waitFor)
@@ -691,7 +693,7 @@ describe("InformacoesAdicionais", () => {
                 expect(mockMutate).not.toHaveBeenCalled();
                 expect(mockOnNext).toHaveBeenCalled();
             });
-        }, 150000);
+        });
     });
 
     describe("Busca de CEP", () => {
@@ -908,7 +910,9 @@ describe("InformacoesAdicionais", () => {
             await user.type(screen.getByLabelText(/Cidade/i), "São Paulo");
             await user.type(screen.getByLabelText(/Bairro/i), "Bela Vista");
             await user.type(
-                screen.getByLabelText(/Como é a interação da pessoa agressora/i),
+                screen.getByLabelText(
+                    /Como é a interação da pessoa agressora/i
+                ),
                 "Boa interação"
             );
             await user.type(
@@ -969,16 +973,13 @@ describe("InformacoesAdicionais", () => {
             });
             await user.click(regularOptions.at(-1)!);
 
-            await waitFor(
-                async () => {
-                    const result = await ref.current?.submitForm();
-                    expect(result).toBe(true);
-                },
-                { timeout: 5000 }
-            );
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
 
             expect(mockMutate).toHaveBeenCalled();
-        }, 150000);
+        });
 
         it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
             const ref = React.createRef<InformacoesAdicionaisRef>();
