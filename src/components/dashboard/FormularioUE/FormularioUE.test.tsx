@@ -4,6 +4,15 @@ import { forwardRef } from "react";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
 import { FormularioUE } from "./FormularioUE";
 
+const mockRouterPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: mockRouterPush,
+        back: vi.fn(),
+    }),
+}));
+
 vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
     const Mock = forwardRef<
         HTMLDivElement,
@@ -108,6 +117,7 @@ describe("FormularioUE", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockStoreState.formData = {};
+        mockRouterPush.mockClear();
     });
 
     it("deve renderizar o Stepper", () => {

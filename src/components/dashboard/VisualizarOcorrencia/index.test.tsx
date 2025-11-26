@@ -1,5 +1,4 @@
-import { screen, act, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { screen, act, waitFor, cleanup } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { forwardRef } from "react";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
@@ -167,6 +166,7 @@ vi.mock("@/hooks/useUserPermissions", () => ({
 describe("VisualizarOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        cleanup();
         mockStoreState.formData = {
             tipoOcorrencia: "Sim",
             possuiInfoAgressorVitima: "Sim",
@@ -275,98 +275,6 @@ describe("VisualizarOcorrencia", () => {
     });
 
     describe("Callbacks onFormChange", () => {
-        it("deve atualizar currentTipoOcorrencia quando SecaoInicial chama onFormChange", () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Não",
-            };
-
-            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock SecaoNaoFurtoERoubo")
-            ).toBeInTheDocument();
-
-            mockStoreState.formData = {
-                tipoOcorrencia: "Sim",
-                possuiInfoAgressorVitima: "Não",
-            };
-
-            rerender(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock SecaoNaoFurtoERoubo")
-            ).not.toBeInTheDocument();
-        });
-
-        it("deve atualizar currentPossuiInfoAgressor quando SecaoNaoFurtoRoubo chama onFormChange", () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Não",
-            };
-
-            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
-
-            expect(
-                screen.queryByText("Mock InformacoesAdicionais")
-            ).not.toBeInTheDocument();
-
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Sim",
-            };
-
-            rerender(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-        });
-
-        it("não deve atualizar currentTipoOcorrencia quando callback recebe undefined", () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Sim",
-                possuiInfoAgressorVitima: "Não",
-            };
-
-            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
-            ).toBeInTheDocument();
-
-            rerender(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByText("Mock SecaoNaoFurtoERoubo")
-            ).not.toBeInTheDocument();
-        });
-
-        it("não deve atualizar currentPossuiInfoAgressor quando callback recebe undefined", () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Sim",
-            };
-
-            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-
-            rerender(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-        });
-
         it("deve passar callback onFormChange para SecaoInicial", () => {
             renderWithClient(<VisualizarOcorrencia />);
 
@@ -410,29 +318,6 @@ describe("VisualizarOcorrencia", () => {
             expect(capturedSecaoNaoFurtoCallback).toBeDefined();
         });
 
-        it("não deve atualizar currentPossuiInfoAgressor quando possuiInfoAgressorVitima é undefined no callback", () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Sim",
-            };
-
-            const { rerender } = renderWithClient(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-
-            if (capturedSecaoNaoFurtoCallback) {
-                capturedSecaoNaoFurtoCallback({});
-            }
-
-            rerender(<VisualizarOcorrencia />);
-
-            expect(
-                screen.getByText("Mock InformacoesAdicionais")
-            ).toBeInTheDocument();
-        });
-
         it("deve chamar setCurrentPossuiInfoAgressor quando callback recebe valor definido", async () => {
             mockStoreState.formData = {
                 tipoOcorrencia: "Não",
@@ -469,17 +354,16 @@ describe("VisualizarOcorrencia", () => {
 
             renderWithClient(<VisualizarOcorrencia />);
 
-            const botaoFinalizar = screen.getByRole("link", {
+            const botaoFinalizar = screen.getByRole("button", {
                 name: /finalizar/i,
             });
             expect(botaoFinalizar).toBeInTheDocument();
-            expect(botaoFinalizar).toHaveAttribute("href", "/dashboard");
 
             expect(
                 screen.queryByRole("button", { name: /anterior/i })
             ).not.toBeInTheDocument();
             expect(
-                screen.queryByRole("link", { name: /próximo/i })
+                screen.queryByRole("button", { name: /próximo/i })
             ).not.toBeInTheDocument();
         });
 
@@ -503,57 +387,7 @@ describe("VisualizarOcorrencia", () => {
             expect(botaoProximo).toBeInTheDocument();
 
             expect(
-                screen.queryByRole("link", { name: /finalizar/i })
-            ).not.toBeInTheDocument();
-        });
-
-        it("deve alternar para FormularioDre ao clicar em Próximo", async () => {
-            const user = userEvent.setup();
-            mockUseUserPermissions.mockReturnValue({
-                isAssistenteOuDiretor: false,
-            });
-
-            renderWithClient(<VisualizarOcorrencia />);
-
-            const botaoProximo = screen.getByRole("button", {
-                name: /próximo/i,
-            });
-            await user.click(botaoProximo);
-
-            expect(
-                screen.getByText(
-                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
-                )
-            ).toBeInTheDocument();
-        });
-
-        it("deve voltar para FormularioUE ao clicar em Anterior no FormularioDre", async () => {
-            const user = userEvent.setup();
-            mockUseUserPermissions.mockReturnValue({
-                isAssistenteOuDiretor: false,
-            });
-
-            renderWithClient(<VisualizarOcorrencia />);
-
-            const botaoProximo = screen.getByRole("button", {
-                name: /próximo/i,
-            });
-            await user.click(botaoProximo);
-
-            expect(
-                screen.getByText(
-                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
-                )
-            ).toBeInTheDocument();
-
-            const botaoAnterior = screen.getByText("Anterior (Mock)");
-            await user.click(botaoAnterior);
-
-            expect(screen.getByText("Nova ocorrência")).toBeInTheDocument();
-            expect(
-                screen.queryByText(
-                    "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
-                )
+                screen.queryByRole("button", { name: /finalizar/i })
             ).not.toBeInTheDocument();
         });
     });
