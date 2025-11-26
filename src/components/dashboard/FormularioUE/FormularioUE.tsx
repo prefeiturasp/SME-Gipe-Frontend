@@ -22,7 +22,10 @@ import { Button } from "@/components/ui/button";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import PageHeader from "../PageHeader/PageHeader";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { toast } from "@/components/ui/headless-toast";
+import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
+import { useRouter } from "next/navigation";
 
 export type FormularioUEProps = {
     readonly onNext?: () => void;
@@ -36,6 +39,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
+    const router = useRouter();
+
+    const { mutate: atualizarFormularioCompletoUE, isPending } =
+        useAtualizarFormularioCompletoUE();
 
     // Refs para acessar os métodos dos formulários
     const secaoInicialRef = useRef<SecaoInicialRef>(null);
@@ -111,6 +118,248 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         });
     };
 
+    const handleSaveAll = async () => {
+        try {
+            // Coleta dados de todos os formulários sem fazer submit individual
+            const secaoInicialData = secaoInicialRef.current?.getFormData();
+
+            // Valida a Seção Inicial
+            const secaoInicialValid = await secaoInicialRef.current
+                ?.getFormInstance()
+                .trigger();
+            if (!secaoInicialValid) {
+                toast({
+                    title: "Erro ao validar Seção Inicial",
+                    description:
+                        "Verifique os campos da Seção Inicial e tente novamente.",
+                    variant: "error",
+                });
+                return;
+            }
+
+            // Coleta dados da seção de furto/roubo ou não furto/roubo
+            let secaoTipoData;
+            let secaoTipoValid;
+
+            if (isFurtoRoubo) {
+                secaoTipoData = secaoFurtoERouboRef.current?.getFormData();
+                secaoTipoValid = await secaoFurtoERouboRef.current
+                    ?.getFormInstance()
+                    .trigger();
+                if (!secaoTipoValid) {
+                    toast({
+                        title: "Erro ao validar Formulário Patrimonial",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            } else {
+                secaoTipoData = secaoNaoFurtoERouboRef.current?.getFormData();
+                secaoTipoValid = await secaoNaoFurtoERouboRef.current
+                    ?.getFormInstance()
+                    .trigger();
+                if (!secaoTipoValid) {
+                    toast({
+                        title: "Erro ao validar Formulário Geral",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            }
+
+            // Coleta dados das Informações Adicionais (se houver)
+            let informacoesAdicionaisData;
+            if (hasAgressorVitimaInfo) {
+                informacoesAdicionaisData =
+                    informacoesAdicionaisRef.current?.getFormData();
+                const infoAdicionaisValid =
+                    await informacoesAdicionaisRef.current
+                        ?.getFormInstance()
+                        .trigger();
+                if (!infoAdicionaisValid) {
+                    toast({
+                        title: "Erro ao validar Informações Adicionais",
+                        description: "Verifique os campos e tente novamente.",
+                        variant: "error",
+                    });
+                    return;
+                }
+            }
+
+            // Coleta dados da Seção Final
+            const secaoFinalData = secaoFinalRef.current?.getFormData();
+            const secaoFinalValid = await secaoFinalRef.current
+                ?.getFormInstance()
+                .trigger();
+            if (!secaoFinalValid) {
+                toast({
+                    title: "Erro ao validar Seção Final",
+                    description: "Verifique os campos e tente novamente.",
+                    variant: "error",
+                });
+                return;
+            }
+
+            // Mapeia os dados para o formato esperado pelo backend
+            const temInfoAgressorVitima =
+                !isFurtoRoubo &&
+                (secaoTipoData as { possuiInfoAgressorVitima?: string })
+                    ?.possuiInfoAgressorVitima === "Sim";
+
+            // Mapeia valores de comunicação com segurança pública
+            const comunicacaoMap: Record<string, string> = {
+                "Sim, com a GCM": "sim_gcm",
+                "Sim, com a PM": "sim_pm",
+                Não: "nao",
+            };
+
+            // Mapeia valores de protocolo acionado
+            const protocoloMap: Record<string, string> = {
+                Ameaça: "ameaca",
+                Alerta: "alerta",
+                "Apenas para registro/não se aplica": "registro",
+            };
+
+            const body: FormularioCompletoUEBody = {
+                // Seção Inicial
+                data_ocorrencia: `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}:00.000Z`,
+                unidade_codigo_eol: secaoInicialData?.unidadeEducacional || "",
+                dre_codigo_eol: secaoInicialData?.dre || "",
+                sobre_furto_roubo_invasao_depredacao:
+                    secaoInicialData?.tipoOcorrencia === "Sim",
+
+                // Seção Furto/Roubo ou Não Furto/Roubo (campos compartilhados)
+                tipos_ocorrencia: secaoTipoData?.tiposOcorrencia || [],
+                descricao_ocorrencia: secaoTipoData?.descricao || "",
+                smart_sampa_situacao: isFurtoRoubo
+                    ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
+                      "nao_faz_parte"
+                    : "nao_faz_parte",
+                envolvido: isFurtoRoubo
+                    ? ""
+                    : (secaoTipoData as { envolvidos?: string })?.envolvidos ||
+                      "",
+                tem_info_agressor_ou_vitima: temInfoAgressorVitima
+                    ? "sim"
+                    : "nao",
+
+                // Seção Final
+                declarante: secaoFinalData?.declarante || "",
+                comunicacao_seguranca_publica:
+                    comunicacaoMap[
+                        secaoFinalData?.comunicacaoSeguranca || ""
+                    ] || "nao",
+                protocolo_acionado:
+                    protocoloMap[secaoFinalData?.protocoloAcionado || ""] ||
+                    "registro",
+
+                // Informações Adicionais (opcionais)
+                ...(informacoesAdicionaisData && {
+                    nome_pessoa_agressora:
+                        informacoesAdicionaisData.nomeAgressor,
+                    idade_pessoa_agressora: Number(
+                        informacoesAdicionaisData.idadeAgressor
+                    ),
+                    motivacao_ocorrencia:
+                        informacoesAdicionaisData.motivoOcorrencia,
+                    genero_pessoa_agressora: informacoesAdicionaisData.genero,
+                    grupo_etnico_racial:
+                        informacoesAdicionaisData.grupoEtnicoRacial,
+                    etapa_escolar: informacoesAdicionaisData.etapaEscolar,
+                    frequencia_escolar:
+                        informacoesAdicionaisData.frequenciaEscolar,
+                    interacao_ambiente_escolar:
+                        informacoesAdicionaisData.interacaoAmbienteEscolar,
+                    redes_protecao_acompanhamento:
+                        informacoesAdicionaisData.redesProtecao,
+                    notificado_conselho_tutelar:
+                        informacoesAdicionaisData.notificadoConselhoTutelar ===
+                        "Sim",
+                    acompanhado_naapa:
+                        informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
+                    cep: informacoesAdicionaisData.cep,
+                    logradouro: informacoesAdicionaisData.logradouro,
+                    numero_residencia: informacoesAdicionaisData.numero,
+                    complemento: informacoesAdicionaisData.complemento,
+                    bairro: informacoesAdicionaisData.bairro,
+                    cidade: informacoesAdicionaisData.cidade,
+                    estado: informacoesAdicionaisData.estado,
+                }),
+            };
+
+            // Valida que ocorrenciaUuid não é null
+            if (!ocorrenciaUuid) {
+                toast({
+                    title: "Erro",
+                    description: "UUID da ocorrência não encontrado.",
+                    variant: "error",
+                });
+                return;
+            }
+
+            // Envia para o backend
+            atualizarFormularioCompletoUE(
+                {
+                    uuid: ocorrenciaUuid,
+                    body,
+                },
+                {
+                    onSuccess: (result) => {
+                        if (result.success) {
+                            toast({
+                                title: "Sucesso",
+                                description:
+                                    "Formulário atualizado com sucesso!",
+                                variant: "success",
+                            });
+
+                            // Invalida queries para atualizar dados
+                            queryClient
+                                .invalidateQueries({
+                                    queryKey: ["ocorrencia", ocorrenciaUuid],
+                                })
+                                .then(() => {
+                                    // Chama onNext se fornecido, senão redireciona para dashboard
+                                    if (onNext) {
+                                        onNext();
+                                    } else {
+                                        router.push("/dashboard");
+                                    }
+                                });
+                        } else {
+                            toast({
+                                title: "Erro ao atualizar",
+                                description:
+                                    result.error ||
+                                    "Ocorreu um erro ao atualizar o formulário.",
+                                variant: "error",
+                            });
+                        }
+                    },
+                    onError: (err) => {
+                        console.error("Erro ao atualizar:", err);
+                        toast({
+                            title: "Erro ao atualizar",
+                            description:
+                                "Ocorreu um erro ao atualizar o formulário.",
+                            variant: "error",
+                        });
+                    },
+                }
+            );
+        } catch (err) {
+            console.error("Erro ao validar:", err);
+            toast({
+                title: "Erro ao validar",
+                description:
+                    "Ocorreu um erro ao validar os formulários. Tente novamente.",
+                variant: "error",
+            });
+        }
+    };
+
     return (
         <>
             <PageHeader
@@ -181,8 +430,12 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
 
                     <div className="flex justify-end gap-2 mt-4">
                         {isAssistenteOuDiretor ? (
-                            <Button asChild variant="submit">
-                                <Link href="/dashboard">Finalizar</Link>
+                            <Button
+                                variant="submit"
+                                onClick={() => handleSaveAll()}
+                                disabled={isPending}
+                            >
+                                {isPending ? "Salvando..." : "Finalizar"}
                             </Button>
                         ) : (
                             <>
@@ -198,9 +451,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                     size="sm"
                                     type="button"
                                     variant="submit"
-                                    onClick={onNext}
+                                    onClick={() => handleSaveAll()}
+                                    disabled={isPending}
                                 >
-                                    Próximo
+                                    {isPending ? "Salvando..." : "Próximo"}
                                 </Button>
                             </>
                         )}
