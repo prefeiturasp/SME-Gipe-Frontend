@@ -22,7 +22,7 @@ describe("getTiposDocumentoAction", () => {
             get: vi.fn().mockReturnValue(undefined),
         });
 
-        const result = await getTiposDocumentoAction();
+        const result = await getTiposDocumentoAction("diretor");
 
         expect(result).toEqual({
             success: false,
@@ -75,7 +75,7 @@ describe("getTiposDocumentoAction", () => {
 
         mockApiGet.mockRejectedValue(axiosError);
 
-        const result = await getTiposDocumentoAction();
+        const result = await getTiposDocumentoAction("diretor");
 
         expect(result).toEqual({
             success: false,
@@ -101,7 +101,7 @@ describe("getTiposDocumentoAction", () => {
 
         mockApiGet.mockRejectedValue(axiosError);
 
-        const result = await getTiposDocumentoAction();
+        const result = await getTiposDocumentoAction("diretor");
 
         expect(result).toEqual({
             success: false,
@@ -127,7 +127,7 @@ describe("getTiposDocumentoAction", () => {
 
         mockApiGet.mockRejectedValue(axiosError);
 
-        const result = await getTiposDocumentoAction();
+        const result = await getTiposDocumentoAction("diretor");
 
         expect(result).toEqual({
             success: false,
@@ -153,7 +153,7 @@ describe("getTiposDocumentoAction", () => {
 
         mockApiGet.mockRejectedValue(axiosError);
 
-        const result = await getTiposDocumentoAction();
+        const result = await getTiposDocumentoAction("diretor");
 
         expect(result).toEqual({
             success: false,
