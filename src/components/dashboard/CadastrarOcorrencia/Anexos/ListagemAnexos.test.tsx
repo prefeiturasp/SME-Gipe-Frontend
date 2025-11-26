@@ -1,7 +1,36 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { vi } from "vitest";
 import { ListagemAnexos } from "./ListagemAnexos";
 import { AnexoAPI } from "@/types/anexo";
+import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
+
+
+vi.mock("@/components/dashboard/CadastrarOcorrencia/Anexos/ModalExcluir/ModalExcluir", () => ({
+    ModalExcluir: vi.fn(({ open, onOpenChange, uuid }) => (
+        <div data-testid="modal-excluir">
+            {open && (
+                <>
+                    <p>Modal Aberto</p>
+                    <p>UUID: {uuid}</p>
+                    <button onClick={() => onOpenChange(false)}>Fechar Modal</button>
+                </>
+            )}
+        </div>
+    )),
+}));
+
+const mutateAsyncMock = vi.fn();
+vi.mock("@/hooks/useExcluirAnexo", () => ({
+    useExcluirAnexo: () => ({
+        mutateAsync: mutateAsyncMock,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: vi.fn(),
+}));
+
 
 describe("ListagemAnexos", () => {
     const anexoAPIMock: AnexoAPI = {
@@ -237,12 +266,49 @@ describe("ListagemAnexos", () => {
         });
         expect(excluirButtons).toHaveLength(2);
 
-        const nomes = [
-            screen.getByText("relatorio.pdf"),
-            screen.getByText("documento2.pdf"),
-        ];
-        for (const nome of nomes) {
-            expect(nome).toBeInTheDocument();
-        }
+        expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
+        expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
     });
+
+    it("abre o modal ao clicar em Excluir arquivo e envia o UUID correto", () => {
+    render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+    const button = screen.getByRole("button", { name: /Excluir arquivo/i });
+    fireEvent.click(button);
+
+    expect(ModalExcluir).toHaveBeenCalledWith(
+        expect.objectContaining({
+            open: true,
+            uuid: "api-uuid-1",
+        }),
+        {}
+    );
+
+    expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
+    expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
+    });
+
+    it("fecha o modal quando onOpenChange é acionado pelo modal", () => {
+        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+        const button = screen.getByRole("button", { name: /Excluir arquivo/i });
+        fireEvent.click(button);
+
+        const fechar = screen.getByRole("button", { name: /Fechar Modal/i });
+        fireEvent.click(fechar);
+
+        expect(ModalExcluir).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                open: false,
+            }),
+            {}
+        );
+    });
+
+    it("não renderiza o conteúdo do modal quando open=false", () => {
+        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+        expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
+    });
+
 });

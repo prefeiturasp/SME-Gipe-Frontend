@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Paperclip, Trash2 } from "lucide-react";
 import { AnexoAPI } from "@/types/anexo";
+import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
 
 type ListagemAnexosProps = {
     anexosAPI?: AnexoAPI[];
@@ -9,6 +11,9 @@ type ListagemAnexosProps = {
 export function ListagemAnexos({
     anexosAPI = [],
 }: Readonly<ListagemAnexosProps>) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+
     const formatarDataHora = (dataISO: string) => {
         const data = new Date(dataISO);
         const dia = String(data.getDate()).padStart(2, "0");
@@ -17,6 +22,11 @@ export function ListagemAnexos({
         const horas = String(data.getHours()).padStart(2, "0");
         const minutos = String(data.getMinutes()).padStart(2, "0");
         return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+    };
+
+    const abrirModal = (uuid: string) => {
+        setSelectedUuid(uuid);
+        setModalOpen(true);
     };
 
     if (anexosAPI.length === 0) {
@@ -28,6 +38,7 @@ export function ListagemAnexos({
             <p className="text-[14px] text-[#42474a] mb-5">
                 Estes são os documentos já anexados na ocorrência.
             </p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {anexosAPI.map((anexo) => (
                     <div
@@ -63,6 +74,7 @@ export function ListagemAnexos({
                                 variant="ghost"
                                 size="sm"
                                 className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
+                                onClick={() => abrirModal(anexo.uuid)}
                             >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Excluir arquivo
@@ -71,6 +83,12 @@ export function ListagemAnexos({
                     </div>
                 ))}
             </div>
+
+            <ModalExcluir
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                uuid={selectedUuid}
+            />
         </div>
     );
 }
