@@ -118,176 +118,161 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         });
     };
 
-    const handleSaveAll = async () => {
-        try {
-            // Coleta dados de todos os formulários sem fazer submit individual
-            const secaoInicialData = secaoInicialRef.current?.getFormData();
+    const validateAllForms = async () => {
+        // Valida a Seção Inicial
+        const secaoInicialValid = await secaoInicialRef.current
+            ?.getFormInstance()
+            .trigger();
 
-            // Valida a Seção Inicial
-            const secaoInicialValid = await secaoInicialRef.current
+        if (!secaoInicialValid) {
+            toast({
+                title: "Erro ao validar Seção Inicial",
+                description:
+                    "Verifique os campos da Seção Inicial e tente novamente.",
+                variant: "error",
+            });
+            return false;
+        }
+
+        // Valida seção de furto/roubo ou não furto/roubo
+        const secaoTipoValid = isFurtoRoubo
+            ? await secaoFurtoERouboRef.current?.getFormInstance().trigger()
+            : await secaoNaoFurtoERouboRef.current?.getFormInstance().trigger();
+
+        if (!secaoTipoValid) {
+            toast({
+                title: isFurtoRoubo
+                    ? "Erro ao validar Formulário Patrimonial"
+                    : "Erro ao validar Formulário Geral",
+                description: "Verifique os campos e tente novamente.",
+                variant: "error",
+            });
+            return false;
+        }
+
+        // Valida Informações Adicionais (se houver)
+        if (hasAgressorVitimaInfo && !isFurtoRoubo) {
+            const infoAdicionaisValid = await informacoesAdicionaisRef.current
                 ?.getFormInstance()
                 .trigger();
-            if (!secaoInicialValid) {
+            if (!infoAdicionaisValid) {
                 toast({
-                    title: "Erro ao validar Seção Inicial",
-                    description:
-                        "Verifique os campos da Seção Inicial e tente novamente.",
-                    variant: "error",
-                });
-                return;
-            }
-
-            // Coleta dados da seção de furto/roubo ou não furto/roubo
-            let secaoTipoData;
-            let secaoTipoValid;
-
-            if (isFurtoRoubo) {
-                secaoTipoData = secaoFurtoERouboRef.current?.getFormData();
-                secaoTipoValid = await secaoFurtoERouboRef.current
-                    ?.getFormInstance()
-                    .trigger();
-                if (!secaoTipoValid) {
-                    toast({
-                        title: "Erro ao validar Formulário Patrimonial",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            } else {
-                secaoTipoData = secaoNaoFurtoERouboRef.current?.getFormData();
-                secaoTipoValid = await secaoNaoFurtoERouboRef.current
-                    ?.getFormInstance()
-                    .trigger();
-                if (!secaoTipoValid) {
-                    toast({
-                        title: "Erro ao validar Formulário Geral",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            }
-
-            // Coleta dados das Informações Adicionais (se houver)
-            let informacoesAdicionaisData;
-            if (hasAgressorVitimaInfo) {
-                informacoesAdicionaisData =
-                    informacoesAdicionaisRef.current?.getFormData();
-                const infoAdicionaisValid =
-                    await informacoesAdicionaisRef.current
-                        ?.getFormInstance()
-                        .trigger();
-                if (!infoAdicionaisValid) {
-                    toast({
-                        title: "Erro ao validar Informações Adicionais",
-                        description: "Verifique os campos e tente novamente.",
-                        variant: "error",
-                    });
-                    return;
-                }
-            }
-
-            // Coleta dados da Seção Final
-            const secaoFinalData = secaoFinalRef.current?.getFormData();
-            const secaoFinalValid = await secaoFinalRef.current
-                ?.getFormInstance()
-                .trigger();
-            if (!secaoFinalValid) {
-                toast({
-                    title: "Erro ao validar Seção Final",
+                    title: "Erro ao validar Informações Adicionais",
                     description: "Verifique os campos e tente novamente.",
                     variant: "error",
                 });
-                return;
+                return false;
             }
+        }
 
-            // Mapeia os dados para o formato esperado pelo backend
-            const temInfoAgressorVitima =
-                !isFurtoRoubo &&
-                (secaoTipoData as { possuiInfoAgressorVitima?: string })
-                    ?.possuiInfoAgressorVitima === "Sim";
+        // Valida Seção Final
+        const secaoFinalValid = await secaoFinalRef.current
+            ?.getFormInstance()
+            .trigger();
+        if (!secaoFinalValid) {
+            toast({
+                title: "Erro ao validar Seção Final",
+                description: "Verifique os campos e tente novamente.",
+                variant: "error",
+            });
+            return false;
+        }
 
-            // Mapeia valores de comunicação com segurança pública
-            const comunicacaoMap: Record<string, string> = {
-                "Sim, com a GCM": "sim_gcm",
-                "Sim, com a PM": "sim_pm",
-                Não: "nao",
-            };
+        return true;
+    };
 
-            // Mapeia valores de protocolo acionado
-            const protocoloMap: Record<string, string> = {
-                Ameaça: "ameaca",
-                Alerta: "alerta",
-                "Apenas para registro/não se aplica": "registro",
-            };
+    const buildRequestBody = (): FormularioCompletoUEBody => {
+        const secaoInicialData = secaoInicialRef.current?.getFormData();
+        const secaoTipoData = isFurtoRoubo
+            ? secaoFurtoERouboRef.current?.getFormData()
+            : secaoNaoFurtoERouboRef.current?.getFormData();
+        const informacoesAdicionaisData =
+            hasAgressorVitimaInfo && !isFurtoRoubo
+                ? informacoesAdicionaisRef.current?.getFormData()
+                : undefined;
+        const secaoFinalData = secaoFinalRef.current?.getFormData();
 
-            const body: FormularioCompletoUEBody = {
-                // Seção Inicial
-                data_ocorrencia: `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}:00.000Z`,
-                unidade_codigo_eol: secaoInicialData?.unidadeEducacional || "",
-                dre_codigo_eol: secaoInicialData?.dre || "",
-                sobre_furto_roubo_invasao_depredacao:
-                    secaoInicialData?.tipoOcorrencia === "Sim",
+        const temInfoAgressorVitima =
+            !isFurtoRoubo &&
+            (secaoTipoData as { possuiInfoAgressorVitima?: string })
+                ?.possuiInfoAgressorVitima === "Sim";
 
-                // Seção Furto/Roubo ou Não Furto/Roubo (campos compartilhados)
-                tipos_ocorrencia: secaoTipoData?.tiposOcorrencia || [],
-                descricao_ocorrencia: secaoTipoData?.descricao || "",
-                smart_sampa_situacao: isFurtoRoubo
-                    ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
-                      "nao_faz_parte"
-                    : "nao_faz_parte",
-                envolvido: isFurtoRoubo
-                    ? ""
-                    : (secaoTipoData as { envolvidos?: string })?.envolvidos ||
-                      "",
-                tem_info_agressor_ou_vitima: temInfoAgressorVitima
-                    ? "sim"
-                    : "nao",
+        const comunicacaoMap: Record<string, string> = {
+            "Sim, com a GCM": "sim_gcm",
+            "Sim, com a PM": "sim_pm",
+            Não: "nao",
+        };
 
-                // Seção Final
-                declarante: secaoFinalData?.declarante || "",
-                comunicacao_seguranca_publica:
-                    comunicacaoMap[
-                        secaoFinalData?.comunicacaoSeguranca || ""
-                    ] || "nao",
-                protocolo_acionado:
-                    protocoloMap[secaoFinalData?.protocoloAcionado || ""] ||
-                    "registro",
+        const protocoloMap: Record<string, string> = {
+            Ameaça: "ameaca",
+            Alerta: "alerta",
+            "Apenas para registro/não se aplica": "registro",
+        };
 
-                // Informações Adicionais (opcionais)
-                ...(informacoesAdicionaisData && {
-                    nome_pessoa_agressora:
-                        informacoesAdicionaisData.nomeAgressor,
-                    idade_pessoa_agressora: Number(
-                        informacoesAdicionaisData.idadeAgressor
-                    ),
-                    motivacao_ocorrencia:
-                        informacoesAdicionaisData.motivoOcorrencia,
-                    genero_pessoa_agressora: informacoesAdicionaisData.genero,
-                    grupo_etnico_racial:
-                        informacoesAdicionaisData.grupoEtnicoRacial,
-                    etapa_escolar: informacoesAdicionaisData.etapaEscolar,
-                    frequencia_escolar:
-                        informacoesAdicionaisData.frequenciaEscolar,
-                    interacao_ambiente_escolar:
-                        informacoesAdicionaisData.interacaoAmbienteEscolar,
-                    redes_protecao_acompanhamento:
-                        informacoesAdicionaisData.redesProtecao,
-                    notificado_conselho_tutelar:
-                        informacoesAdicionaisData.notificadoConselhoTutelar ===
-                        "Sim",
-                    acompanhado_naapa:
-                        informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
-                    cep: informacoesAdicionaisData.cep,
-                    logradouro: informacoesAdicionaisData.logradouro,
-                    numero_residencia: informacoesAdicionaisData.numero,
-                    complemento: informacoesAdicionaisData.complemento,
-                    bairro: informacoesAdicionaisData.bairro,
-                    cidade: informacoesAdicionaisData.cidade,
-                    estado: informacoesAdicionaisData.estado,
-                }),
-            };
+        const dataHoraOcorrencia = new Date(
+            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`
+        ).toISOString();
+
+        return {
+            data_ocorrencia: dataHoraOcorrencia,
+            unidade_codigo_eol: secaoInicialData?.unidadeEducacional || "",
+            dre_codigo_eol: secaoInicialData?.dre || "",
+            sobre_furto_roubo_invasao_depredacao:
+                secaoInicialData?.tipoOcorrencia === "Sim",
+            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia || [],
+            descricao_ocorrencia: secaoTipoData?.descricao || "",
+            smart_sampa_situacao: isFurtoRoubo
+                ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
+                  "nao_faz_parte"
+                : "nao_faz_parte",
+            envolvido: isFurtoRoubo
+                ? ""
+                : (secaoTipoData as { envolvidos?: string })?.envolvidos || "",
+            tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
+            declarante: secaoFinalData?.declarante || "",
+            comunicacao_seguranca_publica:
+                comunicacaoMap[secaoFinalData?.comunicacaoSeguranca || ""] ||
+                "nao",
+            protocolo_acionado:
+                protocoloMap[secaoFinalData?.protocoloAcionado || ""] ||
+                "registro",
+            ...(informacoesAdicionaisData && {
+                nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,
+                idade_pessoa_agressora: Number(
+                    informacoesAdicionaisData.idadeAgressor
+                ),
+                motivacao_ocorrencia:
+                    informacoesAdicionaisData.motivoOcorrencia,
+                genero_pessoa_agressora: informacoesAdicionaisData.genero,
+                grupo_etnico_racial:
+                    informacoesAdicionaisData.grupoEtnicoRacial,
+                etapa_escolar: informacoesAdicionaisData.etapaEscolar,
+                frequencia_escolar: informacoesAdicionaisData.frequenciaEscolar,
+                interacao_ambiente_escolar:
+                    informacoesAdicionaisData.interacaoAmbienteEscolar,
+                redes_protecao_acompanhamento:
+                    informacoesAdicionaisData.redesProtecao,
+                notificado_conselho_tutelar:
+                    informacoesAdicionaisData.notificadoConselhoTutelar ===
+                    "Sim",
+                acompanhado_naapa:
+                    informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
+                cep: informacoesAdicionaisData.cep,
+                logradouro: informacoesAdicionaisData.logradouro,
+                numero_residencia: informacoesAdicionaisData.numero,
+                complemento: informacoesAdicionaisData.complemento,
+                bairro: informacoesAdicionaisData.bairro,
+                cidade: informacoesAdicionaisData.cidade,
+                estado: informacoesAdicionaisData.estado,
+            }),
+        };
+    };
+
+    const handleSaveAll = async () => {
+        try {
+            // Valida todos os formulários
+            const isValid = await validateAllForms();
+            if (!isValid) return;
 
             // Valida que ocorrenciaUuid não é null
             if (!ocorrenciaUuid) {
@@ -299,6 +284,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 return;
             }
 
+            // Monta o body da requisição
+            const body = buildRequestBody();
+
             // Envia para o backend
             atualizarFormularioCompletoUE(
                 {
@@ -308,13 +296,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 {
                     onSuccess: (result) => {
                         if (result.success) {
-                            toast({
-                                title: "Sucesso",
-                                description:
-                                    "Formulário atualizado com sucesso!",
-                                variant: "success",
-                            });
-
                             // Invalida queries para atualizar dados
                             queryClient
                                 .invalidateQueries({
