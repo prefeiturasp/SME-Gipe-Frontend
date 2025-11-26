@@ -2,6 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { DetalhamentoDre } from "./index";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 
 const mockRouterBack = vi.fn();
 
@@ -20,13 +22,54 @@ vi.mock("../../CadastrarOcorrencia/Anexos", () => ({
     default: vi.fn(() => <div data-testid="mock-anexos">Mock Anexos</div>),
 }));
 
+const mockToast = vi.fn();
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: (params: unknown) => mockToast(params),
+}));
+
+const mockAtualizarOcorrenciaDre = vi.fn();
+vi.mock("@/hooks/useAtualizarOcorrenciaDre", () => ({
+    useAtualizarOcorrenciaDre: () => ({
+        mutate: mockAtualizarOcorrenciaDre,
+    }),
+}));
+
+const mockSetFormData = vi.fn();
+const mockFormData = {
+    unidadeEducacional: "123456",
+    dre: "654321",
+};
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: () => ({
+        formData: mockFormData,
+        setFormData: mockSetFormData,
+        ocorrenciaUuid: "test-uuid-123",
+    }),
+}));
+
 describe("DetalhamentoDre", () => {
+    let queryClient: QueryClient;
+
     beforeEach(() => {
         vi.clearAllMocks();
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+                mutations: { retry: false },
+            },
+        });
     });
 
+    const renderComponent = (onPrevious?: () => void) =>
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoDre onPrevious={onPrevious} />
+            </QueryClientProvider>
+        );
+
     it("deve renderizar o título 'Continuação da ocorrência'", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(
             screen.getByRole("heading", { name: /continuação da ocorrência/i })
@@ -34,7 +77,7 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve renderizar todos os campos de radio button", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(
             screen.getByText(
@@ -66,7 +109,7 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve renderizar todos os campos de textarea", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(
             screen.getByText(
@@ -94,13 +137,13 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve renderizar o componente Anexos", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(screen.getByTestId("mock-anexos")).toBeInTheDocument();
     });
 
     it("deve renderizar os botões Anterior e Salvar informações", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(
             screen.getByRole("button", { name: /anterior/i })
@@ -111,7 +154,7 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve ter o botão Salvar informações desabilitado inicialmente", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
             name: /salvar informações/i,
@@ -122,7 +165,9 @@ describe("DetalhamentoDre", () => {
     it("deve chamar onPrevious ao clicar no botão Anterior", async () => {
         const user = userEvent.setup();
         const mockOnPrevious = vi.fn();
-        render(<DetalhamentoDre onPrevious={mockOnPrevious} />);
+
+
+        renderComponent(mockOnPrevious);
 
         const botaoAnterior = screen.getByRole("button", { name: /anterior/i });
         await user.click(botaoAnterior);
@@ -132,7 +177,7 @@ describe("DetalhamentoDre", () => {
 
     it("deve habilitar o botão Salvar quando todos os campos obrigatórios forem preenchidos com 'Não'", async () => {
         const user = userEvent.setup();
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
             name: /salvar informações/i,
@@ -154,28 +199,28 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve ter 5 grupos de radio buttons (cada um com Sim/Não)", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const radios = screen.getAllByRole("radio");
         expect(radios).toHaveLength(10);
     });
 
     it("deve ter 4 campos de textarea", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const textareas = screen.getAllByRole("textbox");
         expect(textareas).toHaveLength(4);
     });
 
     it("deve renderizar o formulário dentro de um componente Form", () => {
-        const { container } = render(<DetalhamentoDre />);
+        const { container } = renderComponent();
 
         const form = container.querySelector("form");
         expect(form).toBeInTheDocument();
     });
 
     it("deve ter o título com estilo correto", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const titulo = screen.getByRole("heading", {
             name: /continuação da ocorrência/i,
@@ -190,7 +235,7 @@ describe("DetalhamentoDre", () => {
     });
 
     it("deve organizar os campos em 3 QuadroBranco distintos", () => {
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         expect(
             screen.getByText(/acionamento da secretaria de seguranças pública/i)
@@ -205,7 +250,7 @@ describe("DetalhamentoDre", () => {
 
     it("deve manter a estrutura de validação condicional dos textareas", async () => {
         const user = userEvent.setup();
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const radios = screen.getAllByRole("radio");
 
@@ -225,7 +270,7 @@ describe("DetalhamentoDre", () => {
 
     it("deve exigir preenchimento de textarea quando radio é 'Sim'", async () => {
         const user = userEvent.setup();
-        render(<DetalhamentoDre />);
+        renderComponent();
 
         const radios = screen.getAllByRole("radio");
 
@@ -250,5 +295,192 @@ describe("DetalhamentoDre", () => {
         await waitFor(() => {
             expect(botaoSalvar).not.toBeDisabled();
         });
+    });
+
+    it("deve chamar a mutation com os dados corretos ao submeter o formulário com sucesso", async () => {
+        const user = userEvent.setup();
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+
+        await user.click(radios[0]);
+        await user.click(radios[2]);
+        await user.click(radios[5]);
+        await user.click(radios[6]);
+        await user.click(radios[9]);
+
+        const textareas = screen.getAllByRole("textbox");
+        await user.type(textareas[0], "Info STS");
+        await user.type(textareas[2], "Info Supervisão");
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalledWith(
+                {
+                    uuid: "test-uuid-123",
+                    body: {
+                        unidade_codigo_eol: "123456",
+                        dre_codigo_eol: "654321",
+                        acionamento_seguranca_publica: true,
+                        interlocucao_sts: true,
+                        info_complementar_sts: "Info STS",
+                        interlocucao_cpca: false,
+                        info_complementar_cpca: "",
+                        interlocucao_supervisao_escolar: true,
+                        info_complementar_supervisao_escolar: "Info Supervisão",
+                        interlocucao_naapa: false,
+                        info_complementar_naapa: "",
+                    },
+                },
+                expect.any(Object)
+            );
+        });
+
+        expect(mockSetFormData).toHaveBeenCalled();
+    });    it("deve exibir toast de erro quando a API retorna sucesso falso", async () => {
+        const user = userEvent.setup();
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({
+                success: false,
+                error: "Erro ao processar requisição"
+            });
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência DRE",
+                description: "Erro ao processar requisição",
+                variant: "error",
+            });
+        });
+    });
+
+    it("deve exibir toast de erro quando a mutation falha", async () => {
+        const user = userEvent.setup();
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onError();
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência DRE",
+                description: "Não foi possível atualizar os dados. Tente novamente.",
+                variant: "error",
+            });
+        });
+    });
+
+    it("deve salvar os dados no store mesmo quando há erro na API", async () => {
+        const user = userEvent.setup();
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onError();
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockSetFormData).toHaveBeenCalledWith({
+                acionamentoSegurancaPublica: "Não",
+                interlocucaoSTS: "Não",
+                informacoesComplementaresSTS: "",
+                interlocucaoCPCA: "Não",
+                informacoesComplementaresCPCA: "",
+                interlocucaoSupervisaoEscolar: "Não",
+                informacoesComplementaresSupervisaoEscolar: "",
+                interlocucaoNAAPA: "Não",
+                informacoesComplementaresNAAPA: "",
+            });
+        });
+    });
+
+    it("deve salvar dados do formulário no store ao clicar em Anterior", async () => {
+        const user = userEvent.setup();
+        const mockOnPrevious = vi.fn();
+
+        renderComponent(mockOnPrevious);
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[0]);
+
+        const botaoAnterior = screen.getByRole("button", { name: /anterior/i });
+        await user.click(botaoAnterior);
+
+        expect(mockSetFormData).toHaveBeenCalled();
+        expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 });
