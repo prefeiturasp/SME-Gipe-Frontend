@@ -10,13 +10,17 @@ import { formSchema, FormularioDreData } from "./schema";
 import { RadioForm } from "./RadioForm";
 import { TextareaForm } from "./TextareaForm";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
+import { toast } from "@/components/ui/headless-toast";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
 };
 
 export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
+
+    const { mutate: atualizarOcorrenciaDre } = useAtualizarOcorrenciaDre();
 
     const form = useForm<FormularioDreData>({
         resolver: zodResolver(formSchema),
@@ -42,10 +46,61 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
 
     const { isValid } = form.formState;
 
+    const handleSubmit = async (data: FormularioDreData) => {
+        atualizarOcorrenciaDre(
+            {
+                uuid: ocorrenciaUuid!,
+                body: {
+                    unidade_codigo_eol: formData.unidadeEducacional!,
+                    dre_codigo_eol: formData.dre!,
+                    acionamento_seguranca_publica:
+                        data.acionamentoSegurancaPublica === "Sim",
+                    interlocucao_sts: data.interlocucaoSTS === "Sim",
+                    info_complementar_sts:
+                        data.informacoesComplementaresSTS || "",
+                    interlocucao_cpca: data.interlocucaoCPCA === "Sim",
+                    info_complementar_cpca:
+                        data.informacoesComplementaresCPCA || "",
+                    interlocucao_supervisao_escolar:
+                        data.interlocucaoSupervisaoEscolar === "Sim",
+                    info_complementar_supervisao_escolar:
+                        data.informacoesComplementaresSupervisaoEscolar || "",
+                    interlocucao_naapa: data.interlocucaoNAAPA === "Sim",
+                    info_complementar_naapa:
+                        data.informacoesComplementaresNAAPA || "",
+                },
+            },
+            {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Erro ao atualizar ocorrência DRE",
+                            description: response.error,
+                            variant: "error",
+                        });
+                        return;
+                    }
+
+                    setFormData(data);
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro ao atualizar ocorrência DRE",
+                        description:
+                            "Não foi possível atualizar os dados. Tente novamente.",
+                        variant: "error",
+                    });
+                },
+            }
+        );
+
+        setFormData(data);
+    };
+
     return (
         <>
             <Form {...form}>
-                <form>
+                <form onSubmit={form.handleSubmit(handleSubmit)}>
                     <QuadroBranco>
                         <h2 className="text-[20px] font-bold text-[#42474a] mb-2">
                             Continuação da ocorrência
@@ -131,7 +186,12 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                     >
                         Anterior
                     </Button>
-                    <Button type="submit" variant="submit" disabled={!isValid}>
+                    <Button
+                        onClick={() => handleSubmit(form.getValues())}
+                        type="submit"
+                        variant="submit"
+                        disabled={!isValid}
+                    >
                         Salvar informações
                     </Button>
                 </div>
