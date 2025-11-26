@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { TipoDocumentoAPI } from "@/types/documentos";
 
 export const getTiposDocumentoAction = async (
-    perfil: string = "diretor"
+    perfil: string
 ): Promise<
     | { success: true; data: TipoDocumentoAPI }
     | { success: false; error: string }
