@@ -8,9 +8,9 @@ import { DetalhamentoDre } from "./DetalhamentoDre";
 
 export default function FormularioDrePage({
     onPrevious,
-}: {
+}: Readonly<{
     onPrevious: () => void;
-}) {
+}>) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
         (state) => state.ocorrenciaUuid

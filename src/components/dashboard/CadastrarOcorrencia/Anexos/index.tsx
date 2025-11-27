@@ -36,7 +36,7 @@ export type AnexosProps = {
     onPrevious?: () => void;
     onNext?: () => void;
     showButtons?: boolean;
-    modoVisualizacao?: boolean
+    modoVisualizacao?: boolean;
 };
 
 export default function Anexos({
@@ -106,14 +106,17 @@ export default function Anexos({
         }
     };
 
-    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> = {
+    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
+        {
             "DIRETOR DE ESCOLA": "diretor",
             "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
             "PONTO FOCAL DRE": "dre",
             GIPE: "gipe",
         };
 
-        const perfilUsuario = (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) || "diretor";
+    const perfilUsuario =
+        (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
+        "diretor";
 
     const handleAnexarDocumento = async () => {
         if (!ocorrenciaUuid) {
@@ -175,7 +178,10 @@ export default function Anexos({
                 Anexos
             </h2>
 
-            <ListagemAnexos anexosAPI={anexosData?.results} modoVisualizacao={modoVisualizacao} />
+            <ListagemAnexos
+                anexosAPI={anexosData?.results}
+                modoVisualizacao={modoVisualizacao}
+            />
 
             <Form {...form}>
                 <form
@@ -202,7 +208,7 @@ export default function Anexos({
                                     render={() => (
                                         <FormItem>
                                             <FormLabel>
-                                                Selecione o arquivo
+                                                Selecione o arquivo*
                                             </FormLabel>
                                             <div className="flex">
                                                 <FormControl>
@@ -258,7 +264,7 @@ export default function Anexos({
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
                                             <FormLabel>
-                                                Tipo do documento
+                                                Tipo do documento*
                                             </FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
@@ -329,17 +335,17 @@ export default function Anexos({
 
                         {showButtons && (
                             <div className="flex justify-end gap-2 mt-4">
-                            <Button
-                                size="sm"
-                                variant="customOutline"
-                                type="button"
-                                onClick={() => {
-                                    setFormData(form.getValues());
+                                <Button
+                                    size="sm"
+                                    variant="customOutline"
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData(form.getValues());
                                         onPrevious?.();
-                                }}
-                            >
-                                Anterior
-                            </Button>
+                                    }}
+                                >
+                                    Anterior
+                                </Button>
                                 <Button
                                     size="sm"
                                     type="submit"
@@ -348,9 +354,9 @@ export default function Anexos({
                                         setOpenModalFinalizarEtapa(true)
                                     }
                                 >
-                                Finalizar
-                            </Button>
-                        </div>
+                                    Finalizar
+                                </Button>
+                            </div>
                         )}
                     </fieldset>
                 </form>
@@ -359,8 +365,8 @@ export default function Anexos({
                 open={openModalTipos}
                 onOpenChange={setOpenModalTipos}
             />
-            <ModalFinalizarEtapa 
-                open={openModalFinalizarEtapa} 
+            <ModalFinalizarEtapa
+                open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
                 perfilUsuario={perfilUsuario}
             />

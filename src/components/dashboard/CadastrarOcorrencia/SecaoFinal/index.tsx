@@ -164,7 +164,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Quem é o declarante?
+                                            Quem é o declarante?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
@@ -206,7 +206,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                     <FormItem>
                                         <FormLabel>
                                             Houve comunicação com a segurança
-                                            pública?
+                                            pública?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
@@ -239,7 +239,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Qual protocolo acionado?
+                                            Qual protocolo acionado?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}

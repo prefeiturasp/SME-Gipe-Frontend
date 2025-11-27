@@ -3,6 +3,7 @@ import EditarOcorrenciaPage from "./page";
 import { vi, type Mock } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
+import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 
@@ -16,6 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/hooks/useGetOcorrencia");
+vi.mock("@/hooks/useGetOcorrenciaDre");
 vi.mock("@/stores/useOcorrenciaFormStore");
 
 const queryClient = new QueryClient();
@@ -28,6 +30,7 @@ const renderWithClient = (ui: React.ReactElement) => {
 
 describe("EditarOcorrenciaPage", () => {
     const mockUseGetOcorrencia = useGetOcorrencia as Mock;
+    const mockUseGetOcorrenciaDre = useGetOcorrenciaDre as Mock;
     const mockUseOcorrenciaFormStore =
         useOcorrenciaFormStore as unknown as Mock;
 
@@ -66,6 +69,13 @@ describe("EditarOcorrenciaPage", () => {
                 criado_em: "2025-10-15T14:48:04.383569-03:00",
                 atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: undefined,
             isLoading: false,
             isError: false,
             error: null,
@@ -682,6 +692,30 @@ describe("EditarOcorrenciaPage", () => {
             error: null,
         });
 
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: {
+                id: 1,
+                uuid: "test-uuid-finalizado",
+                unidade_codigo_eol: "101010",
+                dre_codigo_eol: "109400",
+                status: "finalizado",
+                status_display: "Finalizado",
+                status_extra: "",
+                acionamento_seguranca_publica: false,
+                interlocucao_sts: false,
+                info_complementar_sts: "",
+                interlocucao_cpca: false,
+                info_complementar_cpca: "",
+                interlocucao_supervisao_escolar: false,
+                info_complementar_supervisao_escolar: "",
+                interlocucao_naapa: false,
+                info_complementar_naapa: "",
+            },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
         let currentFormData = {};
         const mockStoreState = {
             setFormData: vi.fn((data) => {
@@ -731,6 +765,30 @@ describe("EditarOcorrenciaPage", () => {
 
         mockUseGetOcorrencia.mockReturnValue({
             data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: {
+                id: 1,
+                uuid: "test-uuid-aguardando",
+                unidade_codigo_eol: "111111",
+                dre_codigo_eol: "109500",
+                status: "aguardando_validacao",
+                status_display: "Aguardando validação",
+                status_extra: "",
+                acionamento_seguranca_publica: false,
+                interlocucao_sts: false,
+                info_complementar_sts: "",
+                interlocucao_cpca: false,
+                info_complementar_cpca: "",
+                interlocucao_supervisao_escolar: false,
+                info_complementar_supervisao_escolar: "",
+                interlocucao_naapa: false,
+                info_complementar_naapa: "",
+            },
             isLoading: false,
             isError: false,
             error: null,
