@@ -303,7 +303,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 })
                                 .then(() => {
                                     // Chama onNext se fornecido, senão redireciona para dashboard
-                                    if (onNext) {
+                                    if (onNext && !isAssistenteOuDiretor) {
                                         onNext();
                                     } else {
                                         router.push("/dashboard");
