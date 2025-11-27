@@ -10,8 +10,7 @@ export async function getDREs() {
             params: { tipo: "DRE" },
         });
         return data;
-    } catch (error) {
-        console.error("Erro ao buscar DREs:", error);
+    } catch {
         throw new Error("Não foi possível buscar as DREs");
     }
 }
@@ -24,8 +23,7 @@ export async function getUEs(dre: string) {
             params: { tipo: "UE", dre },
         });
         return data;
-    } catch (error) {
-        console.error(`Erro ao buscar UEs da DRE ${dre}:`, error);
+    } catch {
         throw new Error("Não foi possível buscar as UEs");
     }
 }
@@ -36,8 +34,7 @@ export async function getTodasUEs() {
     try {
         const { data } = await axios.get(`${API_URL}/unidades`);
         return data;
-    } catch (error) {
-        console.error(`Erro ao buscar todas as UEs:`, error);
+    } catch {
         throw new Error("Não foi possível buscar todas as UEs");
     }
 }
