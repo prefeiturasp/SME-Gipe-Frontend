@@ -238,68 +238,57 @@ describe("Anexos", () => {
     });
 
     it("deve exibir alerta ao tentar anexar arquivo maior que 2MB", async () => {
-        const user = userEvent.setup();
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
+        renderWithProvider(<Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />);
 
         await waitFor(() => {
             expect(screen.getByText("Anexos")).toBeInTheDocument();
         });
 
-        const largeFile = new File(
-            ["x".repeat(3 * 1024 * 1024)],
-            "grande.pdf",
-            {
-                type: "application/pdf",
-            }
-        );
+        const largeFile = new File(["x".repeat(3 * 1024 * 1024)], "grande.pdf", {
+            type: "application/pdf",
+        });
 
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-        await user.upload(fileInput, largeFile);
+        const fileInput = document.querySelector("#fileInput") as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
         await waitFor(() => {
-            expect(mockAlert).toHaveBeenCalledWith(
-                "O arquivo deve ter no máximo 2MB"
+            expect(mockToast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "error",
+                    title: "Arquivo muito grande",
+                })
             );
         });
 
-        expect(
-            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
-        ).toHaveValue("");
+        expect(screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)).toHaveValue("");
     });
+
 
     it("deve exibir alerta ao tentar anexar arquivo de formato não suportado", async () => {
-        renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
-        );
+        renderWithProvider(<Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />);
 
         await waitFor(() => {
             expect(screen.getByText("Anexos")).toBeInTheDocument();
         });
 
-        const invalidFile = new File(["conteúdo"], "documento.txt", {
-            type: "text/plain",
+        const invalidFile = new File(["conteúdo"], "documento.exe", {
+            type: "application/octet-stream",
         });
 
-        const fileInput = document.querySelector(
-            "#fileInput"
-        ) as HTMLInputElement;
-
-        Object.defineProperty(fileInput, "files", {
-            value: [invalidFile],
-            writable: false,
-        });
-        fireEvent.change(fileInput);
+        const fileInput = document.querySelector("#fileInput") as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [invalidFile] } });
 
         await waitFor(() => {
-            expect(mockAlert).toHaveBeenCalledWith(
-                "Formato não suportado. Use PDF, JPG ou PNG"
+            expect(mockToast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    variant: "error",
+                    title: "Formato não suportado",
+                })
             );
         });
     });
+
+
 
     it("deve aceitar arquivo PDF válido", async () => {
         const user = userEvent.setup();
