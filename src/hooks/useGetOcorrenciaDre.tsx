@@ -1,7 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { obterOcorrenciaDre } from "@/actions/obter-ocorrencia-dre";
+import { OcorrenciaDreResponse } from "@/types/ocorrencia-dre";
 
-export function useGetOcorrenciaDre(uuid: string) {
+type UseGetOcorrenciaDreOptions = Omit<
+    UseQueryOptions<OcorrenciaDreResponse, Error>,
+    "queryKey" | "queryFn"
+>;
+
+export function useGetOcorrenciaDre(
+    uuid: string,
+    options?: UseGetOcorrenciaDreOptions
+) {
     return useQuery({
         queryKey: ["ocorrencia-dre", uuid],
         queryFn: async () => {
@@ -13,5 +22,6 @@ export function useGetOcorrenciaDre(uuid: string) {
         },
         enabled: !!uuid,
         staleTime: 1000 * 60 * 5,
+        ...options,
     });
 }
