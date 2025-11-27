@@ -72,14 +72,32 @@ export default function Anexos({
         if (file) {
             // Validar tamanho do arquivo (máx. 2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert("O arquivo deve ter no máximo 2MB");
+                toast({
+                    variant: "error",
+                    title: "Arquivo muito grande",
+                    description: "O arquivo deve ter no máximo 2MB.",
+                });
                 return;
             }
 
-            // Validar tipo do arquivo
-            const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+            const allowedTypes = [
+                "application/pdf",
+                "image/jpeg",
+                "image/png",
+                "image/jpg",
+                "video/mp4",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "text/plain",
+            ];
+
             if (!allowedTypes.includes(file.type)) {
-                alert("Formato não suportado. Use PDF, JPG ou PNG");
+                toast({
+                    variant: "error",
+                    title: "Formato não suportado",
+                    description: "Envie PDF, JPG, PNG, MP4, XLSX, DOC, DOCX ou TXT.",
+                });
                 return;
             }
 
@@ -203,7 +221,7 @@ export default function Anexos({
                                                     type="file"
                                                     id="fileInput"
                                                     className="hidden"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    accept=".pdf,.jpg,.jpeg,.png,.mp4,.xlsx,.doc,.docx,.txt"
                                                     onChange={handleFileSelect}
                                                 />
                                                 <Button
@@ -224,7 +242,7 @@ export default function Anexos({
                                                 </Button>
                                             </div>
                                             <p className="text-[12px] text-[#42474a] mt-1">
-                                                Formatos aceitos: PDF, JPG, PNG
+                                                Formatos aceitos: PDF, JPG, PNG, MP4, XLSX, DOC, DOCX e TXT
                                                 (máx. 2MB cada)
                                             </p>
                                             <FormMessage />
