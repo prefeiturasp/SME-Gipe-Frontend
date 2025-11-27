@@ -245,7 +245,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    Qual o nome da pessoa agressora?
+                                    Qual o nome da pessoa agressora?*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
@@ -264,7 +264,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    Qual a idade da pessoa agressora?
+                                    Qual a idade da pessoa agressora?*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
@@ -289,7 +289,7 @@ const InformacoesAdicionais = forwardRef<
                                 name="cep"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
-                                        <FormLabel>CEP</FormLabel>
+                                        <FormLabel>CEP*</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
@@ -454,7 +454,7 @@ const InformacoesAdicionais = forwardRef<
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        O que motivou a ocorrência?
+                                        O que motivou a ocorrência?*
                                     </FormLabel>
                                     <FormControl>
                                         <MultiSelect
@@ -481,7 +481,7 @@ const InformacoesAdicionais = forwardRef<
                             name="genero"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Qual o gênero?</FormLabel>
+                                    <FormLabel>Qual o gênero?*</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
@@ -517,7 +517,7 @@ const InformacoesAdicionais = forwardRef<
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Qual o grupo étnico-racial?
+                                        Qual o grupo étnico-racial?*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
@@ -551,7 +551,9 @@ const InformacoesAdicionais = forwardRef<
                             name="etapaEscolar"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Qual a etapa escolar?</FormLabel>
+                                    <FormLabel>
+                                        Qual a etapa escolar?*
+                                    </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
@@ -585,7 +587,7 @@ const InformacoesAdicionais = forwardRef<
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Qual a frequência escolar?
+                                        Qual a frequência escolar?*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
@@ -622,7 +624,7 @@ const InformacoesAdicionais = forwardRef<
                             <FormItem>
                                 <FormLabel>
                                     Como é a interação da pessoa agressora no
-                                    ambiente escolar?
+                                    ambiente escolar?*
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
@@ -643,7 +645,7 @@ const InformacoesAdicionais = forwardRef<
                             <FormItem>
                                 <FormLabel>
                                     Quais as redes de proteção estão
-                                    acompanhando o caso?
+                                    acompanhando o caso?*
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
@@ -664,7 +666,7 @@ const InformacoesAdicionais = forwardRef<
                             <FormItem>
                                 <FormLabel>
                                     A ocorrência foi notificada ao Conselho
-                                    Tutelar?
+                                    Tutelar?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -699,7 +701,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>
-                                    A ocorrência foi acompanhada pelo NAAPA?
+                                    A ocorrência foi acompanhada pelo NAAPA?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
