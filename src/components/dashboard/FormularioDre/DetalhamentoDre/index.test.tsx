@@ -3,7 +3,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { DetalhamentoDre } from "./index";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import * as useUserStoreModule from "@/stores/useUserStore";
 
 const mockRouterBack = vi.fn();
 
@@ -45,6 +45,21 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
         formData: mockFormData,
         setFormData: mockSetFormData,
         ocorrenciaUuid: "test-uuid-123",
+    }),
+}));
+
+const mockUser = {
+    perfil_acesso: {
+        nome: "DIRETOR DE ESCOLA",
+    },
+};
+
+vi.mock("@/stores/useUserStore", () => ({
+    useUserStore: vi.fn((selector) => {
+        if (typeof selector === "function") {
+            return selector({ user: mockUser });
+        }
+        return { user: mockUser };
     }),
 }));
 
@@ -165,7 +180,6 @@ describe("DetalhamentoDre", () => {
     it("deve chamar onPrevious ao clicar no botão Anterior", async () => {
         const user = userEvent.setup();
         const mockOnPrevious = vi.fn();
-
 
         renderComponent(mockOnPrevious);
 
@@ -351,13 +365,14 @@ describe("DetalhamentoDre", () => {
         });
 
         expect(mockSetFormData).toHaveBeenCalled();
-    });    it("deve exibir toast de erro quando a API retorna sucesso falso", async () => {
+    });
+    it("deve exibir toast de erro quando a API retorna sucesso falso", async () => {
         const user = userEvent.setup();
 
         mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
             options.onSuccess({
                 success: false,
-                error: "Erro ao processar requisição"
+                error: "Erro ao processar requisição",
             });
         });
 
@@ -420,7 +435,8 @@ describe("DetalhamentoDre", () => {
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
                 title: "Erro ao atualizar ocorrência DRE",
-                description: "Não foi possível atualizar os dados. Tente novamente.",
+                description:
+                    "Não foi possível atualizar os dados. Tente novamente.",
                 variant: "error",
             });
         });
@@ -482,5 +498,36 @@ describe("DetalhamentoDre", () => {
 
         expect(mockSetFormData).toHaveBeenCalled();
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve usar 'diretor' como perfil padrão quando perfil do usuário não está no mapa", () => {
+        const mockUser = {
+            perfil_acesso: { nome: "PERFIL_DESCONHECIDO" },
+        };
+        vi.doMock("@/stores/useUserStore", () => ({
+            useUserStore: (
+                selector: (state: { user: typeof mockUser }) => unknown
+            ) => selector({ user: mockUser }),
+        }));
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+    });
+
+    it("deve usar 'diretor' como perfil padrão quando user.perfil_acesso é undefined", () => {
+        vi.spyOn(useUserStoreModule, "useUserStore").mockReturnValue({
+            user: {
+                name: "João da Silva",
+                perfil_acesso: undefined,
+            },
+        } as never);
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
     });
 });

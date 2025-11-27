@@ -12,15 +12,33 @@ import { TextareaForm } from "./TextareaForm";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { toast } from "@/components/ui/headless-toast";
+import { useState } from "react";
+import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import { useUserStore } from "@/stores/useUserStore";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
 };
 
 export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
+    const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
+        useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const user = useUserStore((state) => state.user);
 
     const { mutate: atualizarOcorrenciaDre } = useAtualizarOcorrenciaDre();
+
+    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
+        {
+            "DIRETOR DE ESCOLA": "diretor",
+            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
+            "PONTO FOCAL DRE": "dre",
+            GIPE: "gipe",
+        };
+
+    const perfilUsuario =
+        (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
+        "diretor";
 
     const form = useForm<FormularioDreData>({
         resolver: zodResolver(formSchema),
@@ -80,7 +98,7 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                         });
                         return;
                     }
-
+                    setOpenModalFinalizarEtapa(true);
                     setFormData(data);
                 },
                 onError: () => {
@@ -196,6 +214,12 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                     </Button>
                 </div>
             </QuadroBranco>
+
+            <ModalFinalizarEtapa
+                open={openModalFinalizarEtapa}
+                onOpenChange={setOpenModalFinalizarEtapa}
+                perfilUsuario={perfilUsuario}
+            />
         </>
     );
 }
