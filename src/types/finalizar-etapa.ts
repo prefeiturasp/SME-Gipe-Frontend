@@ -1,7 +1,8 @@
 export type MotivoEncerramentoBody = {
     unidade_codigo_eol?: string;
     dre_codigo_eol?: string;
-    motivo_encerramento_ue: string;
+    motivo_encerramento_ue?: string;
+    motivo_encerramento_dre?: string;
 };
 
 export type FinalizarOcorrenciaResponse = {

@@ -38,32 +38,14 @@ import {
 
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useFinalizarEtapa } from "@/hooks/useFinalizarEtapa";
+import { useFinalizarEtapaDre } from "@/hooks/useFinalizarEtapaDre";
 import { FinalizarOcorrenciaResponse } from "@/types/finalizar-etapa";
-
 
 
 type ModalFinalizarEtapaProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
     perfilUsuario: string;
-};
-
-const mockDREApiResponse: FinalizarOcorrenciaResponse = {
-    uuid: "abc123",
-    responsavel_nome: "Juliana Martins",
-    responsavel_cpf: "987.654.321",
-    responsavel_email: "juliana.martins@sme.prefeitura.sp.gov.br",
-    nome_dre: "DRE Butantã",
-    protocolo_da_intercorrencia: "GIPE-2025/0099",
-    perfil_acesso: "dre",
-    nome_unidade: "",
-    unidade_codigo_eol: "123",
-    dre_codigo_eol: "456",
-    finalizado_diretor_em: "",
-    finalizado_diretor_por: "diretor teste",
-    motivo_encerramento_ue: "",
-    status_display: "em_andamento",
-    status_extra: "em_andamento"
 };
 
 type CamposFinalizarEtapaProps = {
@@ -93,7 +75,8 @@ export default function ModalFinalizarEtapa({
         ocorrenciaUuid
     } = useOcorrenciaFormStore();
 
-    const { mutateAsync, isPending } = useFinalizarEtapa();
+    const { mutateAsync: finalizarEtapaUE, isPending: isPendingEtapaUE } = useFinalizarEtapa();
+    const { mutateAsync: finalizarEtapaDRE, isPending: isPendingEtapaDRE } = useFinalizarEtapaDre();
 
     const router = useRouter();
 
@@ -120,7 +103,7 @@ export default function ModalFinalizarEtapa({
             motivo_encerramento_ue: values.motivo,
         };
 
-        const response = await mutateAsync({
+        const response = await finalizarEtapaUE({
             ocorrenciaUuid: ocorrenciaUuid!,
             body,
         });
@@ -141,8 +124,30 @@ export default function ModalFinalizarEtapa({
     }
 
     async function encerrarIntercorrenciaDRE(values: FormDataMotivoEncerramento) {
-        setApiData(mockDREApiResponse);
-        setSuccess(true);
+        const body = {
+            unidade_codigo_eol: formData.unidadeEducacional,
+            dre_codigo_eol: formData.dre,
+            motivo_encerramento_dre: values.motivo,
+        };
+
+        const response = await finalizarEtapaDRE({
+            ocorrenciaUuid: ocorrenciaUuid!,
+            body,
+        });
+        
+        if (!response.success) {
+            toast({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: response.error,
+            });
+            return;
+        } 
+
+        if (response.data?.uuid) {
+            setApiData(response.data);
+            setSuccess(true);
+        }
     }
 
     function getApiResponseByPerfil(perfil: string, values: FormDataMotivoEncerramento) {
@@ -222,7 +227,7 @@ export default function ModalFinalizarEtapa({
                                         type="submit"
                                         size="sm"
                                         className="min-w-[86px] text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                        disabled={!form.formState.isValid || isPending}
+                                        disabled={!form.formState.isValid || isPendingEtapaUE || isPendingEtapaDRE}
                                     >
                                         Finalizar
                                     </Button>

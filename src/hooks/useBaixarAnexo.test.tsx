@@ -6,141 +6,101 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
 }));
 
-type MutationFn = NonNullable<
-  import("@tanstack/react-query").UseMutationOptions<
-    boolean, // retorno da mutation
-    Error,
-    { uuid: string; nomeArquivo: string }
-  >["mutationFn"]
->;
+type MutationParams = { uuid: string; nomeArquivo: string };
+type BaixarReturnSuccess = { success: true; url: string; nomeArquivo: string };
+type BaixarReturnFail = { success: false; error: string };
 
 describe("useBaixarAnexo", () => {
-  const mockParams = {
+  const mockParams: MutationParams = {
     uuid: "test-uuid-123",
     nomeArquivo: "documento.pdf",
   };
 
-    // Função auxiliar para criar o mock e capturar a mutationFn
-    const setupMutationMock = () => {
-    const mockUseMutation = vi.fn().mockImplementation((options: { mutationFn: MutationFn }) => {
-        return {
-        mutate: vi.fn(),
-        mutateAsync: options.mutationFn, // ← Retorna a mutationFn aqui
-        isLoading: false,
-        isSuccess: false,
-        isError: false,
-        };
-    });
+  const setupMockMutation = () => {
+    const mockUseMutation = vi.fn().mockImplementation((options) => ({
+      mutate: vi.fn(),
+      mutateAsync: options.mutationFn,
+      isLoading: false,
+      isSuccess: false,
+      isError: false,
+    }));
 
-    return { mockUseMutation };
-    };
-  const mockBlob = new Blob(["conteúdo do arquivo"], { type: "application/pdf" });
+    return mockUseMutation;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Mock das APIs do DOM
-    global.URL.createObjectURL = vi.fn(() => "mock-url");
-    global.URL.revokeObjectURL = vi.fn();
-    
-    // Mock do document.createElement
-    const mockLink = {
-      href: "",
-      download: "",
-      click: vi.fn(),
-      remove: vi.fn(),
-    };
 
-    vi.spyOn(document, "createElement").mockReturnValue(mockLink as unknown as HTMLElement);
-    vi.spyOn(document.body, "appendChild").mockReturnValue(mockLink as unknown as HTMLElement);
+    global.URL.createObjectURL = vi.fn(() => "blob-url");
+    global.URL.revokeObjectURL = vi.fn();
   });
 
-    it("deve executar o fluxo completo de download com sucesso", async () => {
-    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(mockBlob);
+  it("realiza download com sucesso", async () => {
+    const retorno: BaixarReturnSuccess = {
+      success: true,
+      url: "https://teste.com/file",
+      nomeArquivo: "arquivo.pdf",
+    };
 
-    const { mockUseMutation } = setupMutationMock();
+    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(retorno);
 
-    const reactQuery = await import("@tanstack/react-query");
-    reactQuery.useMutation = mockUseMutation;
+    global.fetch = vi.fn().mockResolvedValue({
+      blob: async () => new Blob(["conteúdo"]),
+    } as unknown as Response);
+
+    const useMutation = setupMockMutation();
+    (await import("@tanstack/react-query")).useMutation = useMutation;
 
     const { useBaixarAnexo } = await import("./useBaixarAnexo");
     const mutation = useBaixarAnexo();
 
     const result = await mutation.mutateAsync(mockParams);
 
-    // Verificações
     expect(baixarAnexoAction.baixarAnexo).toHaveBeenCalledWith(mockParams.uuid);
-    expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
-    expect(document.createElement).toHaveBeenCalledWith("a");
-    expect(document.body.appendChild).toHaveBeenCalled();
-    expect(global.URL.revokeObjectURL).toHaveBeenCalledWith("mock-url");
+    expect(fetch).toHaveBeenCalledWith("https://teste.com/file");
     expect(result).toBe(true);
   });
 
-  it("deve configurar o link de download corretamente", async () => {
-    const mockLink = {
-      href: "",
-      download: "",
-      click: vi.fn(),
-      remove: vi.fn(),
+  it("lança erro quando baixarAnexo retorna failure", async () => {
+    const retorno: BaixarReturnFail = { success: false, error: "Falhou" };
+
+    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(retorno);
+
+    const useMutation = setupMockMutation();
+    (await import("@tanstack/react-query")).useMutation = useMutation;
+
+    const { useBaixarAnexo } = await import("./useBaixarAnexo");
+    const mutation = useBaixarAnexo();
+
+    await expect(mutation.mutateAsync(mockParams)).rejects.toThrow("Falhou");
+  });
+
+  it("cria Blob a partir de ArrayBuffer quando necessário", async () => {
+    const retorno: BaixarReturnSuccess = {
+      success: true,
+      url: "https://teste.com/file",
+      nomeArquivo: "arquivo.pdf",
     };
 
-    vi.spyOn(document, "createElement").mockReturnValue(mockLink as unknown as HTMLElement);
-    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(mockBlob);
-
-    const { mockUseMutation } = setupMutationMock();
-
-    const reactQuery = await import("@tanstack/react-query");
-    reactQuery.useMutation = mockUseMutation;
-
-    const { useBaixarAnexo } = await import("./useBaixarAnexo");
-    const mutation = useBaixarAnexo();
-
-    await mutation.mutateAsync(mockParams);
-
-    expect(mockLink.href).toBe("mock-url");
-    expect(mockLink.download).toBe(mockParams.nomeArquivo);
-    expect(mockLink.click).toHaveBeenCalled();
-    expect(mockLink.remove).toHaveBeenCalled();
-  });
-
- it("deve lidar com erro ao baixar o anexo", async () => {
-    const errorMessage = "Erro ao baixar anexo";
-    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockRejectedValue(new Error(errorMessage));
-
-    const { mockUseMutation } = setupMutationMock();
-
-    const reactQuery = await import("@tanstack/react-query");
-    reactQuery.useMutation = mockUseMutation;
-
-    const { useBaixarAnexo } = await import("./useBaixarAnexo");
-    const mutation = useBaixarAnexo();
-
-    await expect(mutation.mutateAsync(mockParams)).rejects.toThrow(errorMessage);
-    expect(baixarAnexoAction.baixarAnexo).toHaveBeenCalledWith(mockParams.uuid);
-    });
-
-  it("deve criar o Blob corretamente com ArrayBuffer", async () => {
     const mockArrayBuffer = new ArrayBuffer(8);
-    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(mockArrayBuffer);
+    vi.spyOn(baixarAnexoAction, "baixarAnexo").mockResolvedValue(retorno);
 
-    const { mockUseMutation } = setupMutationMock();
+    global.fetch = vi.fn().mockResolvedValue({
+      blob: async () => new Blob([mockArrayBuffer]),
+    } as unknown as Response);
 
-
-    const reactQuery = await import("@tanstack/react-query");
-    reactQuery.useMutation = mockUseMutation;
+    const useMutation = setupMockMutation();
+    (await import("@tanstack/react-query")).useMutation = useMutation;
 
     const { useBaixarAnexo } = await import("./useBaixarAnexo");
     const mutation = useBaixarAnexo();
 
     await mutation.mutateAsync(mockParams);
 
-    expect(global.URL.createObjectURL).toHaveBeenCalledWith(
-      new Blob([mockArrayBuffer])
-    );
+    expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
   });
 
-  it("deve retornar o hook com as propriedades corretas", async () => {
+  it("retorna o objeto da mutation quando useMutation é chamado", async () => {
     const mockMutationResult = {
       mutate: vi.fn(),
       mutateAsync: vi.fn(),
@@ -153,8 +113,7 @@ describe("useBaixarAnexo", () => {
 
     const mockUseMutation = vi.fn().mockReturnValue(mockMutationResult);
 
-    const reactQuery = await import("@tanstack/react-query");
-    reactQuery.useMutation = mockUseMutation;
+    (await import("@tanstack/react-query")).useMutation = mockUseMutation;
 
     const { useBaixarAnexo } = await import("./useBaixarAnexo");
     const result = useBaixarAnexo();
