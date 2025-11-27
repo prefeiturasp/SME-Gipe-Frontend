@@ -319,8 +319,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             });
                         }
                     },
-                    onError: (err) => {
-                        console.error("Erro ao atualizar:", err);
+                    onError: () => {
                         toast({
                             title: "Erro ao atualizar",
                             description:
@@ -330,8 +329,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     },
                 }
             );
-        } catch (err) {
-            console.error("Erro ao validar:", err);
+        } catch {
             toast({
                 title: "Erro ao validar",
                 description:
@@ -406,7 +404,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     </div>
 
                     <div>
-                        <Anexos showButtons={false} modoVisualizacao/>
+                        <Anexos showButtons={false} modoVisualizacao />
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
