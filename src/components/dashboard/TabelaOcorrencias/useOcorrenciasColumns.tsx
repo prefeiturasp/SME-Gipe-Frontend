@@ -163,12 +163,12 @@ export const useOcorrenciasColumns = () => {
         }
 
         dynamicColumns.push({
-            accessorKey: "tipoViolencia",
+            accessorKey: "tipoOcorrencia",
             header: ({ column, table }) => (
                 <SortHeader
                     column={column}
                     table={table}
-                    title="Tipo de violência"
+                    title="Tipo de Ocorrência"
                     options={[
                         {
                             id: "alpha",

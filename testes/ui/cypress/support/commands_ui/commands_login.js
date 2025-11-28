@@ -4,7 +4,8 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 const loginLocalizadores = new Login_Gipe_Localizadores()
 
 Cypress.Commands.add('login_gipe', () => {
-    cy.visit('/')
+    // usa baseUrl configurado em cypress.config.js e aumenta timeout de carregamento
+    cy.visit('/', { timeout: 300000 })
 })
 
 Cypress.Commands.add('dados_de_login', (rf, senha) => {

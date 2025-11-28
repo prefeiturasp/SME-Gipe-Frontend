@@ -32,6 +32,24 @@ export type OcorrenciaDetalheAPI = {
         perfil_dos_envolvidos: string;
     };
     tem_info_agressor_ou_vitima?: "sim" | "nao";
+    nome_pessoa_agressora?: string;
+    idade_pessoa_agressora?: number;
+    motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
+    genero_pessoa_agressora?: string;
+    grupo_etnico_racial?: string;
+    etapa_escolar?: string;
+    frequencia_escolar?: string;
+    interacao_ambiente_escolar?: string;
+    redes_protecao_acompanhamento?: string;
+    notificado_conselho_tutelar?: boolean;
+    acompanhado_naapa?: boolean;
+    cep?: string;
+    logradouro?: string;
+    numero_residencia?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
 };
 
 export async function obterOcorrencia(

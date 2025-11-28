@@ -1,9 +1,15 @@
 import { vi } from "vitest";
 
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+    render,
+    screen,
+    fireEvent,
+    waitFor,
+    act,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoInicial from "./index";
+import SecaoInicial, { SecaoInicialRef } from "./index";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -558,5 +564,91 @@ describe("SecaoInicial", () => {
             description: "Erro ao atualizar",
         });
         expect(onSuccess).not.toHaveBeenCalled();
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toBeDefined();
+            expect(formData).toHaveProperty("dataOcorrencia");
+            expect(formData).toHaveProperty("horaOcorrencia");
+            expect(formData).toHaveProperty("dre");
+            expect(formData).toHaveProperty("unidadeEducacional");
+            expect(formData).toHaveProperty("tipoOcorrencia");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance).toHaveProperty("getValues");
+            expect(formInstance).toHaveProperty("trigger");
+            expect(formInstance).toHaveProperty("formState");
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            mockCriarOcorrencia.mockResolvedValue({
+                success: true,
+                data: { uuid: "new-uuid-123" },
+            });
+
+            const ref = React.createRef<SecaoInicialRef>();
+
+            const onSuccess = vi.fn();
+            renderWithClient(<SecaoInicial ref={ref} onSuccess={onSuccess} />);
+
+            const dateInput = screen.getByPlaceholderText("Selecione a data");
+            const timeInput = screen.getByPlaceholderText("Digite o horário");
+            const simRadio = screen.getByLabelText("Sim");
+
+            await act(async () => {
+                fireEvent.change(dateInput, {
+                    target: { value: "2024-10-15" },
+                });
+                fireEvent.change(timeInput, { target: { value: "14:30" } });
+                fireEvent.click(simRadio);
+            });
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(true);
+            await waitFor(() => {
+                expect(mockCriarOcorrencia).toHaveBeenCalled();
+            });
+        });
+
+        it("deve retornar false em submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(false);
+            expect(mockCriarOcorrencia).not.toHaveBeenCalled();
+        });
     });
 });

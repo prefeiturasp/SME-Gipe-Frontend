@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useFetchDREs, useFetchTodasUEs } from "@/hooks/useUnidades";
 
 export type FiltrosValues = {
     codigoEol: string;
@@ -17,7 +19,7 @@ export type FiltrosValues = {
     dre: string;
     periodoInicial: string;
     periodoFinal: string;
-    tipoViolencia: string;
+    tiposOcorrencia: string;
     status: string;
 };
 
@@ -42,10 +44,15 @@ export default function Filtros({
     const [periodoFinal, setPeriodoFinal] = useState(
         initialValues?.periodoFinal ?? ""
     );
-    const [tipoViolencia, setTipoViolencia] = useState(
-        initialValues?.tipoViolencia ?? ""
+    const [tipoOcorrenciaSelecionado, setTipoOcorrenciaSelecionado] = useState(
+        initialValues?.tiposOcorrencia ?? ""
     );
     const [status, setStatus] = useState(initialValues?.status ?? "");
+    const { data: tiposOcorrencia, isLoading: isLoadingTipos } = useTiposOcorrencia();
+    const { data: dreOptions = [] } = useFetchDREs();
+    const { data: todasUEsOptions = []} = useFetchTodasUEs()
+
+    const uesSemDRE = todasUEsOptions.filter((item: any) => item.tipo_unidade !== "DRE");
 
     function handleClear() {
         setCodigoEol("");
@@ -53,7 +60,7 @@ export default function Filtros({
         setDre("");
         setPeriodoInicial("");
         setPeriodoFinal("");
-        setTipoViolencia("");
+        setTipoOcorrenciaSelecionado("");
         setStatus("");
         if (onClear) onClear();
     }
@@ -65,7 +72,7 @@ export default function Filtros({
             dre,
             periodoInicial,
             periodoFinal,
-            tipoViolencia,
+            tiposOcorrencia: tipoOcorrenciaSelecionado,
             status,
         };
         if (onApply) onApply(values);
@@ -77,7 +84,7 @@ export default function Filtros({
         !!dre ||
         !!periodoInicial ||
         !!periodoFinal ||
-        !!tipoViolencia ||
+        !!tipoOcorrenciaSelecionado ||
         !!status;
 
     const renderCodigoEol = () => (
@@ -111,9 +118,19 @@ export default function Filtros({
                     <SelectValue placeholder="Selecione a UE" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="ue-1">UE 1</SelectItem>
-                    <SelectItem value="ue-2">UE 2</SelectItem>
-                    <SelectItem value="ue-3">UE 3</SelectItem>
+                    {uesSemDRE.map(
+                        (dre: {
+                            uuid: string;
+                            nome: string;
+                        }) => (
+                            <SelectItem
+                                key={dre.uuid}
+                                value={dre.uuid}
+                            >
+                                {dre.nome}
+                            </SelectItem>
+                        )
+                    )}
                 </SelectContent>
             </Select>
         </div>
@@ -132,9 +149,19 @@ export default function Filtros({
                     <SelectValue placeholder="Selecione a DRE" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="dre-1">DRE 1</SelectItem>
-                    <SelectItem value="dre-2">DRE 2</SelectItem>
-                    <SelectItem value="dre-3">DRE 3</SelectItem>
+                    {dreOptions.map(
+                        (dre: {
+                            uuid: string;
+                            nome: string;
+                        }) => (
+                            <SelectItem
+                                key={dre.uuid}
+                                value={dre.uuid}
+                            >
+                                {dre.nome}
+                            </SelectItem>
+                        )
+                    )}
                 </SelectContent>
             </Select>
         </div>
@@ -196,20 +223,22 @@ export default function Filtros({
                         htmlFor="tipo-violencia"
                         className="text-[14px] text-[#42474a] block mb-1"
                     >
-                        Tipo de violência
+                        Tipo de Ocorrência
                     </label>
                     <Select
-                        value={tipoViolencia}
-                        onValueChange={(v) => setTipoViolencia(v)}
+                        value={tipoOcorrenciaSelecionado}
+                        onValueChange={(v) => setTipoOcorrenciaSelecionado(v)}
+                        disabled={isLoadingTipos}
                     >
                         <SelectTrigger id="tipo-violencia">
                             <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="fisica">Física</SelectItem>
-                            <SelectItem value="psicologica">
-                                Psicológica
+                        {tiposOcorrencia?.map((tipo: any) => (
+                            <SelectItem key={tipo.uuid} value={tipo.nome}>
+                                {tipo.nome}
                             </SelectItem>
+                        ))}
                         </SelectContent>
                     </Select>
                 </div>

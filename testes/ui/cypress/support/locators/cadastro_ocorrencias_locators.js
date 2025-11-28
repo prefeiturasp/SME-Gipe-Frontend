@@ -11,6 +11,11 @@ class Cadastro_ocorrencias_Localizadores {
     selecionar__ocorrencia_roubo_furto() {
     return 'button[data-state="checked"]';
   }
+
+    btn_proximo() {
+    // seletor informado: button.inline-flex:nth-child(2)
+    return 'button.inline-flex:nth-child(2)';
+  }
 }
 
 export default Cadastro_ocorrencias_Localizadores;

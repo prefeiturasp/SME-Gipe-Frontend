@@ -29,7 +29,7 @@ export default function TabelaOcorrencias() {
         dre: "",
         periodoInicial: "",
         periodoFinal: "",
-        tipoViolencia: "",
+        tiposOcorrencia: "",
         status: "",
     });
 
@@ -40,7 +40,7 @@ export default function TabelaOcorrencias() {
             dre: "",
             periodoInicial: "",
             periodoFinal: "",
-            tipoViolencia: "",
+            tiposOcorrencia: "",
             status: "",
         });
     }
@@ -58,7 +58,7 @@ export default function TabelaOcorrencias() {
                 matchCodigo(item.codigoEol, filtros.codigoEol) &&
                 matchDre(item.dre || "", filtros.dre) &&
                 matchNomeUe(item.nomeUe || "", filtros.nomeUe) &&
-                matchTipo(item.tipoViolencia, filtros.tipoViolencia) &&
+                matchTipo(item.tipoOcorrencia, filtros.tiposOcorrencia) &&
                 matchStatus(item.status, filtros.status) &&
                 matchPeriodo(
                     item.dataHora,

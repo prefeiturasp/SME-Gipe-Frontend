@@ -3,6 +3,7 @@ import EditarOcorrenciaPage from "./page";
 import { vi, type Mock } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
+import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 
@@ -16,6 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/hooks/useGetOcorrencia");
+vi.mock("@/hooks/useGetOcorrenciaDre");
 vi.mock("@/stores/useOcorrenciaFormStore");
 
 const queryClient = new QueryClient();
@@ -28,6 +30,7 @@ const renderWithClient = (ui: React.ReactElement) => {
 
 describe("EditarOcorrenciaPage", () => {
     const mockUseGetOcorrencia = useGetOcorrencia as Mock;
+    const mockUseGetOcorrenciaDre = useGetOcorrenciaDre as Mock;
     const mockUseOcorrenciaFormStore =
         useOcorrenciaFormStore as unknown as Mock;
 
@@ -62,9 +65,17 @@ describe("EditarOcorrenciaPage", () => {
                 dre_codigo_eol: "108300",
                 sobre_furto_roubo_invasao_depredacao: false,
                 user_username: "20090388003",
+                status: "em_preenchimento_diretor",
                 criado_em: "2025-10-15T14:48:04.383569-03:00",
                 atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: undefined,
             isLoading: false,
             isError: false,
             error: null,
@@ -107,6 +118,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108300",
             sobre_furto_roubo_invasao_depredacao: true,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -162,6 +174,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108300",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -308,6 +321,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108500",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -356,6 +370,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108600",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             smart_sampa_situacao: "valor-invalido" as
@@ -456,6 +471,7 @@ describe("EditarOcorrenciaPage", () => {
                 dre_codigo_eol: "108700",
                 sobre_furto_roubo_invasao_depredacao: false,
                 user_username: "20090388003",
+                status: "em_preenchimento_diretor",
                 criado_em: "2025-10-15T14:48:04.383569-03:00",
                 atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             },
@@ -500,6 +516,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108800",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
         };
@@ -548,6 +565,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "109200",
             sobre_furto_roubo_invasao_depredacao: false,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             comunicacao_seguranca_publica: "sim_pm" as const,
@@ -593,5 +611,219 @@ describe("EditarOcorrenciaPage", () => {
                 declarante: "declarante-uuid-456",
             })
         );
+    });
+
+    it("deve renderizar CadastrarOcorrencia quando status é 'em_preenchimento_diretor'", async () => {
+        const mockData = {
+            id: 11,
+            uuid: "test-uuid-preenchimento",
+            data_ocorrencia: "2024-11-25T16:30:00Z",
+            unidade_codigo_eol: "999999",
+            dre_codigo_eol: "109300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            status: "em_preenchimento_diretor",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        let currentFormData = {};
+        const mockStoreState = {
+            setFormData: vi.fn((data) => {
+                currentFormData = data;
+            }),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            get formData() {
+                return currentFormData;
+            },
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByRole("heading", { name: /nova ocorrência/i })
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByRole("heading", { name: /visualizar ocorrência/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve renderizar VisualizarOcorrencia quando status não é 'em_preenchimento_diretor'", async () => {
+        const mockData = {
+            id: 12,
+            uuid: "test-uuid-finalizado",
+            data_ocorrencia: "2024-11-25T16:30:00Z",
+            unidade_codigo_eol: "101010",
+            dre_codigo_eol: "109400",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            status: "finalizado",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: {
+                id: 1,
+                uuid: "test-uuid-finalizado",
+                unidade_codigo_eol: "101010",
+                dre_codigo_eol: "109400",
+                status: "finalizado",
+                status_display: "Finalizado",
+                status_extra: "",
+                acionamento_seguranca_publica: false,
+                interlocucao_sts: false,
+                info_complementar_sts: "",
+                interlocucao_cpca: false,
+                info_complementar_cpca: "",
+                interlocucao_supervisao_escolar: false,
+                info_complementar_supervisao_escolar: "",
+                interlocucao_naapa: false,
+                info_complementar_naapa: "",
+            },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        let currentFormData = {};
+        const mockStoreState = {
+            setFormData: vi.fn((data) => {
+                currentFormData = data;
+            }),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            get formData() {
+                return currentFormData;
+            },
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByRole("heading", { name: /Nova ocorrência/i })
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("deve renderizar VisualizarOcorrencia quando status é 'aguardando_validacao'", async () => {
+        const mockData = {
+            id: 13,
+            uuid: "test-uuid-aguardando",
+            data_ocorrencia: "2024-11-25T16:30:00Z",
+            unidade_codigo_eol: "111111",
+            dre_codigo_eol: "109500",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            status: "aguardando_validacao",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: {
+                id: 1,
+                uuid: "test-uuid-aguardando",
+                unidade_codigo_eol: "111111",
+                dre_codigo_eol: "109500",
+                status: "aguardando_validacao",
+                status_display: "Aguardando validação",
+                status_extra: "",
+                acionamento_seguranca_publica: false,
+                interlocucao_sts: false,
+                info_complementar_sts: "",
+                interlocucao_cpca: false,
+                info_complementar_cpca: "",
+                interlocucao_supervisao_escolar: false,
+                info_complementar_supervisao_escolar: "",
+                interlocucao_naapa: false,
+                info_complementar_naapa: "",
+            },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        let currentFormData = {};
+        const mockStoreState = {
+            setFormData: vi.fn((data) => {
+                currentFormData = data;
+            }),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            get formData() {
+                return currentFormData;
+            },
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByRole("heading", { name: /Nova ocorrência/i })
+            ).toBeInTheDocument();
+        });
     });
 });
