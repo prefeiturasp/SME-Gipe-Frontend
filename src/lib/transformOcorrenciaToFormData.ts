@@ -202,6 +202,7 @@ export function transformOcorrenciaToFormData(
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,
+        ...(ocorrencia.status && { status: ocorrencia.status }),
         ...(ocorrencia.nome_dre && { nomeDre: ocorrencia.nome_dre }),
         ...(ocorrencia.nome_unidade && {
             nomeUnidade: ocorrencia.nome_unidade,
