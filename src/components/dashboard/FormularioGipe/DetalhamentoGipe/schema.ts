@@ -4,7 +4,7 @@ export const formSchema = z.object({
     envolveArmaOuAtaque: z.enum(["Sim", "Não"], {
         required_error: "Campo obrigatório",
     }),
-    ameacaRealizada: z.enum(["Sim", "Não"], {
+    ameacaRealizada: z.enum(["Presencialmente", "Virtualmente"], {
         required_error: "Campo obrigatório",
     }),
     envolvidosGipe: z
