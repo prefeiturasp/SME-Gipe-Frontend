@@ -1,19 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import FormularioDrePage from "./index";
+import FormularioGipePage from "./index";
 
 const mockReset = vi.fn();
 const mockInvalidateQueries = vi.fn();
 const mockRouterBack = vi.fn();
 const mockOnPrevious = vi.fn();
-const mockOnNext = vi.fn();
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: vi.fn((selector) => {
         const state = {
             reset: mockReset,
-            ocorrenciaUuid: "test-uuid-123",
+            ocorrenciaUuid: "test-uuid-456",
         };
         return selector ? selector(state) : state;
     }),
@@ -48,10 +47,10 @@ vi.mock("../PageHeader/PageHeader", () => ({
     )),
 }));
 
-vi.mock("./DetalhamentoDre", () => ({
-    DetalhamentoDre: vi.fn(({ onPrevious }) => (
-        <div data-testid="mock-detalhamento-dre">
-            Mock DetalhamentoDre
+vi.mock("./DetalhamentoGipe/index", () => ({
+    DetalhamentoGipe: vi.fn(({ onPrevious }) => (
+        <div data-testid="mock-detalhamento-gipe">
+            Mock DetalhamentoGipe
             {onPrevious && (
                 <button onClick={onPrevious}>Anterior (Mock)</button>
             )}
@@ -67,44 +66,31 @@ const renderWithClient = (ui: React.ReactElement) => {
     );
 };
 
-describe("FormularioDrePage", () => {
+describe("FormularioGipePage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it("deve renderizar o título correto do PageHeader", () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         expect(
             screen.getByText(
-                "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                "Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar (GIPE)"
             )
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar o componente DetalhamentoDre", () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+    it("deve renderizar o componente DetalhamentoGipe", () => {
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
-        expect(screen.getByTestId("mock-detalhamento-dre")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("mock-detalhamento-gipe")
+        ).toBeInTheDocument();
     });
 
-    it("deve passar onPrevious para DetalhamentoDre", () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+    it("deve passar onPrevious para DetalhamentoGipe", () => {
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         const botaoAnterior = screen.getByText("Anterior (Mock)");
         botaoAnterior.click();
@@ -113,12 +99,7 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve chamar reset, invalidateQueries e router.back ao clicar em Voltar", async () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
@@ -127,7 +108,7 @@ describe("FormularioDrePage", () => {
 
         await vi.waitFor(() => {
             expect(mockInvalidateQueries).toHaveBeenCalledWith({
-                queryKey: ["ocorrencia", "test-uuid-123"],
+                queryKey: ["ocorrencia", "test-uuid-456"],
             });
         });
 
@@ -135,30 +116,20 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve usar o ocorrenciaUuid correto na invalidação de queries", async () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
 
         await vi.waitFor(() => {
             expect(mockInvalidateQueries).toHaveBeenCalledWith({
-                queryKey: ["ocorrencia", "test-uuid-123"],
+                queryKey: ["ocorrencia", "test-uuid-456"],
             });
         });
     });
 
     it("deve renderizar o botão Voltar do PageHeader", () => {
-        renderWithClient(
-            <FormularioDrePage
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />
-        );
+        renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByRole("button", { name: /voltar/i });
         expect(botaoVoltar).toBeInTheDocument();

@@ -293,14 +293,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     >
                         Anterior
                     </Button>
-                    <Button
-                        onClick={() => {
-                            setFormData(form.getValues());
-                        }}
-                        type="button"
-                        variant="submit"
-                        disabled={!isValid}
-                    >
+                    <Button type="button" variant="submit" disabled={!isValid}>
                         Salvar informações
                     </Button>
                 </div>
