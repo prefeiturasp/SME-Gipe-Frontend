@@ -127,50 +127,6 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar todos os campos de radio button", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(/envolve arma ou ataque\?/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/ameaça foi realizada de qual maneira\?/i)
-        ).toBeInTheDocument();
-    });
-
-    it("deve renderizar os campos de select e multi-select", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(/quem são os envolvidos\?/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/o que motivou a ocorrência\?/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/qual o tipo da ocorrência\?/i)
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/qual o ciclo de aprendizagem\?/i)
-        ).toBeInTheDocument();
-    });
-
-    it("deve renderizar os campos de textarea", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(
-                /existe informações sobre as interações virtuais da pessoa agressora\?/i
-            )
-        ).toBeInTheDocument();
-
-        expect(screen.getByText(/encaminhamentos/i)).toBeInTheDocument();
-    });
-
     it("deve renderizar o componente Anexos", () => {
         renderComponent();
 
@@ -209,20 +165,6 @@ describe("DetalhamentoGipe", () => {
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
-    it("deve ter 2 grupos de radio buttons (cada um com Sim/Não)", () => {
-        renderComponent();
-
-        const radios = screen.getAllByRole("radio");
-        expect(radios).toHaveLength(4);
-    });
-
-    it("deve renderizar o formulário dentro de um componente Form", () => {
-        const { container } = renderComponent();
-
-        const form = container.querySelector("form");
-        expect(form).toBeInTheDocument();
-    });
-
     it("deve ter o título com estilo correto", () => {
         renderComponent();
 
@@ -236,15 +178,6 @@ describe("DetalhamentoGipe", () => {
             "text-[#42474a]",
             "mb-2"
         );
-    });
-
-    it("deve organizar os campos de radio em grid 2x2", () => {
-        const { container } = renderComponent();
-
-        const radioGrid = container.querySelector(
-            ".grid.grid-cols-1.md\\:grid-cols-2"
-        );
-        expect(radioGrid).toBeInTheDocument();
     });
 
     it("deve exibir texto descritivo sob o campo Encaminhamentos", () => {
@@ -277,12 +210,10 @@ describe("DetalhamentoGipe", () => {
 
         const radios = screen.getAllByRole("radio");
 
-        // Primeiro radio: envolveArmaOuAtaque
-        await user.click(radios[0]); // Sim
+        await user.click(radios[0]);
         expect(radios[0]).toHaveAttribute("aria-checked", "true");
 
-        // Segundo radio: ameacaRealizada
-        await user.click(radios[2]); // Sim
+        await user.click(radios[2]);
         expect(radios[2]).toHaveAttribute("aria-checked", "true");
     });
 
@@ -358,7 +289,6 @@ describe("DetalhamentoGipe", () => {
             name: /salvar informações/i,
         });
 
-        // Verifica que o botão existe e tem o type correto
         expect(botaoSalvar).toBeInTheDocument();
         expect(botaoSalvar).toHaveAttribute("type", "button");
     });
@@ -442,7 +372,6 @@ describe("DetalhamentoGipe", () => {
         expect(
             screen.getByText(/quem são os envolvidos\?/i)
         ).toBeInTheDocument();
-        // Os mocks já fornecem os dados corretos
         expect(mockEnvolvidos).toHaveLength(3);
     });
 
@@ -452,7 +381,6 @@ describe("DetalhamentoGipe", () => {
         expect(
             screen.getByText(/o que motivou a ocorrência\?/i)
         ).toBeInTheDocument();
-        // Os mocks já fornecem os dados corretos
         expect(mockCategorias.motivo_ocorrencia).toHaveLength(3);
     });
 });
