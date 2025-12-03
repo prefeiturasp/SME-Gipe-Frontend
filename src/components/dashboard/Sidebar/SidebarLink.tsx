@@ -7,7 +7,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 interface SidebarLinkProps
     extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     href: string;
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     title: string;
     active?: boolean;
     rightIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -49,11 +49,13 @@ export const SidebarLink = React.forwardRef<
                 )}
                 {...props}
             >
-                <Icon
-                    width={open ? 16 : 22}
-                    height={open ? 16 : 19}
-                    className={iconColor}
-                />
+                {Icon && (
+                    <Icon
+                        width={open ? 16 : 22}
+                        height={open ? 16 : 19}
+                        className={iconColor}
+                    />
+                )}
 
                 <div
                     className={cn(
