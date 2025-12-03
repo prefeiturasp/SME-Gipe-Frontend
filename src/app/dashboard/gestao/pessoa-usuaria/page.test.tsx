@@ -27,7 +27,7 @@ describe("Pessoa Usuária page", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/gestão de pessoa usuária/i)
+                screen.getByText(/Confira os perfis ativos, inativos e pendentes de aprovação. Selecione a opção desejada nas abas./i)
             ).toBeInTheDocument();
         });
     });
