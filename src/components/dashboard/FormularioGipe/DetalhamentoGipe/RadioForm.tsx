@@ -16,9 +16,18 @@ type RadioFormProps = {
         "envolveArmaOuAtaque" | "ameacaRealizada"
     >;
     label: string;
+    options?: Array<{ value: string; label: string }>;
 };
 
-export function RadioForm({ control, name, label }: Readonly<RadioFormProps>) {
+export function RadioForm({
+    control,
+    name,
+    label,
+    options = [
+        { value: "Sim", label: "Sim" },
+        { value: "Não", label: "Não" },
+    ],
+}: Readonly<RadioFormProps>) {
     return (
         <FormField
             control={control}
@@ -33,18 +42,17 @@ export function RadioForm({ control, name, label }: Readonly<RadioFormProps>) {
                                 value={field.value ?? ""}
                                 className="flex flex-col space-y-2"
                             >
-                                <label className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Sim" />
-                                    <span className="text-sm text-[#42474a]">
-                                        Sim
-                                    </span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Não" />
-                                    <span className="text-sm text-[#42474a]">
-                                        Não
-                                    </span>
-                                </label>
+                                {options.map((option) => (
+                                    <label
+                                        key={option.value}
+                                        className="flex items-center space-x-2"
+                                    >
+                                        <RadioGroupItem value={option.value} />
+                                        <span className="text-sm text-[#42474a]">
+                                            {option.label}
+                                        </span>
+                                    </label>
+                                ))}
                             </RadioGroup>
                         </div>
                     </FormControl>

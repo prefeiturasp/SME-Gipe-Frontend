@@ -114,6 +114,16 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 control={form.control}
                                 name="ameacaRealizada"
                                 label="Ameaça foi realizada de qual maneira?*"
+                                options={[
+                                    {
+                                        value: "Presencialmente",
+                                        label: "Presencialmente",
+                                    },
+                                    {
+                                        value: "Virtualmente",
+                                        label: "Virtualmente",
+                                    },
+                                ]}
                             />
                         </div>
                     </QuadroBranco>
@@ -133,7 +143,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 options={envolvidosOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
-                                                placeholder="Selecione os envolvidos"
+                                                placeholder="Selecione"
                                                 disabled={isLoadingEnvolvidos}
                                             />
                                         </FormControl>
@@ -159,7 +169,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 options={motivacaoOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
-                                                placeholder="Selecione as motivações"
+                                                placeholder="Selecione"
                                                 disabled={isLoadingCategorias}
                                             />
                                         </FormControl>
@@ -187,7 +197,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione o tipo de ocorrência" />
+                                                    <SelectValue placeholder="Selecione" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -222,7 +232,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione o ciclo de aprendizagem" />
+                                                    <SelectValue placeholder="Selecione" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
