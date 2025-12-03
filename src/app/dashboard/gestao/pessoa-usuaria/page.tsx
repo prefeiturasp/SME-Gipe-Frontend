@@ -1,3 +1,14 @@
+import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
+import TabsContainer from "@/components/dashboard/Gestao/PessoaUsuaria/TabsContainer";
+
 export default function PessoaUsuaria() {
-    return <h1>Gestão de Pessoa Usuária</h1>;
+    return (
+        <QuadroBranco>
+            <p className="text-[14px] text-[#42474a]">
+                Confira os perfis ativos, inativos e pendentes de aprovação.
+                Selecione a opção desejada nas abas.
+            </p>
+            <TabsContainer />
+        </QuadroBranco>
+    );
 }
