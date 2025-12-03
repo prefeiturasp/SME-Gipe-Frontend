@@ -12,7 +12,7 @@ import {
     CommandEmpty,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 interface Option {
     label: string;
@@ -67,7 +67,7 @@ export function MultiSelect({
                     aria-haspopup="listbox"
                     disabled={disabled}
                     className={cn(
-                        "flex w-full min-h-[40px] items-start rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+                        "flex w-full min-h-[40px] items-start justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         disabled && "cursor-not-allowed opacity-50",
                         !disabled && "cursor-pointer",
@@ -103,6 +103,7 @@ export function MultiSelect({
                             ))
                         )}
                     </div>
+                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2 self-center" />
                 </button>
             </PopoverTrigger>
             <PopoverContent
