@@ -7,6 +7,19 @@ import userEvent from "@testing-library/user-event";
 let mockOnNext: (() => void) | undefined;
 let mockOnPrevious: (() => void) | undefined;
 
+vi.mock("next/navigation", () => ({
+    useRouter: vi.fn(() => ({
+        push: vi.fn(),
+        back: vi.fn(),
+        forward: vi.fn(),
+        refresh: vi.fn(),
+        replace: vi.fn(),
+        prefetch: vi.fn(),
+    })),
+    usePathname: vi.fn(() => "/"),
+    useSearchParams: vi.fn(() => new URLSearchParams()),
+}));
+
 vi.mock("../FormularioUE/FormularioUE", () => ({
     FormularioUE: vi.fn(({ onNext }) => {
         mockOnNext = onNext;
@@ -133,11 +146,9 @@ describe("VisualizarOcorrencia", () => {
         const user = userEvent.setup();
         renderWithClient(<VisualizarOcorrencia />);
 
-        // Navega para FormularioDre
         await user.click(screen.getByText("Próximo"));
         expect(screen.getByTestId("formulario-dre")).toBeInTheDocument();
 
-        // Navega para FormularioGipe
         const botoesProximo = screen.getAllByText("Próximo");
         await user.click(botoesProximo[0]);
 
@@ -150,14 +161,12 @@ describe("VisualizarOcorrencia", () => {
         const user = userEvent.setup();
         renderWithClient(<VisualizarOcorrencia />);
 
-        // Navega até FormularioGipe
         await user.click(screen.getByText("Próximo"));
         const botoesProximo = screen.getAllByText("Próximo");
         await user.click(botoesProximo[0]);
 
         expect(screen.getByTestId("formulario-gipe")).toBeInTheDocument();
 
-        // Volta para FormularioDre
         const botaoAnterior = screen.getByText("Anterior");
         await user.click(botaoAnterior);
 
@@ -179,7 +188,6 @@ describe("VisualizarOcorrencia", () => {
         const user = userEvent.setup();
         renderWithClient(<VisualizarOcorrencia />);
 
-        // Navega até FormularioGipe
         await user.click(screen.getByText("Próximo"));
         const botoesProximo = screen.getAllByText("Próximo");
         await user.click(botoesProximo[0]);
@@ -192,23 +200,18 @@ describe("VisualizarOcorrencia", () => {
         const user = userEvent.setup();
         renderWithClient(<VisualizarOcorrencia />);
 
-        // Inicia em UE
         expect(screen.getByTestId("formulario-ue")).toBeInTheDocument();
 
-        // UE -> DRE
         await user.click(screen.getByText("Próximo"));
         expect(screen.getByTestId("formulario-dre")).toBeInTheDocument();
 
-        // DRE -> GIPE
         const botoesProximo = screen.getAllByText("Próximo");
         await user.click(botoesProximo[0]);
         expect(screen.getByTestId("formulario-gipe")).toBeInTheDocument();
 
-        // GIPE -> DRE
         await user.click(screen.getByText("Anterior"));
         expect(screen.getByTestId("formulario-dre")).toBeInTheDocument();
 
-        // DRE -> UE
         await user.click(screen.getByText("Anterior"));
         expect(screen.getByTestId("formulario-ue")).toBeInTheDocument();
     });

@@ -130,13 +130,13 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="acionamentoSegurancaPublica"
-                                label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?"
+                                label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?*"
                             />
 
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoSTS"
-                                label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?"
+                                label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?*"
                             />
 
                             <TextareaForm
@@ -148,7 +148,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoCPCA"
-                                label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?"
+                                label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?*"
                             />
 
                             <TextareaForm
@@ -164,7 +164,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoSupervisaoEscolar"
-                                label="Houve interlocução com a Supervisão Escolar?"
+                                label="Houve interlocução com a Supervisão Escolar?*"
                             />
 
                             <TextareaForm
@@ -180,7 +180,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoNAAPA"
-                                label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?"
+                                label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?*"
                             />
 
                             <TextareaForm

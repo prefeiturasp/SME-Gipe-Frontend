@@ -1,7 +1,7 @@
 "use client";
 
 import FormularioDre from "../FormularioDre";
-import { DetalhamentoGipe } from "../FormularioGipe/DetalhamentoGipe";
+import FormularioGipe from "../FormularioGipe";
 import { FormularioUE } from "../FormularioUE/FormularioUE";
 import { useState } from "react";
 
@@ -20,7 +20,7 @@ export default function VisualizarOcorrencia() {
                     />
                 );
             case "gipe":
-                return <DetalhamentoGipe onPrevious={() => setStep("dre")} />;
+                return <FormularioGipe onPrevious={() => setStep("dre")} />;
             case "ue":
             default:
                 return <FormularioUE onNext={() => setStep("dre")} />;
