@@ -15,14 +15,17 @@ import { toast } from "@/components/ui/headless-toast";
 import { useState } from "react";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
 import { useUserStore } from "@/stores/useUserStore";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
+    readonly onNext?: () => void;
 };
 
-export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
+export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
+    const { isPontoFocal } = useUserPermissions();
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
 
@@ -127,13 +130,13 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="acionamentoSegurancaPublica"
-                                label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?"
+                                label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?*"
                             />
 
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoSTS"
-                                label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?"
+                                label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?*"
                             />
 
                             <TextareaForm
@@ -145,7 +148,7 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoCPCA"
-                                label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?"
+                                label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?*"
                             />
 
                             <TextareaForm
@@ -161,7 +164,7 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoSupervisaoEscolar"
-                                label="Houve interlocução com a Supervisão Escolar?"
+                                label="Houve interlocução com a Supervisão Escolar?*"
                             />
 
                             <TextareaForm
@@ -177,7 +180,7 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoNAAPA"
-                                label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?"
+                                label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?*"
                             />
 
                             <TextareaForm
@@ -204,14 +207,28 @@ export function DetalhamentoDre({ onPrevious }: DetalhamentoDreProps) {
                     >
                         Anterior
                     </Button>
-                    <Button
-                        onClick={() => handleSubmit(form.getValues())}
-                        type="submit"
-                        variant="submit"
-                        disabled={!isValid}
-                    >
-                        Salvar informações
-                    </Button>
+                    {isPontoFocal && formData.status !== "enviado_para_dre" ? (
+                        <Button
+                            onClick={() => handleSubmit(form.getValues())}
+                            type="submit"
+                            variant="submit"
+                            disabled={!isValid}
+                        >
+                            Salvar informações
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="submit"
+                            type="button"
+                            disabled={!isValid}
+                            onClick={() => {
+                                handleSubmit(form.getValues());
+                                onNext?.();
+                            }}
+                        >
+                            Próximo
+                        </Button>
+                    )}
                 </div>
             </QuadroBranco>
 

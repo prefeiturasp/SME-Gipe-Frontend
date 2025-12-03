@@ -4,14 +4,12 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import PageHeader from "../PageHeader/PageHeader";
-import { DetalhamentoDre } from "./DetalhamentoDre";
+import { DetalhamentoGipe } from "./DetalhamentoGipe/index";
 
-export default function FormularioDrePage({
+export default function FormularioGipePage({
     onPrevious,
-    onNext,
 }: Readonly<{
     onPrevious: () => void;
-    onNext: () => void;
 }>) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
@@ -33,10 +31,10 @@ export default function FormularioDrePage({
     return (
         <div>
             <PageHeader
-                title="Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
+                title="Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar (GIPE)"
                 onClickBack={handleClickBack}
             />
-            <DetalhamentoDre onPrevious={onPrevious} onNext={onNext} />
+            <DetalhamentoGipe onPrevious={onPrevious} />
         </div>
     );
 }
