@@ -5,7 +5,7 @@ import { DetalhamentoGipe } from "./index";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
-import * as useCategoriasDisponiveisModule from "@/hooks/useCategoriasDisponiveis";
+import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
 
 const mockRouterBack = vi.fn();
 
@@ -64,11 +64,24 @@ const mockEnvolvidos = [
     { uuid: "env3", perfil_dos_envolvidos: "Responsável" },
 ];
 
-const mockCategorias = {
+const mockCategoriasGipe = {
+    envolve_arma_ou_ataque: [
+        { value: "sim", label: "Sim" },
+        { value: "nao", label: "Não" },
+    ],
+    ameaca_foi_realizada_de_qual_maneira: [
+        { value: "presencialmente", label: "Presencialmente" },
+        { value: "virtualmente", label: "Virtualmente" },
+    ],
     motivo_ocorrencia: [
-        { value: "cat1", label: "Bullying" },
-        { value: "cat2", label: "Violência Física" },
-        { value: "cat3", label: "Discriminação" },
+        { value: "bullying", label: "Bullying" },
+        { value: "cyberbullying", label: "Cyberbullying" },
+        { value: "racismo", label: "Racismo" },
+    ],
+    ciclo_aprendizagem: [
+        { value: "alfabetizacao", label: "Alfabetização (1º ao 3º ano)" },
+        { value: "interdisciplinar", label: "Interdisciplinar (4º ao 6º ano)" },
+        { value: "autoral", label: "Autoral (7º ao 9º ano)" },
     ],
 };
 
@@ -85,9 +98,9 @@ vi.mock("@/hooks/useEnvolvidos", () => ({
     }),
 }));
 
-vi.mock("@/hooks/useCategoriasDisponiveis", () => ({
-    useCategoriasDisponiveis: () => ({
-        data: mockCategorias,
+vi.mock("@/hooks/useCategoriasDisponiveisGipe", () => ({
+    useCategoriasDisponiveisGipe: () => ({
+        data: mockCategoriasGipe,
         isLoading: false,
     }),
 }));
@@ -336,8 +349,8 @@ describe("DetalhamentoGipe", () => {
 
     it("deve retornar array vazio para motivacaoOptions quando categorias.motivo_ocorrencia é undefined", () => {
         vi.spyOn(
-            useCategoriasDisponiveisModule,
-            "useCategoriasDisponiveis"
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe"
         ).mockReturnValue({
             data: { motivo_ocorrencia: undefined },
             isLoading: false,
@@ -352,8 +365,8 @@ describe("DetalhamentoGipe", () => {
 
     it("deve retornar array vazio para motivacaoOptions quando categorias é undefined", () => {
         vi.spyOn(
-            useCategoriasDisponiveisModule,
-            "useCategoriasDisponiveis"
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe"
         ).mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -381,6 +394,6 @@ describe("DetalhamentoGipe", () => {
         expect(
             screen.getByText(/o que motivou a ocorrência\?/i)
         ).toBeInTheDocument();
-        expect(mockCategorias.motivo_ocorrencia).toHaveLength(3);
+        expect(mockCategoriasGipe.motivo_ocorrencia).toHaveLength(3);
     });
 });

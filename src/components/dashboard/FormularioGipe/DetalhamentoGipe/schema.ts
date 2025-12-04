@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const formSchema = z.object({
-    envolveArmaOuAtaque: z.enum(["Sim", "Não"], {
+    envolveArmaOuAtaque: z.string({
         required_error: "Campo obrigatório",
     }),
-    ameacaRealizada: z.enum(["Presencialmente", "Virtualmente"], {
+    ameacaRealizada: z.string({
         required_error: "Campo obrigatório",
     }),
     envolvidosGipe: z
