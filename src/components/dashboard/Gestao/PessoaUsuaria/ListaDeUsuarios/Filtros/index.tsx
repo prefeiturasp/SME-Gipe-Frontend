@@ -71,7 +71,7 @@ export default function FiltrosUsuarios({
     return (
         <section className="w-full space-y-6 my-5">
             {/* Texto explicativo */}
-            <p className="text-sm md:text-base text-muted-foreground">
+            <p className="text-sm text-[#42474A]">
                 Você pode filtrar as pessoas que possuem acesso ao GIPE por
                 Diretorias Regionais (DREs) e Unidades Educacionais (UEs)
             </p>
@@ -80,12 +80,12 @@ export default function FiltrosUsuarios({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Diretoria Regional */}
                 <div className="space-y-2">
-                    <p className="text-base font-semibold text-foreground">
+                    <p className="text-sm text-[#42474A] font-bold">
                         Diretoria Regional
                     </p>
 
                     <Select value={dreUuid} onValueChange={handleChangeDre}>
-                        <SelectTrigger className="w-full h-12 rounded-lg text-base justify-between">
+                        <SelectTrigger className="w-full h-10 rounded-lg text-base justify-between">
                             <SelectValue
                                 placeholder={getDrePlaceholder()}
                             />
@@ -120,13 +120,13 @@ export default function FiltrosUsuarios({
 
                 {/* Unidade Educacional */}
                 <div className="space-y-2">
-                    <p className="text-base font-semibold text-foreground">
+                    <p className="text-sm text-[#42474A] font-bold">
                         Unidade Educacional
                     </p>
 
                     <Combobox
                         data-testid="select-ue"
-                        className="w-full h-12 rounded-lg text-base justify-between border border-gray-300"
+                        className="w-full h-10 rounded-lg text-base justify-between border border-gray-300"
                         options={uesOptions.map((ue: { value: string; label: string }) => ({
                                 label: ue.label,
                                 value: ue.value,
