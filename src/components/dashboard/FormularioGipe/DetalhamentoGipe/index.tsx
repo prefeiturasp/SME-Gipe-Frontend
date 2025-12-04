@@ -30,7 +30,7 @@ import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar
 import { useUserStore } from "@/stores/useUserStore";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
-import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
+import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 
 export type DetalhamentoGipeProps = {
@@ -45,8 +45,8 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
     const { data: envolvidos, isLoading: isLoadingEnvolvidos } =
         useEnvolvidos();
-    const { data: categorias, isLoading: isLoadingCategorias } =
-        useCategoriasDisponiveis();
+    const { data: categoriasGipe, isLoading: isLoadingCategoriasGipe } =
+        useCategoriasDisponiveisGipe();
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia();
 
@@ -68,14 +68,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             label: envolvido.perfil_dos_envolvidos,
         })) || [];
 
-    const motivacaoOptions = categorias?.motivo_ocorrencia || [];
-
-    const cicloAprendizagemOptions = [
-        { value: "educacao_infantil", label: "Educação Infantil" },
-        { value: "alfabetizacao", label: "Alfabetização" },
-        { value: "interdisciplinar", label: "Interdisciplinar" },
-        { value: "autoral", label: "Autoral" },
-    ];
+    const envolveArmaOuAtaqueOptions =
+        categoriasGipe?.envolve_arma_ou_ataque || [];
+    const ameacaRealizadaOptions =
+        categoriasGipe?.ameaca_foi_realizada_de_qual_maneira || [];
+    const motivacaoOptions = categoriasGipe?.motivo_ocorrencia || [];
+    const cicloAprendizagemOptions = categoriasGipe?.ciclo_aprendizagem || [];
 
     const form = useForm<FormularioGipeData>({
         resolver: zodResolver(formSchema),
@@ -108,22 +106,14 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 control={form.control}
                                 name="envolveArmaOuAtaque"
                                 label="Envolve arma ou ataque?*"
+                                options={envolveArmaOuAtaqueOptions}
                             />
 
                             <RadioForm
                                 control={form.control}
                                 name="ameacaRealizada"
                                 label="Ameaça foi realizada de qual maneira?*"
-                                options={[
-                                    {
-                                        value: "Presencialmente",
-                                        label: "Presencialmente",
-                                    },
-                                    {
-                                        value: "Virtualmente",
-                                        label: "Virtualmente",
-                                    },
-                                ]}
+                                options={ameacaRealizadaOptions}
                             />
                         </div>
                     </QuadroBranco>
@@ -170,7 +160,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 placeholder="Selecione"
-                                                disabled={isLoadingCategorias}
+                                                disabled={
+                                                    isLoadingCategoriasGipe
+                                                }
                                             />
                                         </FormControl>
                                         <p className="text-[12px] text-[#42474a] mt-1 mb-2">
