@@ -9,10 +9,10 @@ export function useFetchDREs() {
     });
 }
 
-export function useFetchUEs(dreUuid: string) {
+export function useFetchUEs(dreUuid: string, rede?: string) {
     return useQuery({
-        queryKey: ["get-ues", dreUuid],
-        queryFn: () => getUEs(dreUuid),
+        queryKey: ["get-ues", dreUuid, rede],
+        queryFn: () => getUEs(dreUuid, rede),
         enabled: !!dreUuid,
         refetchOnWindowFocus: false,
     });

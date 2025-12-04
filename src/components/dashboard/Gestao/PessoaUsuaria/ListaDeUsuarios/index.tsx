@@ -1,21 +1,18 @@
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+"use client";
 
-import Editar from "@/assets/icons/Editar";
+import * as React from "react";
+
+import FiltrosUsuarios from "./Filtros";
+import TabelaUsuarios from "./TabelaUsuarios";
 
 type ListaDeUsuariosProps = {
     status: "ativos" | "inativos";
 };
 
-const mockUsuarios = [
+const dataUsuarios = [
     {
         id: 1,
+        uuid: "1",
         perfil: "Diretor(a)",
         nome: "João Silva",
         rfOuCpf: "123.456.789-00",
@@ -26,6 +23,7 @@ const mockUsuarios = [
     },
     {
         id: 2,
+        uuid: "2",
         perfil: "Assistente de direção",
         nome: "Maria Oliveira",
         rfOuCpf: "987.654.321-00",
@@ -36,6 +34,7 @@ const mockUsuarios = [
     },
     {
         id: 3,
+        uuid: "3",
         perfil: "Ponto focal",
         nome: "Carlos Pereira",
         rfOuCpf: "456.789.123-00",
@@ -46,6 +45,7 @@ const mockUsuarios = [
     },
     {
         id: 4,
+        uuid: "4",
         perfil: "GIPE",
         nome: "Ana Souza",
         rfOuCpf: "321.654.987-00",
@@ -53,50 +53,28 @@ const mockUsuarios = [
         rede: "Direta",
         diretoriaRegional: "",
         unidadeEducacional: "",
-    }
+    },
 ];
-
-const styeTable = "px-2 text-[#42474a] text-left last:text-text-left!";
-
 
 export default function ListaDeUsuarios({
     status,
 }: Readonly<ListaDeUsuariosProps>) {
+    const handleFilterChange = (filters: {
+        dreUuid?: string;
+        ueUuid?: string;
+    }) => {
+        // aqui você pode chamar refetch da lista de usuários,
+        // atualizar estado global, montar query params, etc.
+        // ex:
+        // setFilters(filters);
+        console.log("Filtros aplicados:", filters);
+    };
+
     return (
         <>
-        <p className="p-2">Exibindo o Status: {status}</p>
-
-        <div className="rounded-md border border-gray-300">
-
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className={styeTable}>Perfil</TableHead>
-                        <TableHead className={styeTable}>Nome</TableHead>
-                        <TableHead className={styeTable}>RF ou CPF</TableHead>
-                        <TableHead className={styeTable}>Email</TableHead>
-                        <TableHead className={styeTable}>Rede</TableHead>
-                        <TableHead className={styeTable}>Diretoria Regional</TableHead>
-                        <TableHead className={styeTable}>Unidade Educacional</TableHead>
-                        <TableHead className="text-center">Ação</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {mockUsuarios.map((usuario) => (
-                        <TableRow key={usuario.id}>
-                            <TableCell>{usuario.perfil}</TableCell>
-                            <TableCell className={styeTable}>{usuario.nome}</TableCell>
-                            <TableCell className={styeTable}>{usuario.rfOuCpf}</TableCell>
-                            <TableCell className={styeTable}>{usuario.email}</TableCell>
-                            <TableCell className={styeTable}>{usuario.rede}</TableCell>
-                            <TableCell className={styeTable}>{usuario.diretoriaRegional}</TableCell>
-                            <TableCell className={styeTable}>{usuario.unidadeEducacional}</TableCell>
-                            <TableCell className={styeTable}><Editar /></TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
+            <p className="p-2">Exibindo o Status: {status}</p>
+            <FiltrosUsuarios onFilterChange={handleFilterChange} />
+            <TabelaUsuarios dataUsuarios={dataUsuarios} />
         </>
     );
 }
