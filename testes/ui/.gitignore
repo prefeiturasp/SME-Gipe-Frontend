@@ -6,11 +6,10 @@ screenshots/
 
 videos/
 
-# Testes cadastro_ue (não subir)
-cypress/e2e/ui/cadastro_ue.feature
-cypress/support/step_definitions/cadastro_ue.js
-cypress/support/locators/cadastro_ue_locators.js
 
+# Testes complement (não subir)
+cypress/e2e/ui/complement_dre.feature
+cypress/e2e/ui/complement_gipe.feature
 
 # Scripts auxiliares
 obter_token.cy.js

@@ -3,8 +3,8 @@ import Cadastro_ocorrencias_Localizadores from '../locators/cadastro_ocorrencias
 
 const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
 
-const RF_PADRAO = '05481179342'
-const SENHA_PADRAO = 'Sgp9342'
+const RF_PADRAO = '29379960000'
+const SENHA_PADRAO = 'Sgp0000'
 
 // ==================== FUNÇÕES AUXILIARES ====================
 
@@ -102,7 +102,6 @@ When('o usuário seleciona e clica em {string}', (label) => {
     
     cy.xpath(locators_ocorrencias.btn_nova_ocorrencia(), { timeout: 20000 })
       .should('be.visible')
-      .scrollIntoView()
       .then($btn => {
         if ($btn.is(':disabled') || $btn.hasClass('disabled') || $btn.attr('aria-disabled') === 'true') {
           cy.log('Botão desabilitado detectado - aplicando force click')
@@ -123,9 +122,12 @@ When('o usuário seleciona e clica em {string}', (label) => {
   }
 })
 
-When('seleciona {string} com a data {string}', (label, data) => {
-  const parts = data.split('/')
-  const normalized = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
+When('seleciona {string} com a data atual', (label) => {
+  const hoje = new Date()
+  const ano = hoje.getFullYear()
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+  const dia = String(hoje.getDate()).padStart(2, '0')
+  const normalized = `${ano}-${mes}-${dia}`
   
   cy.wait(2000)
   
@@ -133,7 +135,6 @@ When('seleciona {string} com a data {string}', (label, data) => {
     .first()
     .should('be.visible')
     .should('be.enabled')
-    .scrollIntoView()
     .click({ force: true })
     .clear({ force: true })
     .type(normalized, { force: true })
@@ -146,7 +147,12 @@ When('seleciona {string} com a data {string}', (label, data) => {
     .should('have.value', normalized)
 })
 
-When('seleciona hora Atua {string}', (horario) => {
+When('seleciona hora atual', () => {
+  const agora = new Date()
+  const horas = String(agora.getHours()).padStart(2, '0')
+  const minutos = String(agora.getMinutes()).padStart(2, '0')
+  const horario = `${horas}:${minutos}`
+  
   cy.wait(2000)
   
   cy.get('body').then($body => {
@@ -154,7 +160,6 @@ When('seleciona hora Atua {string}', (horario) => {
       cy.get('input[placeholder="Digite o horário"]', { timeout: 15000 })
         .should('be.visible')
         .should('be.enabled')
-        .scrollIntoView()
         .click({ force: true })
         .wait(500)
         .clear({ force: true })
@@ -172,7 +177,6 @@ When('seleciona hora Atua {string}', (horario) => {
       cy.xpath(xpathHora, { timeout: 15000 })
         .should('be.visible')
         .should('be.enabled')
-        .scrollIntoView()
         .click({ force: true })
         .wait(500)
         .clear({ force: true })
@@ -188,13 +192,13 @@ When('seleciona hora Atua {string}', (horario) => {
   })
 })
 
-When('seleciona {string} como {string}', (question, answer) => {
-  const ansLower = answer.trim().toLowerCase()
+When('seleciona {string} como {string}', (pergunta, opcao) => {
+  const ansLower = opcao.trim().toLowerCase()
   cy.wait(2000)
   
   cy.get('body').then($body => {
     const matched = $body.find('*').filter((_, el) =>
-      el?.innerText?.trim().includes(question)
+      el?.innerText?.trim().includes(pergunta)
     ).first()
 
     if (matched.length) {
@@ -207,7 +211,7 @@ When('seleciona {string} como {string}', (question, answer) => {
 
       if ($labelMatch.length) {
         cy.wrap($labelMatch)
-          .scrollIntoView()
+          
           .should('be.visible')
           .click({ force: true })
         cy.wait(1500)
@@ -251,20 +255,20 @@ When('clica no campo {string}', (campo) => {
       .first()
       .should('be.visible')
       .should('be.enabled')
-      .scrollIntoView()
+      
       .click({ force: true })
   } else if (campo.includes('Descreva a ocorrência')) {
     cy.get('textarea[id*="form-item"]', { timeout: 15000 })
       .should('be.visible')
       .should('be.enabled')
-      .scrollIntoView()
+      
       .click({ force: true })
   } else {
     cy.get('button.w-full', { timeout: 15000 })
       .first()
       .should('be.visible')
       .should('be.enabled')
-      .scrollIntoView()
+      
       .click({ force: true })
   }
   
@@ -288,7 +292,7 @@ When('Selecionar {string}', (opcao) => {
     cy.contains('span', opcao, { timeout: 20000 })
       .should('exist')
       .should('be.visible')
-      .scrollIntoView()
+      
       .click({ force: true })
     
     cy.wait(2500)
@@ -403,7 +407,7 @@ When('seleciona {string}', (opcao) => {
   if (opcao.includes('Sim, mas não houve dano')) {
     cy.get('label.flex:nth-child(2) > span:nth-child(3)', { timeout: 15000 })
       .should('be.visible')
-      .scrollIntoView()
+      
       .click({ force: true })
     cy.wait(1500)
   } else if (opcao.includes('Apenas um estudante')) {
@@ -424,7 +428,7 @@ When('seleciona {string}', (opcao) => {
     cy.contains('span,label', opcao, { timeout: 15000 })
       .first()
       .should('be.visible')
-      .scrollIntoView()
+      
       .click({ force: true })
     cy.wait(1500)
   }
@@ -468,7 +472,7 @@ When('clica em proximo final', () => {
   
   cy.get('.inline-flex')
     .should('not.be.disabled')
-    .scrollIntoView()
+    
     .click({ force: true })
   
   cy.wait(3000)
@@ -496,14 +500,14 @@ When('clica no Campo {string}', (campo) => {
       .first()
       .should('be.visible')
       .should('be.enabled')
-      .scrollIntoView()
+      
       .click({ force: true })
   } else {
     cy.get('button[id*="form-item"]', { timeout: 15000 })
       .eq(1)
       .should('be.visible')
       .should('be.enabled')
-      .scrollIntoView()
+      
       .click({ force: true })
   }
   
@@ -527,7 +531,7 @@ When('clica em opcao {string}', (opcao) => {
   const childIndex = opcao === 'Não' ? 2 : 1
   cy.get(`label.flex:nth-child(${childIndex}) > span:nth-child(3)`, { timeout: 15000 })
     .should('be.visible')
-    .scrollIntoView()
+    
     .click({ force: true })
   cy.wait(1500)
 })

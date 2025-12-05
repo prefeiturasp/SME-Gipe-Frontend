@@ -4,8 +4,8 @@ import { acessarSistema, efetuarLogin } from '../commands_ui/commands_login'
 
 const locators = new ConsultaFiltroLocalizadores()
 
-const RF_PADRAO = '05481179342'
-const SENHA_PADRAO = 'Sgp9342'
+const RF_PADRAO = '29379960000'
+const SENHA_PADRAO = 'Sgp0000'
 
 Given('que eu acesso o sistema', () => {
   cy.log('Acessando sistema GIPE...')
