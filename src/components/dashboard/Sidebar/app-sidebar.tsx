@@ -60,12 +60,12 @@ const items: NavItem[] = [
         children: [
             {
                 title: "Gestão de pessoa usuária",
-                url: "/dashboard/gestao/pessoa-usuaria",
+                url: "/dashboard/gestao-usuarios",
                 icon: Gestao,
             },
             {
                 title: "Gestão de Unidades Educacionais",
-                url: "/dashboard/gestao/unidades-educacionais",
+                url: "/dashboard/gestao-unidades-educacionais",
                 icon: Gestao,
             },
         ],

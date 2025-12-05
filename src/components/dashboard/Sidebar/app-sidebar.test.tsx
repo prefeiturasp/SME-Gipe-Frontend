@@ -157,7 +157,7 @@ describe("AppSidebar", () => {
             toggleSidebar: () => {},
         });
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/dashboard/gestao/pessoa-usuaria"
+            "/dashboard/gestao-usuarios"
         );
         const user = userEvent.setup();
         renderWithProvider(<AppSidebar />);
