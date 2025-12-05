@@ -13,8 +13,9 @@ export default function Header() {
             </span>
 
             <Button asChild variant="submit" size="sm" className="font-normal">
-                <Link href="/dashboard/#" replace>
-                    <NovoUsuario /> <span className="ml-2">Cadastrar pessoa usuária</span>
+                <Link href="/dashboard/gestao/pessoa-usuaria/cadastro">
+                    <NovoUsuario />{" "}
+                    <span className="ml-2">Cadastrar pessoa usuária</span>
                 </Link>
             </Button>
         </div>

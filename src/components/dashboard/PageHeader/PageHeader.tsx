@@ -22,9 +22,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 {title}
             </h1>
             {showBackButton && (
-                <Button asChild variant="customOutline" size="sm">
+                <Button asChild variant="customOutline">
                     <Link href="/dashboard" onClick={onClickBack}>
-                        <ArrowLeft />
+                        <ArrowLeft className="mr-2" />
                         &nbsp;Voltar
                     </Link>
                 </Button>

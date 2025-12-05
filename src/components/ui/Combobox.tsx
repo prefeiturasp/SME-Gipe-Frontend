@@ -12,6 +12,7 @@ import {
     CommandEmpty,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Option {
@@ -60,6 +61,7 @@ export function Combobox({
                             {placeholder}
                         </span>
                     )}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent
