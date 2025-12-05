@@ -3,6 +3,9 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+
 
 interface MockUser {
     username: string;
@@ -24,16 +27,45 @@ vi.mock("@/hooks/useOcorrencias", () => ({
     useOcorrencias: vi.fn(),
 }));
 
+vi.mock("@/hooks/useTiposOcorrencia");
+
+const mockTiposOcorrencia = [
+    {
+        uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+        nome: "Física",
+    },
+    {
+        uuid: "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+        nome: "Psicológica",
+    }
+]
+
 import { useOcorrencias } from "@/hooks/useOcorrencias";
+import * as useUnidadesHook from "@/hooks/useUnidades";
 import TabelaOcorrencias from "../TabelaOcorrencias";
 import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
+
+const renderWithQueryProvider = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    return render(ui, {
+        wrapper: ({ children }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        ),
+    });
+};
+
+
 
 const sampleData = [
     {
         protocolo: "P0001",
         dataHora: "2025-09-01 10:00",
         codigoEol: "EOL1",
-        tipoViolencia: "Física",
+        tipoOcorrencia: "Física",
         status: "Incompleta",
         id: "1",
         uuid: "uuid-test-1",
@@ -42,7 +74,7 @@ const sampleData = [
         protocolo: "P0002",
         dataHora: "2025-09-02 11:00",
         codigoEol: "EOL2",
-        tipoViolencia: "Psicológica",
+        tipoOcorrencia: "Psicológica",
         status: "Finalizada",
         id: "2",
         uuid: "uuid-test-2",
@@ -52,6 +84,27 @@ const sampleData = [
 describe("TabelaOcorrencias", () => {
     beforeEach(() => {
         (useOcorrencias as Mock).mockClear();
+        
+        vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
+                    data: mockTiposOcorrencia,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                } as never);
+
+        vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
+                    data: [{ uuid: "dre-1", nome: "DRE 1" }, { uuid: "dre-2", nome: "DRE 2" }, { uuid: "dre-3", nome: "DRE 3"}],
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                } as never);
+
+        vi.spyOn(useUnidadesHook, "useFetchTodasUEs").mockReturnValue({
+            data: [{ uuid: "ue-1", nome: "UE 1" }, { uuid: "ue-2", nome: "UE 2" }, { uuid: "ue-3", nome: "UE 3"}],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
     });
 
     it("renderiza cabeçalhos e linhas quando existem dados", async () => {
@@ -59,7 +112,7 @@ describe("TabelaOcorrencias", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -68,7 +121,7 @@ describe("TabelaOcorrencias", () => {
         expect(screen.getByText("Protocolo")).toBeInTheDocument();
         expect(screen.getByText("Data/Hora")).toBeInTheDocument();
         expect(screen.getByText("Código EOL")).toBeInTheDocument();
-        expect(screen.getByText("Tipo de violência")).toBeInTheDocument();
+        expect(screen.getByText("Tipo de Ocorrência")).toBeInTheDocument();
         expect(screen.getByText("Status")).toBeInTheDocument();
         expect(screen.getByText("Ação")).toBeInTheDocument();
 
@@ -102,7 +155,7 @@ describe("TabelaOcorrencias", () => {
             data: [],
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -116,7 +169,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: true,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         expect(screen.getByText("Carregando...")).toBeInTheDocument();
         expect(screen.queryByText("Protocolo")).not.toBeInTheDocument();
@@ -127,7 +180,7 @@ describe("TabelaOcorrencias", () => {
             data: undefined,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(
@@ -208,7 +261,7 @@ describe("TabelaOcorrencias", () => {
             isLoading: false,
         });
         const user = userEvent.setup();
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -238,13 +291,13 @@ describe("TabelaOcorrencias", () => {
         });
     });
 
-    it("filtra por Tipo de violência e Status", async () => {
+    it("filtra por Tipo de Ocorrência e Status", async () => {
         (useOcorrencias as Mock).mockReturnValue({
             data: sampleData,
             isLoading: false,
         });
         const user = userEvent.setup();
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() => {
             expect(screen.getByText("P0001")).toBeInTheDocument();
@@ -253,7 +306,7 @@ describe("TabelaOcorrencias", () => {
         await user.click(screen.getByRole("button", { name: /Filtrar/i }));
 
         await user.click(
-            screen.getByRole("combobox", { name: /Tipo de violência/i })
+            screen.getByRole("combobox", { name: /Tipo de Ocorrência/i })
         );
         const tvListbox = await screen.findByRole("listbox");
         const tvOption = await within(tvListbox).findByRole("option", {

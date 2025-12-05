@@ -1,9 +1,15 @@
 import { vi } from "vitest";
 
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+    render,
+    screen,
+    fireEvent,
+    waitFor,
+    act,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoInicial from "./index";
+import SecaoInicial, { SecaoInicialRef } from "./index";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -40,9 +46,11 @@ vi.mock("@/stores/useUserStore", () => ({
 }));
 
 const setFormDataMock = vi.fn();
+const setSavedFormDataMock = vi.fn();
 const setOcorrenciaIdMock = vi.fn();
 let mockOcorrenciaUuid: string | null = null;
 let mockFormData: Record<string, unknown> = {};
+let mockSavedFormData: Record<string, unknown> = {};
 
 const mockCriarOcorrencia = vi.fn();
 const mockAtualizarOcorrencia = vi.fn();
@@ -50,7 +58,9 @@ const mockAtualizarOcorrencia = vi.fn();
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: () => ({
         formData: mockFormData,
+        savedFormData: mockSavedFormData,
         setFormData: setFormDataMock,
+        setSavedFormData: setSavedFormDataMock,
         setOcorrenciaUuid: setOcorrenciaIdMock,
         ocorrenciaUuid: mockOcorrenciaUuid,
     }),
@@ -89,7 +99,9 @@ describe("SecaoInicial", () => {
         queryClient.clear();
         mockOcorrenciaUuid = null;
         mockFormData = {};
+        mockSavedFormData = {};
         setFormDataMock.mockClear();
+        setSavedFormDataMock.mockClear();
         setOcorrenciaIdMock.mockClear();
     });
 
@@ -97,7 +109,14 @@ describe("SecaoInicial", () => {
         renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         expect(
-            screen.getByLabelText(/Quando a ocorrência aconteceu\?\*/i)
+            screen.getByText(/Quando a ocorrência aconteceu\?\*/i)
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByPlaceholderText("Selecione a data")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText("Digite o horário")
         ).toBeInTheDocument();
 
         expect(screen.getAllByText(/DRE Teste/i).length).toBeGreaterThan(0);
@@ -120,12 +139,15 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        expect(dateInput.value).toBe("2025-10-02");
+        expect(dateInput).toHaveValue("2025-10-02");
+
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        expect(timeInput).toHaveValue("14:30");
+
         expect(nextButton).toBeDisabled();
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
@@ -143,9 +165,8 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -155,7 +176,10 @@ describe("SecaoInicial", () => {
         const futureDate = `${yyyy}-${mm}-${dd}`;
 
         fireEvent.change(dateInput, { target: { value: futureDate } });
-        expect(dateInput.value).toBe(futureDate);
+        expect(dateInput).toHaveValue(futureDate);
+
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        expect(timeInput).toHaveValue("14:30");
 
         const error = await screen.findByText(
             /A data da ocorrência não pode ser no futuro\./i
@@ -173,12 +197,10 @@ describe("SecaoInicial", () => {
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         expect(nextButton).toBeDisabled();
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
 
         fireEvent.change(dateInput, { target: { value: "invalid-date" } });
-        expect(dateInput.value).toBe("");
+        expect(dateInput).toHaveValue("");
 
         const formEl = container.querySelector("form") as HTMLFormElement;
         fireEvent.submit(formEl);
@@ -197,6 +219,7 @@ describe("SecaoInicial", () => {
 
         const result = formSchema.safeParse({
             dataOcorrencia: "invalid-date",
+            horaOcorrencia: "14:30",
             dre: "DRE Teste",
             unidadeEducacional: "EMEF Teste",
             tipoOcorrencia: "Sim",
@@ -222,10 +245,11 @@ describe("SecaoInicial", () => {
 
         renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -249,10 +273,11 @@ describe("SecaoInicial", () => {
 
         renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+
         fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        fireEvent.change(timeInput, { target: { value: "14:30" } });
 
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
         fireEvent.click(radioSim);
@@ -311,6 +336,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -347,7 +373,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),
@@ -359,10 +387,8 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        expect(dateInput.value).toBe("2025-10-02");
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        expect(dateInput).toHaveValue("2025-10-02");
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         await waitFor(() => expect(nextButton).toBeEnabled());
@@ -379,6 +405,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -417,7 +444,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),
@@ -429,13 +458,11 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
-        expect(dateInput.value).toBe("2025-10-02");
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        expect(dateInput).toHaveValue("2025-10-02");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
-        expect(dateInput.value).toBe("2025-10-05");
+        expect(dateInput).toHaveValue("2025-10-05");
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
         await waitFor(() => expect(nextButton).toBeEnabled());
@@ -461,6 +488,7 @@ describe("SecaoInicial", () => {
 
         const preFilledFormData = {
             dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "14:30",
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
@@ -501,7 +529,9 @@ describe("SecaoInicial", () => {
         vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
             useOcorrenciaFormStore: () => ({
                 formData: preFilledFormData,
+                savedFormData: preFilledFormData,
                 setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
                 setOcorrenciaUuid: mockSetOcorrenciaUuid,
                 ocorrenciaUuid: "uuid-existente",
             }),
@@ -517,9 +547,7 @@ describe("SecaoInicial", () => {
         const onSuccess = vi.fn();
         renderWithClient(<SecaoInicialIsolated onSuccess={onSuccess} />);
 
-        const dateInput = screen.getByLabelText<HTMLInputElement>(
-            /Quando a ocorrência aconteceu\?\*/i
-        );
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
 
         fireEvent.change(dateInput, { target: { value: "2025-10-05" } });
 
@@ -536,5 +564,91 @@ describe("SecaoInicial", () => {
             description: "Erro ao atualizar",
         });
         expect(onSuccess).not.toHaveBeenCalled();
+    });
+
+    describe("métodos expostos via ref", () => {
+        it("deve retornar dados do formulário via getFormData", () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            const formData = ref.current?.getFormData();
+
+            expect(formData).toBeDefined();
+            expect(formData).toHaveProperty("dataOcorrencia");
+            expect(formData).toHaveProperty("horaOcorrencia");
+            expect(formData).toHaveProperty("dre");
+            expect(formData).toHaveProperty("unidadeEducacional");
+            expect(formData).toHaveProperty("tipoOcorrencia");
+        });
+
+        it("deve retornar instância do formulário via getFormInstance", () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            const formInstance = ref.current?.getFormInstance();
+
+            expect(formInstance).toBeDefined();
+            expect(formInstance).toHaveProperty("getValues");
+            expect(formInstance).toHaveProperty("trigger");
+            expect(formInstance).toHaveProperty("formState");
+        });
+
+        it("deve validar e submeter via submitForm quando dados são válidos", async () => {
+            mockCriarOcorrencia.mockResolvedValue({
+                success: true,
+                data: { uuid: "new-uuid-123" },
+            });
+
+            const ref = React.createRef<SecaoInicialRef>();
+
+            const onSuccess = vi.fn();
+            renderWithClient(<SecaoInicial ref={ref} onSuccess={onSuccess} />);
+
+            const dateInput = screen.getByPlaceholderText("Selecione a data");
+            const timeInput = screen.getByPlaceholderText("Digite o horário");
+            const simRadio = screen.getByLabelText("Sim");
+
+            await act(async () => {
+                fireEvent.change(dateInput, {
+                    target: { value: "2024-10-15" },
+                });
+                fireEvent.change(timeInput, { target: { value: "14:30" } });
+                fireEvent.click(simRadio);
+            });
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(true);
+            await waitFor(() => {
+                expect(mockCriarOcorrencia).toHaveBeenCalled();
+            });
+        });
+
+        it("deve retornar false em submitForm quando dados são inválidos", async () => {
+            const ref = React.createRef<SecaoInicialRef>();
+
+            renderWithClient(<SecaoInicial ref={ref} />);
+
+            await waitFor(() => {
+                expect(ref.current).not.toBeNull();
+            });
+
+            let result: boolean | undefined;
+            await act(async () => {
+                result = await ref.current?.submitForm();
+            });
+
+            expect(result).toBe(false);
+            expect(mockCriarOcorrencia).not.toHaveBeenCalled();
+        });
     });
 });

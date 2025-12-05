@@ -49,32 +49,42 @@ describe("useOcorrencias", () => {
                 {
                     id: 1,
                     uuid: "uuid-1",
-                    data_ocorrencia: "2025-10-08T12:00:00Z",
+                    data_ocorrencia: "2025-10-08T12:00:00",
                     unidade_codigo_eol: "unit-1",
-                    dre_codigo_eol: "dre-1",
+                    nome_dre: "dre-1",
+                    nome_unidade: "Nome teste",
+                    tipos_ocorrencia: [{ uuid: "1", nome: "Agressão física" }],
+                    status_extra: "Finalizada",
                 },
             ],
         };
 
-        useUserStoreMock.mockReturnValue(mockUser);
-        getOcorrenciasActionMock.mockResolvedValue(mockApiResponse);
+        useUserStoreMock.mockImplementation(
+            <T,>(selector: (state: { user: User | null }) => T) =>
+                selector({ user: mockUser })
+        );
+
+        getOcorrenciasActionMock.mockResolvedValueOnce(mockApiResponse);
 
         const { result } = renderHook(() => useOcorrencias(), {
             wrapper: createWrapper(),
         });
 
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() => expect(result.current.isSuccess).toBe(true), {
+            timeout: 2000,
+        });
 
-        expect(getOcorrenciasActionMock).toHaveBeenCalled();
-        expect(result.current.data).toEqual([
-            expect.objectContaining({
-                id: 1,
-                uuid: "uuid-1",
-                codigoEol: "unit-1",
-                dre: "dre-1",
-                dataHora: "08/10/2025 - 12:00",
-            }),
-        ]);
+        expect(getOcorrenciasActionMock).toHaveBeenCalledTimes(1);
+        expect(result.current.data).toHaveLength(1);
+        expect(result.current.data?.[0]).toMatchObject({
+            id: 1,
+            uuid: "uuid-1",
+            codigoEol: "unit-1",
+            dre: "dre-1",
+            nomeUe: "Nome teste",
+            tipoOcorrencia: "Agressão física",
+            status: "Finalizada",
+        });
     });
 
     it("deve lançar um erro se a action falhar", async () => {

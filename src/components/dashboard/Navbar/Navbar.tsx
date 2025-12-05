@@ -19,7 +19,7 @@ export function Navbar() {
     const user = useUserStore((state) => state.user);
 
     return (
-        <header className="flex items-center justify-between border-b border-gray-200 bg-white h-[72px] px-4">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white h-[72px] px-4">
             <div className="flex items-center">
                 <Image src={LogoGipe} alt="Logo GIPE" width={77} height={56} />
             </div>
