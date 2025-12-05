@@ -15,7 +15,7 @@ Funcionalidade: Edição de ocorrência após visualização
     E estou na página principal do sistema
     
   @skip
-  @edicao @positivo @smoke
+  @edicao @smoke
   Cenário: Editar ocorrência visualizada
     Dado que estou na tela de listagem de ocorrências
     Quando clico em Visualizar
