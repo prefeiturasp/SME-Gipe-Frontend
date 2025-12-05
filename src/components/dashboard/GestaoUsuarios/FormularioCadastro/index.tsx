@@ -102,7 +102,7 @@ export default function FormularioCadastroPessoaUsuaria() {
 
     return (
         <Form {...form}>
-            <form className="mt-6">
+            <form>
                 <h2 className="text-[14px] text-[#42474a] mb-6">
                     Cadastre as informações da pessoa usuária.
                 </h2>
