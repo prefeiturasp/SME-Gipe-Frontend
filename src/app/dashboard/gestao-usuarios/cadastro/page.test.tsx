@@ -15,15 +15,12 @@ vi.mock("@/components/dashboard/QuadroBranco/QuadroBranco", () => ({
     ),
 }));
 
-vi.mock(
-    "@/components/dashboard/Gestao/PessoaUsuaria/FormularioCadastro",
-    () => ({
-        __esModule: true,
-        default: () => (
-            <div data-testid="formulario-cadastro">Formulário Cadastro</div>
-        ),
-    })
-);
+vi.mock("@/components/dashboard/GestaoUsuarios/FormularioCadastro", () => ({
+    __esModule: true,
+    default: () => (
+        <div data-testid="formulario-cadastro">Formulário Cadastro</div>
+    ),
+}));
 
 describe("Página de cadastro de pessoa usuária", () => {
     let queryClient: QueryClient;
@@ -43,18 +40,6 @@ describe("Página de cadastro de pessoa usuária", () => {
 
         expect(
             screen.getByText("Cadastrar pessoa usuária")
-        ).toBeInTheDocument();
-    });
-
-    it("renderiza a descrição corretamente", () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <Page />
-            </QueryClientProvider>
-        );
-
-        expect(
-            screen.getByText(/Preencha os dados abaixo para cadastrar/i)
         ).toBeInTheDocument();
     });
 

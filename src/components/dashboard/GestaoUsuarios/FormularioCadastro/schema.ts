@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isValidCPF } from "@/lib/utils";
 
-const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
+const normalize = (s: string) => s.replaceAll(/\s+/g, " ").trim();
 const fullName = z
     .string()
     .transform(normalize)
@@ -35,11 +35,9 @@ const formSchema = z
         isAdmin: z.boolean().default(false),
     })
     .superRefine((data, ctx) => {
-        const cleanValue = data.rfOuCpf.replace(/\D/g, "");
+        const cleanValue = data.rfOuCpf.replaceAll(/\D/g, "");
 
-        // Validação de RF ou CPF baseada na rede
         if (data.rede === "INDIRETA") {
-            // Para rede indireta, deve ser CPF (11 dígitos)
             if (cleanValue.length !== 11) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
@@ -54,7 +52,6 @@ const formSchema = z
                 });
             }
         } else if (data.rede === "DIRETA") {
-            // Para rede direta, deve ser RF (7 dígitos)
             if (cleanValue.length !== 7) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
@@ -65,7 +62,6 @@ const formSchema = z
             }
         }
 
-        // Validação de DRE - obrigatória exceto para cargo GIPE
         if (data.cargo !== "gipe" && !data.dre) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -74,7 +70,6 @@ const formSchema = z
             });
         }
 
-        // Validação de UE - obrigatória exceto para cargos ponto_focal e GIPE
         if (data.cargo !== "ponto_focal" && data.cargo !== "gipe" && !data.ue) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,

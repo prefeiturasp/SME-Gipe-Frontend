@@ -46,6 +46,8 @@ export default function FormularioCadastroPessoaUsuaria() {
         reValidateMode: "onChange",
     });
 
+    const { isValid } = form.formState;
+
     const values = form.watch();
     const { data: ueOptions = [] } = useFetchUEs(values.dre);
 
@@ -64,10 +66,6 @@ export default function FormularioCadastroPessoaUsuaria() {
             form.setValue("ue", "");
         }
     }, [values.cargo, form]);
-
-    function handleSubmit() {
-        console.log("Cadastro a ser implementado", values);
-    }
 
     const redeOptions = [
         { value: "DIRETA", label: "Direta" },
@@ -104,7 +102,7 @@ export default function FormularioCadastroPessoaUsuaria() {
 
     return (
         <Form {...form}>
-            <form className="mt-6" onSubmit={form.handleSubmit(handleSubmit)}>
+            <form className="mt-6">
                 <h2 className="text-[14px] text-[#42474a] mb-6">
                     Cadastre as informações da pessoa usuária.
                 </h2>
@@ -121,10 +119,12 @@ export default function FormularioCadastroPessoaUsuaria() {
                                 <Select
                                     value={field.value}
                                     onValueChange={field.onChange}
-                                    data-testid="select-rede"
                                 >
                                     <FormControl>
-                                        <SelectTrigger className="w-full border-[#DADADA]">
+                                        <SelectTrigger
+                                            className="w-full border-[#DADADA]"
+                                            data-testid="select-rede"
+                                        >
                                             <SelectValue placeholder="Selecione" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -156,10 +156,12 @@ export default function FormularioCadastroPessoaUsuaria() {
                                     value={field.value}
                                     onValueChange={field.onChange}
                                     disabled={!isRedeSelected}
-                                    data-testid="select-cargo"
                                 >
                                     <FormControl>
-                                        <SelectTrigger className="w-full disabled:bg-[#F5F5F5] border-[#DADADA] disabled:opacity-100">
+                                        <SelectTrigger
+                                            className="w-full disabled:bg-[#F5F5F5] border-[#DADADA] disabled:opacity-100"
+                                            data-testid="select-cargo"
+                                        >
                                             <SelectValue placeholder="Selecione" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -359,15 +361,6 @@ export default function FormularioCadastroPessoaUsuaria() {
 
                 <div className="flex gap-4 mt-8 justify-end">
                     <Button
-                        type="submit"
-                        variant="submit"
-                        disabled={Object.keys(form.formState.errors).length > 0}
-                        data-testid="button-cadastrar"
-                    >
-                        Cadastrar pessoa usuária
-                    </Button>
-
-                    <Button
                         type="button"
                         variant="customOutline"
                         onClick={() =>
@@ -375,6 +368,14 @@ export default function FormularioCadastroPessoaUsuaria() {
                         }
                     >
                         Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="submit"
+                        disabled={!isValid}
+                        data-testid="button-cadastrar"
+                    >
+                        Cadastrar pessoa usuária
                     </Button>
                 </div>
             </form>

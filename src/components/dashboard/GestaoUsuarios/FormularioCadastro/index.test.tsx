@@ -10,20 +10,6 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
-const mockToast = vi.fn();
-vi.mock("@/components/ui/headless-toast", () => ({
-    toast: (args: unknown) => mockToast(args),
-}));
-
-const mockMutateAsync = vi.fn();
-vi.mock("@/hooks/useCadastro", () => ({
-    __esModule: true,
-    default: () => ({
-        mutateAsync: mockMutateAsync,
-        isPending: false,
-    }),
-}));
-
 vi.mock("@/hooks/useUnidades", () => ({
     useFetchDREs: () => ({
         data: [
@@ -60,84 +46,125 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     });
 
     beforeAll(() => {
-        window.HTMLElement.prototype.scrollIntoView = vi.fn();
+        globalThis.HTMLElement.prototype.scrollIntoView = vi.fn();
     });
 
-    const preencherFormulario = async () => {
-        const selectOption = async (
-            comboboxIndex: number,
-            optionName: string
-        ) => {
-            const comboboxes = screen.getAllByRole("combobox");
-            const combobox = comboboxes[comboboxIndex];
-            fireEvent.click(combobox);
+    it("renderiza o formulário corretamente", () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-            await waitFor(() => {
-                const option = screen.getByRole("option", { name: optionName });
-                expect(option).toBeInTheDocument();
-            });
+        expect(screen.getByTestId("select-rede")).toBeInTheDocument();
+        expect(screen.getByTestId("select-cargo")).toBeInTheDocument();
+        expect(screen.getByTestId("input-fullName")).toBeInTheDocument();
+        expect(screen.getByTestId("input-rfOuCpf")).toBeInTheDocument();
+        expect(screen.getByTestId("input-email")).toBeInTheDocument();
+        expect(screen.getByTestId("select-dre")).toBeInTheDocument();
+        expect(screen.getByTestId("select-ue")).toBeInTheDocument();
+        expect(screen.getByTestId("checkbox-isAdmin")).toBeInTheDocument();
+    });
 
-            const option = screen.getByRole("option", { name: optionName });
+    it("desabilita todos os campos quando rede não está selecionada", () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        expect(screen.getByTestId("select-cargo")).toBeDisabled();
+        expect(screen.getByTestId("input-fullName")).toBeDisabled();
+        expect(screen.getByTestId("input-rfOuCpf")).toBeDisabled();
+        expect(screen.getByTestId("input-email")).toBeDisabled();
+        expect(screen.getByTestId("select-dre")).toBeDisabled();
+        expect(screen.getByTestId("select-ue")).toBeDisabled();
+        expect(screen.getByTestId("checkbox-isAdmin")).toBeDisabled();
+    });
+
+    it("habilita campos após selecionar rede", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            expect(option).toBeInTheDocument();
+        });
+
+        const option = screen.getByRole("option", { name: "Direta" });
+        fireEvent.click(option);
+
+        await waitFor(() => {
+            expect(screen.getByTestId("select-cargo")).toBeEnabled();
+            expect(screen.getByTestId("input-fullName")).toBeEnabled();
+            expect(screen.getByTestId("input-rfOuCpf")).toBeEnabled();
+            expect(screen.getByTestId("input-email")).toBeEnabled();
+            expect(screen.getByTestId("select-dre")).toBeEnabled();
+        });
+    });
+
+    it("permite preencher nome completo", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Selecionar rede primeiro
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
             fireEvent.click(option);
-        };
+        });
 
-        // Preencher nome completo
         const inputFullName = screen.getByTestId("input-fullName");
         fireEvent.change(inputFullName, {
             target: { value: "João da Silva" },
         });
 
-        // Preencher CPF
-        const inputCpf = screen.getByTestId("input-cpf");
-        fireEvent.change(inputCpf, { target: { value: "12345678900" } });
+        expect(inputFullName).toHaveValue("João da Silva");
+    });
 
-        // Preencher e-mail
+    it("permite preencher RF ou CPF", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Selecionar rede primeiro
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const inputRfOuCpf = screen.getByTestId("input-rfOuCpf");
+        fireEvent.change(inputRfOuCpf, { target: { value: "1234567" } });
+
+        expect(inputRfOuCpf).toHaveValue("1234567");
+    });
+
+    it("permite preencher e-mail", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Selecionar rede primeiro
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
         const inputEmail = screen.getByTestId("input-email");
         fireEvent.change(inputEmail, {
             target: { value: "joao.silva@sme.prefeitura.sp.gov.br" },
         });
 
-        // Selecionar perfil
-        await selectOption(0, "Diretor(a)");
-
-        // Selecionar DRE
-        await selectOption(1, "DRE Butantã");
-
-        // Selecionar UE
-        await waitFor(() => {
-            expect(screen.getByText("EMEF João da Silva")).toBeInTheDocument();
-        });
-        await selectOption(2, "EMEF João da Silva");
-    };
-
-    it("renderiza o formulário corretamente", () => {
-        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
-
-        expect(screen.getByTestId("input-fullName")).toBeInTheDocument();
-        expect(screen.getByTestId("input-cpf")).toBeInTheDocument();
-        expect(screen.getByTestId("input-email")).toBeInTheDocument();
-        expect(screen.getByTestId("select-perfil")).toBeInTheDocument();
-        expect(screen.getByTestId("select-dre")).toBeInTheDocument();
-        expect(screen.getByTestId("select-ue")).toBeInTheDocument();
+        expect(inputEmail).toHaveValue("joao.silva@sme.prefeitura.sp.gov.br");
     });
 
-    it("mostra erros de validação quando campos obrigatórios não são preenchidos", async () => {
+    it("valida CPF inválido para rede indireta", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        const submitButton = screen.getByTestId("button-cadastrar");
-        fireEvent.click(submitButton);
-
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
         await waitFor(() => {
-            expect(screen.getByText("DRE é obrigatória")).toBeInTheDocument();
+            const option = screen.getByRole("option", { name: "Indireta" });
+            fireEvent.click(option);
         });
-    });
 
-    it("valida CPF inválido", async () => {
-        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
-
-        const inputCpf = screen.getByTestId("input-cpf");
-        fireEvent.change(inputCpf, { target: { value: "11111111111" } });
-        fireEvent.blur(inputCpf);
+        const inputRfOuCpf = screen.getByTestId("input-rfOuCpf");
+        fireEvent.change(inputRfOuCpf, { target: { value: "11111111111" } });
+        fireEvent.blur(inputRfOuCpf);
 
         await waitFor(() => {
             expect(screen.getByText("CPF inválido")).toBeInTheDocument();
@@ -146,6 +173,14 @@ describe("FormularioCadastroPessoaUsuaria", () => {
 
     it("valida formato de e-mail institucional", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Selecionar rede primeiro
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
 
         const inputEmail = screen.getByTestId("input-email");
         fireEvent.change(inputEmail, {
@@ -160,58 +195,143 @@ describe("FormularioCadastroPessoaUsuaria", () => {
         });
     });
 
-    it("cadastra pessoa usuária com sucesso", async () => {
-        mockMutateAsync.mockResolvedValueOnce({ success: true });
-
+    it("limpa campo cargo ao trocar de rede", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        await preencherFormulario();
-
-        const submitButton = screen.getByTestId("button-cadastrar");
-        await waitFor(() => expect(submitButton).toBeEnabled());
-        fireEvent.click(submitButton);
-
+        // Selecionar rede Direta
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
         await waitFor(() => {
-            expect(mockMutateAsync).toHaveBeenCalledWith({
-                username: "12345678900",
-                name: "João da Silva",
-                cpf: "12345678900",
-                email: "joao.silva@sme.prefeitura.sp.gov.br",
-                cargo: 3360,
-                rede: "INDIRETA",
-                unidades: ["ue-1"],
-            });
-            expect(mockToast).toHaveBeenCalledWith({
-                title: "Sucesso!",
-                description: "Pessoa usuária cadastrada com sucesso.",
-                duration: 5000,
-            });
-            expect(mockPush).toHaveBeenCalledWith(
-                "/dashboard/gestao/pessoa-usuaria"
-            );
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        // Selecionar cargo
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Diretor(a)" });
+            fireEvent.click(option);
+        });
+
+        // Trocar para rede Indireta
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Indireta" });
+            fireEvent.click(option);
+        });
+
+        // Verificar que o cargo foi limpo (placeholder deve estar visível)
+        await waitFor(() => {
+            expect(screen.getByText("Selecione")).toBeInTheDocument();
         });
     });
 
-    it("mostra mensagem de erro quando cadastro falha", async () => {
-        mockMutateAsync.mockResolvedValueOnce({
-            success: false,
-            error: "Já existe uma conta com este CPF.",
-            field: "username",
-        });
-
+    it("desabilita campo UE quando DRE não está selecionada", () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        await preencherFormulario();
+        const ueCombobox = screen.getByTestId("select-ue");
+        expect(ueCombobox).toBeDisabled();
+    });
 
-        const submitButton = screen.getByTestId("button-cadastrar");
-        await waitFor(() => expect(submitButton).toBeEnabled());
-        fireEvent.click(submitButton);
+    it("habilita campo UE após selecionar DRE", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        await waitFor(() =>
-            expect(
-                screen.getByText("Já existe uma conta com este CPF.")
-            ).toBeInTheDocument()
-        );
+        // Selecionar rede primeiro
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        // Selecionar DRE
+        const dreCombobox = screen.getByTestId("select-dre");
+        fireEvent.click(dreCombobox);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "DRE Butantã" });
+            fireEvent.click(option);
+        });
+
+        // Verificar que UE foi habilitada
+        await waitFor(() => {
+            const ueCombobox = screen.getByTestId("select-ue");
+            expect(ueCombobox).toBeEnabled();
+        });
+    });
+
+    it("habilita checkbox de admin apenas para Ponto Focal ou GIPE", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Inicialmente desabilitado
+        expect(screen.getByTestId("checkbox-isAdmin")).toBeDisabled();
+
+        // Selecionar rede Direta
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        // Selecionar cargo Ponto Focal
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", {
+                name: "Ponto focal",
+            });
+            fireEvent.click(option);
+        });
+
+        // Verificar que checkbox foi habilitado
+        await waitFor(() => {
+            expect(screen.getByTestId("checkbox-isAdmin")).toBeEnabled();
+        });
+    });
+
+    it("limpa campos DRE e UE ao selecionar cargo GIPE", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        // Selecionar rede Direta
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        // Selecionar DRE
+        const dreCombobox = screen.getByTestId("select-dre");
+        fireEvent.click(dreCombobox);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "DRE Butantã" });
+            fireEvent.click(option);
+        });
+
+        // Selecionar UE
+        const ueCombobox = screen.getByTestId("select-ue");
+        fireEvent.click(ueCombobox);
+        await waitFor(() => {
+            const option = screen.getByRole("option", {
+                name: "EMEF João da Silva",
+            });
+            fireEvent.click(option);
+        });
+
+        // Selecionar cargo GIPE
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "GIPE" });
+            fireEvent.click(option);
+        });
+
+        // Verificar que DRE e UE foram limpos e DRE está desabilitado
+        await waitFor(() => {
+            expect(screen.getByTestId("select-dre")).toBeDisabled();
+            expect(screen.getByTestId("select-ue")).toBeDisabled();
+        });
     });
 
     it("botão cancelar redireciona para a página de gestão de pessoas", () => {
@@ -225,12 +345,5 @@ describe("FormularioCadastroPessoaUsuaria", () => {
         expect(mockPush).toHaveBeenCalledWith(
             "/dashboard/gestao/pessoa-usuaria"
         );
-    });
-
-    it("desabilita campo UE quando DRE não está selecionada", () => {
-        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
-
-        const ueCombobox = screen.getAllByRole("combobox")[2];
-        expect(ueCombobox).toBeDisabled();
     });
 });
