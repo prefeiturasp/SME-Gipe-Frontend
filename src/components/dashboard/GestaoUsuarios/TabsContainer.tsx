@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import ListaDeUsuarios from "./ListaDeUsuarios";
+import ListaDeUsuariosPendenciasAprovacao from "./ListaDeUsuariosPendenciasAprovacao";
 
 export default function TabsContainer() {
     return (
@@ -32,7 +33,7 @@ export default function TabsContainer() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="pendencias">
-                Aqui as Pendências de aprovação
+                <ListaDeUsuariosPendenciasAprovacao />
             </TabsContent>
             <TabsContent value="ativos">
                 <ListaDeUsuarios status="ativos" />
