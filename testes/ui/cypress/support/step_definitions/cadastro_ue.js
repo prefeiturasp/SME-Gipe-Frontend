@@ -591,30 +591,25 @@ When('seleciona protocolo ue', () => {
     .should('be.visible')
     .click({ force: true })
   
-  cy.wait(1500)
-  cy.log('Protocolo selecionado')
+  // Aguarda mais tempo para garantir que a seleção foi aplicada
+  cy.wait(3000)
+  cy.log('✅ Protocolo selecionado')
 })
 
 Then('clica em proximo final', () => {
   cy.wait(3000)
+  cy.log('Avançando para aba de anexos')
   
-  cy.get('.inline-flex', { timeout: 20000 })
-    .contains(/Próximo|Proximo/i)
-    .first()
-    .should('be.visible')
-    .then($btn => {
-      if ($btn.is(':disabled') || $btn.hasClass('disabled')) {
-        cy.wait(3000)
-      }
-    })
-  
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 15000 })
+  // Aguarda o botão estar habilitado (indica que campos foram preenchidos)
+  cy.contains('button', /Próximo|Proximo/i, { timeout: 30000 })
     .first()
     .should('be.visible')
     .should('not.be.disabled')
+    .scrollIntoView()
     .click({ force: true })
   
   cy.wait(3000)
+  cy.log('Navegou para aba de anexos')
 })
 
 // ==================== ABA 5: ANEXOS ====================

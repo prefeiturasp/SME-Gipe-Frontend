@@ -12,13 +12,15 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
 
 
   @cadastro @informacoes_adicional @estudante @dados_aleatorios
-  Cenário: Registrar ocorrência com seleções aleatórias
+  Cenário: Registrar ocorrência completa com dados aleatórios
+    # Aba 1: Data e Hora
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
     E seleciona "Quando a ocorrência aconteceu?" com a data atual
     E seleciona hora atual
     E seleciona "A ocorrência é sobre furto, roubo, invasão ou depredação?" como "Não"
     E clica no botão "Próximo"
     
+    # Aba 2: Tipo de Ocorrência
     E clica no campo "Qual o tipo de ocorrência?"
     E Selecionar tipo de ocorrencia aleatorio
     E clica fora para fechar dropdown
@@ -29,6 +31,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E clica em opcao "Sim"
     E clica em "Proximo"
     
+    # Aba 3: Informações do Agressor
     E preenche o campo nome agressor aleatorio
     E preenche o campo idade agressor aleatorio
     E preenche o campo CEP aleatorio
@@ -47,6 +50,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E seleciona e clica em "Sim" naapa
     E clica em "proximo" informacoes
     
+    # Aba 4: Declarante e Protocolos
     E clica no campo do declarante ue
     E seleciona GIPE ue
     E clica no campo de seguranca publica ue
@@ -55,6 +59,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E seleciona protocolo ue
     E clica em proximo final
     
+    # Aba 5: Anexos e Finalização
     E localiza e clica no botão "Escolher arquivo"
     E seleciona a imagem do pc
     E clica no campo tipo documento
@@ -62,6 +67,8 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E localiza e clica no botão "Anexar documento"
     E Localiza o button "Anterior"
     E localiza e clica em "Finalizar"
+    
+    # Modal de Conclusão
     Então sistema exibe modal com titulo "Conclusão de etapa"
     Quando preenche campo motivo encerramento com "Conclusão para teste"
     E clica em Finalizar modal
