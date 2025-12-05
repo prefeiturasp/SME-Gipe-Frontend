@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import PessoaUsuaria from "./page";
+import GestaoUsuarios from "./page";
 import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -23,7 +23,7 @@ describe("Pessoa Usuária page", () => {
     });
 
     it("renderiza conteúdo da página de Pessoa Usuária", async () => {
-        renderWithProvider(<PessoaUsuaria />);
+        renderWithProvider(<GestaoUsuarios />);
 
         await waitFor(() => {
             expect(

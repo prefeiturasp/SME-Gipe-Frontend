@@ -8,18 +8,8 @@ import {
 } from "@/components/ui/table";
 
 import Editar from "@/assets/icons/Editar";
+import { Usuario } from "@/types/usuarios";
 
-type Usuario = {
-    id: number;
-    uuid: string;
-    perfil: string;
-    nome: string;
-    rfOuCpf: string;
-    email: string;
-    rede: string;
-    diretoriaRegional: string;
-    unidadeEducacional: string;
-};
 
 type TabelaUsuariosProps = {
     dataUsuarios: Usuario[];
