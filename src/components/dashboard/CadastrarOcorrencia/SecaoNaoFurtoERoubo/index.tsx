@@ -66,11 +66,11 @@ const SecaoNaoFurtoERoubo = forwardRef<
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            tiposOcorrencia: formData.tiposOcorrencia || [],
-            envolvidos: formData.envolvidos || "",
-            descricao: formData.descricao || "",
+            tiposOcorrencia: formData.tiposOcorrencia ?? [],
+            envolvidos: formData.envolvidos ?? "",
+            descricao: formData.descricao ?? "",
             possuiInfoAgressorVitima:
-                formData.possuiInfoAgressorVitima || undefined,
+                formData.possuiInfoAgressorVitima ?? undefined,
         },
     });
 

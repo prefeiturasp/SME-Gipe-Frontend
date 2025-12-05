@@ -54,9 +54,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
-                declarante: formData.declarante || "",
-                comunicacaoSeguranca: formData.comunicacaoSeguranca || "",
-                protocoloAcionado: formData.protocoloAcionado || "",
+                declarante: formData.declarante ?? "",
+                comunicacaoSeguranca: formData.comunicacaoSeguranca ?? "",
+                protocoloAcionado: formData.protocoloAcionado ?? "",
             },
         });
 
@@ -90,8 +90,8 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
             };
 
             return {
-                unidade_codigo_eol: formData.unidadeEducacional || "",
-                dre_codigo_eol: formData.dre || "",
+                unidade_codigo_eol: formData.unidadeEducacional ?? "",
+                dre_codigo_eol: formData.dre ?? "",
                 declarante: data.declarante,
                 comunicacao_seguranca_publica:
                     comunicacaoMap[data.comunicacaoSeguranca],

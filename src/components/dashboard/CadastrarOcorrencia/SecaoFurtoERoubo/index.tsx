@@ -60,8 +60,8 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             mode: "onChange",
             defaultValues: {
                 tiposOcorrencia: formData.tiposOcorrencia || [],
-                descricao: formData.descricao || "",
-                smartSampa: formData.smartSampa || undefined,
+                descricao: formData.descricao ?? "",
+                smartSampa: formData.smartSampa ?? undefined,
             },
         });
 

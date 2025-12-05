@@ -48,20 +48,20 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         mode: "onChange",
         defaultValues: {
             acionamentoSegurancaPublica:
-                formData.acionamentoSegurancaPublica || undefined,
-            interlocucaoSTS: formData.interlocucaoSTS || undefined,
+                formData.acionamentoSegurancaPublica ?? undefined,
+            interlocucaoSTS: formData.interlocucaoSTS ?? undefined,
             informacoesComplementaresSTS:
-                formData.informacoesComplementaresSTS || "",
-            interlocucaoCPCA: formData.interlocucaoCPCA || undefined,
+                formData.informacoesComplementaresSTS ?? "",
+            interlocucaoCPCA: formData.interlocucaoCPCA ?? undefined,
             informacoesComplementaresCPCA:
-                formData.informacoesComplementaresCPCA || "",
+                formData.informacoesComplementaresCPCA ?? "",
             interlocucaoSupervisaoEscolar:
-                formData.interlocucaoSupervisaoEscolar || undefined,
+                formData.interlocucaoSupervisaoEscolar ?? undefined,
             informacoesComplementaresSupervisaoEscolar:
-                formData.informacoesComplementaresSupervisaoEscolar || "",
-            interlocucaoNAAPA: formData.interlocucaoNAAPA || undefined,
+                formData.informacoesComplementaresSupervisaoEscolar ?? "",
+            interlocucaoNAAPA: formData.interlocucaoNAAPA ?? undefined,
             informacoesComplementaresNAAPA:
-                formData.informacoesComplementaresNAAPA || "",
+                formData.informacoesComplementaresNAAPA ?? "",
         },
     });
 
