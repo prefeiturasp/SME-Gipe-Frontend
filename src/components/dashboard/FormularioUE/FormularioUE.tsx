@@ -215,26 +215,26 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
 
         return {
             data_ocorrencia: dataHoraOcorrencia,
-            unidade_codigo_eol: secaoInicialData?.unidadeEducacional || "",
-            dre_codigo_eol: secaoInicialData?.dre || "",
+            unidade_codigo_eol: secaoInicialData?.unidadeEducacional ?? "",
+            dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
-            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia || [],
-            descricao_ocorrencia: secaoTipoData?.descricao || "",
+            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
+            descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: isFurtoRoubo
                 ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
                   "nao_faz_parte"
                 : "nao_faz_parte",
             envolvido: isFurtoRoubo
                 ? ""
-                : (secaoTipoData as { envolvidos?: string })?.envolvidos || "",
+                : (secaoTipoData as { envolvidos?: string })?.envolvidos ?? "",
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
-            declarante: secaoFinalData?.declarante || "",
+            declarante: secaoFinalData?.declarante ?? "",
             comunicacao_seguranca_publica:
-                comunicacaoMap[secaoFinalData?.comunicacaoSeguranca || ""] ||
+                comunicacaoMap[secaoFinalData?.comunicacaoSeguranca ?? ""] ||
                 "nao",
             protocolo_acionado:
-                protocoloMap[secaoFinalData?.protocoloAcionado || ""] ||
+                protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
                 "registro",
             ...(informacoesAdicionaisData && {
                 nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,

@@ -1,6 +1,6 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "@/components/dashboard/PageHeader/PageHeader";
-import FormularioCadastroPessoaUsuaria from "@/components/dashboard/Gestao/PessoaUsuaria/FormularioCadastro";
+import FormularioCadastroPessoaUsuaria from "@/components/dashboard/GestaoUsuarios/FormularioCadastro";
 
 export default function CadastrarPessoaUsuaria() {
     return (

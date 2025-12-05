@@ -62,7 +62,7 @@ export default function Anexos({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            tipoDocumento: formData.tipoDocumento || "",
+            tipoDocumento: formData.tipoDocumento ?? "",
             arquivo: undefined,
         },
     });
@@ -96,7 +96,8 @@ export default function Anexos({
                 toast({
                     variant: "error",
                     title: "Formato não suportado",
-                    description: "Envie PDF, JPG, PNG, MP4, XLSX, DOC, DOCX ou TXT.",
+                    description:
+                        "Envie PDF, JPG, PNG, MP4, XLSX, DOC, DOCX ou TXT.",
                 });
                 return;
             }
@@ -248,8 +249,9 @@ export default function Anexos({
                                                 </Button>
                                             </div>
                                             <p className="text-[12px] text-[#42474a] mt-1">
-                                                Formatos aceitos: PDF, JPG, PNG, MP4, XLSX, DOC, DOCX e TXT
-                                                (máx. 2MB cada)
+                                                Formatos aceitos: PDF, JPG, PNG,
+                                                MP4, XLSX, DOC, DOCX e TXT (máx.
+                                                2MB cada)
                                             </p>
                                             <FormMessage />
                                         </FormItem>

@@ -37,50 +37,34 @@ export function Combobox({
     disabled = false,
     className,
     "data-testid": dataTestId,
-}: Readonly<ComboboxProps>) {
+}: ComboboxProps) {
     const [open, setOpen] = React.useState(false);
     const selected = options.find((opt) => opt.value === value);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <div className="w-full">
-                    <input
-                        type="text"
-                        list={`combobox-options-${dataTestId ?? "default"}`}
-                        aria-hidden="true"
-                        tabIndex={-1}
-                        className="sr-only"
-                    />
-                    <Button
-                        type="button"
-                        variant="outline"
-                        aria-haspopup="listbox"
-                        aria-expanded={open}
-                        className={cn(
-                            "w-full justify-between text-[14px] text-[#42474A] font-[400]",
-                            className
-                        )}
-                        disabled={disabled}
-                        data-testid={dataTestId}
-                    >
-                        {selected ? (
-                            selected.label
-                        ) : (
-                            <span className="text-muted-foreground">
-                                {placeholder}
-                            </span>
-                        )}
-                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                    <datalist
-                        id={`combobox-options-${dataTestId ?? "default"}`}
-                    >
-                        {options.map((opt) => (
-                            <option key={opt.value} value={opt.label} />
-                        ))}
-                    </datalist>
-                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className={cn(
+                        "w-full justify-between text-[14px] text-[#42474A] font-[400]",
+                        className
+                    )}
+                    disabled={disabled}
+                    data-testid={dataTestId}
+                >
+                    {selected ? (
+                        selected.label
+                    ) : (
+                        <span className="text-muted-foreground">
+                            {placeholder}
+                        </span>
+                    )}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
             </PopoverTrigger>
             <PopoverContent
                 align="start"
