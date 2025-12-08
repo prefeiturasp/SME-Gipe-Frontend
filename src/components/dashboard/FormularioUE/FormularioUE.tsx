@@ -270,11 +270,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
 
     const handleSaveAll = async () => {
         try {
-            // Valida todos os formulários
             const isValid = await validateAllForms();
             if (!isValid) return;
 
-            // Valida que ocorrenciaUuid não é null
             if (!ocorrenciaUuid) {
                 toast({
                     title: "Erro",
@@ -284,10 +282,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 return;
             }
 
-            // Monta o body da requisição
             const body = buildRequestBody();
 
-            // Envia para o backend
             atualizarFormularioCompletoUE(
                 {
                     uuid: ocorrenciaUuid,
@@ -296,13 +292,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 {
                     onSuccess: (result) => {
                         if (result.success) {
-                            // Invalida queries para atualizar dados
                             queryClient
                                 .invalidateQueries({
                                     queryKey: ["ocorrencia", ocorrenciaUuid],
                                 })
                                 .then(() => {
-                                    // Chama onNext se fornecido, senão redireciona para dashboard
                                     if (onNext && !isAssistenteOuDiretor) {
                                         onNext();
                                     } else {
@@ -338,6 +332,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             });
         }
     };
+
+    const finalizarText = isAssistenteOuDiretor ? "Finalizar" : "Próximo";
 
     return (
         <>
@@ -408,35 +404,22 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
-                        {isAssistenteOuDiretor ? (
+                        {!isAssistenteOuDiretor && (
                             <Button
-                                variant="submit"
-                                onClick={() => handleSaveAll()}
-                                disabled={isPending}
+                                variant="customOutline"
+                                type="button"
+                                disabled
                             >
-                                {isPending ? "Salvando..." : "Finalizar"}
+                                Anterior
                             </Button>
-                        ) : (
-                            <>
-                                <Button
-                                    size="sm"
-                                    variant="customOutline"
-                                    type="button"
-                                    disabled
-                                >
-                                    Anterior
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    type="button"
-                                    variant="submit"
-                                    onClick={() => handleSaveAll()}
-                                    disabled={isPending}
-                                >
-                                    {isPending ? "Salvando..." : "Próximo"}
-                                </Button>
-                            </>
                         )}
+                        <Button
+                            variant="submit"
+                            onClick={() => handleSaveAll()}
+                            disabled={isPending}
+                        >
+                            {isPending ? "Salvando..." : finalizarText}
+                        </Button>
                     </div>
                 </div>
             </QuadroBranco>
