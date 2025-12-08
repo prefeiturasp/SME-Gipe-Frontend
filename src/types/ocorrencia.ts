@@ -7,7 +7,8 @@ export type Ocorrencia = {
     dre: string;
     nomeUe: string;
     tipoOcorrencia: string;
-    status: string
+    status: string;
+    statusId: string;
 };
 
 export interface OcorrenciaAPI {
@@ -20,12 +21,13 @@ export interface OcorrenciaAPI {
     user_username: string;
     criado_em: string;
     atualizado_em: string;
-    nome_dre: string,
-    nome_unidade: string,
+    nome_dre: string;
+    nome_unidade: string;
     status_extra: string;
     tipos_ocorrencia: {
         uuid: string;
         nome: string;
-    }[]; 
-    protocolo_da_intercorrencia: string
+    }[];
+    protocolo_da_intercorrencia: string;
+    status: string;
 }
