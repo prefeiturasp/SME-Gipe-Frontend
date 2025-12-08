@@ -10,8 +10,8 @@ Given('que eu acesso o sistema', () => {
 })
 
 Given('eu efetuo login com RF', () => {
-  const RF = '05481179342'
-  const SENHA = 'Sgp9342'
+  const RF = '29379960000'
+  const SENHA = 'Sgp0000'
   
   cy.xpath(locators_login.campo_usuario()).clear().type(RF)
   cy.xpath(locators_login.campo_senha()).clear().type(SENHA)
