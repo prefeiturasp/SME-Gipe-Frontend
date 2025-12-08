@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/select";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
 import formSchema, { FormDataCadastroUsuario } from "./schema";
+import ModalConfirmacao from "./ModalConfirmacao";
 
 export default function FormularioCadastroPessoaUsuaria() {
     const { data: dreOptions = [] } = useFetchDREs();
     const router = useRouter();
+    const [modalOpen, setModalOpen] = useState(false);
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -99,6 +101,15 @@ export default function FormularioCadastroPessoaUsuaria() {
     const isAdminCheckboxDisabled =
         !isRedeSelected ||
         (values.cargo !== "ponto_focal" && values.cargo !== "gipe");
+
+    function handleSubmitClick(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault();
+        setModalOpen(true);
+    }
+
+    function handleConfirmCadastro() {
+        setModalOpen(false);
+    }
 
     return (
         <Form {...form}>
@@ -370,15 +381,22 @@ export default function FormularioCadastroPessoaUsuaria() {
                         Cancelar
                     </Button>
                     <Button
-                        type="submit"
+                        type="button"
                         variant="submit"
                         disabled={!isValid}
                         data-testid="button-cadastrar"
+                        onClick={handleSubmitClick}
                     >
                         Cadastrar pessoa usuária
                     </Button>
                 </div>
             </form>
+
+            <ModalConfirmacao
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                onConfirm={handleConfirmCadastro}
+            />
         </Form>
     );
 }
