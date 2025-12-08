@@ -30,6 +30,51 @@ vi.mock("@/hooks/useUnidades", () => ({
     }),
 }));
 
+async function preencherFormularioCompleto() {
+    const selectRede = screen.getByTestId("select-rede");
+    fireEvent.click(selectRede);
+    await waitFor(() => {
+        const option = screen.getByRole("option", { name: "Direta" });
+        fireEvent.click(option);
+    });
+
+    const selectCargo = screen.getByTestId("select-cargo");
+    fireEvent.click(selectCargo);
+    await waitFor(() => {
+        const option = screen.getByRole("option", { name: "Diretor(a)" });
+        fireEvent.click(option);
+    });
+
+    const inputFullName = screen.getByTestId("input-fullName");
+    fireEvent.change(inputFullName, {
+        target: { value: "João da Silva" },
+    });
+
+    const inputRfOuCpf = screen.getByTestId("input-rfOuCpf");
+    fireEvent.change(inputRfOuCpf, { target: { value: "1234567" } });
+
+    const inputEmail = screen.getByTestId("input-email");
+    fireEvent.change(inputEmail, {
+        target: { value: "joao.silva@sme.prefeitura.sp.gov.br" },
+    });
+
+    const dreCombobox = screen.getByTestId("select-dre");
+    fireEvent.click(dreCombobox);
+    await waitFor(() => {
+        const option = screen.getByRole("option", { name: "DRE Butantã" });
+        fireEvent.click(option);
+    });
+
+    const ueCombobox = screen.getByTestId("select-ue");
+    fireEvent.click(ueCombobox);
+    await waitFor(() => {
+        const option = screen.getByRole("option", {
+            name: "EMEF João da Silva",
+        });
+        fireEvent.click(option);
+    });
+}
+
 describe("FormularioCadastroPessoaUsuaria", () => {
     let queryClient: QueryClient;
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -100,7 +145,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("permite preencher nome completo", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede primeiro
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -119,7 +163,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("permite preencher RF ou CPF", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede primeiro
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -136,7 +179,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("permite preencher e-mail", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede primeiro
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -174,7 +216,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("valida formato de e-mail institucional", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede primeiro
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -198,7 +239,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("limpa campo cargo ao trocar de rede", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede Direta
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -206,7 +246,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar cargo
         const selectCargo = screen.getByTestId("select-cargo");
         fireEvent.click(selectCargo);
         await waitFor(() => {
@@ -214,14 +253,12 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Trocar para rede Indireta
         fireEvent.click(selectRede);
         await waitFor(() => {
             const option = screen.getByRole("option", { name: "Indireta" });
             fireEvent.click(option);
         });
 
-        // Verificar que o cargo foi limpo (placeholder deve estar visível)
         await waitFor(() => {
             expect(screen.getByText("Selecione")).toBeInTheDocument();
         });
@@ -237,7 +274,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("habilita campo UE após selecionar DRE", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede primeiro
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -245,7 +281,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar DRE
         const dreCombobox = screen.getByTestId("select-dre");
         fireEvent.click(dreCombobox);
         await waitFor(() => {
@@ -253,7 +288,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Verificar que UE foi habilitada
         await waitFor(() => {
             const ueCombobox = screen.getByTestId("select-ue");
             expect(ueCombobox).toBeEnabled();
@@ -263,10 +297,8 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("habilita checkbox de admin apenas para Ponto Focal ou GIPE", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Inicialmente desabilitado
         expect(screen.getByTestId("checkbox-isAdmin")).toBeDisabled();
 
-        // Selecionar rede Direta
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -274,7 +306,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar cargo Ponto Focal
         const selectCargo = screen.getByTestId("select-cargo");
         fireEvent.click(selectCargo);
         await waitFor(() => {
@@ -284,7 +315,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Verificar que checkbox foi habilitado
         await waitFor(() => {
             expect(screen.getByTestId("checkbox-isAdmin")).toBeEnabled();
         });
@@ -293,7 +323,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
     it("limpa campos DRE e UE ao selecionar cargo GIPE", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
-        // Selecionar rede Direta
         const selectRede = screen.getByTestId("select-rede");
         fireEvent.click(selectRede);
         await waitFor(() => {
@@ -301,7 +330,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar DRE
         const dreCombobox = screen.getByTestId("select-dre");
         fireEvent.click(dreCombobox);
         await waitFor(() => {
@@ -309,7 +337,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar UE
         const ueCombobox = screen.getByTestId("select-ue");
         fireEvent.click(ueCombobox);
         await waitFor(() => {
@@ -319,7 +346,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Selecionar cargo GIPE
         const selectCargo = screen.getByTestId("select-cargo");
         fireEvent.click(selectCargo);
         await waitFor(() => {
@@ -327,7 +353,6 @@ describe("FormularioCadastroPessoaUsuaria", () => {
             fireEvent.click(option);
         });
 
-        // Verificar que DRE e UE foram limpos e DRE está desabilitado
         await waitFor(() => {
             expect(screen.getByTestId("select-dre")).toBeDisabled();
             expect(screen.getByTestId("select-ue")).toBeDisabled();
@@ -345,5 +370,93 @@ describe("FormularioCadastroPessoaUsuaria", () => {
         expect(mockPush).toHaveBeenCalledWith(
             "/dashboard/gestao/pessoa-usuaria"
         );
+    });
+
+    it("botão cadastrar está desabilitado quando formulário é inválido", () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const cadastrarButton = screen.getByTestId("button-cadastrar");
+        expect(cadastrarButton).toBeDisabled();
+    });
+
+    it("abre o modal ao clicar em Cadastrar pessoa usuária quando formulário é válido", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        await preencherFormularioCompleto();
+
+        const cadastrarButton = screen.getByTestId("button-cadastrar");
+        await waitFor(() => {
+            expect(cadastrarButton).toBeEnabled();
+        });
+        fireEvent.click(cadastrarButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Cadastro de pessoa usuária")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /Ao cadastrar a pessoa usuária, o perfil será registrado no CoreSSO/i
+                )
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("fecha o modal ao clicar em Cancelar no modal", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        await preencherFormularioCompleto();
+
+        const cadastrarButton = screen.getByTestId("button-cadastrar");
+        await waitFor(() => {
+            expect(cadastrarButton).toBeEnabled();
+        });
+        fireEvent.click(cadastrarButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Cadastro de pessoa usuária")
+            ).toBeInTheDocument();
+        });
+
+        const cancelarModalButton = screen.getByRole("button", {
+            name: "Cancelar",
+        });
+        fireEvent.click(cancelarModalButton);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Cadastro de pessoa usuária")
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    it("fecha o modal ao confirmar cadastro", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        await preencherFormularioCompleto();
+
+        const cadastrarButton = screen.getByTestId("button-cadastrar");
+        await waitFor(() => {
+            expect(cadastrarButton).toBeEnabled();
+        });
+        fireEvent.click(cadastrarButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Cadastro de pessoa usuária")
+            ).toBeInTheDocument();
+        });
+
+        const confirmarButton = screen.getByRole("button", {
+            name: "Cadastrar pessoa usuária",
+        });
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Cadastro de pessoa usuária")
+            ).not.toBeInTheDocument();
+        });
     });
 });
