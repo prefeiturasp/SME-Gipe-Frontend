@@ -6,6 +6,10 @@ screenshots/
 
 videos/
 
+# Relatórios gerados
+allure-report/
+allure-results/
+
 
 # Testes complement (não subir)
 cypress/e2e/ui/complement_dre.feature
