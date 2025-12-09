@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import React, { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
@@ -19,155 +20,240 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { DateTimeInput } from "@/components/ui/date-time-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { formSchema, SecaoInicialData } from "./schema";
 import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
+import { hasFormDataChanged } from "@/lib/formUtils";
 
 export type SecaoInicialProps = {
-    onSuccess: () => void;
+    onSuccess?: () => void;
+    showButtons?: boolean;
+    onFormChange?: (data: Partial<SecaoInicialData>) => void;
 };
 
-export default function SecaoInicial({
-    onSuccess,
-}: Readonly<SecaoInicialProps>) {
-    const user = useUserStore((state) => state.user);
-    const { mutateAsync: criarOcorrencia, isPending: isCriando } =
-        useSecaoInicial();
-    const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
-        useAtualizarSecaoInicial();
+export type SecaoInicialRef = {
+    getFormData: () => SecaoInicialData;
+    submitForm: () => Promise<boolean>;
+    getFormInstance: () => UseFormReturn<SecaoInicialData>;
+};
 
-    const { formData, setFormData, setOcorrenciaUuid, ocorrenciaUuid } =
-        useOcorrenciaFormStore();
+const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
+    ({ onSuccess, showButtons = true, onFormChange }, ref) => {
+        const user = useUserStore((state) => state.user);
+        const { mutateAsync: criarOcorrencia, isPending: isCriando } =
+            useSecaoInicial();
+        const { mutateAsync: atualizarOcorrencia, isPending: isAtualizando } =
+            useAtualizarSecaoInicial();
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    const maxDate = `${yyyy}-${mm}-${dd}`;
+        const {
+            formData,
+            savedFormData,
+            setFormData,
+            setSavedFormData,
+            setOcorrenciaUuid,
+            ocorrenciaUuid,
+        } = useOcorrenciaFormStore();
 
-    const form = useForm<SecaoInicialData>({
-        resolver: zodResolver(formSchema),
-        mode: "onChange",
-        defaultValues: {
-            dataOcorrencia: formData.dataOcorrencia || "",
-            dre: formData.dre ?? user?.unidades[0]?.dre.codigo_eol ?? undefined,
-            unidadeEducacional:
-                formData.unidadeEducacional ??
-                user?.unidades[0]?.ue.codigo_eol ??
-                undefined,
-            tipoOcorrencia: formData.tipoOcorrencia || undefined,
-        },
-    });
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        const maxDate = `${yyyy}-${mm}-${dd}`;
 
-    const { isValid } = form.formState;
+        const form = useForm<SecaoInicialData>({
+            resolver: zodResolver(formSchema),
+            mode: "onChange",
+            defaultValues: {
+                dataOcorrencia: formData.dataOcorrencia || "",
+                horaOcorrencia: formData.horaOcorrencia || "",
+                dre:
+                    formData.dre ??
+                    user?.unidades[0]?.dre.codigo_eol ??
+                    undefined,
+                unidadeEducacional:
+                    formData.unidadeEducacional ??
+                    user?.unidades[0]?.ue.codigo_eol ??
+                    undefined,
+                tipoOcorrencia: formData.tipoOcorrencia || undefined,
+            },
+        });
 
-    const hasFormChanged = (data: SecaoInicialData) => {
-        return (
-            formData.dataOcorrencia !== data.dataOcorrencia ||
-            formData.dre !== data.dre ||
-            formData.unidadeEducacional !== data.unidadeEducacional ||
-            formData.tipoOcorrencia !== data.tipoOcorrencia
-        );
-    };
+        const { isValid } = form.formState;
 
-    const onSubmit = async (data: SecaoInicialData) => {
-        setFormData(data);
+        // Notifica mudanças em tempo real
+        const watchedValues = form.watch();
+        useEffect(() => {
+            onFormChange?.(watchedValues);
+        }, [watchedValues, onFormChange]);
 
-        if (ocorrenciaUuid) {
-            if (!hasFormChanged(data)) {
-                return onSuccess();
-            }
+        // Expõe métodos para o componente pai via ref
+        useImperativeHandle(ref, () => ({
+            getFormData: () => form.getValues(),
+            submitForm: async () => {
+                const isValid = await form.trigger();
+                if (!isValid) return false;
 
-            const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+                const data = form.getValues();
+                await handleSubmit(data);
+                return true;
+            },
+            getFormInstance: () => form,
+        }));
 
-            const response = await atualizarOcorrencia({
-                uuid: ocorrenciaUuid,
-                body: {
-                    data_ocorrencia: dataOcorrencia,
-                    unidade_codigo_eol: data.unidadeEducacional,
-                    dre_codigo_eol: data.dre,
-                    sobre_furto_roubo_invasao_depredacao:
-                        data.tipoOcorrencia === "Sim",
-                },
-            });
+        // Função de submit isolada para ser chamada programaticamente
+        const handleSubmit = async (data: SecaoInicialData) => {
+            setFormData(data);
 
-            if (response.success) {
-                onSuccess();
+            if (ocorrenciaUuid) {
+                if (!hasFormDataChanged(data, savedFormData)) {
+                    onSuccess?.();
+                    return;
+                }
+
+                const dataHoraOcorrencia = new Date(
+                    `${data.dataOcorrencia}T${data.horaOcorrencia}`
+                ).toISOString();
+
+                const response = await atualizarOcorrencia({
+                    uuid: ocorrenciaUuid,
+                    body: {
+                        data_ocorrencia: dataHoraOcorrencia,
+                        unidade_codigo_eol: data.unidadeEducacional,
+                        dre_codigo_eol: data.dre,
+                        sobre_furto_roubo_invasao_depredacao:
+                            data.tipoOcorrencia === "Sim",
+                    },
+                });
+
+                if (response.success) {
+                    setSavedFormData(data);
+                    onSuccess?.();
+                    return;
+                }
+
+                toast({
+                    variant: "error",
+                    title: "Erro ao atualizar ocorrência",
+                    description: response.error,
+                });
                 return;
             }
 
-            toast({
-                variant: "error",
-                title: "Erro ao atualizar ocorrência",
-                description: response.error,
+            const dataHoraOcorrencia = new Date(
+                `${data.dataOcorrencia}T${data.horaOcorrencia}`
+            ).toISOString();
+
+            const response = await criarOcorrencia({
+                data_ocorrencia: dataHoraOcorrencia,
+                unidade_codigo_eol: data.unidadeEducacional,
+                dre_codigo_eol: data.dre,
+                sobre_furto_roubo_invasao_depredacao:
+                    data.tipoOcorrencia === "Sim",
             });
-            return;
-        }
 
-        const dataOcorrencia = new Date(data.dataOcorrencia).toISOString();
+            if (!response.success) {
+                toast({
+                    variant: "error",
+                    title: "Erro ao cadastrar ocorrência",
+                    description: response.error,
+                });
+                return;
+            }
 
-        const response = await criarOcorrencia({
-            data_ocorrencia: dataOcorrencia,
-            unidade_codigo_eol: data.unidadeEducacional,
-            dre_codigo_eol: data.dre,
-            sobre_furto_roubo_invasao_depredacao: data.tipoOcorrencia === "Sim",
-        });
+            if (response.data?.uuid) {
+                setOcorrenciaUuid(response.data.uuid);
+                setSavedFormData(data);
+                onSuccess?.();
+            }
+        };
 
-        if (!response.success) {
-            toast({
-                variant: "error",
-                title: "Erro ao cadastrar ocorrência",
-                description: response.error,
-            });
-            return;
-        }
+        const dreNome = formData.nomeDre || user?.unidades[0]?.dre.nome || "";
+        const unidadeNome =
+            formData.nomeUnidade || user?.unidades[0]?.ue.nome || "";
 
-        if (response.data?.uuid) {
-            setOcorrenciaUuid(response.data.uuid);
-            onSuccess();
-        }
-    };
-
-    return (
-        <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-6 mt-4"
-            >
-                <fieldset className="contents">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        return (
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="flex flex-col gap-6 mt-4"
+                >
+                    <fieldset className="contents">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                                control={form.control}
+                                name="dataOcorrencia"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Quando a ocorrência aconteceu?*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <DateTimeInput
+                                                dateValue={field.value}
+                                                timeValue={
+                                                    form.watch(
+                                                        "horaOcorrencia"
+                                                    ) || ""
+                                                }
+                                                onDateChange={field.onChange}
+                                                onTimeChange={(value) =>
+                                                    form.setValue(
+                                                        "horaOcorrencia",
+                                                        value
+                                                    )
+                                                }
+                                                maxDate={maxDate}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="dre"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[#b0b0b0]">
+                                            Qual a DRE?*
+                                        </FormLabel>
+                                        <Select
+                                            key={field.value}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            disabled
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione a DRE" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {field.value && dreNome && (
+                                                    <SelectItem
+                                                        value={field.value}
+                                                    >
+                                                        {dreNome}
+                                                    </SelectItem>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                         <FormField
                             control={form.control}
-                            name="dataOcorrencia"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>
-                                        Quando a ocorrência aconteceu?*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="date"
-                                            placeholder="dd/mm/aaaa"
-                                            {...field}
-                                            max={maxDate}
-                                            className="has-calendar"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="dre"
+                            name="unidadeEducacional"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-[#b0b0b0]">
-                                        Qual a DRE?*
+                                        Qual a Unidade Educacional?*
                                     </FormLabel>
                                     <Select
                                         key={field.value}
@@ -177,19 +263,13 @@ export default function SecaoInicial({
                                     >
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Selecione a DRE" />
+                                                <SelectValue placeholder="Selecione a unidade" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {user?.unidades[0]?.dre
-                                                ?.codigo_eol && (
-                                                <SelectItem
-                                                    value={
-                                                        user.unidades[0].dre
-                                                            .codigo_eol
-                                                    }
-                                                >
-                                                    {user.unidades[0].dre.nome}
+                                            {field.value && unidadeNome && (
+                                                <SelectItem value={field.value}>
+                                                    {unidadeNome}
                                                 </SelectItem>
                                             )}
                                         </SelectContent>
@@ -198,93 +278,69 @@ export default function SecaoInicial({
                                 </FormItem>
                             )}
                         />
-                    </div>
-                    <FormField
-                        control={form.control}
-                        name="unidadeEducacional"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-[#b0b0b0]">
-                                    Qual a Unidade Educacional?*
-                                </FormLabel>
-                                <Select
-                                    key={field.value}
-                                    onValueChange={field.onChange}
-                                    value={field.value}
+                        <FormField
+                            control={form.control}
+                            name="tipoOcorrencia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        A ocorrência é sobre furto, roubo,
+                                        invasão ou depredação?*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <div className="pt-2">
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                value={field.value ?? ""}
+                                                className="flex flex-col space-y-2"
+                                            >
+                                                <label className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="Sim" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Sim
+                                                    </span>
+                                                </label>
+                                                <label className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="Não" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Não
+                                                    </span>
+                                                </label>
+                                            </RadioGroup>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        {showButtons && (
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="customOutline"
                                     disabled
                                 >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione a unidade" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {user?.unidades[0]?.ue?.codigo_eol && (
-                                            <SelectItem
-                                                value={
-                                                    user.unidades[0].ue
-                                                        .codigo_eol
-                                                }
-                                            >
-                                                {user.unidades[0].ue.nome}
-                                            </SelectItem>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
+                                    Anterior
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    type="submit"
+                                    variant="submit"
+                                    disabled={
+                                        !isValid || isCriando || isAtualizando
+                                    }
+                                >
+                                    Próximo
+                                </Button>
+                            </div>
                         )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="tipoOcorrencia"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    A ocorrência é sobre furto, roubo, invasão
-                                    ou depredação?*
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value ?? ""}
-                                            className="flex flex-col space-y-2"
-                                        >
-                                            <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Sim" />
-                                                <span className="text-sm text-[#42474a]">
-                                                    Sim
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Não" />
-                                                <span className="text-sm text-[#42474a]">
-                                                    Não
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" disabled>
-                            Anterior
-                        </Button>
-                        <Button
-                            size="sm"
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid || isCriando || isAtualizando}
-                        >
-                            Próximo
-                        </Button>
-                    </div>
-                </fieldset>
-            </form>
-        </Form>
-    );
-}
+                    </fieldset>
+                </form>
+            </Form>
+        );
+    }
+);
+
+SecaoInicial.displayName = "SecaoInicial";
+
+export default SecaoInicial;

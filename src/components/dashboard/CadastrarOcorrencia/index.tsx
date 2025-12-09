@@ -3,28 +3,10 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import SecaoInicial from "./SecaoInicial";
-import { useState } from "react";
-import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-
-const steps = [
-    {
-        label: "Cadastro de ocorrência",
-        description: "",
-    },
-    {
-        label: "Formulário patrimonial",
-        description: "",
-    },
-    {
-        label: "Fase 03",
-        description: "",
-    },
-    {
-        label: "Anexos",
-        description: "",
-    },
-];
+import { useState, useEffect } from "react";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useQueryClient } from "@tanstack/react-query";
+import StepRenderer from "./StepRenderer";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -34,10 +16,93 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const formData = useOcorrenciaFormStore((state) => state.formData);
+    const ocorrenciaUuid = useOcorrenciaFormStore(
+        (state) => state.ocorrenciaUuid
+    );
+    const queryClient = useQueryClient();
+    const reset = useOcorrenciaFormStore((state) => state.reset);
+
+    const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
+        string | undefined
+    >(formData.tipoOcorrencia);
+    const [currentPossuiInfoAgressor, setCurrentPossuiInfoAgressor] = useState<
+        string | undefined
+    >(formData.possuiInfoAgressorVitima);
+
+    const isFurtoRoubo = currentTipoOcorrencia === "Sim";
+    const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
+        if (data.tipoOcorrencia !== undefined) {
+            setCurrentTipoOcorrencia(data.tipoOcorrencia);
+        }
+    };
+
+    const handleSecaoNaoFurtoChange = (data: {
+        possuiInfoAgressorVitima?: string;
+    }) => {
+        if (data.possuiInfoAgressorVitima !== undefined) {
+            setCurrentPossuiInfoAgressor(data.possuiInfoAgressorVitima);
+        }
+    };
+
+    useEffect(() => {
+        setCurrentTipoOcorrencia(formData.tipoOcorrencia);
+        setCurrentPossuiInfoAgressor(formData.possuiInfoAgressorVitima);
+    }, [formData.tipoOcorrencia, formData.possuiInfoAgressorVitima]);
+
+    const handleClick = async () => {
+        reset();
+
+        await queryClient.invalidateQueries({
+            queryKey: ["ocorrencia", ocorrenciaUuid],
+        });
+    };
+
+    const handleNextStep = () => {
+        setCurrentStep((prev) => prev + 1);
+    };
+
+    const handlePreviousStep = () => {
+        setCurrentStep((prev) => prev - 1);
+    };
+
+    const getStep2Label = () => {
+        if (!formData.tipoOcorrencia) return "Fase 02";
+        return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    };
+
+    const getStep3Label = () => {
+        if (!formData.possuiInfoAgressorVitima && currentStep < 3) {
+            return "Fase 03";
+        }
+
+        return hasAgressorVitimaInfo && !isFurtoRoubo
+            ? "Informações adicionais"
+            : "Seção final";
+    };
+
+    const steps = [
+        { label: "Cadastro de ocorrência", description: "" },
+        { label: getStep2Label(), description: "" },
+
+        ...(hasAgressorVitimaInfo && !isFurtoRoubo
+            ? [
+                  { label: getStep3Label(), description: "" },
+                  { label: "Seção final", description: "" },
+              ]
+            : [{ label: getStep3Label(), description: "" }]),
+
+        { label: "Anexos", description: "" },
+    ];
 
     return (
         <div className="pt-4">
-            <PageHeader title="Intercorrências Institucionais" />
+            <PageHeader
+                title="Intercorrências Institucionais"
+                onClickBack={handleClick}
+            />
             <QuadroBranco>
                 <div className="flex flex-col">
                     <h1 className="text-[#42474a] text-[24px] font-bold m-0">
@@ -54,20 +119,21 @@ export default function CadastrarOcorrencia({
                     </p>
                 </div>
             </QuadroBranco>
+
             <QuadroBranco>
                 <div className="mt-4">
                     <Stepper steps={steps} currentStep={currentStep} />
                 </div>
 
-                {currentStep === 1 && (
-                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
-                )}
-                {currentStep === 2 && (
-                    <SecaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
-                    />
-                )}
+                <StepRenderer
+                    currentStep={currentStep}
+                    isFurtoRoubo={isFurtoRoubo}
+                    hasAgressorVitimaInfo={hasAgressorVitimaInfo}
+                    onNext={handleNextStep}
+                    onPrevious={handlePreviousStep}
+                    onSecaoInicialChange={handleSecaoInicialChange}
+                    onSecaoNaoFurtoChange={handleSecaoNaoFurtoChange}
+                />
             </QuadroBranco>
         </div>
     );

@@ -10,6 +10,8 @@ export type OcorrenciaDetalheAPI = {
     data_ocorrencia: string;
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
+    nome_dre?: string;
+    nome_unidade?: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
     user_username: string;
     criado_em: string;
@@ -19,6 +21,35 @@ export type OcorrenciaDetalheAPI = {
     status?: string;
     smart_sampa_situacao?: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
     smart_sampa_situacao_display?: string;
+    declarante_detalhes?: {
+        uuid: string;
+        declarante: string;
+    };
+    comunicacao_seguranca_publica?: "sim_gcm" | "sim_pm" | "nao";
+    protocolo_acionado?: "ameaca" | "alerta" | "registro";
+    envolvido?: {
+        uuid: string;
+        perfil_dos_envolvidos: string;
+    };
+    tem_info_agressor_ou_vitima?: "sim" | "nao";
+    nome_pessoa_agressora?: string;
+    idade_pessoa_agressora?: number;
+    motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
+    genero_pessoa_agressora?: string;
+    grupo_etnico_racial?: string;
+    etapa_escolar?: string;
+    frequencia_escolar?: string;
+    interacao_ambiente_escolar?: string;
+    redes_protecao_acompanhamento?: string;
+    notificado_conselho_tutelar?: boolean;
+    acompanhado_naapa?: boolean;
+    cep?: string;
+    logradouro?: string;
+    numero_residencia?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    estado?: string;
 };
 
 export async function obterOcorrencia(

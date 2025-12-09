@@ -3,6 +3,7 @@ import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { Mock } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface MockUser {
     username: string;
@@ -27,12 +28,25 @@ vi.mock("@/hooks/useOcorrencias", () => ({
 import { useOcorrencias } from "@/hooks/useOcorrencias";
 import TabelaOcorrencias from "./index";
 
+const renderWithQueryProvider = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    return render(ui, {
+        wrapper: ({ children }) => (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        ),
+    });
+};
+
 const sampleData = [
     {
         protocolo: "P0002",
         dataHora: "2025-09-02 11:00",
         codigoEol: "EOL2",
-        tipoViolencia: "Psicológica",
+        tipoOcorrencia: "Psicológica",
         status: "Finalizada",
         id: "2",
     },
@@ -40,7 +54,7 @@ const sampleData = [
         protocolo: "P0001",
         dataHora: "2025-09-01 10:00",
         codigoEol: "EOL1",
-        tipoViolencia: "Física",
+        tipoOcorrencia: "Física",
         status: "Incompleta",
         id: "1",
     },
@@ -56,7 +70,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -81,18 +95,18 @@ describe("TabelaOcorrencias - sorting", () => {
         expect(within(firstRowDesc).getByText("P0002")).toBeInTheDocument();
     });
 
-    it("ordena por tipoViolencia alfabético e inverso", async () => {
+    it("ordena por tiposOcorrencia alfabético e inverso", async () => {
         (useOcorrencias as Mock).mockReturnValue({
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
         );
 
-        const tipoHeader = screen.getByText("Tipo de violência");
+        const tipoHeader = screen.getByText("Tipo de Ocorrência");
         const user = userEvent.setup();
 
         await user.click(tipoHeader);
@@ -115,7 +129,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -142,7 +156,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -171,7 +185,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0003",
                 dataHora: "2025-09-03 12:00",
                 codigoEol: "EOL3",
-                tipoViolencia: "Material",
+                tiposOcorrencia: "Material",
                 status: "Em andamento",
                 id: "3",
             },
@@ -181,7 +195,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithEmAndamento,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0003")).toBeInTheDocument()
@@ -208,7 +222,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: sampleData,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -250,7 +264,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0001",
                 dataHora: "2025-09-01 10:00",
                 codigoEol: "EOL1",
-                tipoViolencia: "Física",
+                tiposOcorrencia: "Física",
                 status: "Incompleta",
                 dre: "DRE - Itaquera",
                 nomeUe: "EMEF Alpha",
@@ -260,7 +274,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0002",
                 dataHora: "2025-09-02 11:00",
                 codigoEol: "EOL2",
-                tipoViolencia: "Psicológica",
+                tiposOcorrencia: "Psicológica",
                 status: "Finalizada",
                 dre: "DRE - Capela do Socorro",
                 nomeUe: "EMEF Beta",
@@ -270,7 +284,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0003",
                 dataHora: "2025-09-03 12:00",
                 codigoEol: "EOL3",
-                tipoViolencia: "Material",
+                tiposOcorrencia: "Material",
                 status: "Finalizada",
                 dre: "DRE - Penha",
                 nomeUe: "EMEF Gamma",
@@ -282,7 +296,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithDre,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()
@@ -312,7 +326,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0001",
                 dataHora: "2025-09-01 10:00",
                 codigoEol: "EOL1",
-                tipoViolencia: "Física",
+                tiposOcorrencia: "Física",
                 status: "Incompleta",
                 dre: "DRE - Itaquera",
                 nomeUe: "CEU Água Azul",
@@ -322,7 +336,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0002",
                 dataHora: "2025-09-02 11:00",
                 codigoEol: "EOL2",
-                tipoViolencia: "Psicológica",
+                tiposOcorrencia: "Psicológica",
                 status: "Finalizada",
                 dre: "DRE - Capela do Socorro",
                 nomeUe: "EMEF Prof. João",
@@ -332,7 +346,7 @@ describe("TabelaOcorrencias - sorting", () => {
                 protocolo: "P0003",
                 dataHora: "2025-09-03 12:00",
                 codigoEol: "EOL3",
-                tipoViolencia: "Material",
+                tiposOcorrencia: "Material",
                 status: "Finalizada",
                 dre: "DRE - Penha",
                 nomeUe: "EMEF Dom Pedro I",
@@ -344,7 +358,7 @@ describe("TabelaOcorrencias - sorting", () => {
             data: dataWithUe,
             isLoading: false,
         });
-        render(<TabelaOcorrencias />);
+        renderWithQueryProvider(<TabelaOcorrencias />);
 
         await waitFor(() =>
             expect(screen.getByText("P0001")).toBeInTheDocument()

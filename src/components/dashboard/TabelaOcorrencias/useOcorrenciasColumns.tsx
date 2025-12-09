@@ -20,9 +20,11 @@ import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useMemo } from "react";
 import { Ocorrencia } from "@/types/ocorrencia";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useOcorrenciasColumns = () => {
     const { isGipe, isPontoFocal } = useUserPermissions();
+    const queryClient = useQueryClient();
 
     const columns = useMemo(() => {
         const dynamicColumns: ColumnDef<Ocorrencia>[] = [];
@@ -161,12 +163,12 @@ export const useOcorrenciasColumns = () => {
         }
 
         dynamicColumns.push({
-            accessorKey: "tipoViolencia",
+            accessorKey: "tipoOcorrencia",
             header: ({ column, table }) => (
                 <SortHeader
                     column={column}
                     table={table}
-                    title="Tipo de violência"
+                    title="Tipo de Ocorrência"
                     options={[
                         {
                             id: "alpha",
@@ -236,6 +238,7 @@ export const useOcorrenciasColumns = () => {
             size: 49,
             cell: ({ row }) => {
                 const uuid = row.original.uuid;
+
                 return (
                     <div className="flex h-full items-center justify-center">
                         <TooltipProvider>
@@ -269,7 +272,7 @@ export const useOcorrenciasColumns = () => {
         });
 
         return dynamicColumns;
-    }, [isGipe, isPontoFocal]);
+    }, [isGipe, isPontoFocal, queryClient]);
 
     return columns;
 };
