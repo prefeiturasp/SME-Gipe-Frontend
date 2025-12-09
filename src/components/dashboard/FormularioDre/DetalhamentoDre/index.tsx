@@ -16,6 +16,7 @@ import { useState } from "react";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
 import { useUserStore } from "@/stores/useUserStore";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useRouter } from "next/navigation";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
@@ -28,6 +29,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
     const { isPontoFocal } = useUserPermissions();
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+    const router = useRouter();
 
     const { mutate: atualizarOcorrenciaDre } = useAtualizarOcorrenciaDre();
 
@@ -48,20 +50,20 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         mode: "onChange",
         defaultValues: {
             acionamentoSegurancaPublica:
-                formData.acionamentoSegurancaPublica || undefined,
-            interlocucaoSTS: formData.interlocucaoSTS || undefined,
+                formData.acionamentoSegurancaPublica ?? undefined,
+            interlocucaoSTS: formData.interlocucaoSTS ?? undefined,
             informacoesComplementaresSTS:
-                formData.informacoesComplementaresSTS || "",
-            interlocucaoCPCA: formData.interlocucaoCPCA || undefined,
+                formData.informacoesComplementaresSTS ?? "",
+            interlocucaoCPCA: formData.interlocucaoCPCA ?? undefined,
             informacoesComplementaresCPCA:
-                formData.informacoesComplementaresCPCA || "",
+                formData.informacoesComplementaresCPCA ?? "",
             interlocucaoSupervisaoEscolar:
-                formData.interlocucaoSupervisaoEscolar || undefined,
+                formData.interlocucaoSupervisaoEscolar ?? undefined,
             informacoesComplementaresSupervisaoEscolar:
-                formData.informacoesComplementaresSupervisaoEscolar || "",
-            interlocucaoNAAPA: formData.interlocucaoNAAPA || undefined,
+                formData.informacoesComplementaresSupervisaoEscolar ?? "",
+            interlocucaoNAAPA: formData.interlocucaoNAAPA ?? undefined,
             informacoesComplementaresNAAPA:
-                formData.informacoesComplementaresNAAPA || "",
+                formData.informacoesComplementaresNAAPA ?? "",
         },
     });
 
@@ -101,8 +103,22 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                         });
                         return;
                     }
-                    setOpenModalFinalizarEtapa(true);
-                    setFormData(data);
+
+                    const isPontoFocalEmEtapaFinal =
+                        isPontoFocal && formData.status === "enviado_para_dre";
+
+                    if (isPontoFocalEmEtapaFinal) {
+                        setOpenModalFinalizarEtapa(true);
+                        setFormData(data);
+                        return;
+                    }
+
+                    if (isPontoFocal) {
+                        router.push("/dashboard");
+                        return;
+                    }
+
+                    onNext?.();
                 },
                 onError: () => {
                     toast({
@@ -207,28 +223,16 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                     >
                         Anterior
                     </Button>
-                    {isPontoFocal && formData.status !== "enviado_para_dre" ? (
-                        <Button
-                            onClick={() => handleSubmit(form.getValues())}
-                            type="submit"
-                            variant="submit"
-                            disabled={!isValid}
-                        >
-                            Salvar informações
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="submit"
-                            type="button"
-                            disabled={!isValid}
-                            onClick={() => {
-                                handleSubmit(form.getValues());
-                                onNext?.();
-                            }}
-                        >
-                            Próximo
-                        </Button>
-                    )}
+                    <Button
+                        onClick={() => handleSubmit(form.getValues())}
+                        type="submit"
+                        variant="submit"
+                        disabled={!isValid}
+                    >
+                        {isPontoFocal && formData.status === "enviado_para_dre"
+                            ? "Salvar informações"
+                            : "Próximo"}
+                    </Button>
                 </div>
             </QuadroBranco>
 

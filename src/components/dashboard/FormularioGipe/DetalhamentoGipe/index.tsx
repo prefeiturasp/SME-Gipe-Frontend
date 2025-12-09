@@ -79,15 +79,15 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            envolveArmaOuAtaque: formData.envolveArmaOuAtaque || undefined,
-            ameacaRealizada: formData.ameacaRealizada || undefined,
-            envolvidosGipe: formData.envolvidosGipe || [],
-            motivacaoOcorrenciaGipe: formData.motivacaoOcorrenciaGipe || [],
-            tipoOcorrenciaGipe: formData.tipoOcorrenciaGipe || "",
-            cicloAprendizagem: formData.cicloAprendizagem || "",
+            envolveArmaOuAtaque: formData.envolveArmaOuAtaque ?? undefined,
+            ameacaRealizada: formData.ameacaRealizada ?? undefined,
+            envolvidosGipe: formData.envolvidosGipe ?? [],
+            motivacaoOcorrenciaGipe: formData.motivacaoOcorrenciaGipe ?? [],
+            tipoOcorrenciaGipe: formData.tipoOcorrenciaGipe ?? "",
+            cicloAprendizagem: formData.cicloAprendizagem ?? "",
             informacoesInteracoesVirtuais:
-                formData.informacoesInteracoesVirtuais || "",
-            encaminhamentos: formData.encaminhamentos || "",
+                formData.informacoesInteracoesVirtuais ?? "",
+            encaminhamentos: formData.encaminhamentos ?? "",
         },
     });
 

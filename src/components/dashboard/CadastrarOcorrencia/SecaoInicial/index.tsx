@@ -68,8 +68,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
-                dataOcorrencia: formData.dataOcorrencia || "",
-                horaOcorrencia: formData.horaOcorrencia || "",
+                dataOcorrencia: formData.dataOcorrencia ?? "",
+                horaOcorrencia: formData.horaOcorrencia ?? "",
                 dre:
                     formData.dre ??
                     user?.unidades[0]?.dre.codigo_eol ??
@@ -78,7 +78,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                     formData.unidadeEducacional ??
                     user?.unidades[0]?.ue.codigo_eol ??
                     undefined,
-                tipoOcorrencia: formData.tipoOcorrencia || undefined,
+                tipoOcorrencia: formData.tipoOcorrencia ?? undefined,
             },
         });
 
@@ -171,9 +171,9 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             }
         };
 
-        const dreNome = formData.nomeDre || user?.unidades[0]?.dre.nome || "";
+        const dreNome = formData.nomeDre ?? user?.unidades[0]?.dre.nome ?? "";
         const unidadeNome =
-            formData.nomeUnidade || user?.unidades[0]?.ue.nome || "";
+            formData.nomeUnidade ?? user?.unidades[0]?.ue.nome ?? "";
 
         return (
             <Form {...form}>
