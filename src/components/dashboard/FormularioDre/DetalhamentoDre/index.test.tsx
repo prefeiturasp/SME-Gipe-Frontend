@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as useUserStoreModule from "@/stores/useUserStore";
 
 const mockRouterBack = vi.fn();
+const mockRouterPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: mockRouterBack,
-        push: vi.fn(),
+        push: mockRouterPush,
     }),
 }));
 
@@ -539,23 +540,9 @@ describe("DetalhamentoDre", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve exibir botão 'Salvar informações' quando é Ponto Focal e status não é 'enviado_para_dre'", () => {
+    it("deve exibir botão 'Próximo' quando é Ponto Focal e status não é 'enviado_para_dre'", () => {
         mockIsPontoFocal.mockReturnValue(true);
         mockFormData.status = "em_andamento";
-
-        renderComponent();
-
-        expect(
-            screen.getByRole("button", { name: /salvar informações/i })
-        ).toBeInTheDocument();
-        expect(
-            screen.queryByRole("button", { name: /próximo/i })
-        ).not.toBeInTheDocument();
-    });
-
-    it("deve exibir botão 'Próximo' quando é Ponto Focal mas status é 'enviado_para_dre'", () => {
-        mockIsPontoFocal.mockReturnValue(true);
-        mockFormData.status = "enviado_para_dre";
 
         renderComponent();
 
@@ -564,6 +551,20 @@ describe("DetalhamentoDre", () => {
         ).toBeInTheDocument();
         expect(
             screen.queryByRole("button", { name: /salvar informações/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir botão 'Salvar informações' quando é Ponto Focal mas status é 'enviado_para_dre'", () => {
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "enviado_para_dre";
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /próximo/i })
         ).not.toBeInTheDocument();
     });
 
@@ -583,7 +584,7 @@ describe("DetalhamentoDre", () => {
     it("deve chamar handleSubmit e abrir modal ao clicar em 'Salvar informações' quando é Ponto Focal", async () => {
         const user = userEvent.setup();
         mockIsPontoFocal.mockReturnValue(true);
-        mockFormData.status = "em_andamento";
+        mockFormData.status = "enviado_para_dre";
 
         mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
             options.onSuccess({ success: true });
@@ -617,7 +618,7 @@ describe("DetalhamentoDre", () => {
         const user = userEvent.setup();
         const mockOnNext = vi.fn();
         mockIsPontoFocal.mockReturnValue(true);
-        mockFormData.status = "em_andamento";
+        mockFormData.status = "enviado_para_dre";
 
         mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
             options.onSuccess({ success: true });
@@ -688,6 +689,46 @@ describe("DetalhamentoDre", () => {
         await waitFor(() => {
             expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
             expect(mockOnNext).toHaveBeenCalled();
+        });
+    });
+
+    it("deve redirecionar para dashboard quando Ponto Focal clica em 'Próximo' em status diferente de 'enviado_para_dre'", async () => {
+        const user = userEvent.setup();
+        const mockOnNext = vi.fn();
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "em_andamento";
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoDre onNext={mockOnNext} />
+            </QueryClientProvider>
+        );
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoProximo).not.toBeDisabled();
+        });
+
+        await user.click(botaoProximo);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
+            expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
+            expect(mockOnNext).not.toHaveBeenCalled();
         });
     });
 });
