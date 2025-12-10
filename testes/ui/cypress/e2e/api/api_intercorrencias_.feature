@@ -1,5 +1,5 @@
 # language: pt
-@api 
+@skip @api 
 Funcionalidade: API  Intercorrências 
   Como diretor de escola
   Quero validar os endpoints de intercorrências

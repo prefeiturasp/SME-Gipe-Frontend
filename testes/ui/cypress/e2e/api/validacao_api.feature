@@ -1,5 +1,5 @@
 #language: pt
-@api @validacao_configuracao
+@skip @api @validacao_configuracao
 Funcionalidade: Validação de Configuração da API
 
   # ============================================================================

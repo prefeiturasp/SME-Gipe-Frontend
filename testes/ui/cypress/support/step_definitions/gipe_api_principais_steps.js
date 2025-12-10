@@ -293,7 +293,7 @@ Given('que não estou autenticado', () => {
 When('eu tento acessar o endpoint {string} sem token', (endpoint) => {
   cy.request({
     method: 'GET',
-    url: `${Cypress.env('API_BASE_URL') || 'https://hom-gipe.sme.prefeitura.sp.gov.br/api'}${endpoint}`,
+    url: `${Cypress.env('API_BASE_URL') || 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1'}${endpoint}`,
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'

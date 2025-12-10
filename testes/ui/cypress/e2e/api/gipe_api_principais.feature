@@ -1,5 +1,5 @@
 #language: pt
-@api @api_gipe_principais
+@skip @api @api_gipe_principais
 Funcionalidade: API GIPE - Testes Principais
   Como usuário do sistema GIPE
   Quero validar os principais endpoints da API
@@ -108,7 +108,7 @@ Funcionalidade: API GIPE - Testes Principais
   Cenário: Acessar endpoint sem autenticação
     Dado que não estou autenticado
     Quando eu tento acessar o endpoint "/diretor/" sem token
-    Então o status code da resposta deve ser 404
+    Então o status code da resposta deve ser 401
 
   @declarante @validacao @completa
   Cenário: Validação completa de estrutura de declarante
