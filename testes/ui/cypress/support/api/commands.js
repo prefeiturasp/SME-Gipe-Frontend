@@ -192,8 +192,28 @@ Cypress.Commands.add('api_obter_token_valido', () => {
 Cypress.Commands.add('api_autenticar', () => {
   Cypress.log({ name: 'Autenticação', message: '🔐 Configurando token...' });
   
-  // Para testes de API, usar token do arquivo ou token fixo
-  // Não fazer login via UI para economizar tempo
+  // Detectar se está em ambiente CI (Jenkins)
+  const isCI = Cypress.env('CI') || false;
+  const apiUsername = Cypress.env('API_USERNAME');
+  const apiPassword = Cypress.env('API_PASSWORD');
+  
+  // Se está no CI E tem credenciais, fazer login via API diretamente
+  if (isCI && apiUsername && apiPassword) {
+    Cypress.log({ name: 'Autenticação', message: '🏗️ Ambiente CI detectado - usando login via API' });
+    return cy.api_login(apiUsername, apiPassword).then((response) => {
+      if (response.status === 200 && response.body.access) {
+        const token = response.body.access;
+        Cypress.env('authToken', token);
+        Cypress.log({ name: 'Autenticação', message: '✅ Token obtido via API no CI' });
+        return token;
+      } else {
+        Cypress.log({ name: 'Autenticação', message: '❌ Falha no login via API' });
+        throw new Error('Falha na autenticação API no ambiente CI');
+      }
+    });
+  }
+  
+  // Modo local: tentar token do arquivo ou obter via UI
   return cy.api_carregar_token_arquivo().then((tokenArquivo) => {
     let tokenFinal = tokenArquivo || AUTH_TOKEN;
     
