@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { DetalhamentoGipe } from "./index";
@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
 import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
+import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 
 const mockRouterBack = vi.fn();
 
@@ -27,6 +28,13 @@ vi.mock("../../CadastrarOcorrencia/Anexos", () => ({
 const mockToast = vi.fn();
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: (params: unknown) => mockToast(params),
+}));
+
+const mockAtualizarOcorrenciaGipe = vi.fn();
+vi.mock("@/hooks/useAtualizarOcorrenciaGipe", () => ({
+    useAtualizarOcorrenciaGipe: () => ({
+        mutate: mockAtualizarOcorrenciaGipe,
+    }),
 }));
 
 const mockSetFormData = vi.fn();
@@ -283,7 +291,6 @@ describe("DetalhamentoGipe", () => {
     it("deve renderizar 3 QuadroBranco distintos", () => {
         renderComponent();
 
-        // Verifica se os campos de diferentes seções estão presentes
         expect(
             screen.getByText(/envolve arma ou ataque\?/i)
         ).toBeInTheDocument();
@@ -303,7 +310,7 @@ describe("DetalhamentoGipe", () => {
         });
 
         expect(botaoSalvar).toBeInTheDocument();
-        expect(botaoSalvar).toHaveAttribute("type", "button");
+        expect(botaoSalvar).toHaveAttribute("type", "submit");
     });
 
     it("deve usar 'diretor' como perfil padrão quando user é null", () => {
@@ -395,5 +402,253 @@ describe("DetalhamentoGipe", () => {
             screen.getByText(/o que motivou a ocorrência\?/i)
         ).toBeInTheDocument();
         expect(mockCategoriasGipe.motivo_ocorrencia).toHaveLength(3);
+    });
+
+    it("deve chamar a mutation corretamente quando os callbacks são executados", () => {
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            expect(params.uuid).toBe("test-uuid-gipe-123");
+            expect(params.body).toHaveProperty("unidade_codigo_eol", "123456");
+            expect(params.body).toHaveProperty("dre_codigo_eol", "654321");
+            expect(params.body).toHaveProperty("envolve_arma_ataque");
+            expect(params.body).toHaveProperty("ameaca_realizada_qual_maneira");
+            expect(params.body).toHaveProperty("envolvido");
+            expect(params.body).toHaveProperty("motivacao_ocorrencia");
+            expect(params.body).toHaveProperty("tipos_ocorrencia");
+            expect(params.body).toHaveProperty("qual_ciclo_aprendizagem");
+            expect(params.body).toHaveProperty(
+                "info_sobre_interacoes_virtuais_pessoa_agressora"
+            );
+            expect(params.body).toHaveProperty("encaminhamentos_gipe");
+
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir toast de erro quando a API retorna sucesso falso", () => {
+        let capturedOnSuccess:
+            | ((response: { success: boolean; error?: string }) => void)
+            | undefined;
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            capturedOnSuccess = options.onSuccess;
+        });
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+
+        if (capturedOnSuccess) {
+            capturedOnSuccess({
+                success: false,
+                error: "Erro ao processar dados GIPE",
+            });
+
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência GIPE",
+                description: "Erro ao processar dados GIPE",
+                variant: "error",
+            });
+        }
+    });
+
+    it("deve exibir toast de erro quando a mutation falha", () => {
+        let capturedOnError: (() => void) | undefined;
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            capturedOnError = options.onError;
+        });
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+
+        if (capturedOnError) {
+            capturedOnError();
+
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência GIPE",
+                description:
+                    "Não foi possível atualizar os dados. Tente novamente.",
+                variant: "error",
+            });
+        }
+    });
+
+    it("deve chamar setFormData quando há sucesso na mutation", () => {
+        let capturedOnSuccess:
+            | ((response: { success: boolean }) => void)
+            | undefined;
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            capturedOnSuccess = options.onSuccess;
+        });
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /salvar informações/i })
+        ).toBeInTheDocument();
+
+        if (capturedOnSuccess) {
+            capturedOnSuccess({ success: true });
+
+            expect(mockSetFormData).toHaveBeenCalled();
+        }
+    });
+
+    it("deve chamar handleSubmit ao clicar no botão Salvar informações quando o formulário está válido", async () => {
+        const user = userEvent.setup();
+
+        const formDataValido = {
+            ...mockFormData,
+            envolveArmaOuAtaque: "sim",
+            ameacaRealizada: "presencialmente",
+            envolvidosGipe: ["env1"],
+            motivacaoOcorrenciaGipe: ["bullying"],
+            tipoOcorrenciaGipe: "tipo1",
+            cicloAprendizagem: "alfabetizacao",
+            informacoesInteracoesVirtuais: "",
+            encaminhamentos: "Encaminhamentos do GIPE",
+        };
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore"
+        ).mockReturnValue({
+            formData: formDataValido,
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaGipe).toHaveBeenCalled();
+        });
+
+        expect(mockSetFormData).toHaveBeenCalled();
+    });
+
+    it("deve exibir toast de erro quando response.success é false", async () => {
+        const user = userEvent.setup();
+
+        const formDataValido = {
+            ...mockFormData,
+            envolveArmaOuAtaque: "sim",
+            ameacaRealizada: "presencialmente",
+            envolvidosGipe: ["env1"],
+            motivacaoOcorrenciaGipe: ["bullying"],
+            tipoOcorrenciaGipe: "tipo1",
+            cicloAprendizagem: "alfabetizacao",
+            informacoesInteracoesVirtuais: "",
+            encaminhamentos: "Encaminhamentos do GIPE",
+        };
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore"
+        ).mockReturnValue({
+            formData: formDataValido,
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            options.onSuccess({ success: false, error: "Erro ao processar" });
+        });
+
+        renderComponent();
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência GIPE",
+                description: "Erro ao processar",
+                variant: "error",
+            });
+        });
+    });
+
+    it("deve exibir toast de erro quando a mutation falha (onError)", async () => {
+        const user = userEvent.setup();
+
+        const formDataValido = {
+            ...mockFormData,
+            envolveArmaOuAtaque: "sim",
+            ameacaRealizada: "presencialmente",
+            envolvidosGipe: ["env1"],
+            motivacaoOcorrenciaGipe: ["bullying"],
+            tipoOcorrenciaGipe: "tipo1",
+            cicloAprendizagem: "alfabetizacao",
+            informacoesInteracoesVirtuais: "",
+            encaminhamentos: "Encaminhamentos do GIPE",
+        };
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore"
+        ).mockReturnValue({
+            formData: formDataValido,
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            options.onError();
+        });
+
+        renderComponent();
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith({
+                title: "Erro ao atualizar ocorrência GIPE",
+                description:
+                    "Não foi possível atualizar os dados. Tente novamente.",
+                variant: "error",
+            });
+        });
     });
 });
