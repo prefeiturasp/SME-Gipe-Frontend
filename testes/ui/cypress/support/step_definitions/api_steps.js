@@ -23,16 +23,32 @@ After({ tags: '@api' }, function() {
 // ============================================================================
 
 Given('que possuo credenciais válidas de autenticação', () => {
-  cy.log('✅ Credenciais disponíveis');
+  Cypress.log({ name: 'Autenticação', message: '✅ Credenciais disponíveis' });
 });
 
 Given('que estou autenticado na API', function() {
-  cy.api_autenticar().then((token) => {
+  Cypress.log({ name: 'Autenticação', message: '🔐 Iniciando processo de autenticação...' });
+  
+  return cy.api_autenticar().then((token) => {
     if (!this.testData) {
       this.testData = {};
     }
     this.testData.token = token;
-    cy.wrap(token).as('token');
+    Cypress.log({ name: 'Autenticação', message: '✅ Token configurado e pronto para uso' });
+    return token;
+  });
+});
+
+Given('que tenho um token válido atualizado', function() {
+  Cypress.log({ name: 'Autenticação', message: '🔄 Obtendo token válido e atualizado...' });
+  
+  return cy.api_obter_token_valido().then((token) => {
+    if (!this.testData) {
+      this.testData = {};
+    }
+    this.testData.token = token;
+    Cypress.log({ name: 'Autenticação', message: '✅ Token válido obtido e configurado' });
+    return token;
   });
 });
 
@@ -373,6 +389,12 @@ Then('o content-type deve ser application/json', () => {
 });
 
 Then('o tempo de resposta deve ser menor que {int}ms', (maxTime) => {
+  cy.get('@response').then((response) => {
+    expect(response.duration).to.be.lessThan(maxTime);
+  });
+});
+
+Then('o tempo de resposta deve ser menor que {int} milissegundos', (maxTime) => {
   cy.get('@response').then((response) => {
     expect(response.duration).to.be.lessThan(maxTime);
   });
