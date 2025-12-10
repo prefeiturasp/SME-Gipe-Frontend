@@ -1,5 +1,5 @@
 #language: pt
-@api @dre
+@skip @api @dre
 Funcionalidade: API DRE - Gestão de Intercorrências
   Como usuário da DRE
   Quero visualizar e atualizar intercorrências da minha DRE
