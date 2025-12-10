@@ -15,7 +15,8 @@ const formSchema = z
         rede: z.string().min(1, "Rede é obrigatória"),
         cargo: z.string().min(1, "Cargo é obrigatório"),
         fullName: fullName,
-        rfOuCpf: z.string().min(1, "RF ou CPF é obrigatório"),
+        rf: z.string(),
+        cpf: z.string(),
         email: z
             .string()
             .min(1, "E-mail é obrigatório")
@@ -35,34 +36,52 @@ const formSchema = z
         isAdmin: z.boolean().default(false),
     })
     .superRefine((data, ctx) => {
-        const cleanValue = data.rfOuCpf.replaceAll(/\D/g, "");
+        const cleanCpf = data.cpf.replaceAll(/\D/g, "");
 
-        if (data.rede === "INDIRETA") {
-            if (cleanValue.length !== 11) {
+        if (!data.cpf) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "CPF é obrigatório",
+                path: ["cpf"],
+            });
+        } else if (cleanCpf.length !== 11) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "CPF deve ter 11 dígitos",
+                path: ["cpf"],
+            });
+        } else if (!isValidCPF(cleanCpf)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "CPF inválido",
+                path: ["cpf"],
+            });
+        }
+
+        if (data.rede === "DIRETA") {
+            const cleanRf = data.rf.replaceAll(/\D/g, "");
+
+            if (!data.rf) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: "Para rede indireta, informe um CPF válido",
-                    path: ["rfOuCpf"],
+                    message: "RF é obrigatório",
+                    path: ["rf"],
                 });
-            } else if (!isValidCPF(cleanValue)) {
+            } else if (cleanRf.length !== 7) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: "CPF inválido",
-                    path: ["rfOuCpf"],
-                });
-            }
-        } else if (data.rede === "DIRETA") {
-            if (cleanValue.length !== 7) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message:
-                        "Para rede direta, informe um RF válido (7 dígitos)",
-                    path: ["rfOuCpf"],
+                    message: "RF deve ter 7 dígitos",
+                    path: ["rf"],
                 });
             }
         }
 
-        if (data.cargo !== "gipe" && !data.dre) {
+        if (
+            data.cargo &&
+            data.cargo !== "gipe" &&
+            data.cargo !== "admin" &&
+            !data.dre
+        ) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: "Diretoria Regional é obrigatória",
@@ -70,7 +89,13 @@ const formSchema = z
             });
         }
 
-        if (data.cargo !== "ponto_focal" && data.cargo !== "gipe" && !data.ue) {
+        if (
+            data.cargo &&
+            data.cargo !== "ponto_focal" &&
+            data.cargo !== "gipe" &&
+            data.cargo !== "admin" &&
+            !data.ue
+        ) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: "Unidade Educacional é obrigatória",
