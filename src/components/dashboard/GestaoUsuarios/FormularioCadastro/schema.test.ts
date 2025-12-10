@@ -3,12 +3,13 @@ import formSchema from "./schema";
 
 describe("Schema de cadastro de pessoa usuária", () => {
     describe("Validações básicas de campos obrigatórios", () => {
-        it("valida formulário completo para rede direta com RF", () => {
+        it("valida formulário completo para rede direta com RF e CPF", () => {
             const validData = {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -24,7 +25,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "INDIRETA",
                 cargo: "diretor",
                 fullName: "Maria Santos",
-                rfOuCpf: "12345678909",
+                rf: "",
+                cpf: "12345678909",
                 email: "maria.santos@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -40,7 +42,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -61,7 +64,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -84,7 +88,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João123 da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -105,7 +110,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -126,7 +132,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "  João   da   Silva  ",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -147,7 +154,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -163,7 +171,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "123456",
+                rf: "123456",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -176,8 +185,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 expect(
                     result.error.issues.some(
                         (i) =>
-                            i.path[0] === "rfOuCpf" &&
-                            i.message.includes("RF válido")
+                            i.path[0] === "rf" &&
+                            i.message.includes("RF deve ter 7 dígitos")
                     )
                 ).toBe(true);
             }
@@ -188,7 +197,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "INDIRETA",
                 cargo: "diretor",
                 fullName: "Maria Santos",
-                rfOuCpf: "12345678909",
+                rf: "",
+                cpf: "12345678909",
                 email: "maria.santos@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -199,12 +209,13 @@ describe("Schema de cadastro de pessoa usuária", () => {
             expect(result.success).toBe(true);
         });
 
-        it("rejeita CPF inválido para rede indireta", () => {
+        it("rejeita CPF inválido", () => {
             const invalidData = {
                 rede: "INDIRETA",
                 cargo: "diretor",
                 fullName: "Maria Santos",
-                rfOuCpf: "11111111111",
+                rf: "",
+                cpf: "11111111111",
                 email: "maria.santos@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -218,12 +229,13 @@ describe("Schema de cadastro de pessoa usuária", () => {
             }
         });
 
-        it("rejeita CPF com menos de 11 dígitos para rede indireta", () => {
+        it("rejeita CPF com menos de 11 dígitos", () => {
             const invalidData = {
                 rede: "INDIRETA",
                 cargo: "diretor",
                 fullName: "Maria Santos",
-                rfOuCpf: "1234567890",
+                rf: "",
+                cpf: "1234567890",
                 email: "maria.santos@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -236,8 +248,60 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 expect(
                     result.error.issues.some(
                         (i) =>
-                            i.path[0] === "rfOuCpf" &&
-                            i.message.includes("CPF válido")
+                            i.path[0] === "cpf" &&
+                            i.message.includes("CPF deve ter 11 dígitos")
+                    )
+                ).toBe(true);
+            }
+        });
+
+        it("RF é obrigatório para rede direta", () => {
+            const invalidData = {
+                rede: "DIRETA",
+                cargo: "diretor",
+                fullName: "João da Silva",
+                rf: "",
+                cpf: "12345678909",
+                email: "joao.silva@sme.prefeitura.sp.gov.br",
+                dre: "dre-uuid-123",
+                ue: "ue-uuid-456",
+                isAdmin: false,
+            };
+
+            const result = formSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(
+                    result.error.issues.some(
+                        (i) =>
+                            i.path[0] === "rf" &&
+                            i.message === "RF é obrigatório"
+                    )
+                ).toBe(true);
+            }
+        });
+
+        it("CPF é obrigatório para todas as redes", () => {
+            const invalidData = {
+                rede: "INDIRETA",
+                cargo: "diretor",
+                fullName: "Maria Santos",
+                rf: "",
+                cpf: "",
+                email: "maria.santos@sme.prefeitura.sp.gov.br",
+                dre: "dre-uuid-123",
+                ue: "ue-uuid-456",
+                isAdmin: false,
+            };
+
+            const result = formSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(
+                    result.error.issues.some(
+                        (i) =>
+                            i.path[0] === "cpf" &&
+                            i.message === "CPF é obrigatório"
                     )
                 ).toBe(true);
             }
@@ -250,7 +314,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -266,7 +331,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@gmail.com",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -287,7 +353,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
@@ -310,7 +377,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "",
                 ue: "ue-uuid-456",
@@ -335,7 +403,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "gipe",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "",
                 ue: "",
@@ -351,7 +420,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "",
@@ -376,7 +446,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "ponto_focal",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "",
@@ -392,7 +463,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "gipe",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "",
                 ue: "",
@@ -410,7 +482,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "ponto_focal",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "",
@@ -426,7 +499,8 @@ describe("Schema de cadastro de pessoa usuária", () => {
                 rede: "DIRETA",
                 cargo: "diretor",
                 fullName: "João da Silva",
-                rfOuCpf: "1234567",
+                rf: "1234567",
+                cpf: "12345678909",
                 email: "joao.silva@sme.prefeitura.sp.gov.br",
                 dre: "dre-uuid-123",
                 ue: "ue-uuid-456",
