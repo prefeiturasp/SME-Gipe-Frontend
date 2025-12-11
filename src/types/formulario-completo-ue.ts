@@ -6,7 +6,7 @@ export type FormularioCompletoUEBody = {
     tipos_ocorrencia: string[];
     descricao_ocorrencia: string;
     smart_sampa_situacao: string;
-    envolvido: string;
+    envolvido?: string;
     tem_info_agressor_ou_vitima: string;
     declarante: string;
     comunicacao_seguranca_publica: string;
