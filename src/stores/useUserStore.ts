@@ -9,6 +9,7 @@ export interface User {
     rede: string;
     is_core_sso: boolean;
     is_validado: boolean;
+    is_app_admin: boolean;
     perfil_acesso: {
         codigo: number;
         nome: string;
