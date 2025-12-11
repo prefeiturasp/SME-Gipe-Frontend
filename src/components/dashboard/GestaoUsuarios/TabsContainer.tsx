@@ -1,9 +1,28 @@
+"use client";
+
+import { useMemo } from "react";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import ListaDeUsuarios from "./ListaDeUsuarios";
 import ListaDeUsuariosPendenciasAprovacao from "./ListaDeUsuariosPendenciasAprovacao";
 
+import { useGetUsuarios } from "@/hooks/useGetUsuarios";
+
 export default function TabsContainer() {
+
+    const {
+        data: usuarios,
+        isLoading,
+        isError,
+        error,
+    } = useGetUsuarios(undefined, undefined, undefined, true);
+
+    const pendenciasDeAprovacaoCount = useMemo(
+        () => usuarios?.length ?? 0,
+        [usuarios]
+    );
+
     return (
         <Tabs defaultValue="pendencias" className="w-full">
             <TabsList className="justify-between w-full h-12 ">
@@ -16,7 +35,7 @@ export default function TabsContainer() {
                         variant="destructive"
                         className="h-5 min-w-5 rounded-full px-2"
                     >
-                        9
+                        {pendenciasDeAprovacaoCount}
                     </Badge>
                 </TabsTrigger>
                 <TabsTrigger
@@ -33,7 +52,12 @@ export default function TabsContainer() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="pendencias">
-                <ListaDeUsuariosPendenciasAprovacao />
+                <ListaDeUsuariosPendenciasAprovacao
+                    usuarios={usuarios}
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error}
+                />
             </TabsContent>
             <TabsContent value="ativos">
                 <ListaDeUsuarios status="ativos" />

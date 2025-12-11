@@ -38,7 +38,7 @@ export function CardUsuariosPendenciasAprovacao({
             <div className="space-y-3">
               <div>
                 <p className="font-bold">CPF:</p>
-                <p className="text-[#42474A]">{usuario.rfOuCpf}</p>
+                <p className="text-[#42474A]">{usuario.rf_ou_cpf}</p>
               </div>
 
               <div>
@@ -53,14 +53,14 @@ export function CardUsuariosPendenciasAprovacao({
               <div>
                 <p className="font-bold">Diretoria Regional:</p>
                 <p className="text-[#42474A]">
-                  {usuario.diretoriaRegional ?? "—"}
+                  {usuario.diretoria_regional ?? "—"}
                 </p>
               </div>
 
               <div>
                 <p className="font-bold">Unidade Educacional:</p>
                 <p className="text-[#42474A]">
-                  {usuario.unidadeEducacional ?? "—"}
+                  {usuario.unidade_educacional ?? "—"}
                 </p>
               </div>
             </div>
@@ -70,7 +70,7 @@ export function CardUsuariosPendenciasAprovacao({
             <p className="text-sm">
               <span className="font-bold">Data da solicitação:</span>{" "}
               <span className="text-[#42474A]">
-                {usuario.dataSolicitacao ?? "09/06/2025"}
+                {usuario.data_solicitacao ?? "09/06/2025"}
               </span>
             </p>
           </CardContent>

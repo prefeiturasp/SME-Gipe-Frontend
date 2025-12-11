@@ -1,37 +1,61 @@
 "use client";
 
-import * as React from "react";
+import React, { useCallback, useState } from "react";
 
 import FiltrosUsuarios from "./Filtros";
 import TabelaUsuarios from "./TabelaUsuarios";
-import { dataUsuarios } from "../data-usuarios";
 
 type ListaDeUsuariosProps = {
     status: "ativos" | "inativos";
 };
 
+import { useGetUsuarios } from "@/hooks/useGetUsuarios";
+import { RenderMessage } from "../RenderMessage";
 
 export default function ListaDeUsuarios({
     status,
 }: Readonly<ListaDeUsuariosProps>) {
-
-
-    const handleFilterChange = (filters: {
+    const [filters, setFilters] = useState<{
         dreUuid?: string;
         ueUuid?: string;
-    }) => {
-        // aqui você pode chamar refetch da lista de usuários,
-        // atualizar estado global, montar query params, etc.
-        // ex:
-        // setFilters(filters);
-        console.log("Filtros aplicados:", filters);
-    };
+    }>({});
+    const {
+        data: usuarios,
+        isLoading,
+        isError,
+        error,
+    } = useGetUsuarios(status === "ativos", filters.dreUuid, filters.ueUuid);
+
+    const handleFilterChange = useCallback(
+        (nextFilters: { dreUuid?: string; ueUuid?: string }) => {
+            setFilters((current) => {
+                if (
+                    current.dreUuid === nextFilters.dreUuid &&
+                    current.ueUuid === nextFilters.ueUuid
+                ) {
+                    return current;
+                }
+
+                return nextFilters;
+            });
+        },
+        []
+    );
 
     return (
         <>
-            <p className="p-2">Exibindo o Status: {status}</p>
             <FiltrosUsuarios onFilterChange={handleFilterChange} />
-            <TabelaUsuarios dataUsuarios={dataUsuarios} />
+
+            <RenderMessage
+                isLoading={isLoading}
+                isError={isError}
+                error={error}
+                usuarios={usuarios}
+            />
+
+            {usuarios && usuarios.length > 0 && (
+                <TabelaUsuarios dataUsuarios={usuarios} />
+            )}
         </>
     );
 }

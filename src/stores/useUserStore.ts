@@ -15,11 +15,13 @@ export interface User {
     };
     unidades: {
         ue: {
+            ue_uuid: string | null;
             codigo_eol: string | null;
             nome: string | null;
             sigla: string | null;
         };
         dre: {
+            dre_uuid: string | null;
             codigo_eol: string | null;
             nome: string | null;
             sigla: string | null;
