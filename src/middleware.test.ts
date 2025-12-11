@@ -11,6 +11,14 @@ type MockRequest = {
     cookies: { get: (key: string) => MockCookie | undefined };
 };
 
+const encodeSegment = (obj: object) =>
+    Buffer.from(JSON.stringify(obj)).toString("base64url");
+
+const createToken = (payload: object) =>
+    `${encodeSegment({ alg: "HS256", typ: "JWT" })}.${encodeSegment(
+        payload
+    )}.signature`;
+
 function makeReq(pathname: string, cookieValue?: string): MockRequest {
     return {
         nextUrl: { pathname },
@@ -121,5 +129,56 @@ describe("middleware", () => {
         middleware(req as unknown as Parameters<typeof middleware>[0]);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("impede usuário não admin de acessar rotas de gestão", () => {
+        const token = createToken({ is_app_admin: false });
+        const req = makeReq("/dashboard/gestao-usuarios", token);
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/dashboard", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+
+    it("permite usuário admin acessar rotas de gestão", () => {
+        const token = createToken({ is_app_admin: true });
+        const req = makeReq(
+            "/dashboard/gestao-unidades-educacionais/detalhe",
+            token
+        );
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("bloqueia acesso quando o token JWT é inválido (não tem 3 partes)", () => {
+        const invalidToken = "token.invalido";
+        const req = makeReq("/dashboard/gestao-usuarios", invalidToken);
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/dashboard", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+
+    it("bloqueia acesso quando o token JWT tem payload inválido (não é JSON)", () => {
+        const invalidToken = "header.not-valid-base64-json.signature";
+        const req = makeReq("/dashboard/gestao-usuarios", invalidToken);
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/dashboard", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+
+    it("bloqueia acesso quando o token não tem a propriedade is_app_admin", () => {
+        const token = createToken({ other_property: "value" });
+        const req = makeReq("/dashboard/gestao-usuarios", token);
+        middleware(req as unknown as Parameters<typeof middleware>[0]);
+        expect(NextResponse.redirect).toHaveBeenCalledWith(
+            new URL("/dashboard", req.url)
+        );
+        expect(NextResponse.next).not.toHaveBeenCalled();
     });
 });
