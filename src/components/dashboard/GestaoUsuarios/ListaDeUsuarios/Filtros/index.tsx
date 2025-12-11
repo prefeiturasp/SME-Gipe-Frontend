@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import { useUserStore } from "@/stores/useUserStore";
 import { Combobox } from "@/components/ui/Combobox";
 
 
@@ -20,18 +21,36 @@ export default function FiltrosUsuarios({
     onFilterChange,
 }: Readonly<FiltrosUsuariosProps>) {
 
-    const [dreUuid, setDreUuid] = useState<string | undefined>();
-    const [ueUuid, setUeUuid] = useState<string | undefined>();
+    const user = useUserStore((state) => state.user);
+
+    const [dreUuid, setDreUuid] = useState<string>("");
+    const [ueUuid, setUeUuid] = useState<string>("");
+    const [isPontoFocalDre, setIsPontoFocalDre] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (dreUuid) return;
+
+        const isPontoFocalDre = user?.perfil_acesso?.codigo === 1;
+        const dreFromUser = user?.unidades?.[0]?.dre?.dre_uuid;
+
+        if (isPontoFocalDre && dreFromUser) {
+            setDreUuid(dreFromUser);
+            setIsPontoFocalDre(true);
+        }
+    }, [user, dreUuid]);
 
     // Busca DREs
     const {data: dresData, isLoading: isLoadingDres, isError: isErrorDres,} = useFetchDREs();
 
     // Busca UEs da DRE selecionada
-    const {data: uesData, isLoading: isLoadingUes, isError: isErrorUes,} = useFetchUEs(dreUuid ?? "", "TODAS");
+    const {data: uesData, isLoading: isLoadingUes, isError: isErrorUes,} = useFetchUEs(dreUuid, "TODAS");
 
     // Sempre que mudar algum filtro, avisa o componente pai
     useEffect(() => {
-        onFilterChange?.({ dreUuid, ueUuid });
+        onFilterChange?.({
+            dreUuid: dreUuid || undefined,
+            ueUuid: ueUuid || undefined,
+        });
     }, [dreUuid, ueUuid, onFilterChange]);
 
     const dresOptions =
@@ -48,7 +67,7 @@ export default function FiltrosUsuarios({
 
     const handleChangeDre = (value: string) => {
         setDreUuid(value);
-        setUeUuid(undefined); // ao trocar DRE, limpa UE selecionada
+        setUeUuid(""); // ao trocar DRE, limpa UE selecionada
     };
 
     const handleChangeUe = (value: string) => {
@@ -84,7 +103,7 @@ export default function FiltrosUsuarios({
                         Diretoria Regional
                     </p>
 
-                    <Select value={dreUuid} onValueChange={handleChangeDre}>
+                    <Select value={dreUuid} onValueChange={handleChangeDre} disabled={isPontoFocalDre}>
                         <SelectTrigger className="w-full h-10 rounded-lg text-base justify-between">
                             <SelectValue
                                 placeholder={getDrePlaceholder()}
@@ -132,7 +151,7 @@ export default function FiltrosUsuarios({
                                 value: ue.value,
                             })
                         )}
-                        value={ueUuid ?? ""}
+                        value={ueUuid}
                         onChange={handleChangeUe}
                         placeholder={getUePlaceholder()}
                         disabled={!dreUuid}

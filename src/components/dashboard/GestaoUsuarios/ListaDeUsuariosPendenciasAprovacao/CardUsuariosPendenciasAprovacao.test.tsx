@@ -9,23 +9,23 @@ const mockUsuarios: Usuario[] = [
         uuid: "1",
         perfil: "Diretor(a)",
         nome: "João Silva",
-        rfOuCpf: "123.456.789-00",
+        rf_ou_cpf: "123.456.789-00",
         email: "joao.silva@example.com",
         rede: "Indireta",
-        diretoriaRegional: "Butantã",
-        unidadeEducacional: "EMEI Camilo Ashcar",
-        dataSolicitacao: "10/11/2025",
+        diretoria_regional: "Butantã",
+        unidade_educacional: "EMEI Camilo Ashcar",
+        data_solicitacao: "10/11/2025",
     },
     {
         id: 2,
         uuid: "2",
         perfil: "Assistente de direção",
         nome: "Maria Oliveira",
-        rfOuCpf: "987.654.321-00",
+        rf_ou_cpf: "987.654.321-00",
         email: "maria.oliveira@example.com",
         rede: "Direta",
-        diretoriaRegional: "Penha",
-        unidadeEducacional: "EMEF Prof. Carlos Drummond de Andrade",
+        diretoria_regional: "Penha",
+        unidade_educacional: "EMEF Prof. Carlos Drummond de Andrade",
     },
 ];
 
@@ -61,10 +61,10 @@ describe("CardUsuariosPendenciasAprovacao", () => {
         expect(screen.getByText("09/06/2025")).toBeInTheDocument();
     });
 
-    it("deve exibir '—' quando diretoriaRegional é null", () => {
+    it("deve exibir '—' quando diretoria_regional é null", () => {
         const usuarioSemDre: Usuario = {
             ...mockUsuarios[0],
-            diretoriaRegional: null as unknown as string,
+            diretoria_regional: null as unknown as string,
         };
 
         render(
@@ -75,10 +75,10 @@ describe("CardUsuariosPendenciasAprovacao", () => {
         expect(dreElements.length).toBeGreaterThan(0);
     });
 
-    it("deve exibir '—' quando unidadeEducacional é null", () => {
+    it("deve exibir '—' quando unidade_educacional é null", () => {
         const usuarioSemUe: Usuario = {
             ...mockUsuarios[0],
-            unidadeEducacional: null as unknown as string,
+            unidade_educacional: null as unknown as string,
         };
 
         render(
