@@ -12,6 +12,7 @@ export const useUserPermissions = () => {
 
     const permissions = useMemo(() => {
         const perfilCodigo = user?.perfil_acesso?.codigo;
+        const isGipeAdmin = user?.is_app_admin;
 
         const isGipe = perfilCodigo === PERFIL_GIPE;
         const isPontoFocal = perfilCodigo === PERFIL_PONTO_FOCAL;
@@ -23,6 +24,7 @@ export const useUserPermissions = () => {
             isGipe,
             isPontoFocal,
             isAssistenteOuDiretor,
+            isGipeAdmin,
         };
     }, [user]);
 
