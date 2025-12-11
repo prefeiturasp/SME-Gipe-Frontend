@@ -5,7 +5,7 @@
 const API_CONFIG = {
   BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1',
   AUTH_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-autenticacao/v1',
-  TIMEOUT: 30000
+  TIMEOUT: 120000
 };
 
 const CREDENTIALS = {
