@@ -11,6 +11,10 @@ export interface OcorrenciaGipeResponse {
     envolvido: string;
     motivacao_ocorrencia: string[];
     tipos_ocorrencia: string[];
+    tipos_ocorrencia_detalhes: Array<{
+        uuid: string;
+        nome: string;
+    }>;
     qual_ciclo_aprendizagem: string;
     info_sobre_interacoes_virtuais_pessoa_agressora: string;
     encaminhamentos_gipe: string;

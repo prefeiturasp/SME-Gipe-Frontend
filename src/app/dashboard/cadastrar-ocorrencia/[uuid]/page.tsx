@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
+import { useGetOcorrenciaGipe } from "@/hooks/useGetOcorrenciaGipe";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
 import VisualizarOcorrencia from "@/components/dashboard/VisualizarOcorrencia";
 import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
 import { transformOcorrenciaDreToFormData } from "@/lib/transformOcorrenciaDreToFormData";
+import { transformOcorrenciaGipeToFormData } from "@/lib/transformOcorrenciaGipeToFormData";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
@@ -30,9 +32,14 @@ export default function EditarOcorrenciaPage() {
     } = useGetOcorrencia(ocorrenciaId);
 
     const isEmPreenchimento = ocorrencia?.status === "em_preenchimento_diretor";
+    const isEnviadaGipe = ocorrencia?.status === "enviado_para_gipe";
 
     const { data: ocorrenciaDre } = useGetOcorrenciaDre(ocorrenciaId, {
         enabled: !isEmPreenchimento,
+    });
+
+    const { data: ocorrenciaGipe } = useGetOcorrenciaGipe(ocorrenciaId, {
+        enabled: isEnviadaGipe,
     });
 
     const { setFormData, setSavedFormData, setOcorrenciaUuid, reset } =
@@ -56,6 +63,12 @@ export default function EditarOcorrenciaPage() {
             combinedFormData = { ...formDataUe, ...formDataDre };
         }
 
+        if (isEnviadaGipe && ocorrenciaGipe) {
+            const formDataGipe =
+                transformOcorrenciaGipeToFormData(ocorrenciaGipe);
+            combinedFormData = { ...combinedFormData, ...formDataGipe };
+        }
+
         setOcorrenciaUuid(ocorrencia.uuid);
         setFormData(combinedFormData);
         setSavedFormData(combinedFormData);
@@ -63,7 +76,9 @@ export default function EditarOcorrenciaPage() {
     }, [
         ocorrencia,
         ocorrenciaDre,
+        ocorrenciaGipe,
         isEmPreenchimento,
+        isEnviadaGipe,
         setFormData,
         setSavedFormData,
         setOcorrenciaUuid,
@@ -77,7 +92,8 @@ export default function EditarOcorrenciaPage() {
         isLoading ||
         !isStoreReady ||
         !ocorrencia ||
-        (!isEmPreenchimento && !ocorrenciaDre)
+        (!isEmPreenchimento && !ocorrenciaDre) ||
+        (isEnviadaGipe && !ocorrenciaGipe)
     ) {
         return <LoadingSpinner />;
     }
