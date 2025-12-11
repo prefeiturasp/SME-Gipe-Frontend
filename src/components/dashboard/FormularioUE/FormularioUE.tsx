@@ -225,9 +225,13 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
                   "nao_faz_parte"
                 : "nao_faz_parte",
-            envolvido: isFurtoRoubo
-                ? ""
-                : (secaoTipoData as { envolvidos?: string })?.envolvidos ?? "",
+            ...(!isFurtoRoubo &&
+                (secaoTipoData as { envolvidos?: string })?.envolvidos && {
+                    envolvido:
+                        (secaoTipoData as { envolvidos?: string })
+                            ?.envolvidos ?? "",
+                }),
+            envolvido: formData.envolvidos,
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",
             comunicacao_seguranca_publica:
