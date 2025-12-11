@@ -231,7 +231,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                         (secaoTipoData as { envolvidos?: string })
                             ?.envolvidos ?? "",
                 }),
-            envolvido: formData.envolvidos,
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",
             comunicacao_seguranca_publica:

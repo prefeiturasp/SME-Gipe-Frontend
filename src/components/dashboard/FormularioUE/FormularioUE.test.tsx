@@ -1149,6 +1149,89 @@ describe("FormularioUE", () => {
                 expect(mockMutate).toHaveBeenCalled();
             });
         });
+
+        it("deve usar string vazia quando envolvidos é null em não furto/roubo", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Não" };
+            mockSecaoNaoFurtoGetData.mockReturnValue({
+                tiposOcorrencia: ["Agressão"],
+                descricao: "Descrição",
+                envolvidos: null,
+                possuiInfoAgressorVitima: "Não",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.envolvido).toBe("");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve usar o valor de formData.envolvidos quando definido", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                envolvidos: "estudantes",
+            };
+            mockSecaoNaoFurtoGetData.mockReturnValue({
+                tiposOcorrencia: ["Agressão"],
+                descricao: "Descrição",
+                envolvidos: "alunos",
+                possuiInfoAgressorVitima: "Não",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.envolvido).toBe("estudantes");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve usar fallback vazio quando envolvidos retorna undefined após passar na condição", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Não" };
+
+            // Cria um objeto com getter que retorna valor diferente em cada acesso
+            let accessCount = 0;
+            const mockData = {
+                tiposOcorrencia: ["Agressão"],
+                descricao: "Descrição",
+                possuiInfoAgressorVitima: "Não",
+                get envolvidos() {
+                    accessCount++;
+                    // Primeira chamada (condição do spread): retorna truthy
+                    // Segunda chamada (dentro do spread): retorna undefined
+                    return accessCount === 1 ? "alunos" : undefined;
+                },
+            };
+
+            mockSecaoNaoFurtoGetData.mockReturnValue(mockData);
+
+            mockMutate.mockImplementation((data) => {
+                // O fallback ?? "" deve ser usado
+                expect(data.body.envolvido).toBe("");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
     });
 
     describe("Botões baseados em permissões", () => {
