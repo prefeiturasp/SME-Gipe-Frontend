@@ -39,7 +39,8 @@ import {
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useFinalizarEtapa } from "@/hooks/useFinalizarEtapa";
 import { useFinalizarEtapaDre } from "@/hooks/useFinalizarEtapaDre";
-import { FinalizarOcorrenciaResponse } from "@/types/finalizar-etapa";
+import { useFinalizarEtapaGipe } from "@/hooks/useFinalizarEtapaGipe";
+import { FinalizarOcorrenciaResponse, FinalizarEtapaResponse } from "@/types/finalizar-etapa";
 
 
 type ModalFinalizarEtapaProps = {
@@ -55,9 +56,9 @@ type CamposFinalizarEtapaProps = {
 };
 
 const camposFinalizarEtapa: CamposFinalizarEtapaProps[] = [
-  { label: "Responsável", key: "responsavel_nome", perfisVisiveis: ["diretor", "assistente", "dre"] },
-  { label: "CPF", key: "responsavel_cpf", perfisVisiveis: ["diretor", "assistente", "dre"] },
-  { label: "E-mail", key: "responsavel_email", perfisVisiveis: ["diretor", "assistente", "dre"] },
+  { label: "Responsável", key: "responsavel_nome", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
+  { label: "CPF", key: "responsavel_cpf", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
+  { label: "E-mail", key: "responsavel_email", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
   { label: "Perfil de acesso", key: "perfil_acesso", perfisVisiveis: ["diretor", "assistente"] },
   { label: "Diretoria Regional", key: "nome_dre", perfisVisiveis: ["diretor", "assistente", "dre"] },
   { label: "Unidade Educacional", key: "nome_unidade", perfisVisiveis: ["diretor", "assistente"] },
@@ -77,6 +78,7 @@ export default function ModalFinalizarEtapa({
 
     const { mutateAsync: finalizarEtapaUE, isPending: isPendingEtapaUE } = useFinalizarEtapa();
     const { mutateAsync: finalizarEtapaDRE, isPending: isPendingEtapaDRE } = useFinalizarEtapaDre();
+    const { mutateAsync: finalizarEtapaGIPE, isPending: isPendingEtapaGIPE } = useFinalizarEtapaGipe();
 
     const router = useRouter();
 
@@ -96,6 +98,22 @@ export default function ModalFinalizarEtapa({
         }
     }
 
+    async function processarEncerramento(response: FinalizarEtapaResponse) {
+        if (!response.success) {
+            toast({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: response.error,
+            });
+            return;
+        }
+
+        if (response.data?.uuid) {
+            setApiData(response.data);
+            setSuccess(true);
+        }
+    }
+
     async function encerrarIntercorrenciaUE(values: FormDataMotivoEncerramento) {
         const body = {
             unidade_codigo_eol: formData.unidadeEducacional,
@@ -107,20 +125,8 @@ export default function ModalFinalizarEtapa({
             ocorrenciaUuid: ocorrenciaUuid!,
             body,
         });
-        
-        if (!response.success) {
-            toast({
-                variant: "error",
-                title: "Erro ao finalizar etapa",
-                description: response.error,
-            });
-            return;
-        } 
 
-        if (response.data?.uuid) {
-            setApiData(response.data);
-            setSuccess(true);
-        }
+        return processarEncerramento(response);
     }
 
     async function encerrarIntercorrenciaDRE(values: FormDataMotivoEncerramento) {
@@ -134,20 +140,23 @@ export default function ModalFinalizarEtapa({
             ocorrenciaUuid: ocorrenciaUuid!,
             body,
         });
-        
-        if (!response.success) {
-            toast({
-                variant: "error",
-                title: "Erro ao finalizar etapa",
-                description: response.error,
-            });
-            return;
-        } 
 
-        if (response.data?.uuid) {
-            setApiData(response.data);
-            setSuccess(true);
-        }
+        return processarEncerramento(response);
+    }
+
+    async function encerrarIntercorrenciaGIPE(values: FormDataMotivoEncerramento) {
+        const body = {
+            unidade_codigo_eol: formData.unidadeEducacional,
+            dre_codigo_eol: formData.dre,
+            motivo_encerramento_gipe: values.motivo,
+        };
+
+        const response = await finalizarEtapaGIPE({
+            ocorrenciaUuid: ocorrenciaUuid!,
+            body,
+        });
+
+        return processarEncerramento(response);
     }
 
     function getApiResponseByPerfil(perfil: string, values: FormDataMotivoEncerramento) {
@@ -157,6 +166,8 @@ export default function ModalFinalizarEtapa({
                 return encerrarIntercorrenciaUE(values);
             case "dre":
                 return encerrarIntercorrenciaDRE(values);
+            case "gipe":
+                return encerrarIntercorrenciaGIPE(values);
             default:
                 return null;
         }
@@ -227,7 +238,7 @@ export default function ModalFinalizarEtapa({
                                         type="submit"
                                         size="sm"
                                         className="min-w-[86px] text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                        disabled={!form.formState.isValid || isPendingEtapaUE || isPendingEtapaDRE}
+                                        disabled={!form.formState.isValid || isPendingEtapaUE || isPendingEtapaDRE || isPendingEtapaGIPE}
                                     >
                                         Finalizar
                                     </Button>
