@@ -1036,6 +1036,67 @@ describe("EditarOcorrenciaPage", () => {
         ).toBeInTheDocument();
     });
 
+    it("deve carregar dados do GIPE quando status é 'finalizada'", async () => {
+        const mockData = {
+            id: 5,
+            uuid: "test-uuid-finalizada",
+            data_ocorrencia: "2024-12-01T10:00:00Z",
+            unidade_codigo_eol: "123456",
+            dre_codigo_eol: "108300",
+            sobre_furto_roubo_invasao_depredacao: false,
+            user_username: "20090388003",
+            status: "finalizada",
+            criado_em: "2025-10-15T14:48:04.383569-03:00",
+            atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+        };
+
+        mockUseGetOcorrencia.mockReturnValue({
+            data: mockData,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: { uuid: "test-uuid-finalizada" },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaGipe.mockReturnValue({
+            data: undefined,
+            isLoading: true,
+            isError: false,
+            error: null,
+        });
+
+        const mockStoreState = {
+            setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            formData: {},
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            }
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        expect(
+            screen.getByText("Carregando ocorrência...")
+        ).toBeInTheDocument();
+    });
+
     it("deve combinar dados de UE, DRE e GIPE quando todos estiverem disponíveis", async () => {
         const mockDataUe = {
             id: 4,
