@@ -32,7 +32,9 @@ export default function EditarOcorrenciaPage() {
     } = useGetOcorrencia(ocorrenciaId);
 
     const isEmPreenchimento = ocorrencia?.status === "em_preenchimento_diretor";
-    const isEnviadaGipe = ocorrencia?.status === "enviado_para_gipe";
+    const isEnviadaGipe =
+        ocorrencia?.status === "enviado_para_gipe" ||
+        ocorrencia?.status === "finalizada";
 
     const { data: ocorrenciaDre } = useGetOcorrenciaDre(ocorrenciaId, {
         enabled: !isEmPreenchimento,

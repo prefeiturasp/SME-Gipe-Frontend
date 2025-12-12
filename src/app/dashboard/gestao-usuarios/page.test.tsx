@@ -7,6 +7,9 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: vi.fn(),
     }),
+    useSearchParams: () => ({
+        get: vi.fn(() => null),
+    }),
 }));
 
 const queryClient = new QueryClient();
@@ -27,7 +30,9 @@ describe("Pessoa Usuária page", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/Confira os perfis ativos, inativos e pendentes de aprovação. Selecione a opção desejada nas abas./i)
+                screen.getByText(
+                    /Confira os perfis ativos, inativos e pendentes de aprovação. Selecione a opção desejada nas abas./i
+                )
             ).toBeInTheDocument();
         });
     });

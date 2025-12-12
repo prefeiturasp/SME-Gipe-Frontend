@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,8 @@ import ListaDeUsuariosPendenciasAprovacao from "./ListaDeUsuariosPendenciasAprov
 import { useGetUsuarios } from "@/hooks/useGetUsuarios";
 
 export default function TabsContainer() {
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
 
     const {
         data: usuarios,
@@ -23,8 +26,13 @@ export default function TabsContainer() {
         [usuarios]
     );
 
+    const defaultTab =
+        tabParam === "ativos" || tabParam === "inativos"
+            ? tabParam
+            : "pendencias";
+
     return (
-        <Tabs defaultValue="pendencias" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="justify-between w-full h-12 ">
                 <TabsTrigger
                     className="flex items-center justify-between data-[state=active]:text-[--sidebar-accent-foreground] data-[state=active]:font-semibold"
