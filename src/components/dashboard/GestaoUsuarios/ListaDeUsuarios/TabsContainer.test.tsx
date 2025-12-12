@@ -7,6 +7,13 @@ import type { Usuario } from "@/types/usuarios";
 const useGetUsuariosMock = vi.fn();
 const listaUsuariosSpy = vi.fn();
 const pendenciasSpy = vi.fn();
+const mockSearchParamsGet = vi.fn<(key: string) => string | null>();
+
+vi.mock("next/navigation", () => ({
+    useSearchParams: () => ({
+        get: mockSearchParamsGet,
+    }),
+}));
 
 vi.mock("@/hooks/useGetUsuarios", () => ({
     useGetUsuarios: (...args: unknown[]) => useGetUsuariosMock(...args),
@@ -92,6 +99,7 @@ describe("TabsContainer", () => {
         useGetUsuariosMock.mockReset();
         listaUsuariosSpy.mockReset();
         pendenciasSpy.mockReset();
+        mockSearchParamsGet.mockReturnValue(null);
         useGetUsuariosMock.mockReturnValue(createHookResult());
     });
 
@@ -128,7 +136,9 @@ describe("TabsContainer", () => {
         expect(listaUsuariosSpy).toHaveBeenLastCalledWith("ativos");
         expect(screen.getByTestId("lista-ativos")).toBeInTheDocument();
 
-        await user.click(screen.getByRole("tab", { name: "Usuários inativos" }));
+        await user.click(
+            screen.getByRole("tab", { name: "Usuários inativos" })
+        );
         expect(listaUsuariosSpy).toHaveBeenLastCalledWith("inativos");
         expect(screen.getByTestId("lista-inativos")).toBeInTheDocument();
     });
@@ -173,5 +183,59 @@ describe("TabsContainer", () => {
                 usuarios: undefined,
             })
         );
+    });
+
+    it("abre a tab 'ativos' quando o parâmetro ?tab=ativos está presente na URL", () => {
+        mockSearchParamsGet.mockReturnValue("ativos");
+        useGetUsuariosMock.mockReturnValue(
+            createHookResult({ data: usuariosPendentesMock })
+        );
+
+        renderTabs();
+
+        const ativosTab = screen.getByRole("tab", { name: "Usuários ativos" });
+        expect(ativosTab).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("abre a tab 'inativos' quando o parâmetro ?tab=inativos está presente na URL", () => {
+        mockSearchParamsGet.mockReturnValue("inativos");
+        useGetUsuariosMock.mockReturnValue(
+            createHookResult({ data: usuariosPendentesMock })
+        );
+
+        renderTabs();
+
+        const inativosTab = screen.getByRole("tab", {
+            name: "Usuários inativos",
+        });
+        expect(inativosTab).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("abre a tab 'pendencias' quando o parâmetro ?tab é inválido", () => {
+        mockSearchParamsGet.mockReturnValue("invalido");
+        useGetUsuariosMock.mockReturnValue(
+            createHookResult({ data: usuariosPendentesMock })
+        );
+
+        renderTabs();
+
+        const pendenciasTab = screen.getByRole("tab", {
+            name: /Pendências de aprovação/i,
+        });
+        expect(pendenciasTab).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("abre a tab 'pendencias' quando não há parâmetro ?tab na URL", () => {
+        mockSearchParamsGet.mockReturnValue(null);
+        useGetUsuariosMock.mockReturnValue(
+            createHookResult({ data: usuariosPendentesMock })
+        );
+
+        renderTabs();
+
+        const pendenciasTab = screen.getByRole("tab", {
+            name: /Pendências de aprovação/i,
+        });
+        expect(pendenciasTab).toHaveAttribute("aria-selected", "true");
     });
 });
