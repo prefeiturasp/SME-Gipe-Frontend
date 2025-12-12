@@ -3,6 +3,7 @@ export type MotivoEncerramentoBody = {
     dre_codigo_eol?: string;
     motivo_encerramento_ue?: string;
     motivo_encerramento_dre?: string;
+    motivo_encerramento_gipe?: string;
 };
 
 export type FinalizarOcorrenciaResponse = {
@@ -21,4 +22,10 @@ export type FinalizarOcorrenciaResponse = {
     protocolo_da_intercorrencia: string;
     status_display: string;
     status_extra: string;
+};
+
+export type FinalizarEtapaResponse = {
+    success: boolean;
+    error?: string;
+    data?: FinalizarOcorrenciaResponse;
 };
