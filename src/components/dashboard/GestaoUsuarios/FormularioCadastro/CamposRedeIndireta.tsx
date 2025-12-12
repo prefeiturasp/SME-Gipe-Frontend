@@ -17,6 +17,7 @@ type CamposRedeIndiretaProps = {
     ueOptions: Array<{ uuid: string; codigo_eol: string; nome: string }>;
     showDRE: boolean;
     showUE: boolean;
+    isDreDisabled?: boolean;
 };
 
 export function CamposRedeIndireta({
@@ -25,6 +26,7 @@ export function CamposRedeIndireta({
     ueOptions,
     showDRE,
     showUE,
+    isDreDisabled = false,
 }: Readonly<CamposRedeIndiretaProps>) {
     return (
         <>
@@ -121,6 +123,7 @@ export function CamposRedeIndireta({
                                         onChange={field.onChange}
                                         placeholder="Digite ou selecione"
                                         className="border-[#DADADA]"
+                                        disabled={isDreDisabled}
                                     />
                                 </FormControl>
                                 <FormMessage />

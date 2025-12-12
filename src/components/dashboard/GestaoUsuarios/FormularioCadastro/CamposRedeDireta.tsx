@@ -17,6 +17,7 @@ type CamposRedeDiretaProps = {
     ueOptions: Array<{ uuid: string; codigo_eol: string; nome: string }>;
     showDRE: boolean;
     showUE: boolean;
+    isDreDisabled?: boolean;
 };
 
 export function CamposRedeDireta({
@@ -25,6 +26,7 @@ export function CamposRedeDireta({
     ueOptions,
     showDRE,
     showUE,
+    isDreDisabled = false,
 }: Readonly<CamposRedeDiretaProps>) {
     return (
         <>
@@ -145,6 +147,7 @@ export function CamposRedeDireta({
                                         onChange={field.onChange}
                                         placeholder="Digite ou selecione"
                                         className="border-[#DADADA]"
+                                        disabled={isDreDisabled}
                                     />
                                 </FormControl>
                                 <FormMessage />
