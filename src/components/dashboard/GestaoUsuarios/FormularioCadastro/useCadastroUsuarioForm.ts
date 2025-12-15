@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/headless-toast";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useUserStore } from "@/stores/useUserStore";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import formSchema, { FormDataCadastroUsuario } from "./schema";
 import { buildCadastroPayload } from "./utils";
 
@@ -30,6 +32,8 @@ export function useCadastroUsuarioForm() {
     const [modalOpen, setModalOpen] = useState(false);
     const { data: dreOptions = [] } = useFetchDREs();
     const { mutate: cadastrarUsuario, isPending } = useCadastroGestaoUsuario();
+    const user = useUserStore((state) => state.user);
+    const { isPontoFocal, isGipe } = useUserPermissions();
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -65,6 +69,17 @@ export function useCadastroUsuarioForm() {
     }, [values.rede, form]);
 
     useEffect(() => {
+        if (
+            isPontoFocal &&
+            user?.unidades?.[0]?.dre?.dre_uuid &&
+            values.rede &&
+            values.cargo
+        ) {
+            form.setValue("dre", user.unidades[0].dre.dre_uuid);
+        }
+    }, [isPontoFocal, user, form, values.rede, values.cargo]);
+
+    useEffect(() => {
         if (values.cargo === "gipe") {
             form.setValue("dre", "");
             form.setValue("ue", "");
@@ -73,10 +88,21 @@ export function useCadastroUsuarioForm() {
         }
     }, [values.cargo, form]);
 
-    const cargoOptions =
-        values.rede === "INDIRETA"
-            ? CARGO_OPTIONS_INDIRETA
-            : CARGO_OPTIONS_DIRETA;
+    useEffect(() => {
+        form.setValue("ue", "", { shouldValidate: true });
+    }, [values.dre, form]);
+
+    const getCargoOptions = () => {
+        if (values.rede === "INDIRETA") {
+            return CARGO_OPTIONS_INDIRETA;
+        }
+        if (isGipe) {
+            return CARGO_OPTIONS_DIRETA;
+        }
+        return CARGO_OPTIONS_DIRETA.filter((option) => option.value !== "gipe");
+    };
+
+    const cargoOptions = getCargoOptions();
 
     const isRedeSelected = !!values.rede;
     const isCargoSelected = !!values.cargo;
@@ -128,7 +154,7 @@ export function useCadastroUsuarioForm() {
                     variant: "success",
                 });
                 setModalOpen(false);
-                router.push("/dashboard/gestao-usuarios");
+                router.push("/dashboard/gestao-usuarios?tab=ativos");
             },
             onError: () => {
                 toast({
@@ -159,5 +185,6 @@ export function useCadastroUsuarioForm() {
         handleSubmitClick,
         handleConfirmCadastro,
         router,
+        isDreDisabled: isPontoFocal,
     };
 }

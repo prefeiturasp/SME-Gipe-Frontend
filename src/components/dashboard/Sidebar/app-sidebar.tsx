@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+
 type NavItem = {
     title: string;
     url?: string;
@@ -77,6 +79,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { open } = useSidebar(); // estado do sidebar (expandido/recolhido)
     const [openCollapsible, setOpenCollapsible] = React.useState(false);
 
+    const { isGipeAdmin } = useUserPermissions();
+
+    const filteredItems = React.useMemo(
+        () =>
+            isGipeAdmin
+                ? items
+                : items.filter((item) => item.title !== "Gestão"),
+        [isGipeAdmin]
+    );
+
     return (
         <Sidebar
             className="bg-[--sidebar-background] text-[--sidebar-foreground] w-[--sidebar-width]"
@@ -91,7 +103,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarGroup className={open ? "p-2" : "p-1"}>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {items.map((item) => {
+                            {filteredItems.map((item) => {
                                 const hasChildren =
                                     !!item.children && item.children.length > 0;
 

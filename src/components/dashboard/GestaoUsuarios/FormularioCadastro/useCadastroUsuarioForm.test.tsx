@@ -16,6 +16,21 @@ vi.mock("@/components/ui/headless-toast", () => ({
     toast: vi.fn(),
 }));
 
+vi.mock("@/stores/useUserStore", () => ({
+    useUserStore: vi.fn(() => ({
+        user: null,
+    })),
+}));
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: vi.fn(() => ({
+        isPontoFocal: false,
+        isGipe: false,
+        isAssistenteOuDiretor: false,
+        isGipeAdmin: false,
+    })),
+}));
+
 const createWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
@@ -99,7 +114,7 @@ describe("useCadastroUsuarioForm", () => {
         });
     });
 
-    it("calcula cargoOptions corretamente para rede DIRETA", async () => {
+    it("calcula cargoOptions corretamente para rede DIRETA (usuário não-GIPE)", async () => {
         const { result, rerender } = renderHook(
             () => useCadastroUsuarioForm(),
             {
@@ -112,12 +127,51 @@ describe("useCadastroUsuarioForm", () => {
         });
         rerender();
 
-        expect(result.current.cargoOptions).toHaveLength(4);
+        expect(result.current.cargoOptions).toHaveLength(3);
+        const cargoLabels = result.current.cargoOptions.map((opt) => opt.label);
+        expect(cargoLabels).not.toContain("GIPE");
+        expect(cargoLabels).toContain("Ponto focal");
+        expect(cargoLabels).toContain("Assistente de direção");
+        expect(cargoLabels).toContain("Diretor(a)");
+    });
+
+    it("calcula cargoOptions corretamente para rede DIRETA (usuário GIPE)", async () => {
+        const useUserPermissions = await import("@/hooks/useUserPermissions");
+        const mockUseUserPermissions = vi.mocked(
+            useUserPermissions.useUserPermissions
+        );
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        const { result } = renderHook(() => useCadastroUsuarioForm(), {
+            wrapper: createWrapper(),
+        });
+
+        act(() => {
+            result.current.form.setValue("rede", "DIRETA");
+        });
+
+        await waitFor(() => {
+            expect(result.current.cargoOptions).toHaveLength(4);
+        });
+
         const cargoLabels = result.current.cargoOptions.map((opt) => opt.label);
         expect(cargoLabels).toContain("GIPE");
         expect(cargoLabels).toContain("Ponto focal");
         expect(cargoLabels).toContain("Assistente de direção");
         expect(cargoLabels).toContain("Diretor(a)");
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
     });
 
     it("calcula cargoOptions corretamente para rede INDIRETA", async () => {
@@ -181,6 +235,221 @@ describe("useCadastroUsuarioForm", () => {
         });
     });
 
+    it("pré-seleciona DRE quando usuário é ponto focal", async () => {
+        const useUserPermissions = await import("@/hooks/useUserPermissions");
+        const useUserStore = await import("@/stores/useUserStore");
+
+        const mockUseUserPermissions = vi.mocked(
+            useUserPermissions.useUserPermissions
+        );
+        const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
+
+        const mockUser = {
+            username: "ponto.focal",
+            name: "Ponto Focal",
+            email: "ponto.focal@sme.prefeitura.sp.gov.br",
+            cpf: "12345678900",
+            rede: "DIRETA",
+            is_core_sso: true,
+            is_validado: true,
+            is_app_admin: false,
+            perfil_acesso: {
+                codigo: 3,
+                nome: "Ponto Focal",
+            },
+            unidades: [
+                {
+                    ue: {
+                        ue_uuid: null,
+                        codigo_eol: null,
+                        nome: null,
+                        sigla: null,
+                    },
+                    dre: {
+                        dre_uuid: "dre-123",
+                        codigo_eol: "108800",
+                        nome: "DRE Butantã",
+                        sigla: "BT",
+                    },
+                },
+            ],
+        };
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        mockUseUserStore.mockImplementation((selector: unknown) => {
+            if (typeof selector === "function") {
+                return selector({ user: mockUser });
+            }
+            return { user: mockUser };
+        });
+
+        const { result } = renderHook(() => useCadastroUsuarioForm(), {
+            wrapper: createWrapper(),
+        });
+
+        act(() => {
+            result.current.form.setValue("rede", "DIRETA");
+            result.current.form.setValue("cargo", "diretor");
+        });
+
+        await waitFor(() => {
+            expect(result.current.form.getValues("dre")).toBe("dre-123");
+        });
+
+        expect(result.current.isDreDisabled).toBe(true);
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+        mockUseUserStore.mockReturnValue({ user: null });
+    });
+
+    it("não pré-seleciona DRE quando usuário ponto focal não tem unidade", async () => {
+        const useUserPermissions = await import("@/hooks/useUserPermissions");
+        const useUserStore = await import("@/stores/useUserStore");
+
+        const mockUseUserPermissions = vi.mocked(
+            useUserPermissions.useUserPermissions
+        );
+        const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
+
+        const mockUser = {
+            username: "ponto.focal",
+            name: "Ponto Focal",
+            email: "ponto.focal@sme.prefeitura.sp.gov.br",
+            cpf: "12345678900",
+            rede: "DIRETA",
+            is_core_sso: true,
+            is_validado: true,
+            is_app_admin: false,
+            perfil_acesso: {
+                codigo: 3,
+                nome: "Ponto Focal",
+            },
+            unidades: [],
+        };
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        mockUseUserStore.mockImplementation((selector: unknown) => {
+            if (typeof selector === "function") {
+                return selector({ user: mockUser });
+            }
+            return { user: mockUser };
+        });
+
+        const { result } = renderHook(() => useCadastroUsuarioForm(), {
+            wrapper: createWrapper(),
+        });
+
+        act(() => {
+            result.current.form.setValue("rede", "DIRETA");
+            result.current.form.setValue("cargo", "diretor");
+        });
+
+        await waitFor(() => {
+            expect(result.current.form.getValues("dre")).toBe("");
+        });
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+        mockUseUserStore.mockReturnValue({ user: null });
+    });
+
+    it("não pré-seleciona DRE quando usuário ponto focal tem unidade sem dre_uuid", async () => {
+        const useUserPermissions = await import("@/hooks/useUserPermissions");
+        const useUserStore = await import("@/stores/useUserStore");
+
+        const mockUseUserPermissions = vi.mocked(
+            useUserPermissions.useUserPermissions
+        );
+        const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
+
+        const mockUser = {
+            username: "ponto.focal",
+            name: "Ponto Focal",
+            email: "ponto.focal@sme.prefeitura.sp.gov.br",
+            cpf: "12345678900",
+            rede: "DIRETA",
+            is_core_sso: true,
+            is_validado: true,
+            is_app_admin: false,
+            perfil_acesso: {
+                codigo: 3,
+                nome: "Ponto Focal",
+            },
+            unidades: [
+                {
+                    ue: {
+                        ue_uuid: null,
+                        codigo_eol: null,
+                        nome: null,
+                        sigla: null,
+                    },
+                    dre: {
+                        dre_uuid: null,
+                        codigo_eol: "108800",
+                        nome: "DRE Butantã",
+                        sigla: "BT",
+                    },
+                },
+            ],
+        };
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        mockUseUserStore.mockImplementation((selector: unknown) => {
+            if (typeof selector === "function") {
+                return selector({ user: mockUser });
+            }
+            return { user: mockUser };
+        });
+
+        const { result } = renderHook(() => useCadastroUsuarioForm(), {
+            wrapper: createWrapper(),
+        });
+
+        act(() => {
+            result.current.form.setValue("rede", "DIRETA");
+            result.current.form.setValue("cargo", "diretor");
+        });
+
+        await waitFor(() => {
+            expect(result.current.form.getValues("dre")).toBe("");
+        });
+
+        mockUseUserPermissions.mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+        mockUseUserStore.mockReturnValue({ user: null });
+    });
+
     it("handleSubmitClick abre o modal", async () => {
         const { result } = renderHook(() => useCadastroUsuarioForm(), {
             wrapper: createWrapper(),
@@ -239,7 +508,9 @@ describe("useCadastroUsuarioForm", () => {
                 variant: "success",
             });
             expect(result.current.modalOpen).toBe(false);
-            expect(mockPush).toHaveBeenCalledWith("/dashboard/gestao-usuarios");
+            expect(mockPush).toHaveBeenCalledWith(
+                "/dashboard/gestao-usuarios?tab=ativos"
+            );
         });
     });
 
@@ -356,7 +627,7 @@ describe("useCadastroUsuarioForm", () => {
         });
 
         await waitFor(() => {
-            expect(result.current.cargoOptions).toHaveLength(4);
+            expect(result.current.cargoOptions).toHaveLength(3);
         });
 
         act(() => {

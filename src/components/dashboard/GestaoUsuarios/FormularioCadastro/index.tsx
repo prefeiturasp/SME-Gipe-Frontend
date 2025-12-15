@@ -41,6 +41,7 @@ export default function FormularioCadastroPessoaUsuaria() {
         handleSubmitClick,
         handleConfirmCadastro,
         router,
+        isDreDisabled,
     } = useCadastroUsuarioForm();
 
     return (
@@ -134,6 +135,7 @@ export default function FormularioCadastroPessoaUsuaria() {
                                 ueOptions={ueOptions}
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
+                                isDreDisabled={isDreDisabled}
                             />
                         )}
 
@@ -144,6 +146,7 @@ export default function FormularioCadastroPessoaUsuaria() {
                                 ueOptions={ueOptions}
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
+                                isDreDisabled={isDreDisabled}
                             />
                         )}
                     </>

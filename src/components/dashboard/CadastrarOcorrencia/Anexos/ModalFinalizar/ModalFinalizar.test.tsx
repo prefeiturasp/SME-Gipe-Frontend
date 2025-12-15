@@ -34,9 +34,9 @@ vi.mock("@/stores/useOcorrenciaFormStore", () => ({
   useOcorrenciaFormStore: () => mockStoreReturn,
 }));
 
+// Mocks para UE
 const mutateAsyncMock = vi.fn();
 let isPendingFlag = false;
-
 vi.mock("@/hooks/useFinalizarEtapa", () => ({
   useFinalizarEtapa: () => ({
     mutateAsync: mutateAsyncMock,
@@ -46,14 +46,26 @@ vi.mock("@/hooks/useFinalizarEtapa", () => ({
   }),
 }));
 
+// Mocks para DRE
 const mutateAsyncDreMock = vi.fn();
 let isPendingFlagDre = false;
-
 vi.mock("@/hooks/useFinalizarEtapaDre", () => ({
   useFinalizarEtapaDre: () => ({
     mutateAsync: mutateAsyncDreMock,
     get isPending() {
       return isPendingFlagDre;
+    },
+  }),
+}));
+
+// Mocks para GIPE
+const mutateAsyncGipeMock = vi.fn();
+let isPendingFlagGipe = false;
+vi.mock("@/hooks/useFinalizarEtapaGipe", () => ({
+  useFinalizarEtapaGipe: () => ({
+    mutateAsync: mutateAsyncGipeMock,
+    get isPending() {
+      return isPendingFlagGipe;
     },
   }),
 }));
@@ -75,9 +87,11 @@ describe("ModalFinalizarEtapa", () => {
     vi.clearAllMocks();
     isPendingFlag = false;
     isPendingFlagDre = false;
+    isPendingFlagGipe = false;
 
     mutateAsyncMock.mockReset();
     mutateAsyncDreMock.mockReset();
+    mutateAsyncGipeMock.mockReset();
 
     mockStoreReturn = {
       formData: {
@@ -119,6 +133,7 @@ describe("ModalFinalizarEtapa", () => {
     });
   });
 
+  // === UE ===
   it("Chama mutateAsync UE com os parâmetros corretos", async () => {
     mutateAsyncMock.mockResolvedValue({
       success: true,
@@ -166,6 +181,7 @@ describe("ModalFinalizarEtapa", () => {
     });
   });
 
+  // === DRE ===
   it("retorna dados do mockDREApiResponse quando perfilUsuario é 'dre'", async () => {
     mutateAsyncDreMock.mockResolvedValue({
       success: true,
@@ -202,6 +218,84 @@ describe("ModalFinalizarEtapa", () => {
     });
   });
 
+  it("exibe toast de erro quando DRE falha", async () => {
+    mutateAsyncDreMock.mockResolvedValue({
+      success: false,
+      error: "Falha no servidor DRE",
+    });
+
+    setup(true, "dre");
+
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo válido");
+
+    const finalizarButton = screen.getByRole("button", { name: /Finalizar/i });
+    await userEvent.click(finalizarButton);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: "error",
+        title: "Erro ao finalizar etapa",
+        description: "Falha no servidor DRE",
+      });
+    });
+  });
+
+  // === GIPE ===
+  it("Chama mutateAsync GIPE com os parâmetros corretos", async () => {
+    mutateAsyncGipeMock.mockResolvedValue({
+      success: true,
+      data: { uuid: "gipe-123", protocolo_da_intercorrencia: "GIPE-2025/0100" },
+    });
+
+    setup(true, "gipe");
+
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo GIPE válido");
+
+    const button = screen.getByRole("button", { name: /Finalizar/i });
+    await userEvent.click(button);
+
+    await waitFor(() => {
+      expect(mutateAsyncGipeMock).toHaveBeenCalledWith({
+        ocorrenciaUuid: "uuid-abc-123",
+        body: {
+          unidade_codigo_eol: "123456",
+          dre_codigo_eol: "DRE-01",
+          motivo_encerramento_gipe: "Motivo GIPE válido",
+        },
+      });
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText("Ocorrência registrada com sucesso!")).toBeInTheDocument()
+    );
+    expect(screen.getByText("GIPE-2025/0100")).toBeInTheDocument();
+  });
+
+  it("exibe toast de erro quando GIPE falha", async () => {
+    mutateAsyncGipeMock.mockResolvedValue({
+      success: false,
+      error: "Falha no servidor GIPE",
+    });
+
+    setup(true, "gipe");
+
+    const input = screen.getByTestId("input-motivo");
+    await userEvent.type(input, "Motivo GIPE válido");
+
+    await userEvent.click(screen.getByRole("button", { name: /Finalizar/i }));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: "error",
+        title: "Erro ao finalizar etapa",
+        description: "Falha no servidor GIPE",
+      });
+    });
+  });
+
+  // === Comportamento geral ===
   it("não faz nada quando perfilUsuario não é reconhecido", async () => {
     setup(true, "perfilInexistente");
 
@@ -216,14 +310,15 @@ describe("ModalFinalizarEtapa", () => {
 
     expect(mutateAsyncMock).not.toHaveBeenCalled();
     expect(mutateAsyncDreMock).not.toHaveBeenCalled();
+    expect(mutateAsyncGipeMock).not.toHaveBeenCalled();
   });
 
   it("O botão Finalizar fica desabilitado quando isPending=true", async () => {
     isPendingFlag = true;
     isPendingFlagDre = true;
+    isPendingFlagGipe = true;
 
     setup();
-
     const btn = screen.getByRole("button", { name: /Finalizar/i });
     expect(btn).toBeDisabled();
   });
@@ -275,28 +370,4 @@ describe("ModalFinalizarEtapa", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(mockPush).toHaveBeenCalledWith("/dashboard");
   });
-
-  it("exibe toast de erro quando DRE falha", async () => {
-    mutateAsyncDreMock.mockResolvedValue({
-      success: false,
-      error: "Falha no servidor DRE",
-    });
-
-    setup(true, "dre");
-
-    const input = screen.getByTestId("input-motivo");
-    await userEvent.type(input, "Motivo válido");
-
-    const finalizarButton = screen.getByRole("button", { name: /Finalizar/i });
-    await userEvent.click(finalizarButton);
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        variant: "error",
-        title: "Erro ao finalizar etapa",
-        description: "Falha no servidor DRE",
-      });
-    });
-  });
-
 });

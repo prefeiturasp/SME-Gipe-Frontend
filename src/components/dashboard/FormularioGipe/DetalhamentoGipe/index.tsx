@@ -32,6 +32,8 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useAtualizarOcorrenciaGipe } from "@/hooks/useAtualizarOcorrenciaGipe";
+import { toast } from "@/components/ui/headless-toast";
 
 export type DetalhamentoGipeProps = {
     readonly onPrevious?: () => void;
@@ -40,8 +42,10 @@ export type DetalhamentoGipeProps = {
 export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
-    const { formData, setFormData } = useOcorrenciaFormStore();
+    const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+
+    const { mutate: atualizarOcorrenciaGipe } = useAtualizarOcorrenciaGipe();
 
     const { data: envolvidos, isLoading: isLoadingEnvolvidos } =
         useEnvolvidos();
@@ -93,10 +97,56 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
     const { isValid } = form.formState;
 
+    const handleSubmit = async (data: FormularioGipeData) => {
+        atualizarOcorrenciaGipe(
+            {
+                uuid: ocorrenciaUuid!,
+                body: {
+                    unidade_codigo_eol: formData.unidadeEducacional!,
+                    dre_codigo_eol: formData.dre!,
+                    envolve_arma_ataque: data.envolveArmaOuAtaque,
+                    ameaca_realizada_qual_maneira: data.ameacaRealizada,
+                    envolvido: data.envolvidosGipe[0],
+                    motivacao_ocorrencia: data.motivacaoOcorrenciaGipe,
+                    tipos_ocorrencia: [data.tipoOcorrenciaGipe],
+                    qual_ciclo_aprendizagem: data.cicloAprendizagem,
+                    info_sobre_interacoes_virtuais_pessoa_agressora:
+                        data.informacoesInteracoesVirtuais,
+                    encaminhamentos_gipe: data.encaminhamentos,
+                },
+            },
+            {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Erro ao atualizar ocorrência GIPE",
+                            description: response.error,
+                            variant: "error",
+                        });
+                        return;
+                    }
+
+                    setOpenModalFinalizarEtapa(true);
+                    setFormData(data);
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro ao atualizar ocorrência GIPE",
+                        description:
+                            "Não foi possível atualizar os dados. Tente novamente.",
+                        variant: "error",
+                    });
+                },
+            }
+        );
+
+        setFormData(data);
+    };
+
     return (
         <>
             <Form {...form}>
-                <form>
+                <form onSubmit={form.handleSubmit(handleSubmit)}>
                     <QuadroBranco>
                         <h2 className="text-[20px] font-bold text-[#42474a] mb-2">
                             Continuação da ocorrência
@@ -295,7 +345,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     >
                         Anterior
                     </Button>
-                    <Button type="button" variant="submit" disabled={!isValid}>
+                    <Button
+                        onClick={() => handleSubmit(form.getValues())}
+                        type="submit"
+                        variant="submit"
+                        disabled={!isValid}
+                    >
                         Salvar informações
                     </Button>
                 </div>
