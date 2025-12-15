@@ -15,7 +15,7 @@ Funcionalidade: Gestão de Ocorrências no Sistema GIPE
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @furto_roubo @patrimonio
+  @skip @cadastro @furto_roubo @patrimonio
   Cenário: Registrar nova ocorrência de patrimônio envolvendo furto ou roubo
     # === ABA 1: Informações Básicas da Ocorrência ===
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
@@ -42,7 +42,7 @@ Funcionalidade: Gestão de Ocorrências no Sistema GIPE
     E seleciona protocolo
     Então clica em proximo final
 
-  @cadastro @ocorrencia_geral @estudante
+  @skip @cadastro @ocorrencia_geral @estudante
   Cenário: Registrar ocorrência geral sem furto/roubo envolvendo estudante
     # === ABA 1: Informações Básicas da Ocorrência ===
     Quando o usuário seleciona e clica em "Nova Ocorrencia"

@@ -12,7 +12,6 @@ allure-results/
 
 
 # Testes complement (não subir)
-cypress/e2e/ui/complement_dre.feature
 cypress/e2e/ui/complement_gipe.feature
 
 # Scripts auxiliares
