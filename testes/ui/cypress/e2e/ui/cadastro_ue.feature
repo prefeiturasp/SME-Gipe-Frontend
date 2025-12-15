@@ -73,4 +73,4 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Quando preenche campo motivo encerramento com "Conclusão para teste"
     E clica em Finalizar modal
     E aguarda 20 segundos
-    Então valida a existencia do Texto " Histórico de ocorrências registradas" 
+    Então valida a existencia do Texto " Histórico de ocorrências registradas"

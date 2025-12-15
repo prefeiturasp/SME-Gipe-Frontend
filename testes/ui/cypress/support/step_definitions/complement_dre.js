@@ -1,34 +1,13 @@
-/**
- * @fileoverview Step Definitions para Login - Perfil DRE
- * @description Implementação dos steps para login com perfil DRE
- * @author Equipe de Automação - SME Gipe Frontend
- * @version 1.0.0
- */
-
 import { Given, When, Then, Before, After } from 'cypress-cucumber-preprocessor/steps'
 import Login_Gipe_Localizadores from '../locators/login_locators'
 
-// =============================================================================
-// INSTÂNCIAS DOS LOCALIZADORES
-// =============================================================================
-
 const locators_login = new Login_Gipe_Localizadores()
 
-// =============================================================================
-// CONSTANTES E CONFIGURAÇÕES
-// =============================================================================
-
-/**
- * Credenciais de acesso - Perfil DRE
- */
 const CREDENCIAIS_DRE = {
   RF: '7311559',
   SENHA: 'Sgp1559'
 }
 
-/**
- * Configurações de timeout
- */
 const TIMEOUTS = {
   MINIMAL: 1000,
   SHORT: 2000,
@@ -38,32 +17,56 @@ const TIMEOUTS = {
   VERY_LONG: 30000
 }
 
-/**
- * Mensagens de log
- */
 const LOG_MESSAGES = {
-  LOGIN_INICIO: '=== REALIZANDO LOGIN COM PERFIL DRE ===',
-  LOGIN_SUCESSO: '✅ Login DRE realizado com sucesso',
-  VALIDACAO: '=== VALIDANDO ELEMENTO ==='
+  LOGIN_INICIO: 'REALIZANDO LOGIN COM PERFIL DRE',
+  LOGIN_SUCESSO: 'Login DRE realizado com sucesso',
+  VALIDACAO: 'VALIDANDO ELEMENTO'
 }
 
-// =============================================================================
-// HOOKS - SETUP E TEARDOWN
-// =============================================================================
+function gerarTextoAleatorio(maxLength = 500) {
+  const frases = [
+    'Teste de automacao realizado com sucesso.',
+    'Validacao de formulario em andamento.',
+    'Informacao complementar cadastrada no sistema.',
+    'Registro de ocorrencia sendo processado.',
+    'Dados inseridos automaticamente pela ferramenta de teste.',
+    'Sistema de gestao de intercorrencias institucionais.',
+    'Acompanhamento de casos escolares pela DRE.',
+    'Documentacao e registro de eventos educacionais.',
+    'Analise de situacoes ocorridas no ambiente escolar.',
+    'Monitoramento continuo das intercorrencias reportadas.'
+  ]
+  
+  let texto = ''
+  const dataHora = new Date().toLocaleString('pt-BR')
+  texto += `[Teste Automatizado - ${dataHora}] `
+  
+  while (texto.length < maxLength - 100) {
+    const fraseAleatoria = frases[Math.floor(Math.random() * frases.length)]
+    if ((texto.length + fraseAleatoria.length + 1) <= maxLength) {
+      texto += fraseAleatoria + ' '
+    } else {
+      break
+    }
+  }
+  
+  return texto.trim().substring(0, maxLength)
+}
+
+function selecionarLinhaAleatoria() {
+  const linhasPossiveis = [2, 3, 4, 5]
+  const indiceAleatorio = Math.floor(Math.random() * linhasPossiveis.length)
+  return linhasPossiveis[indiceAleatorio]
+}
 
 Before(() => {
   cy.clearCookies()
   cy.clearLocalStorage()
-  cy.log('🔄 Iniciando cenário - ambiente limpo')
 })
 
 After(() => {
-  cy.log('✅ Cenário finalizado')
+  cy.log('Cenario finalizado')
 })
-
-// =============================================================================
-// STEP DEFINITIONS - LOGIN
-// =============================================================================
 
 Given('que eu acesso o sistema como DRE', () => {
   cy.log(LOG_MESSAGES.LOGIN_INICIO)
@@ -80,19 +83,16 @@ Given('que eu acesso o sistema como DRE', () => {
 When('eu efetuo login com RF DRE', () => {
   cy.log(`Login com RF: ${CREDENCIAIS_DRE.RF}`)
   
-  // Preencher RF
   cy.get(locators_login.campo_usuario(), { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .clear()
     .type(CREDENCIAIS_DRE.RF, { delay: 100 })
   
-  // Preencher senha
   cy.get(locators_login.campo_senha(), { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .clear()
     .type(CREDENCIAIS_DRE.SENHA, { delay: 100 })
   
-  // Clicar no botão Acessar
   cy.get('button')
     .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
     .should('be.visible')
@@ -106,18 +106,13 @@ When('eu efetuo login com RF DRE', () => {
 Then('devo ser redirecionado para o dashboard', () => {
   cy.url({ timeout: TIMEOUTS.VERY_LONG }).should('include', '/dashboard')
   cy.wait(TIMEOUTS.DEFAULT)
-  cy.log('✅ Redirecionado para dashboard com sucesso')
 })
 
 Then('devo visualizar a página principal do sistema', () => {
   cy.get('body', { timeout: TIMEOUTS.LONG }).should('be.visible')
-  
-  // Validar existência do texto "Histórico de ocorrências registradas"
   cy.get('.text-\\[24px\\]', { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .and('contain.text', 'Histórico de ocorrências registradas')
-  
-  cy.log('✅ Página principal carregada com histórico de ocorrências')
 })
 
 When('estou na página principal do sistema', () => {
@@ -129,68 +124,93 @@ Then('devo ver o título {string}', (titulo) => {
   cy.log(`${LOG_MESSAGES.VALIDACAO} - ${titulo}`)
   cy.contains('h1, h2', titulo, { timeout: TIMEOUTS.LONG })
     .should('be.visible')
-  cy.log(`✅ Título "${titulo}" encontrado`)
 })
 
 Then('o sistema deve exibir as funcionalidades disponíveis para DRE', () => {
   cy.get('body', { timeout: TIMEOUTS.LONG }).should('be.visible')
   cy.wait(TIMEOUTS.SHORT)
-  cy.log('✅ Funcionalidades DRE carregadas')
 })
 
-// =============================================================================
-// STEP DEFINITIONS - COMPLEMENTO DE OCORRÊNCIA
-// =============================================================================
-
 When('eu visualizo uma ocorrência registrada', () => {
-  cy.log('=== VISUALIZANDO OCORRÊNCIA ===')
-  
-  // Validar presença da página de histórico (busca por qualquer elemento com o texto)
   cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG })
     .should('be.visible')
   
   cy.wait(TIMEOUTS.DEFAULT)
   
-  // Clicar no ícone de visualização (lupa) da primeira ocorrência
+  const linhaAleatoria = selecionarLinhaAleatoria()
+  
+  cy.log(`Selecionando linha ${linhaAleatoria} da tabela de ocorrencias`)
+  
   cy.get('table tbody tr', { timeout: TIMEOUTS.LONG })
-    .first()
-    .find('a[href*="/"], button, svg')
-    .first()
+    .eq(linhaAleatoria - 1)
+    .find('td')
+    .last()
+    .find('a')
     .should('be.visible')
-    .click({ force: true })
+    .click()
   
   cy.wait(TIMEOUTS.EXTENDED)
-  cy.log('✅ Ocorrência visualizada')
 })
 
 Then('devo visualizar todos os campos do formulário de ocorrência', () => {
-  cy.log('=== VALIDANDO CAMPOS DO FORMULÁRIO ===')
+  cy.wait(TIMEOUTS.SHORT)
   
-  const camposObrigatorios = [
-    'Quando a ocorrência aconteceu?',
-    'A ocorrência é sobre furto, roubo, invasão ou depredação?',
-    'Qual o tipo de ocorrência?',
-    'Quem são os envolvidos?',
-    'Descreva a ocorrência',
-    'Existem informações sobre o agressor e/ou vítima?',
-    'Quem é o declarante?',
-    'Houve comunicação com a segurança pública?',
-    'Qual protocolo acionado?'
-  ]
+  cy.contains('label', 'Quando a ocorrência aconteceu?', { timeout: TIMEOUTS.LONG })
+    .should('be.visible')
   
-  camposObrigatorios.forEach(campo => {
-    cy.contains('label', campo, { timeout: TIMEOUTS.LONG })
-      .should('be.visible')
+  cy.contains('label', 'A ocorrência é sobre furto, roubo, invasão ou depredação?', { timeout: TIMEOUTS.LONG })
+    .should('be.visible')
+  
+  cy.contains('Sim', { timeout: TIMEOUTS.DEFAULT }).should('exist')
+  cy.contains('Não', { timeout: TIMEOUTS.DEFAULT }).should('exist')
+  
+  cy.get('body', { timeout: TIMEOUTS.DEFAULT }).invoke('text').then((textoCorpo) => {
+    if (textoCorpo.includes('Unidade Educacional é contemplada pelo Smart Sampa')) {
+      cy.log('Ocorrencia tipo FURTO/ROUBO detectada - validando campos especificos')
+      
+      cy.contains('label', 'Qual o tipo de ocorrência?', { timeout: TIMEOUTS.LONG })
+        .should('be.visible')
+      
+      cy.contains('label', 'Descreva a ocorrência', { timeout: TIMEOUTS.LONG })
+        .should('be.visible')
+      
+      cy.contains('label', 'Unidade Educacional é contemplada pelo Smart Sampa', { timeout: TIMEOUTS.DEFAULT })
+        .should('be.visible')
+      
+      cy.contains('label', 'Quem é o declarante?', { timeout: TIMEOUTS.LONG })
+        .should('be.visible')
+      
+      cy.contains('Anexos', { timeout: TIMEOUTS.DEFAULT })
+        .should('be.visible')
+      
+      cy.contains('Anexar novo arquivo', { timeout: TIMEOUTS.DEFAULT })
+        .should('be.visible')
+      
+    } else {
+      cy.log('Ocorrencia tipo PADRAO detectada - validando campos padroes')
+      
+      const camposNaoFurto = [
+        'Qual o tipo de ocorrência?',
+        'Quem são os envolvidos?',
+        'Descreva a ocorrência',
+        'Existem informações sobre o agressor e/ou vítima?',
+        'Quem é o declarante?',
+        'Houve comunicação com a segurança pública?',
+        'Qual protocolo acionado?'
+      ]
+      
+      camposNaoFurto.forEach(campo => {
+        cy.contains('label', campo, { timeout: TIMEOUTS.LONG })
+          .should('be.visible')
+      })
+    }
   })
-  
-  cy.log('✅ Todos os campos obrigatórios validados')
 })
 
 Then('devo ver o botão {string} para continuar', (textoBotao) => {
   cy.contains('button', textoBotao, { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .should('not.be.disabled')
-  cy.log(`✅ Botão "${textoBotao}" encontrado`)
 })
 
 When('eu clico no botão {string}', (textoBotao) => {
@@ -198,12 +218,9 @@ When('eu clico no botão {string}', (textoBotao) => {
     .should('be.visible')
     .click()
   cy.wait(TIMEOUTS.DEFAULT)
-  cy.log(`✅ Clicado no botão "${textoBotao}"`)
 })
 
 Then('devo visualizar o formulário de continuação da ocorrência', () => {
-  cy.log('=== VALIDANDO FORMULÁRIO DE CONTINUAÇÃO ===')
-  
   cy.contains('h2', 'Continuação da ocorrência', { timeout: TIMEOUTS.LONG })
     .should('be.visible')
   
@@ -219,44 +236,104 @@ Then('devo visualizar o formulário de continuação da ocorrência', () => {
     cy.contains('label', campo, { timeout: TIMEOUTS.LONG })
       .should('be.visible')
   })
-  
-  cy.log('✅ Formulário de continuação validado')
 })
 
 Then('devo preencher os campos de interlocução obrigatórios', () => {
-  cy.log('=== PREENCHENDO CAMPOS OBRIGATÓRIOS ===')
-  // Implementação futura: selecionar opções obrigatórias
   cy.wait(TIMEOUTS.SHORT)
-  cy.log('✅ Campos obrigatórios identificados')
+  
+  cy.get('body', { timeout: TIMEOUTS.DEFAULT }).then(($body) => {
+    const textoCorpo = $body.text()
+    
+    const perguntasInterlocucao = [
+      'Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?',
+      'Houve interlocução com a Supervisão Técnica de Saúde (STS)?',
+      'Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?',
+      'Houve interlocução com a Supervisão Escolar?',
+      'Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?'
+    ]
+    
+    perguntasInterlocucao.forEach((pergunta) => {
+      if (textoCorpo.includes(pergunta)) {
+        cy.contains('label', pergunta)
+          .parent()
+          .parent()
+          .find('input[type="radio"]')
+          .last()
+          .check({ force: true })
+        
+        cy.log(`Selecionado "Nao" para: ${pergunta.substring(0, 50)}...`)
+      }
+    })
+  })
+  
+  cy.wait(TIMEOUTS.SHORT)
 })
 
 Then('devo preencher os campos complementares das interlocuções', () => {
-  cy.log('=== PREENCHENDO CAMPOS COMPLEMENTARES ===')
-  
-  const textoComplementar = 'Teste de automação - informação complementar'
-  
-  // Preencher campos de textarea visíveis
   cy.get('textarea[id*="form-item"]', { timeout: TIMEOUTS.LONG })
     .each(($textarea, index) => {
       if ($textarea.is(':visible')) {
-        cy.wrap($textarea)
-          .clear()
-          .type(textoComplementar, { delay: 50 })
-        cy.log(`✅ Campo complementar ${index + 1} preenchido`)
+        const valorAtual = $textarea.val()
+        
+        if (!valorAtual || valorAtual.trim() === '') {
+          const textoAleatorio = gerarTextoAleatorio(500)
+          cy.wrap($textarea)
+            .clear()
+            .type(textoAleatorio, { delay: 10 })
+          cy.log(`Campo ${index + 1} preenchido com ${textoAleatorio.length} caracteres`)
+        } else {
+          const textoAdicional = ` [ATUALIZACAO ${new Date().toLocaleTimeString('pt-BR')}]`
+          cy.wrap($textarea)
+            .type(textoAdicional, { delay: 10 })
+          cy.log(`Campo ${index + 1} atualizado com timestamp`)
+        }
       }
     })
   
   cy.wait(TIMEOUTS.SHORT)
+  
+  cy.get('div.mt-4 > h2').first()
+    .should('contain.text', 'Anexos')
+  
+  cy.contains('Anexar novo arquivo', { timeout: TIMEOUTS.DEFAULT })
+    .should('be.visible')
+  
+  cy.contains('Selecione o arquivo*', { timeout: TIMEOUTS.DEFAULT })
+    .should('be.visible')
+  
+  cy.contains('Tipo do documento*', { timeout: TIMEOUTS.DEFAULT })
+    .should('be.visible')
 })
 
 When('eu finalizo o preenchimento', () => {
-  cy.log('=== FINALIZANDO PREENCHIMENTO ===')
   cy.wait(TIMEOUTS.SHORT)
-  cy.log('✅ Formulário pronto para envio')
+  
+  // Busca por botões de finalização (Salvar, Enviar, Concluir, Próximo)
+  cy.get('button', { timeout: TIMEOUTS.LONG })
+    .filter(':visible')
+    .contains(/Salvar|Enviar|Concluir|Próximo/i)
+    .should('be.visible')
+    .should('not.be.disabled')
+    .click()
+  
+  cy.wait(TIMEOUTS.DEFAULT)
+  
+  cy.get('body', { timeout: TIMEOUTS.DEFAULT }).then(($body) => {
+    if ($body.text().includes('Confirmar') || $body.text().includes('OK') || $body.text().includes('Sim')) {
+      cy.contains('button', /Confirmar|OK|Sim/i, { timeout: TIMEOUTS.DEFAULT })
+        .first()
+        .click()
+      cy.wait(TIMEOUTS.SHORT)
+    }
+  })
+  
+  cy.wait(TIMEOUTS.EXTENDED)
 })
 
 Then('devo retornar para o histórico de ocorrências', () => {
+  cy.url({ timeout: TIMEOUTS.VERY_LONG })
+    .should('include', '/dashboard')
+  
   cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG })
     .should('be.visible')
-  cy.log('✅ Retornado ao histórico')
 })

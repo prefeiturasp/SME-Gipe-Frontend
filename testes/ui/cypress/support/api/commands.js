@@ -1,21 +1,12 @@
-// ============================================================================
-// COMANDOS CUSTOMIZADOS PARA API GIPE
-// ============================================================================
-
 const { API_CONFIG, CREDENTIALS, AUTH_TOKEN } = require('./config');
-
-// ============================================================================
-// AUTENTICAÇÃO
-// ============================================================================
 
 Cypress.Commands.add('api_usar_token_fixo', () => {
   Cypress.env('authToken', AUTH_TOKEN);
-  cy.log('✅ Token fixo configurado');
+  cy.log('Token fixo configurado');
   return AUTH_TOKEN;
 });
 
 Cypress.Commands.add('api_validar_token', (token) => {
-  // Função de validação síncrona - não usar cy.log() aqui
   try {
     if (!token || token.length === 0) {
       return false;
@@ -35,7 +26,6 @@ Cypress.Commands.add('api_validar_token', (token) => {
     const now = Math.floor(Date.now() / 1000);
     const expiresIn = payload.exp - now;
     
-    // Considera válido se ainda tem pelo menos 5 minutos
     return expiresIn > 300;
   } catch (error) {
     return false;
@@ -43,7 +33,7 @@ Cypress.Commands.add('api_validar_token', (token) => {
 });
 
 Cypress.Commands.add('api_obter_token_via_ui', () => {
-  Cypress.log({ name: 'Token', message: '🔐 Obtendo novo token via interface...' });
+  Cypress.log({ name: 'Token', message: 'Obtendo novo token via interface' });
   
   cy.clearCookies();
   cy.clearLocalStorage();
@@ -76,10 +66,9 @@ Cypress.Commands.add('api_obter_token_via_ui', () => {
   return cy.getCookie('auth_token').then((cookie) => {
     if (cookie && cookie.value) {
       const token = cookie.value;
-      Cypress.log({ name: 'Token', message: '✅ TOKEN CAPTURADO DO COOKIE!' });
+      Cypress.log({ name: 'Token', message: 'TOKEN CAPTURADO DO COOKIE' });
       Cypress.log({ name: 'Token', message: `Token: ${token.substring(0, 50)}...` });
       
-      // Salvar token em arquivo
       cy.writeFile('token.txt', token);
       cy.writeFile('token.json', {
         token: token,
@@ -96,25 +85,25 @@ Cypress.Commands.add('api_obter_token_via_ui', () => {
 });
 
 Cypress.Commands.add('api_carregar_token_arquivo', () => {
-  Cypress.log({ name: 'Token', message: '📂 Carregando token do arquivo...' });
+  Cypress.log({ name: 'Token', message: 'Carregando token do arquivo' });
   
   return cy.readFile('token.json', { timeout: 5000, failOnStatusCode: false })
     .then((data) => {
       if (data && data.token) {
-        Cypress.log({ name: 'Token', message: `✅ Token carregado: ${data.token.substring(0, 50)}...` });
-        Cypress.log({ name: 'Token', message: `📅 Capturado em: ${data.capturedAt}` });
+        Cypress.log({ name: 'Token', message: `Token carregado: ${data.token.substring(0, 50)}...` });
+        Cypress.log({ name: 'Token', message: `Capturado em: ${data.capturedAt}` });
         return data.token;
       }
-      Cypress.log({ name: 'Token', message: '⚠️ Token não encontrado no arquivo' });
+      Cypress.log({ name: 'Token', message: 'Token nao encontrado no arquivo' });
       return null;
     }, (error) => {
-      Cypress.log({ name: 'Token', message: `⚠️ Erro ao carregar: ${error.message}` });
+      Cypress.log({ name: 'Token', message: `Erro ao carregar: ${error.message}` });
       return null;
     });
 });
 
 Cypress.Commands.add('api_login', (username, password) => {
-  cy.log(`🔐 Login API: ${username}`);
+  cy.log(`Login API: ${username}`);
   
   return cy.request({
     method: 'POST',
@@ -130,105 +119,95 @@ Cypress.Commands.add('api_login', (username, password) => {
   }).then((response) => {
     if (response.status === 200 && response.body.access) {
       Cypress.env('authToken', response.body.access);
-      cy.log('✅ Login realizado via API');
+      cy.log('Login realizado via API');
     }
     return response;
   });
 });
 
 Cypress.Commands.add('api_obter_token_valido', () => {
-  Cypress.log({ name: 'Token', message: '🔍 Verificando token disponível...' });
+  Cypress.log({ name: 'Token', message: 'Verificando token disponivel' });
   
-  // 1. Tentar carregar token do arquivo
   return cy.api_carregar_token_arquivo().then((tokenArquivo) => {
     if (!tokenArquivo) {
-      // Token do arquivo não existe, obter novo via UI
-      Cypress.log({ name: 'Token', message: '⚠️ Nenhum token encontrado no arquivo' });
-      Cypress.log({ name: 'Token', message: '🔄 Obtendo novo token via interface...' });
+      Cypress.log({ name: 'Token', message: 'Nenhum token encontrado no arquivo' });
+      Cypress.log({ name: 'Token', message: 'Obtendo novo token via interface' });
       return cy.api_obter_token_via_ui();
     }
     
     try {
-      // Validar token (função síncrona)
       if (tokenArquivo.length === 0) {
-        Cypress.log({ name: 'Token', message: '⚠️ Token vazio' });
+        Cypress.log({ name: 'Token', message: 'Token vazio' });
         return cy.api_obter_token_via_ui();
       }
 
       const parts = tokenArquivo.split('.');
       if (parts.length !== 3) {
-        Cypress.log({ name: 'Token', message: '⚠️ Token com formato inválido' });
+        Cypress.log({ name: 'Token', message: 'Token com formato invalido' });
         return cy.api_obter_token_via_ui();
       }
 
       const payload = JSON.parse(atob(parts[1]));
       
       if (!payload.exp) {
-        Cypress.log({ name: 'Token', message: '⚠️ Token sem data de expiração' });
+        Cypress.log({ name: 'Token', message: 'Token sem data de expiracao' });
         return cy.api_obter_token_via_ui();
       }
 
       const now = Math.floor(Date.now() / 1000);
       const expiresIn = payload.exp - now;
       
-      Cypress.log({ name: 'Token', message: `🕐 Expira em: ${Math.floor(expiresIn / 60)} minutos` });
+      Cypress.log({ name: 'Token', message: `Expira em: ${Math.floor(expiresIn / 60)} minutos` });
       
-      // Considera válido se ainda tem pelo menos 5 minutos
       if (expiresIn > 300) {
-        Cypress.log({ name: 'Token', message: '✅ Usando token do arquivo (válido)' });
+        Cypress.log({ name: 'Token', message: 'Usando token do arquivo (valido)' });
         Cypress.env('authToken', tokenArquivo);
         return tokenArquivo;
       } else {
-        Cypress.log({ name: 'Token', message: '⚠️ Token expirado ou próximo de expirar' });
+        Cypress.log({ name: 'Token', message: 'Token expirado ou proximo de expirar' });
         return cy.api_obter_token_via_ui();
       }
     } catch (error) {
-      Cypress.log({ name: 'Token', message: `⚠️ Erro ao validar: ${error.message}` });
+      Cypress.log({ name: 'Token', message: `Erro ao validar: ${error.message}` });
       return cy.api_obter_token_via_ui();
     }
   });
 });
 
 Cypress.Commands.add('api_autenticar', () => {
-  Cypress.log({ name: 'Autenticação', message: '🔐 Configurando token...' });
+  Cypress.log({ name: 'Autenticacao', message: 'Configurando token' });
   
-  // Detectar se está em ambiente CI (Jenkins)
   const isCI = Cypress.env('CI') || false;
   const apiUsername = Cypress.env('API_USERNAME');
   const apiPassword = Cypress.env('API_PASSWORD');
   
-  // Se está no CI E tem credenciais, fazer login via API diretamente
   if (isCI && apiUsername && apiPassword) {
-    Cypress.log({ name: 'Autenticação', message: '🏗️ Ambiente CI detectado - usando login via API' });
+    Cypress.log({ name: 'Autenticacao', message: 'Ambiente CI detectado - usando login via API' });
     return cy.api_login(apiUsername, apiPassword).then((response) => {
       if (response.status === 200 && response.body.access) {
         const token = response.body.access;
         Cypress.env('authToken', token);
-        Cypress.log({ name: 'Autenticação', message: '✅ Token obtido via API no CI' });
+        Cypress.log({ name: 'Autenticacao', message: 'Token obtido via API no CI' });
         return token;
       } else {
-        Cypress.log({ name: 'Autenticação', message: '❌ Falha no login via API' });
+        Cypress.log({ name: 'Autenticacao', message: 'Falha no login via API' });
         throw new Error('Falha na autenticação API no ambiente CI');
       }
     });
   }
   
-  // Modo local: tentar token do arquivo ou obter via UI
   return cy.api_carregar_token_arquivo().then((tokenArquivo) => {
     let tokenFinal = tokenArquivo || AUTH_TOKEN;
     
     Cypress.env('authToken', tokenFinal);
-    Cypress.log({ name: 'Autenticação', message: '✅ Token configurado' });
+    Cypress.log({ name: 'Autenticacao', message: 'Token configurado' });
     return tokenFinal;
   });
 });
 
-// ============================================================================
-// AUTENTICAÇÃO GIPE ESTUDANTES
-// ============================================================================
 
 Cypress.Commands.add('gerar_token_gipe_estudantes', () => {
-  cy.log('🔐 Gerando token GIPE Estudantes...');
+  cy.log('Gerando token GIPE Estudantes');
   
   const baseUrl = Cypress.env('GIPE_ESTUDANTES_BASE_URL') || 'https://serap-estudantes.sme.prefeitura.sp.gov.br';
   const alunoRa = Cypress.env('ALUNO_RA') || '5937723';
@@ -252,26 +231,22 @@ Cypress.Commands.add('gerar_token_gipe_estudantes', () => {
     retryOnNetworkFailure: true
   }).then((response) => {
     if (response.status !== 200) {
-      cy.log(`⚠️ Falha na autenticação GIPE Estudantes: ${response.status}`);
+      cy.log(`Falha na autenticacao GIPE Estudantes: ${response.status}`);
       throw new Error(`Authentication failed with status: ${response.status} - ${JSON.stringify(response.body)}`);
     }
     
     const token = response.body.token;
     Cypress.env('gipeEstudantesToken', token);
-    cy.log('✅ Token GIPE Estudantes gerado com sucesso');
+    cy.log('Token GIPE Estudantes gerado com sucesso');
     return token;
   });
 });
-
-// ============================================================================
-// REQUISIÇÕES HTTP
-// ============================================================================
 
 Cypress.Commands.add('api_request', (method, endpoint, options = {}) => {
   const token = Cypress.env('authToken');
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
   
-  cy.log(`📡 ${method} ${endpoint}`);
+  cy.log(`${method} ${endpoint}`);
   
   return cy.request({
     method,
@@ -303,12 +278,8 @@ Cypress.Commands.add('api_put', (endpoint, body = {}, options = {}) => {
 });
 
 Cypress.Commands.add('api_delete', (endpoint, options = {}) => {
-  return cy.api_request('DELETE', endpoint, options);
+  return cy.api_request('DELETE', endpoint, options );
 });
-
-// ============================================================================
-// HELPERS DE DADOS
-// ============================================================================
 
 Cypress.Commands.add('obter_primeiro_item', (endpoint) => {
   return cy.api_get(endpoint).then((response) => {
@@ -330,10 +301,6 @@ Cypress.Commands.add('obter_id', (endpoint) => {
     return item?.id || null;
   });
 });
-
-// ============================================================================
-// DADOS MOCK PARA TESTES
-// ============================================================================
 
 Cypress.Commands.add('gerar_dados_intercorrencia', () => {
   const timestamp = Date.now();
@@ -372,10 +339,6 @@ Cypress.Commands.add('gerar_dados_intercorrencia', () => {
     }
   };
 });
-
-// ============================================================================
-// VALIDAÇÕES DE ESTRUTURA DE DADOS
-// ============================================================================
 
 Cypress.Commands.add('validar_estrutura_declarante', (declarante) => {
   expect(declarante).to.be.an('object');

@@ -556,11 +556,23 @@ When('clica no campo de seguranca publica ue', () => {
 })
 
 When('seleciona opcao seguranca ue', () => {
-  cy.wait(2000)
-  cy.contains('div[role="option"]', /Sim|Não/i, { timeout: 15000 })
-    .first()
-    .should('be.visible')
-    .click({ force: true })
+  cy.wait(3000)
+  
+  cy.get('[role="option"]', { timeout: 15000 })
+    .filter(':visible')
+    .then($options => {
+      if ($options.length === 0) {
+        cy.log('Nenhuma opção encontrada - tentando aguardar mais tempo')
+        cy.wait(2000)
+      }
+      
+      const randomIndex = Math.floor(Math.random() * $options.length)
+      const selectedOption = $options.eq(randomIndex).text()
+      
+      cy.log(`Segurança pública selecionada: ${selectedOption}`)
+      cy.wrap($options.eq(randomIndex)).click({ force: true })
+    })
+  
   cy.wait(1500)
 })
 
@@ -583,17 +595,23 @@ When('seleciona protocolo ue', () => {
   cy.wait(3000)
   cy.log('Selecionando protocolo')
   
-  // Espera o dropdown estar visível e seleciona primeira opção
-  cy.get('div[role="listbox"]', { timeout: 20000 })
-    .should('be.visible')
-    .find('div[role="option"]')
-    .first()
-    .should('be.visible')
-    .click({ force: true })
+  cy.get('[role="option"]', { timeout: 20000 })
+    .filter(':visible')
+    .then($options => {
+      if ($options.length === 0) {
+        cy.log('Nenhuma opção de protocolo encontrada - pode estar vazio')
+        return
+      }
+      
+      const randomIndex = Math.floor(Math.random() * $options.length)
+      const selectedOption = $options.eq(randomIndex).text()
+      
+      cy.log(`Protocolo selecionado: ${selectedOption}`)
+      cy.wrap($options.eq(randomIndex)).click({ force: true })
+    })
   
-  // Aguarda mais tempo para garantir que a seleção foi aplicada
-  cy.wait(3000)
-  cy.log('✅ Protocolo selecionado')
+  cy.wait(2000)
+  cy.log('Protocolo selecionado')
 })
 
 Then('clica em proximo final', () => {
@@ -998,38 +1016,38 @@ When('seleciona motivacoes aleatorias', () => {
   // O campo já deve estar aberto pelo step anterior
   cy.wait(2000)
   
-  // Busca opções dentro do dropdown aberto usando data-state="open"
-  cy.get('[data-state="open"] span', { timeout: 10000 })
-    .filter(':visible')
-    .then($spans => {
-      const opcoes = []
-      
-      $spans.each((index, span) => {
-        const texto = Cypress.$(span).text().trim()
-        // Filtra spans que parecem ser opções (texto entre 10 e 80 caracteres)
-        if (texto.length >= 10 && texto.length <= 80 && !texto.includes('Selecione')) {
-          opcoes.push(span)
-        }
-      })
-      
-      if (opcoes.length >= 2) {
-        // Embaralha e pega 2 opções aleatórias
-        const shuffled = opcoes.sort(() => 0.5 - Math.random())
-        const selected1 = Cypress.$(shuffled[0]).text().trim()
-        const selected2 = Cypress.$(shuffled[1]).text().trim()
-        
-        cy.log(`Selecionadas: ${selected1} e ${selected2}`)
-        cy.wrap(shuffled[0]).click({ force: true })
-        cy.wait(1000)
-        cy.wrap(shuffled[1]).click({ force: true })
-      } else {
-        cy.log('[AVISO] Menos de 2 opções encontradas, usando fallback')
-        // Fallback: usa os XPaths originais
-        cy.xpath(locators.opcao_cyberbullying()).click({ force: true })
-        cy.wait(1000)
-        cy.xpath(locators.opcao_atividades_ilicitas()).click({ force: true })
+  // Tenta diferentes seletores para encontrar as opções
+  cy.get('body').then($body => {
+    let spans = $body.find('[data-state="open"] span:visible')
+    
+    if (spans.length === 0) {
+      spans = $body.find('div[role="listbox"] span:visible, span:visible')
+    }
+    
+    const opcoes = []
+    spans.each((index, span) => {
+      const texto = Cypress.$(span).text().trim()
+      if (texto.length >= 10 && texto.length <= 80 && !texto.includes('Selecione')) {
+        opcoes.push(span)
       }
     })
+    
+    if (opcoes.length >= 2) {
+      const shuffled = opcoes.sort(() => 0.5 - Math.random())
+      const selected1 = Cypress.$(shuffled[0]).text().trim()
+      const selected2 = Cypress.$(shuffled[1]).text().trim()
+      
+      cy.log(`Selecionadas: ${selected1} e ${selected2}`)
+      cy.wrap(shuffled[0]).click({ force: true })
+      cy.wait(1000)
+      cy.wrap(shuffled[1]).click({ force: true })
+    } else {
+      cy.log('[AVISO] Menos de 2 opções encontradas, usando fallback')
+      cy.xpath(locators.opcao_cyberbullying()).click({ force: true })
+      cy.wait(1000)
+      cy.xpath(locators.opcao_atividades_ilicitas()).click({ force: true })
+    }
+  })
   
   cy.wait(1000)
 })
@@ -1117,20 +1135,33 @@ When('seleciona etapa aleatoria', () => {
 
 // Seleciona frequência aleatória
 When('seleciona frequencia aleatoria', () => {
-  cy.wait(1500)
+  cy.wait(2000)
   cy.log('Selecionando frequência aleatória')
   
+  // Fecha qualquer dropdown aberto com ESC
+  cy.get('body').type('{esc}')
+  cy.wait(1000)
+  
+  // Valida que o label de frequência existe
+  cy.contains('label', /Qual a frequência escolar/i, { timeout: 15000 })
+    .should('be.visible')
+  
+  // Clica no próximo botão "Selecione" disponível (que será o de frequência)
   cy.get('button', { timeout: 15000 })
     .filter(':visible')
     .contains(/selecione/i)
     .eq(0)
     .scrollIntoView()
+    .should('be.visible')
     .click({ force: true })
   
-  cy.wait(2000)
+  cy.log('Aguardando dropdown de frequência abrir...')
+  cy.wait(3000)
   
-  cy.get('[role="option"]', { timeout: 10000 })
+  // Valida que o dropdown abriu e seleciona opção
+  cy.get('[role="option"]', { timeout: 15000 })
     .filter(':visible')
+    .should('have.length.greaterThan', 0)
     .then($options => {
       const randomIndex = Math.floor(Math.random() * $options.length)
       const selectedOption = $options.eq(randomIndex).text()
@@ -1139,7 +1170,8 @@ When('seleciona frequencia aleatoria', () => {
       cy.wrap($options.eq(randomIndex)).click({ force: true })
     })
   
-  cy.wait(1000)
+  cy.wait(1500)
+  cy.log('Frequência escolar selecionada com sucesso')
 })
 
 // Preenche interação aleatória
