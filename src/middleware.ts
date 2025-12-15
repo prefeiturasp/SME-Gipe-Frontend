@@ -13,10 +13,29 @@ function isPublic(pathname: string) {
     );
 }
 
+interface JWTPayload {
+    is_app_admin?: boolean;
+    [key: string]: unknown;
+}
+
+function decodeJWT(token: string): JWTPayload | null {
+    try {
+        const parts = token.split(".");
+        if (parts.length !== 3) return null;
+
+        const payload = parts[1];
+        const decoded = Buffer.from(payload, "base64").toString("utf-8");
+        return JSON.parse(decoded);
+    } catch {
+        return null;
+    }
+}
+
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    const isAuthenticated = !!request.cookies.get("auth_token");
+    const authToken = request.cookies.get("auth_token")?.value;
+    const isAuthenticated = !!authToken;
 
     if (pathname.startsWith("/confirmar-email/")) {
         return NextResponse.next();
@@ -29,9 +48,22 @@ export function middleware(request: NextRequest) {
     if (isAuthenticated && isPublic(pathname)) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.next();
-}
 
-export const config = {
+    // Verifica se o usuário tem permissão de admin GIPE para acessar rotas de gestão
+    const isGestaoRoute =
+        pathname.includes("/gestao-usuarios") ||
+        pathname.includes("/gestao-unidades-educacionais");
+
+    if (isAuthenticated && isGestaoRoute) {
+        const decodedToken = decodeJWT(authToken);
+
+        if (!decodedToken?.is_app_admin) {
+            // Usuário não é admin do GIPE, redireciona para o dashboard
+            return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+    }
+
+    return NextResponse.next();
+}export const config = {
     matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

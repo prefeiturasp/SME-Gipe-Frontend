@@ -1,0 +1,213 @@
+import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+
+let response
+
+// ==================== STEPS DE CONSULTA ====================
+
+When('eu consulto a lista de intercorrências da DRE', () => {
+  cy.api_get('/dre/').then((res) => {
+    response = res
+    cy.wrap(response).as('response')
+    Cypress.log({ name: 'GET', message: `Lista DRE - Status: ${res.status}` })
+  })
+})
+
+When('eu consulto a intercorrência DRE com UUID {string}', (uuid) => {
+  cy.api_get(`/dre/${uuid}/`).then((res) => {
+    response = res
+    cy.wrap(response).as('response')
+    cy.wrap(uuid).as('uuidConsultado')
+    Cypress.log({ name: 'GET', message: `DRE UUID: ${uuid} - Status: ${res.status}` })
+  })
+})
+
+When('eu tento acessar as intercorrências DRE sem token', () => {
+  cy.request({
+    method: 'GET',
+    url: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1/dre/',
+    failOnStatusCode: false
+  }).then((res) => {
+    response = res
+    cy.wrap(response).as('response')
+  })
+})
+
+// ==================== STEPS DE ATUALIZAÇÃO (PUT) ====================
+
+Given('que existe a intercorrência DRE {string}', (uuid) => {
+  cy.api_get(`/dre/${uuid}/`).then((res) => {
+    expect(res.status).to.equal(200)
+    cy.wrap(uuid).as('uuidAtual')
+    Cypress.log({ name: 'Setup', message: `✅ Intercorrência DRE ${uuid} encontrada` })
+  })
+})
+
+When('eu atualizo a intercorrência DRE com os dados:', (dataTable) => {
+  cy.get('@uuidAtual').then((uuid) => {
+    const dadosAtualizacao = {}
+    dataTable.hashes().forEach((row) => {
+      const valor = row.valor === 'true' ? true : row.valor === 'false' ? false : row.valor
+      dadosAtualizacao[row.campo] = valor
+    })
+
+    cy.api_put(`/dre/${uuid}/`, dadosAtualizacao).then((res) => {
+      response = res
+      cy.wrap(response).as('response')
+      Cypress.log({ name: 'PUT', message: `Atualização DRE - Status: ${res.status}` })
+    })
+  })
+})
+
+// ==================== VALIDAÇÕES GERAIS ====================
+
+Then('a resposta deve ser uma lista de intercorrências', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.be.an('array')
+    expect(res.body.length).to.be.greaterThan(0)
+    Cypress.log({ name: 'Validação', message: `✅ Lista com ${res.body.length} intercorrências` })
+  })
+})
+
+Then('cada intercorrência DRE deve ter os campos obrigatórios:', (dataTable) => {
+  cy.get('@response').then((res) => {
+    const camposObrigatorios = dataTable.hashes().map(row => row.campo)
+    
+    res.body.forEach((intercorrencia) => {
+      camposObrigatorios.forEach((campo) => {
+        expect(intercorrencia).to.have.property(campo)
+      })
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ Todas as ${res.body.length} intercorrências têm campos obrigatórios` })
+  })
+})
+
+// ==================== VALIDAÇÕES DE CAMPOS ESPECÍFICOS ====================
+
+Then('a resposta deve conter o UUID {string}', (uuidEsperado) => {
+  cy.get('@response').then((res) => {
+    expect(res.body.uuid).to.equal(uuidEsperado)
+    Cypress.log({ name: 'Validação', message: `✅ UUID correto: ${uuidEsperado}` })
+  })
+})
+
+Then('a resposta deve ter unidade_codigo_eol {string}', (codigoEol) => {
+  cy.get('@response').then((res) => {
+    expect(res.body.unidade_codigo_eol).to.equal(codigoEol)
+    Cypress.log({ name: 'Validação', message: `✅ Código EOL: ${codigoEol}` })
+  })
+})
+
+Then('a resposta deve ter dre_codigo_eol {string}', (dreCodigoEol) => {
+  cy.get('@response').then((res) => {
+    expect(res.body.dre_codigo_eol).to.equal(dreCodigoEol)
+    Cypress.log({ name: 'Validação', message: `✅ DRE Código EOL: ${dreCodigoEol}` })
+  })
+})
+
+Then('o campo {string} deve ser {string}', (campo, valorEsperado) => {
+  cy.get('@response').then((res) => {
+    const valor = valorEsperado === 'true' ? true : valorEsperado === 'false' ? false : valorEsperado
+    expect(res.body[campo]).to.equal(valor)
+    Cypress.log({ name: 'Validação', message: `✅ Campo "${campo}" = ${valor}` })
+  })
+})
+
+Then('o campo {string} deve ser true', (campo) => {
+  cy.get('@response').then((res) => {
+    expect(res.body[campo]).to.be.true
+    Cypress.log({ name: 'Validação', message: `✅ Campo "${campo}" = true` })
+  })
+})
+
+Then('o campo {string} deve conter {string}', (campo, textoEsperado) => {
+  cy.get('@response').then((res) => {
+    expect(res.body[campo]).to.include(textoEsperado)
+    Cypress.log({ name: 'Validação', message: `✅ Campo "${campo}" contém "${textoEsperado}"` })
+  })
+})
+
+Then('o campo {string} deve ser booleano', (campo) => {
+  cy.get('@response').then((res) => {
+    expect(res.body[campo]).to.be.a('boolean')
+    Cypress.log({ name: 'Validação', message: `✅ Campo "${campo}" é booleano` })
+  })
+})
+
+Then('o campo {string} deve existir', (campo) => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.have.property(campo)
+    Cypress.log({ name: 'Validação', message: `✅ Campo "${campo}" existe` })
+  })
+})
+
+// ==================== VALIDAÇÕES DE STATUS ====================
+
+Then('devem existir intercorrências com os seguintes status:', (dataTable) => {
+  cy.get('@response').then((res) => {
+    const statusEsperados = dataTable.hashes().map(row => row.status)
+    const statusEncontrados = [...new Set(res.body.map(item => item.status))]
+    
+    statusEsperados.forEach((statusEsperado) => {
+      expect(statusEncontrados).to.include(statusEsperado)
+      Cypress.log({ name: 'Status', message: `✅ Status "${statusEsperado}" encontrado` })
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ Todos os ${statusEsperados.length} status esperados existem` })
+  })
+})
+
+Then('devem existir os seguintes status_extra:', (dataTable) => {
+  cy.get('@response').then((res) => {
+    const statusExtraEsperados = dataTable.hashes().map(row => row.status_extra)
+    const statusExtraEncontrados = [...new Set(res.body.map(item => item.status_extra))]
+    
+    statusExtraEsperados.forEach((statusExtra) => {
+      expect(statusExtraEncontrados).to.include(statusExtra)
+      Cypress.log({ name: 'Status Extra', message: `✅ "${statusExtra}" encontrado` })
+    })
+  })
+})
+
+// ==================== VALIDAÇÕES DE CÓDIGOS ====================
+
+Then('devem existir intercorrências dos códigos DRE:', (dataTable) => {
+  cy.get('@response').then((res) => {
+    const codigosEsperados = dataTable.hashes().map(row => row.dre_codigo_eol)
+    const codigosEncontrados = [...new Set(res.body.map(item => item.dre_codigo_eol))]
+    
+    codigosEsperados.forEach((codigo) => {
+      expect(codigosEncontrados).to.include(codigo)
+      Cypress.log({ name: 'DRE', message: `✅ Código DRE "${codigo}" encontrado` })
+    })
+  })
+})
+
+Then('devem existir intercorrências das unidades:', (dataTable) => {
+  cy.get('@response').then((res) => {
+    const unidadesEsperadas = dataTable.hashes().map(row => row.unidade_codigo_eol)
+    const unidadesEncontradas = [...new Set(res.body.map(item => item.unidade_codigo_eol))]
+    
+    unidadesEsperadas.forEach((unidade) => {
+      expect(unidadesEncontradas).to.include(unidade)
+      Cypress.log({ name: 'Unidade', message: `✅ Unidade EOL "${unidade}" encontrada` })
+    })
+  })
+})
+
+Then('a lista deve conter pelo menos {int} intercorrências', (quantidadeMinima) => {
+  cy.get('@response').then((res) => {
+    expect(res.body.length).to.be.at.least(quantidadeMinima)
+    Cypress.log({ name: 'Validação', message: `✅ Lista tem ${res.body.length} intercorrências (mínimo: ${quantidadeMinima})` })
+  })
+})
+
+Then('todos os IDs devem ser numéricos', () => {
+  cy.get('@response').then((res) => {
+    res.body.forEach((item) => {
+      expect(item.id).to.be.a('number')
+      expect(item.id).to.be.greaterThan(0)
+    })
+    Cypress.log({ name: 'Validação', message: `✅ Todos os ${res.body.length} IDs são numéricos` })
+  })
+})

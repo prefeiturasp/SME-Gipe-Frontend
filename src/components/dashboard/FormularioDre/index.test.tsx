@@ -7,6 +7,7 @@ const mockReset = vi.fn();
 const mockInvalidateQueries = vi.fn();
 const mockRouterBack = vi.fn();
 const mockOnPrevious = vi.fn();
+const mockOnNext = vi.fn();
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
     useOcorrenciaFormStore: vi.fn((selector) => {
@@ -72,7 +73,12 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o título correto do PageHeader", () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         expect(
             screen.getByText(
@@ -82,13 +88,23 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o componente DetalhamentoDre", () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         expect(screen.getByTestId("mock-detalhamento-dre")).toBeInTheDocument();
     });
 
     it("deve passar onPrevious para DetalhamentoDre", () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         const botaoAnterior = screen.getByText("Anterior (Mock)");
         botaoAnterior.click();
@@ -97,7 +113,12 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve chamar reset, invalidateQueries e router.back ao clicar em Voltar", async () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
@@ -114,7 +135,12 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve usar o ocorrenciaUuid correto na invalidação de queries", async () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         const botaoVoltar = screen.getByText("Voltar");
         botaoVoltar.click();
@@ -127,7 +153,12 @@ describe("FormularioDrePage", () => {
     });
 
     it("deve renderizar o botão Voltar do PageHeader", () => {
-        renderWithClient(<FormularioDrePage onPrevious={mockOnPrevious} />);
+        renderWithClient(
+            <FormularioDrePage
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+            />
+        );
 
         const botaoVoltar = screen.getByRole("button", { name: /voltar/i });
         expect(botaoVoltar).toBeInTheDocument();

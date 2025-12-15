@@ -1,0 +1,87 @@
+<?xml version='1.0'?>
+<ns2:test-suite xmlns:ns2='urn:model.allure.qatools.yandex.ru' start='1765288457030' stop='1765288457239'>
+    <name>API GIPE - Testes Principais</name>
+    <title>API GIPE - Testes Principais</title>
+    <test-cases>
+        <test-case start='1765288457052' status='skipped' stop='1765288457057'>
+            <name>Listar todos os declarantes</name>
+            <title>Listar todos os declarantes</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457067' status='skipped' stop='1765288457084'>
+            <name>Listar intercorrências do diretor</name>
+            <title>Listar intercorrências do diretor</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457093' status='skipped' stop='1765288457105'>
+            <name>Buscar intercorrência por UUID</name>
+            <title>Buscar intercorrência por UUID</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457112' status='skipped' stop='1765288457126'>
+            <name>Listar todos os envolvidos</name>
+            <title>Listar todos os envolvidos</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457132' status='skipped' stop='1765288457143'>
+            <name>Listar todos os tipos de ocorrência</name>
+            <title>Listar todos os tipos de ocorrência</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457153' status='skipped' stop='1765288457163'>
+            <name>Validar estrutura de dados de declarante</name>
+            <title>Validar estrutura de dados de declarante</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457171' status='skipped' stop='1765288457180'>
+            <name>Validar que intercorrências retornam array</name>
+            <title>Validar que intercorrências retornam array</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457188' status='skipped' stop='1765288457197'>
+            <name>Validar estrutura de resposta de envolvidos</name>
+            <title>Validar estrutura de resposta de envolvidos</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457206' status='skipped' stop='1765288457216'>
+            <name>Validar que tipos de ocorrência tem conteúdo</name>
+            <title>Validar que tipos de ocorrência tem conteúdo</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+        <test-case start='1765288457223' status='skipped' stop='1765288457232'>
+            <name>Verificar que busca por UUID retorna objeto único</name>
+            <title>Verificar que busca por UUID retorna objeto único</title>
+            <labels/>
+            <parameters/>
+            <steps/>
+            <attachments/>
+        </test-case>
+    </test-cases>
+</ns2:test-suite>

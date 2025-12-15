@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as useUserStoreModule from "@/stores/useUserStore";
 
 const mockRouterBack = vi.fn();
+const mockRouterPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: mockRouterBack,
-        push: vi.fn(),
+        push: mockRouterPush,
     }),
 }));
 
@@ -34,10 +35,18 @@ vi.mock("@/hooks/useAtualizarOcorrenciaDre", () => ({
     }),
 }));
 
+const mockIsPontoFocal = vi.fn(() => false);
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: () => ({
+        isPontoFocal: mockIsPontoFocal(),
+    }),
+}));
+
 const mockSetFormData = vi.fn();
 const mockFormData = {
     unidadeEducacional: "123456",
     dre: "654321",
+    status: "em_andamento",
 };
 
 vi.mock("@/stores/useOcorrenciaFormStore", () => ({
@@ -157,24 +166,24 @@ describe("DetalhamentoDre", () => {
         expect(screen.getByTestId("mock-anexos")).toBeInTheDocument();
     });
 
-    it("deve renderizar os botões Anterior e Salvar informações", () => {
+    it("deve renderizar os botões Anterior e Próximo", () => {
         renderComponent();
 
         expect(
             screen.getByRole("button", { name: /anterior/i })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /próximo/i })
         ).toBeInTheDocument();
     });
 
-    it("deve ter o botão Salvar informações desabilitado inicialmente", () => {
+    it("deve ter o botão Próximo desabilitado inicialmente", () => {
         renderComponent();
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
-        expect(botaoSalvar).toBeDisabled();
+        expect(botaoProximo).toBeDisabled();
     });
 
     it("deve chamar onPrevious ao clicar no botão Anterior", async () => {
@@ -189,15 +198,15 @@ describe("DetalhamentoDre", () => {
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
-    it("deve habilitar o botão Salvar quando todos os campos obrigatórios forem preenchidos com 'Não'", async () => {
+    it("deve habilitar o botão Próximo quando todos os campos obrigatórios forem preenchidos com 'Não'", async () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
-        expect(botaoSalvar).toBeDisabled();
+        expect(botaoProximo).toBeDisabled();
 
         const radiosSeguranca = screen.getAllByRole("radio");
 
@@ -208,7 +217,7 @@ describe("DetalhamentoDre", () => {
         await user.click(radiosSeguranca[9]);
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
     });
 
@@ -275,10 +284,10 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[9]);
 
         await waitFor(() => {
-            const botaoSalvar = screen.getByRole("button", {
-                name: /salvar informações/i,
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
             });
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
     });
 
@@ -294,12 +303,12 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[7]);
         await user.click(radios[9]);
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
         await waitFor(() => {
-            expect(botaoSalvar).toBeDisabled();
+            expect(botaoProximo).toBeDisabled();
         });
 
         const textareas = screen.getAllByRole("textbox");
@@ -307,7 +316,7 @@ describe("DetalhamentoDre", () => {
         await user.type(textareaSTS, "Informações complementares STS");
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
     });
 
@@ -332,15 +341,15 @@ describe("DetalhamentoDre", () => {
         await user.type(textareas[0], "Info STS");
         await user.type(textareas[2], "Info Supervisão");
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
 
-        await user.click(botaoSalvar);
+        await user.click(botaoProximo);
 
         await waitFor(() => {
             expect(mockAtualizarOcorrenciaDre).toHaveBeenCalledWith(
@@ -386,15 +395,15 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[7]);
         await user.click(radios[9]);
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
 
-        await user.click(botaoSalvar);
+        await user.click(botaoProximo);
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
@@ -422,15 +431,15 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[7]);
         await user.click(radios[9]);
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
 
-        await user.click(botaoSalvar);
+        await user.click(botaoProximo);
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
@@ -459,15 +468,15 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[7]);
         await user.click(radios[9]);
 
-        const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
         });
 
         await waitFor(() => {
-            expect(botaoSalvar).not.toBeDisabled();
+            expect(botaoProximo).not.toBeDisabled();
         });
 
-        await user.click(botaoSalvar);
+        await user.click(botaoProximo);
 
         await waitFor(() => {
             expect(mockSetFormData).toHaveBeenCalledWith({
@@ -513,7 +522,7 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /próximo/i })
         ).toBeInTheDocument();
     });
 
@@ -527,7 +536,199 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
+            screen.getByRole("button", { name: /próximo/i })
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir botão 'Próximo' quando é Ponto Focal e status não é 'enviado_para_dre'", () => {
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "em_andamento";
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /próximo/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /salvar informações/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir botão 'Salvar informações' quando é Ponto Focal mas status é 'enviado_para_dre'", () => {
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "enviado_para_dre";
+
+        renderComponent();
+
+        expect(
             screen.getByRole("button", { name: /salvar informações/i })
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /próximo/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir botão 'Próximo' quando não é Ponto Focal", () => {
+        mockIsPontoFocal.mockReturnValue(false);
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /próximo/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /salvar informações/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve chamar handleSubmit e abrir modal ao clicar em 'Salvar informações' quando é Ponto Focal", async () => {
+        const user = userEvent.setup();
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "enviado_para_dre";
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
+        });
+    });
+
+    it("não deve chamar onNext ao clicar em 'Salvar informações'", async () => {
+        const user = userEvent.setup();
+        const mockOnNext = vi.fn();
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "enviado_para_dre";
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoDre onNext={mockOnNext} />
+            </QueryClientProvider>
+        );
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
+        });
+
+        expect(mockOnNext).not.toHaveBeenCalled();
+    });
+
+    it("deve chamar onNext ao clicar em 'Próximo' quando não é Ponto Focal", async () => {
+        const user = userEvent.setup();
+        const mockOnNext = vi.fn();
+        mockIsPontoFocal.mockReturnValue(false);
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoDre onNext={mockOnNext} />
+            </QueryClientProvider>
+        );
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoProximo).not.toBeDisabled();
+        });
+
+        await user.click(botaoProximo);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
+            expect(mockOnNext).toHaveBeenCalled();
+        });
+    });
+
+    it("deve redirecionar para dashboard quando Ponto Focal clica em 'Próximo' em status diferente de 'enviado_para_dre'", async () => {
+        const user = userEvent.setup();
+        const mockOnNext = vi.fn();
+        mockIsPontoFocal.mockReturnValue(true);
+        mockFormData.status = "em_andamento";
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoDre onNext={mockOnNext} />
+            </QueryClientProvider>
+        );
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+        await user.click(radios[3]);
+        await user.click(radios[5]);
+        await user.click(radios[7]);
+        await user.click(radios[9]);
+
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoProximo).not.toBeDisabled();
+        });
+
+        await user.click(botaoProximo);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
+            expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
+            expect(mockOnNext).not.toHaveBeenCalled();
+        });
     });
 });

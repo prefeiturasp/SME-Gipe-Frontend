@@ -8,8 +8,10 @@ import { DetalhamentoDre } from "./DetalhamentoDre";
 
 export default function FormularioDrePage({
     onPrevious,
+    onNext,
 }: Readonly<{
     onPrevious: () => void;
+    onNext: () => void;
 }>) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
@@ -34,7 +36,7 @@ export default function FormularioDrePage({
                 title="Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
                 onClickBack={handleClickBack}
             />
-            <DetalhamentoDre onPrevious={onPrevious} />
+            <DetalhamentoDre onPrevious={onPrevious} onNext={onNext} />
         </div>
     );
 }
