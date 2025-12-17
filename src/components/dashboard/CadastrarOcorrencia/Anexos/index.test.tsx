@@ -14,12 +14,14 @@ import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
 import * as useObterAnexosHook from "@/hooks/useObterAnexos";
 import * as useTiposDocumentosHook from "@/hooks/useTiposDocumentos";
+import * as useUserPermissionsHook from "@/hooks/useUserPermissions";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
 vi.mock("@/hooks/useEnviarAnexo");
 vi.mock("@/hooks/useObterAnexos");
 vi.mock("@/hooks/useTiposDocumentos");
+vi.mock("@/hooks/useUserPermissions");
 
 const mockPush = vi.fn();
 
@@ -137,6 +139,16 @@ describe("Anexos", () => {
             isError: false,
             error: null,
         } as never);
+
+        vi.spyOn(
+            useUserPermissionsHook,
+            "useUserPermissions"
+        ).mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
     });
 
     it("deve renderizar o título e descrições", async () => {
@@ -1174,7 +1186,7 @@ describe("Anexos", () => {
         });
     });
 
-    
+
     it("deve abrir o modal de tipos ao clicar em 'Finalizar'", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
@@ -1190,5 +1202,71 @@ describe("Anexos", () => {
         });
     });
 
-    
+    it("deve chamar useObterAnexos sem perfil quando usuário não é assistente ou diretor", async () => {
+        const mockUseObterAnexos = vi
+            .spyOn(useObterAnexosHook, "useObterAnexos")
+            .mockReturnValue({
+                data: undefined,
+                refetch: mockRefetch,
+                isLoading: false,
+                isError: false,
+                isSuccess: false,
+            } as never);
+
+        vi.spyOn(
+            useUserPermissionsHook,
+            "useUserPermissions"
+        ).mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
+
+        await waitFor(() => {
+            expect(mockUseObterAnexos).toHaveBeenCalledWith({
+                intercorrenciaUuid: "test-uuid-123",
+                perfil: undefined,
+            });
+        });
+    });
+
+    it("deve chamar useObterAnexos com perfil=UE quando usuário é assistente ou diretor", async () => {
+        const mockUseObterAnexos = vi
+            .spyOn(useObterAnexosHook, "useObterAnexos")
+            .mockReturnValue({
+                data: undefined,
+                refetch: mockRefetch,
+                isLoading: false,
+                isError: false,
+                isSuccess: false,
+            } as never);
+
+        vi.spyOn(
+            useUserPermissionsHook,
+            "useUserPermissions"
+        ).mockReturnValue({
+            isPontoFocal: false,
+            isGipe: false,
+            isAssistenteOuDiretor: true,
+            isGipeAdmin: false,
+        });
+
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
+
+        await waitFor(() => {
+            expect(mockUseObterAnexos).toHaveBeenCalledWith({
+                intercorrenciaUuid: "test-uuid-123",
+                perfil: "UE",
+            });
+        });
+    });
+
+
 });
