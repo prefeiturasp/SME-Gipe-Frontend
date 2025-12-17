@@ -31,6 +31,7 @@ import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
 import { useObterAnexos } from "@/hooks/useObterAnexos";
 import { ListagemAnexos } from "./ListagemAnexos";
 import ModalFinalizarEtapa from "./ModalFinalizar/ModalFinalizar";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 export type AnexosProps = {
     onPrevious?: () => void;
@@ -47,6 +48,7 @@ export default function Anexos({
 }: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+    const { isAssistenteOuDiretor } = useUserPermissions();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const enviarAnexoMutation = useEnviarAnexo();
     const { data: tiposDocumento = [] } = useTiposDocumentos();
@@ -56,6 +58,7 @@ export default function Anexos({
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
         intercorrenciaUuid: ocorrenciaUuid ?? "",
+        perfil: isAssistenteOuDiretor ? "UE" : undefined,
     });
 
     const form = useForm<AnexosData>({
