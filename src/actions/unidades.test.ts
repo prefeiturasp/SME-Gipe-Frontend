@@ -8,7 +8,7 @@ import {
     type Mock,
 } from "vitest";
 import axios from "axios";
-import { getDREs, getUEs } from "@/actions/unidades";
+import { getDREs, getUEs, getTodasUEs } from "@/actions/unidades";
 
 vi.mock("axios");
 
@@ -53,6 +53,18 @@ describe("unidades actions", () => {
         expect(result).toEqual(fakeUEs);
     });
 
+    it("getTodasUEs retorna lista de Unidades", async () => {
+        const fakeDREs = [{ uuid: "1", nome: "UE 1" }];
+        axiosGetMock.mockResolvedValueOnce({ data: fakeDREs });
+
+        const result = await getTodasUEs();
+
+        expect(axiosGetMock).toHaveBeenCalledWith(
+            "https://api.exemplo.com/unidades",
+        );
+        expect(result).toEqual(fakeDREs);
+    });
+
     it("getDREs lança erro se a API falhar", async () => {
         axiosGetMock.mockRejectedValueOnce(new Error("API error"));
         await expect(getDREs()).rejects.toThrow(
@@ -64,6 +76,13 @@ describe("unidades actions", () => {
         axiosGetMock.mockRejectedValueOnce(new Error("API error"));
         await expect(getUEs("dre-uuid")).rejects.toThrow(
             "Não foi possível buscar as UEs"
+        );
+    });
+
+     it("getTodasUEs lança erro se a API falhar", async () => {
+        axiosGetMock.mockRejectedValueOnce(new Error("API error"));
+        await expect(getTodasUEs()).rejects.toThrow(
+            "Não foi possível buscar todas as UEs"
         );
     });
 });

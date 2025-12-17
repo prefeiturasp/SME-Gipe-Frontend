@@ -61,9 +61,9 @@ export default function FormCadastro() {
         setErrorMessage(null);
 
         const payload = {
-            username: values.cpf.replace(/\D/g, ""),
+            username: values.cpf.replaceAll(/\D/g, ""),
             name: values.fullName,
-            cpf: values.cpf.replace(/\D/g, ""),
+            cpf: values.cpf.replaceAll(/\D/g, ""),
             email: values.email,
             cargo: 3360,
             rede: "INDIRETA",
@@ -166,8 +166,8 @@ export default function FormCadastro() {
                                 <Combobox
                                     data-testid="select-ue"
                                     options={ueOptions.map(
-                                        (ue: { 
-                                            nome: string; 
+                                        (ue: {
+                                            nome: string;
                                             uuid: string;
                                         }) => ({
                                             label: ue.nome,

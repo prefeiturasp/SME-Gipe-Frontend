@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
+import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
+import { useGetOcorrenciaGipe } from "@/hooks/useGetOcorrenciaGipe";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
+import VisualizarOcorrencia from "@/components/dashboard/VisualizarOcorrencia";
 import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
+import { transformOcorrenciaDreToFormData } from "@/lib/transformOcorrenciaDreToFormData";
+import { transformOcorrenciaGipeToFormData } from "@/lib/transformOcorrenciaGipeToFormData";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
@@ -26,39 +31,82 @@ export default function EditarOcorrenciaPage() {
         error,
     } = useGetOcorrencia(ocorrenciaId);
 
+    const isEmPreenchimento = ocorrencia?.status === "em_preenchimento_diretor";
+    const isEnviadaGipe =
+        ocorrencia?.status === "enviado_para_gipe" ||
+        ocorrencia?.status === "finalizada";
+
+    const { data: ocorrenciaDre } = useGetOcorrenciaDre(ocorrenciaId, {
+        enabled: !isEmPreenchimento,
+    });
+
+    const { data: ocorrenciaGipe } = useGetOcorrenciaGipe(ocorrenciaId, {
+        enabled: isEnviadaGipe,
+    });
+
     const { setFormData, setSavedFormData, setOcorrenciaUuid, reset } =
         useOcorrenciaFormStore();
 
     useEffect(() => {
-        reset();
-
-        if (ocorrencia) {
-            const formData = transformOcorrenciaToFormData(ocorrencia);
-
-            setOcorrenciaUuid(ocorrencia.uuid);
-            setFormData(formData);
-            setSavedFormData(formData);
-            setIsStoreReady(true);
-        }
-
         return () => {
             reset();
             setIsStoreReady(false);
         };
-    }, [ocorrencia, setFormData, setSavedFormData, setOcorrenciaUuid, reset]);
+    }, [reset]);
+
+    useEffect(() => {
+        if (!ocorrencia) return;
+
+        const formDataUe = transformOcorrenciaToFormData(ocorrencia);
+        let combinedFormData = formDataUe;
+
+        if (!isEmPreenchimento && ocorrenciaDre) {
+            const formDataDre = transformOcorrenciaDreToFormData(ocorrenciaDre);
+            combinedFormData = { ...formDataUe, ...formDataDre };
+        }
+
+        if (isEnviadaGipe && ocorrenciaGipe) {
+            const formDataGipe =
+                transformOcorrenciaGipeToFormData(ocorrenciaGipe);
+            combinedFormData = { ...combinedFormData, ...formDataGipe };
+        }
+
+        setOcorrenciaUuid(ocorrencia.uuid);
+        setFormData(combinedFormData);
+        setSavedFormData(combinedFormData);
+        setIsStoreReady(true);
+    }, [
+        ocorrencia,
+        ocorrenciaDre,
+        ocorrenciaGipe,
+        isEmPreenchimento,
+        isEnviadaGipe,
+        setFormData,
+        setSavedFormData,
+        setOcorrenciaUuid,
+    ]);
 
     if (isError) {
         return <ErrorMessage error={error} />;
     }
 
-    if (isLoading || !isStoreReady || !ocorrencia) {
+    if (
+        isLoading ||
+        !isStoreReady ||
+        !ocorrencia ||
+        (!isEmPreenchimento && !ocorrenciaDre) ||
+        (isEnviadaGipe && !ocorrenciaGipe)
+    ) {
         return <LoadingSpinner />;
     }
 
     const getInitialStep = () => {
-        // função futura para implementar lógica baseada no status da ocorrência
         return 1;
     };
 
-    return <CadastrarOcorrencia initialStep={getInitialStep()} />;
+    return isEmPreenchimento ? (
+        <CadastrarOcorrencia initialStep={getInitialStep()} />
+    ) : (
+        <VisualizarOcorrencia />
+    );
 }

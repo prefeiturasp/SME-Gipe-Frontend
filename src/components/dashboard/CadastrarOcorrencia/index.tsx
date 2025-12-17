@@ -3,13 +3,10 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import SecaoInicial from "./SecaoInicial";
-import { useState } from "react";
-import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
-import SecaoFinal from "./SecaoFinal";
+import { useState, useEffect } from "react";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
+import StepRenderer from "./StepRenderer";
 
 type CadastrarOcorrenciaProps = {
     initialStep?: number;
@@ -19,42 +16,41 @@ export default function CadastrarOcorrencia({
     initialStep = 1,
 }: Readonly<CadastrarOcorrenciaProps>) {
     const [currentStep, setCurrentStep] = useState(initialStep);
-    const { formData, ocorrenciaUuid } = useOcorrenciaFormStore();
+    const formData = useOcorrenciaFormStore((state) => state.formData);
+    const ocorrenciaUuid = useOcorrenciaFormStore(
+        (state) => state.ocorrenciaUuid
+    );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
 
-    const isFurtoRoubo = formData.tipoOcorrencia === "Sim";
-    const hasAgressorVitimaInfo = formData.possuiInfoAgressorVitima === "Sim";
+    const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
+        string | undefined
+    >(formData.tipoOcorrencia);
+    const [currentPossuiInfoAgressor, setCurrentPossuiInfoAgressor] = useState<
+        string | undefined
+    >(formData.possuiInfoAgressorVitima);
 
-    const getStep2Label = () => {
-        if (!formData.tipoOcorrencia) return "Fase 02";
-        return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    const isFurtoRoubo = currentTipoOcorrencia === "Sim";
+    const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
+        if (data.tipoOcorrencia !== undefined) {
+            setCurrentTipoOcorrencia(data.tipoOcorrencia);
+        }
     };
 
-    const getStep3Label = () => {
-        if (!formData.possuiInfoAgressorVitima && currentStep < 3)
-            return "Fase 03";
-        return hasAgressorVitimaInfo ? "Informações adicionais" : "Seção final";
+    const handleSecaoNaoFurtoChange = (data: {
+        possuiInfoAgressorVitima?: string;
+    }) => {
+        if (data.possuiInfoAgressorVitima !== undefined) {
+            setCurrentPossuiInfoAgressor(data.possuiInfoAgressorVitima);
+        }
     };
 
-    const steps = [
-        {
-            label: "Cadastro de ocorrência",
-            description: "",
-        },
-        {
-            label: getStep2Label(),
-            description: "",
-        },
-        {
-            label: getStep3Label(),
-            description: "",
-        },
-        {
-            label: "Anexos",
-            description: "",
-        },
-    ];
+    useEffect(() => {
+        setCurrentTipoOcorrencia(formData.tipoOcorrencia);
+        setCurrentPossuiInfoAgressor(formData.possuiInfoAgressorVitima);
+    }, [formData.tipoOcorrencia, formData.possuiInfoAgressorVitima]);
 
     const handleClick = async () => {
         reset();
@@ -63,6 +59,43 @@ export default function CadastrarOcorrencia({
             queryKey: ["ocorrencia", ocorrenciaUuid],
         });
     };
+
+    const handleNextStep = () => {
+        setCurrentStep((prev) => prev + 1);
+    };
+
+    const handlePreviousStep = () => {
+        setCurrentStep((prev) => prev - 1);
+    };
+
+    const getStep2Label = () => {
+        if (!formData.tipoOcorrencia) return "Fase 02";
+        return isFurtoRoubo ? "Formulário patrimonial" : "Formulário geral";
+    };
+
+    const getStep3Label = () => {
+        if (!formData.possuiInfoAgressorVitima && currentStep < 3) {
+            return "Fase 03";
+        }
+
+        return hasAgressorVitimaInfo && !isFurtoRoubo
+            ? "Informações adicionais"
+            : "Seção final";
+    };
+
+    const steps = [
+        { label: "Cadastro de ocorrência", description: "" },
+        { label: getStep2Label(), description: "" },
+
+        ...(hasAgressorVitimaInfo && !isFurtoRoubo
+            ? [
+                  { label: getStep3Label(), description: "" },
+                  { label: "Seção final", description: "" },
+              ]
+            : [{ label: getStep3Label(), description: "" }]),
+
+        { label: "Anexos", description: "" },
+    ];
 
     return (
         <div className="pt-4">
@@ -86,32 +119,21 @@ export default function CadastrarOcorrencia({
                     </p>
                 </div>
             </QuadroBranco>
+
             <QuadroBranco>
                 <div className="mt-4">
                     <Stepper steps={steps} currentStep={currentStep} />
                 </div>
 
-                {currentStep === 1 && (
-                    <SecaoInicial onSuccess={() => setCurrentStep(2)} />
-                )}
-                {currentStep === 2 && isFurtoRoubo && (
-                    <SecaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
-                    />
-                )}
-                {currentStep === 2 && !isFurtoRoubo && (
-                    <SecaoNaoFurtoERoubo
-                        onNext={() => setCurrentStep(3)}
-                        onPrevious={() => setCurrentStep(1)}
-                    />
-                )}
-                {currentStep === 3 && (
-                    <SecaoFinal
-                        onNext={() => setCurrentStep(4)}
-                        onPrevious={() => setCurrentStep(2)}
-                    />
-                )}
+                <StepRenderer
+                    currentStep={currentStep}
+                    isFurtoRoubo={isFurtoRoubo}
+                    hasAgressorVitimaInfo={hasAgressorVitimaInfo}
+                    onNext={handleNextStep}
+                    onPrevious={handlePreviousStep}
+                    onSecaoInicialChange={handleSecaoInicialChange}
+                    onSecaoNaoFurtoChange={handleSecaoNaoFurtoChange}
+                />
             </QuadroBranco>
         </div>
     );

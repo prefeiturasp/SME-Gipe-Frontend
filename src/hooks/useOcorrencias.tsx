@@ -2,10 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
 import { Ocorrencia } from "@/types/ocorrencia";
 import { getOcorrenciasAction } from "@/actions/ocorrencias";
-
-function randomFrom<T>(arr: readonly T[]) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
     const response = await getOcorrenciasAction();
@@ -14,11 +11,7 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
         throw new Error(response.error);
     }
 
-    const tipos = [
-        "Ocorrência com objeto sem ameaça (arma de fogo, arma branca, etc)",
-    ];
-
-    return response.data.map((item, index) => {
+    return response.data.map((item) => {
         const date = new Date(item.data_ocorrencia);
         const day = String(date.getDate()).padStart(2, "0");
         const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -29,23 +22,44 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
         return {
             id: item.id,
             uuid: item.uuid,
-            protocolo: `PRT-${String(item.id)}`,
+            protocolo: item?.protocolo_da_intercorrencia ?? "",
             dataHora: `${day}/${month}/${year} - ${hour}:${minutes}`,
             codigoEol: item.unidade_codigo_eol,
-            dre: item.dre_codigo_eol,
-            nomeUe: `ESCOLA MUNICIPAL ${index + 1}`,
-            tipoViolencia: randomFrom(tipos),
-            status: "Incompleta" as Ocorrencia["status"],
+            dre: item.nome_dre,
+            nomeUe: item.nome_unidade,
+            tipoOcorrencia: item.tipos_ocorrencia.map((t) => t.nome).join(", "),
+            status: item.status_extra,
+            statusId: item.status,
         };
     });
 };
 
 export const useOcorrencias = () => {
     const user = useUserStore((state) => state.user);
+    const { isPontoFocal, isGipe } = useUserPermissions();
 
     return useQuery<Ocorrencia[]>({
         queryKey: ["ocorrencias", user?.username],
-        queryFn: () => fetchAndTransformOcorrencias(),
+        queryFn: async () => {
+            const ocorrencias = await fetchAndTransformOcorrencias();
+
+            if (isPontoFocal) {
+                return ocorrencias.filter(
+                    (ocorrencia) =>
+                        ocorrencia.statusId !== "em_preenchimento_diretor"
+                );
+            }
+
+            if (isGipe) {
+                return ocorrencias.filter(
+                    (ocorrencia) =>
+                        ocorrencia.statusId === "enviado_para_gipe" ||
+                        ocorrencia.statusId === "finalizada"
+                );
+            }
+
+            return ocorrencias;
+        },
         enabled: !!user,
     });
 };

@@ -9,17 +9,20 @@ export interface User {
     rede: string;
     is_core_sso: boolean;
     is_validado: boolean;
+    is_app_admin: boolean;
     perfil_acesso: {
         codigo: number;
         nome: string;
     };
     unidades: {
         ue: {
+            ue_uuid: string | null;
             codigo_eol: string | null;
             nome: string | null;
             sigla: string | null;
         };
         dre: {
+            dre_uuid: string | null;
             codigo_eol: string | null;
             nome: string | null;
             sigla: string | null;

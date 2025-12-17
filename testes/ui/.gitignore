@@ -1,2 +1,31 @@
 node_modules
 
+package-lock.json
+
+screenshots/
+
+videos/
+
+# Relatórios gerados
+allure-report/
+allure-results/
+
+
+# Testes complement (não subir)
+cypress/e2e/ui/complement_dre.feature
+cypress/e2e/ui/complement_gipe.feature
+
+# Scripts auxiliares
+obter_token.cy.js
+token.txt
+token.json
+run-api-tests.js
+run-api-tests.bat
+run-api-tests-smart.js
+run-validacao-tests.js
+run-validacao-tests.bat
+validate-token.js
+TOKEN-VALIDATION-README.md
+.github/
+.gitlab-ci.yml
+azure-pipelines.yml

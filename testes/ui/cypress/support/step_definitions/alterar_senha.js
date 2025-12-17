@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+import { Given, When } from 'cypress-cucumber-preprocessor/steps'
 import Login_Gipe_Localizadores from '../locators/login_locators'
 import Alterar_Senha_Localizadores from '../locators/alterar_senha_locators';
 
@@ -8,7 +8,7 @@ const locators_alterar_senha = new Alterar_Senha_Localizadores()
 Given("que o usuário realizou o login com sucesso", () => {
   cy.login_gipe()
   cy.get(locators.campo_usuario()).type('39411157076')
-  cy.get(locators.campo_senha()).type('Ruby@142107')
+  cy.get(locators.campo_senha()).type('Sgp7076')
   cy.get('button').filter((_, el) => el.innerText.trim() === 'Acessar').click()
   cy.url().should("include", "/dashboard");
 });
@@ -17,12 +17,20 @@ Given("o usuário está na página principal do sistema", () => {
   cy.url().should("include", "/dashboard");
 });
 
-When("o usuário clica no botão {string}", () => {
-  cy.xpath(locators_alterar_senha.link_alterar_senha()).click();
+When("o usuário clica no botão {string}", (btnText) => {
+  if (btnText && btnText.toLowerCase().includes('alterar senha')) {
+    cy.xpath(locators_alterar_senha.link_alterar_senha()).click();
+  } else {
+    cy.contains('button', btnText).click()
+  }
 });
 
-When("clica no botão {string}", () => {
-  cy.xpath(locators_alterar_senha.botao_alterar_senha()).click();
+When("clica no botão {string}", (btnText) => {
+  if (btnText && btnText.toLowerCase().includes('alterar senha')) {
+    cy.xpath(locators_alterar_senha.botao_alterar_senha()).click();
+  } else {
+    cy.contains('button', btnText).click()
+  }
 });
 
 When("o usuário preenche o campo Senha atual com {string}", (valor) => {

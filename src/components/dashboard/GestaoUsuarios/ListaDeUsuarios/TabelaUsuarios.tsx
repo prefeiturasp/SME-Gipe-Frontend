@@ -1,0 +1,130 @@
+'use client';
+
+import { useMemo, useState, useEffect } from "react";
+
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+
+import Editar from "@/assets/icons/Editar";
+import { Usuario } from "@/types/usuarios";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+
+type TabelaUsuariosProps = {
+    dataUsuarios: Usuario[];
+};
+
+export default function TabelaUsuarios({ dataUsuarios }: Readonly<TabelaUsuariosProps>) {
+    const PAGE_SIZE = 10;
+    const styeTable = "px-2 text-[#42474a] text-left last:text-text-left!";
+    const [pageIndex, setPageIndex] = useState(0);
+
+    useEffect(() => {
+        setPageIndex(0);
+    }, [dataUsuarios]);
+
+    const pageCount = Math.max(Math.ceil(dataUsuarios.length / PAGE_SIZE), 1);
+
+    const paginatedUsuarios = useMemo(() => {
+        const start = pageIndex * PAGE_SIZE;
+        return dataUsuarios.slice(start, start + PAGE_SIZE);
+    }, [dataUsuarios, pageIndex]);
+
+    const canPreviousPage = pageIndex > 0;
+    const canNextPage = pageIndex < pageCount - 1;
+
+    return (
+        <>
+        <div className="rounded-md border border-gray-300">
+
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className={styeTable}>Perfil</TableHead>
+                        <TableHead className={styeTable}>Nome</TableHead>
+                        <TableHead className={styeTable}>RF ou CPF</TableHead>
+                        <TableHead className={styeTable}>Email</TableHead>
+                        <TableHead className={styeTable}>Rede</TableHead>
+                        <TableHead className={styeTable}>Diretoria Regional</TableHead>
+                        <TableHead className={styeTable}>Unidade Educacional</TableHead>
+                        <TableHead className="text-center">Ação</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {paginatedUsuarios.length > 0 ? (
+                        paginatedUsuarios.map((usuario, index) => {
+                            const rowKey = usuario.uuid ?? String(usuario.id ?? index);
+
+                            return (
+                                <TableRow key={rowKey}>
+                                    <TableCell>{usuario.perfil}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.nome}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.rf_ou_cpf}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.email}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.rede}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.diretoria_regional}</TableCell>
+                                    <TableCell className={styeTable}>{usuario.unidade_educacional}</TableCell>
+                                    <TableCell className={styeTable}><Editar /></TableCell>
+                                </TableRow>
+                            );
+                        })
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={8} className="h-24 text-center">
+                                Nenhum usuário encontrado.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+
+        </div>
+        <div className="flex items-center justify-center space-x-2 py-4">
+                <Button
+                    variant="pagination"
+                    size="icon"
+                    onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+                    disabled={!canPreviousPage}
+                    className="w-[32px] h-[32px]"
+                    data-testid="prev-page-button"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="flex space-x-1">
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                        <Button
+                            key={`page-${index + 1}`}
+                            variant={pageIndex === index ? "paginationActive" : "pagination"}
+                            size="sm"
+                            className="w-[32px] h-[32px]"
+                            onClick={() => setPageIndex(index)}
+                        >
+                            {index + 1}
+                        </Button>
+                    ))}
+                </div>
+
+                <Button
+                    variant="pagination"
+                    size="icon"
+                    onClick={() =>
+                        setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))
+                    }
+                    disabled={!canNextPage}
+                    className="w-[32px] h-[32px]"
+                    data-testid="next-page-button"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+        </>
+    );
+}

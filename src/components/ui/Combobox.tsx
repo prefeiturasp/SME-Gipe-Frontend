@@ -12,6 +12,7 @@ import {
     CommandEmpty,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Option {
@@ -26,8 +27,8 @@ interface ComboboxProps {
     placeholder?: string;
     disabled?: boolean;
     className?: string;
+    "data-testid"?: string;
 }
-
 export function Combobox({
     options,
     value,
@@ -35,6 +36,7 @@ export function Combobox({
     placeholder = "Selecione...",
     disabled = false,
     className,
+    "data-testid": dataTestId,
 }: ComboboxProps) {
     const [open, setOpen] = React.useState(false);
     const selected = options.find((opt) => opt.value === value);
@@ -52,6 +54,7 @@ export function Combobox({
                         className
                     )}
                     disabled={disabled}
+                    data-testid={dataTestId}
                 >
                     {selected ? (
                         selected.label
@@ -60,6 +63,7 @@ export function Combobox({
                             {placeholder}
                         </span>
                     )}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent
