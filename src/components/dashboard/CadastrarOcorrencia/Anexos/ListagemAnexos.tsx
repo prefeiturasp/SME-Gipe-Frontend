@@ -13,13 +13,12 @@ type ListagemAnexosProps = {
 
 export function ListagemAnexos({
     anexosAPI = [],
-    modoVisualizacao
+    modoVisualizacao,
 }: Readonly<ListagemAnexosProps>) {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
 
     const { mutate: baixarArquivo, isPending } = useBaixarAnexo();
-
 
     const formatarDataHora = (dataISO: string) => {
         const data = new Date(dataISO);
@@ -33,23 +32,21 @@ export function ListagemAnexos({
 
     const handleBaixar = (anexo: AnexoAPI) => {
         baixarArquivo(
-            { 
-                uuid: anexo.uuid, 
+            {
+                uuid: anexo.uuid,
                 nomeArquivo: anexo.nome_original,
             },
             {
                 onError: () => {
-
                     toast({
                         variant: "error",
                         title: "Não conseguimos baixar o arquivo",
                         description: "Erro inesperado ao baixar o arquivo.",
                     });
-                }
+                },
             }
         );
     };
-
 
     const abrirModal = (uuid: string) => {
         setSelectedUuid(uuid);
@@ -87,7 +84,7 @@ export function ListagemAnexos({
                                 </p>
                                 <div className="flex items-center justify-between mt-1">
                                     <p className="text-[12px] text-[#86858D]">
-                                        Anexado por: {anexo.usuario_username}
+                                        Anexado por: {anexo.usuario_nome}
                                     </p>
                                     <span className="text-[12px] text-[#86858D]">
                                         {formatarDataHora(anexo.criado_em)}
@@ -97,38 +94,37 @@ export function ListagemAnexos({
                         </div>
                         <div className="flex gap-2">
                             {modoVisualizacao ? (
-                                    <>
-                                        <Button
-                                            variant="customOutline"
-                                            size="sm"
-                                            disabled={isPending}
-                                            onClick={() => handleBaixar(anexo)}
-                                            className="h-10 w-full p-0 border border-[#717FC7] text-[#717FC7] font-bold flex items-center justify-center hover:bg-[#717FC7] hover:text-white transition-colors"
-
-                                        >
-                                            Baixar arquivo
-                                        </Button>
-
-                                        <Button
-                                            variant="customOutline"
-                                            className="h-10 w-10 p-0 border border-[#B40C02] text-[#B40C02] flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                            onClick={() => abrirModal(anexo.uuid)}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </>
-                                ) : (
+                                <>
                                     <Button
-                                        type="button"
-                                        variant="ghost"
+                                        variant="customOutline"
                                         size="sm"
-                                        className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
+                                        disabled={isPending}
+                                        onClick={() => handleBaixar(anexo)}
+                                        className="h-10 w-full p-0 border border-[#717FC7] text-[#717FC7] font-bold flex items-center justify-center hover:bg-[#717FC7] hover:text-white transition-colors"
+                                    >
+                                        Baixar arquivo
+                                    </Button>
+
+                                    <Button
+                                        variant="customOutline"
+                                        className="h-10 w-10 p-0 border border-[#B40C02] text-[#B40C02] flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
                                         onClick={() => abrirModal(anexo.uuid)}
                                     >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Excluir arquivo
+                                        <Trash2 className="w-4 h-4" />
                                     </Button>
-                                )}
+                                </>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
+                                    onClick={() => abrirModal(anexo.uuid)}
+                                >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir arquivo
+                                </Button>
+                            )}
                         </div>
                     </div>
                 ))}
