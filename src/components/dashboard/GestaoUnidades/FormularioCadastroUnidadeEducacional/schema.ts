@@ -3,35 +3,24 @@ import { z } from "zod";
 export const formSchema = z
     .object({
         tipo: z.string().min(1, { message: "Campo obrigatório" }),
-        unidadeEducacional: z.string().optional(),
-        rede: z.string().optional(),
+        nomeUnidadeEducacional: z
+            .string()
+            .min(3, { message: "Campo obrigatório" }),
+        rede: z.string(),
         codigoEol: z.string().min(1, { message: "Campo obrigatório" }),
-        diretoriaRegional: z.string().min(1, { message: "Campo obrigatório" }),
+        diretoriaRegional: z.string().optional(),
         siglaDre: z.string().optional(),
     })
     .refine(
         (data) => {
-            // Se tipo não for DRE, unidadeEducacional e rede são obrigatórios
             if (data.tipo !== "DRE") {
-                return !!data.unidadeEducacional && !!data.rede;
+                return !!data.diretoriaRegional;
             }
             return true;
         },
         {
             message: "Campo obrigatório",
-            path: ["unidadeEducacional"],
-        }
-    )
-    .refine(
-        (data) => {
-            if (data.tipo !== "DRE") {
-                return !!data.rede;
-            }
-            return true;
-        },
-        {
-            message: "Campo obrigatório",
-            path: ["rede"],
+            path: ["diretoriaRegional"],
         }
     );
 

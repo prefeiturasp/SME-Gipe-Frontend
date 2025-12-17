@@ -13,7 +13,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Combobox } from "@/components/ui/Combobox";
 import {
     Select,
     SelectTrigger,
@@ -24,8 +23,9 @@ import {
 import { formSchema, FormData } from "./schema";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
+import { useFetchDREs } from "@/hooks/useUnidades";
+import { useRouter } from "next/navigation";
 
-// Mock de dados - substituir por hooks reais
 const tipoOptions = [
     { label: "ADM", value: "ADM" },
     { label: "DRE", value: "DRE" },
@@ -47,34 +47,23 @@ const tipoOptions = [
     { label: "CEI DIRET", value: "CEI DIRET" },
 ];
 
-const unidadesOptions = [
-    { label: "EMEF João da Silva", value: "1" },
-    { label: "EMEF Maria Clara", value: "2" },
-    { label: "EMEI Pequeno Príncipe", value: "3" },
-];
-
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
     { label: "Indireta", value: "INDIRETA" },
 ];
 
-const dreOptions = [
-    { label: "DRE - Butantã", value: "1" },
-    { label: "DRE - Campo Limpo", value: "2" },
-    { label: "DRE - Capela do Socorro", value: "3" },
-    { label: "DRE - Freguesia/Brasilândia", value: "4" },
-];
-
 export default function FormularioCadastroUnidadeEducacional() {
+    const router = useRouter();
     const { isPontoFocal } = useUserPermissions();
     const user = useUserStore((state) => state.user);
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
+    const { data: dreOptions = [] } = useFetchDREs();
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             tipo: "",
-            unidadeEducacional: "",
+            nomeUnidadeEducacional: "",
             rede: "",
             codigoEol: "",
             diretoriaRegional: "",
@@ -140,19 +129,18 @@ export default function FormularioCadastroUnidadeEducacional() {
                     />
                     <FormField
                         control={form.control}
-                        name="unidadeEducacional"
+                        name="nomeUnidadeEducacional"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Unidade Educacional*
+                                    Nome da Unidade Educacional*
                                 </FormLabel>
                                 <FormControl>
-                                    <Combobox
-                                        options={unidadesOptions}
-                                        value={field.value || ""}
-                                        onChange={field.onChange}
-                                        placeholder="Buscar unidade..."
-                                        disabled={isDreSelected}
+                                    <Input
+                                        {...field}
+                                        type="text"
+                                        placeholder="Exemplo: EMEF João da Silva"
+                                        className="font-normal"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -174,7 +162,6 @@ export default function FormularioCadastroUnidadeEducacional() {
                                     <Select
                                         value={field.value}
                                         onValueChange={field.onChange}
-                                        disabled={isDreSelected}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Selecione" />
@@ -208,7 +195,7 @@ export default function FormularioCadastroUnidadeEducacional() {
                                     <Input
                                         {...field}
                                         type="number"
-                                        placeholder="Digite o código EOL"
+                                        placeholder="Exemplo: 1234567"
                                         className="font-normal"
                                     />
                                 </FormControl>
@@ -218,56 +205,79 @@ export default function FormularioCadastroUnidadeEducacional() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="diretoriaRegional"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Diretoria Regional*
-                                </FormLabel>
-                                <FormControl>
-                                    <Combobox
-                                        options={dreOptions}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        placeholder="Buscar diretoria..."
-                                        disabled={isPontoFocal}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                {!isDreSelected && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="diretoriaRegional"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                                        Diretoria Regional*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            disabled={isPontoFocal}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {dreOptions.map(
+                                                    (dre: {
+                                                        uuid: string;
+                                                        nome: string;
+                                                    }) => (
+                                                        <SelectItem
+                                                            key={dre.uuid}
+                                                            value={dre.uuid}
+                                                        >
+                                                            {dre.nome}
+                                                        </SelectItem>
+                                                    )
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <FormField
-                        control={form.control}
-                        name="siglaDre"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-[#42474a] text-[14px] font-[700]">
-                                    Sigla da DRE (opcional)
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="text"
-                                        placeholder="Digite a sigla"
-                                        className="font-normal"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+                        <FormField
+                            control={form.control}
+                            name="siglaDre"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#42474a] text-[14px] font-[700]">
+                                        Sigla da DRE (opcional)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            type="text"
+                                            placeholder="Digite..."
+                                            className="font-normal"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                )}
 
                 <div className="flex justify-end gap-4 pt-4">
                     <Button
                         type="button"
                         variant="customOutline"
-                        onClick={() => form.reset()}
+                        onClick={() =>
+                            router.push(
+                                "/dashboard/gestao-unidades-educacionais"
+                            )
+                        }
                     >
                         Cancelar
                     </Button>
