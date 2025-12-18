@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/headless-toast";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import type { UnidadeEducacional } from "@/types/unidades";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
 import { useUserStore } from "@/stores/useUserStore";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import formSchema, { FormDataCadastroUsuario } from "./schema";
-import { buildCadastroPayload } from "./utils";
+import { buildCadastroPayload, mapCargoNumericoParaString } from "./utils";
 
 const REDE_OPTIONS = [
     { value: "DIRETA", label: "Direta" },
@@ -27,13 +29,23 @@ const CARGO_OPTIONS_DIRETA = [
     { value: "gipe", label: "GIPE" },
 ];
 
-export function useCadastroUsuarioForm() {
+type UseCadastroUsuarioFormProps = {
+    mode?: "create" | "edit";
+    usuarioUuid?: string;
+};
+
+export function useCadastroUsuarioForm({
+    mode = "create",
+    usuarioUuid,
+}: UseCadastroUsuarioFormProps = {}) {
     const router = useRouter();
     const [modalOpen, setModalOpen] = useState(false);
-    const { data: dreOptions = [] } = useFetchDREs();
-    const { mutate: cadastrarUsuario, isPending } = useCadastroGestaoUsuario();
-    const user = useUserStore((state) => state.user);
+    const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
+        useState(false);
+
+    const { user } = useUserStore();
     const { isPontoFocal, isGipe } = useUserPermissions();
+    const { mutate: cadastrarUsuario, isPending } = useCadastroGestaoUsuario();
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -49,91 +61,139 @@ export function useCadastroUsuarioForm() {
             isAdmin: false,
         },
         mode: "onChange",
-        reValidateMode: "onChange",
     });
 
-    const { isValid } = form.formState;
-    const values = form.watch();
-    const { data: ueOptions = [] } = useFetchUEs(values.dre);
+    const {
+        reset,
+        setValue,
+        getValues,
+        formState: { isValid },
+        control,
+    } = form;
+
+    const watchedRede = useWatch({ control, name: "rede" });
+    const watchedCargo = useWatch({ control, name: "cargo" });
+    const watchedDre = useWatch({ control, name: "dre" });
+
+    const { data: dreOptions = [] } = useFetchDREs();
+    const { data: ueOptions = [] } = useFetchUEs(watchedDre);
+
+    const { data: usuarioData } = useObterUsuarioGestao({
+        uuid: usuarioUuid || "",
+        enabled: mode === "edit" && !!usuarioUuid,
+    });
+
+    console.log("usuarioData", usuarioData);
+
+    const cargoOptions = useMemo(() => {
+        const options =
+            watchedRede === "INDIRETA"
+                ? CARGO_OPTIONS_INDIRETA
+                : CARGO_OPTIONS_DIRETA;
+        if (isGipe) return options;
+        return options.filter((option) => option.value !== "gipe");
+    }, [watchedRede, isGipe]);
+
+    const showFields = useMemo(() => {
+        const base = !!watchedRede && !!watchedCargo;
+        const isSpecialCargo = ["gipe", "admin"].includes(watchedCargo);
+
+        return {
+            dre: base && !isSpecialCargo,
+            ue: base && !isSpecialCargo && watchedCargo !== "ponto_focal",
+            adminCheckbox:
+                base && ["ponto_focal", "gipe"].includes(watchedCargo),
+        };
+    }, [watchedRede, watchedCargo]);
 
     useEffect(() => {
-        if (values.rede) {
-            form.setValue("cargo", "");
-            form.setValue("fullName", "");
-            form.setValue("rf", "");
-            form.setValue("cpf", "");
-            form.setValue("email", "");
-            form.setValue("dre", "");
-            form.setValue("ue", "");
+        if (mode === "edit" && usuarioData && dreOptions.length > 0) {
+            const cargo = mapCargoNumericoParaString(usuarioData.cargo);
+            const dreMatch = dreOptions.find(
+                (d: UnidadeEducacional) =>
+                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade
+            );
+
+            reset({
+                rede: usuarioData.rede,
+                cargo,
+                fullName: usuarioData.name,
+                rf: usuarioData.rede === "DIRETA" ? usuarioData.username : "",
+                cpf: usuarioData.cpf,
+                email: usuarioData.email,
+                dre: dreMatch?.uuid || "",
+                ue: "",
+                isAdmin: usuarioData.is_app_admin,
+            });
+            setDadosIniciaisCarregados(true);
         }
-    }, [values.rede, form]);
+    }, [mode, usuarioData, dreOptions, reset]);
 
     useEffect(() => {
         if (
-            isPontoFocal &&
-            user?.unidades?.[0]?.dre?.dre_uuid &&
-            values.rede &&
-            values.cargo
+            mode === "edit" &&
+            dadosIniciaisCarregados &&
+            ueOptions.length > 0 &&
+            usuarioData?.codigo_eol_unidade
         ) {
-            form.setValue("dre", user.unidades[0].dre.dre_uuid);
+            const ueMatch = ueOptions.find(
+                (u: UnidadeEducacional) =>
+                    u.codigo_eol === usuarioData.codigo_eol_unidade
+            );
+            if (ueMatch) {
+                setValue("ue", ueMatch.uuid, { shouldValidate: true });
+            }
         }
-    }, [isPontoFocal, user, form, values.rede, values.cargo]);
+    }, [mode, ueOptions, usuarioData, dadosIniciaisCarregados, setValue]);
 
     useEffect(() => {
-        if (values.cargo === "gipe") {
-            form.setValue("dre", "");
-            form.setValue("ue", "");
-        } else if (values.cargo === "ponto_focal") {
-            form.setValue("ue", "");
+        const podeAutoPreencher =
+            isPontoFocal && user?.unidades?.[0]?.dre?.dre_uuid;
+        if (
+            podeAutoPreencher &&
+            watchedRede &&
+            watchedCargo &&
+            (mode === "create" || dadosIniciaisCarregados)
+        ) {
+            setValue("dre", user.unidades[0].dre.dre_uuid || "");
         }
-    }, [values.cargo, form]);
+    }, [
+        isPontoFocal,
+        user,
+        watchedRede,
+        watchedCargo,
+        mode,
+        dadosIniciaisCarregados,
+        setValue,
+    ]);
 
-    useEffect(() => {
-        form.setValue("ue", "", { shouldValidate: true });
-    }, [values.dre, form]);
-
-    const getCargoOptions = () => {
-        if (values.rede === "INDIRETA") {
-            return CARGO_OPTIONS_INDIRETA;
+    const handleRedeChange = (val: string) => {
+        setValue("rede", val);
+        if (mode === "create") {
+            reset({
+                ...form.getValues(),
+                cargo: "",
+                dre: "",
+                ue: "",
+                fullName: "",
+                rf: "",
+                cpf: "",
+                email: "",
+            });
         }
-        if (isGipe) {
-            return CARGO_OPTIONS_DIRETA;
-        }
-        return CARGO_OPTIONS_DIRETA.filter((option) => option.value !== "gipe");
     };
 
-    const cargoOptions = getCargoOptions();
-
-    const isRedeSelected = !!values.rede;
-    const isCargoSelected = !!values.cargo;
-    const shouldShowExtraFields = isRedeSelected && isCargoSelected;
-
-    const showFields = {
-        dre:
-            shouldShowExtraFields &&
-            values.cargo !== "gipe" &&
-            values.cargo !== "admin",
-        ue:
-            shouldShowExtraFields &&
-            values.cargo !== "ponto_focal" &&
-            values.cargo !== "gipe" &&
-            values.cargo !== "admin",
-        adminCheckbox:
-            shouldShowExtraFields &&
-            (values.cargo === "ponto_focal" || values.cargo === "gipe"),
+    const handleDreChange = (val: string) => {
+        setValue("dre", val);
+        setValue("ue", "", { shouldValidate: true });
     };
-
-    const isRedeIndireta = values.rede === "INDIRETA";
-    const isRedeDireta = values.rede === "DIRETA";
-
-    function handleSubmitClick(e: React.MouseEvent<HTMLButtonElement>) {
-        e.preventDefault();
-        setModalOpen(true);
-    }
 
     function handleConfirmCadastro() {
-        const formValues = form.getValues();
-        const payload = buildCadastroPayload(formValues, dreOptions, ueOptions);
+        const payload = buildCadastroPayload(
+            getValues(),
+            dreOptions,
+            ueOptions
+        );
 
         cadastrarUsuario(payload, {
             onSuccess: (response) => {
@@ -141,8 +201,7 @@ export function useCadastroUsuarioForm() {
                     toast({
                         title: "Não conseguimos concluir a ação!",
                         description:
-                            response.error ||
-                            "Ocorreu um erro e não conseguimos cadastrar a pessoa usuária. Por favor,  tente novamente.",
+                            response.error || "Erro ao cadastrar usuário.",
                         variant: "error",
                     });
                     return;
@@ -158,9 +217,8 @@ export function useCadastroUsuarioForm() {
             },
             onError: () => {
                 toast({
-                    title: "Não conseguimos concluir a ação!",
-                    description:
-                        "Ocorreu um erro e não conseguimos cadastrar a pessoa usuária. Por favor,  tente novamente.",
+                    title: "Erro no servidor",
+                    description: "Tente novamente mais tarde.",
                     variant: "error",
                 });
             },
@@ -177,14 +235,19 @@ export function useCadastroUsuarioForm() {
         ueOptions,
         redeOptions: REDE_OPTIONS,
         cargoOptions,
-        isRedeSelected,
-        shouldShowExtraFields,
         showFields,
-        isRedeIndireta,
-        isRedeDireta,
-        handleSubmitClick,
+        isRedeSelected: !!watchedRede,
+        shouldShowExtraFields: !!watchedRede && !!watchedCargo,
+        isRedeIndireta: watchedRede === "INDIRETA",
+        isRedeDireta: watchedRede === "DIRETA",
+        handleSubmitClick: (e: React.MouseEvent) => {
+            e.preventDefault();
+            setModalOpen(true);
+        },
         handleConfirmCadastro,
-        router,
+        handleRedeChange,
+        handleDreChange,
         isDreDisabled: isPontoFocal,
+        router,
     };
 }
