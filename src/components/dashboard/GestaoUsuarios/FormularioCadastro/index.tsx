@@ -22,7 +22,15 @@ import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
 import { CamposRedeIndireta } from "./CamposRedeIndireta";
 import { CamposRedeDireta } from "./CamposRedeDireta";
 
-export default function FormularioCadastroPessoaUsuaria() {
+type FormularioCadastroPessoaUsuariaProps = {
+    mode?: "create" | "edit";
+    usuarioUuid?: string;
+};
+
+export default function FormularioCadastroPessoaUsuaria({
+    mode = "create",
+    usuarioUuid,
+}: FormularioCadastroPessoaUsuariaProps) {
     const {
         form,
         isValid,
@@ -42,13 +50,13 @@ export default function FormularioCadastroPessoaUsuaria() {
         handleConfirmCadastro,
         router,
         isDreDisabled,
-    } = useCadastroUsuarioForm();
+    } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     return (
         <Form {...form}>
             <form>
                 <h2 className="text-[14px] text-[#42474a] mb-6">
-                    Cadastre as informações da pessoa usuária.
+                    Cadastre as informações do perfil.
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -188,7 +196,7 @@ export default function FormularioCadastroPessoaUsuaria() {
                         type="button"
                         variant="customOutline"
                         onClick={() =>
-                            router.push("/dashboard/gestao/pessoa-usuaria")
+                            router.push("/dashboard/gestao-usuarios")
                         }
                     >
                         Cancelar
@@ -200,7 +208,9 @@ export default function FormularioCadastroPessoaUsuaria() {
                         data-testid="button-cadastrar"
                         onClick={handleSubmitClick}
                     >
-                        Cadastrar pessoa usuária
+                        {mode === "edit"
+                            ? "Salvar alterações"
+                            : "Cadastrar perfil"}
                     </Button>
                 </div>
             </form>
