@@ -21,10 +21,10 @@ export default function TabsContainer() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="ativas">
-                <ListaDeUnidadesEducacionais status="ativas" />
+                <ListaDeUnidadesEducacionais status="ativa" />
             </TabsContent>
             <TabsContent value="inativas">
-                <ListaDeUnidadesEducacionais status="inativas" />
+                <ListaDeUnidadesEducacionais status="inativa" />
             </TabsContent>
         </Tabs>
     )

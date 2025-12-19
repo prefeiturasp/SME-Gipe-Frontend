@@ -59,11 +59,11 @@ export default function TabelaUnidades({
                                 return (
                                     <TableRow key={unidade.uuid }>
                                         <TableCell>{unidade.nome}</TableCell>
-                                        <TableCell className={styeTable}>{unidade.tipo}</TableCell>
-                                        <TableCell className={styeTable}>{unidade.rede}</TableCell>
+                                        <TableCell className={styeTable}>{unidade.tipo_unidade}</TableCell>
+                                        <TableCell className={styeTable}>{unidade.rede_label}</TableCell>
                                         <TableCell className={styeTable}>{unidade.codigo_eol}</TableCell>
-                                        <TableCell className={styeTable}>{unidade.dre}</TableCell>
-                                        <TableCell className={styeTable}>{unidade.sigla_dre}</TableCell>
+                                        <TableCell className={styeTable}>{unidade.dre_nome}</TableCell>
+                                        <TableCell className={styeTable}>{unidade.sigla}</TableCell>
                                         <TableCell className={styeTable}><Editar /></TableCell>
                                     </TableRow>
                                 );
