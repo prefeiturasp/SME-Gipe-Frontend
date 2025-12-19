@@ -1,7 +1,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 
-import { getUsuarios } from "./gestao-de-usuarios";
+import { getUnidades } from "./gestao-de-unidades";
 
 vi.mock("axios");
 vi.mock("next/headers", () => ({
@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
 const mockedAxios = vi.mocked(axios, true);
 const mockedCookies = vi.mocked(cookies);
 
-describe("getUsuarios", () => {
+describe("getUnidades", () => {
     const API_URL = "https://example.com/api";
 
     beforeEach(() => {
@@ -22,22 +22,17 @@ describe("getUsuarios", () => {
         process.env.NEXT_PUBLIC_API_URL = API_URL;
     });
 
-    it("deve buscar usuários com os parâmetros corretos quando o token existe", async () => {
+    it("deve buscar unidades com os parâmetros corretos quando o token existe", async () => {
         mockedAxios.get.mockResolvedValue({ data: { success: true } });
 
-        const response = await getUsuarios(true, "dre-uuid", "ue-uuid", false);
+        const response = await getUnidades(true);
 
         expect(response).toEqual({ success: true });
 
         expect(mockedAxios.get).toHaveBeenCalledWith(
-            `${API_URL}/users/gestao-usuarios/`,
+            `${API_URL}/unidades/gestao-unidades/`,
             expect.objectContaining({
-                params: {
-                    ativo: true,
-                    dre: "dre-uuid",
-                    unidade: "ue-uuid",
-                    pendente_aprovacao: false,
-                },
+                params: { ativa: true },
                 headers: {
                     Authorization: "Bearer token-123",
                 },
@@ -50,7 +45,7 @@ describe("getUsuarios", () => {
             get: vi.fn().mockReturnValue(undefined),
         } as unknown as ReturnType<typeof cookies>);
 
-        const response = await getUsuarios();
+        const response = await getUnidades();
 
         expect(response).toEqual({
             success: false,
@@ -59,11 +54,24 @@ describe("getUsuarios", () => {
         expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
-    it("deve lançar erro quando a requisição falhar", async () => {
-        mockedAxios.get.mockRejectedValue(new Error("Network error"));
+    it("deve lançar erro quando a requisição falha", async () => {
+        mockedAxios.get.mockRejectedValue(new Error("Network Error"));
 
-        await expect(getUsuarios()).rejects.toThrow(
-            "Não foi possível buscar os usuários"
+        await expect(getUnidades()).rejects.toThrow(
+            "Não foi possível buscar as unidades"
+        );
+
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+            `${API_URL}/unidades/gestao-unidades/`,
+            expect.objectContaining({
+                params: { ativa: undefined },
+                headers: {
+                    Authorization: "Bearer token-123",
+                },
+            })
         );
     });
 });
+
+
+
