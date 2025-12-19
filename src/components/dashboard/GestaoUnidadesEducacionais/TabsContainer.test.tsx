@@ -4,7 +4,7 @@ import TabsContainer from "@/components/dashboard/GestaoUnidadesEducacionais/Tab
 
 vi.mock("@/components/dashboard/GestaoUnidadesEducacionais/ListaDeUnidadesEducacionais", () => ({
     __esModule: true,
-    default: ({ status }: { status: "ativas" | "inativas" }) => {
+    default: ({ status }: { status: "ativa" | "inativa" }) => {
         return (
             <div data-testid={`lista-unidades-${status}`}>
                 Exibindo o status: {status}
@@ -34,15 +34,15 @@ describe("TabsContainer", () => {
         const user = userEvent.setup();
 
         const abaAtivas = screen.getByRole("tab", {
-            name: /Unidades Educacionais ativas/i,
+            name: /Unidades Educacionais ativa/i,
         });
         const abaInativas = screen.getByRole("tab", {
-            name: /Unidades Educacionais inativas/i,
+            name: /Unidades Educacionais inativa/i,
         });
 
-        // Verifica se a aba "ativas" está ativa por padrão
+        // Verifica se a aba "ativa" está ativa por padrão
         expect(
-            screen.getByTestId("lista-unidades-ativas")
+            screen.getByTestId("lista-unidades-ativa")
         ).toBeInTheDocument();
 
         // Clica na aba "inativas"
@@ -50,15 +50,15 @@ describe("TabsContainer", () => {
 
         // Verifica se a aba "inativas" está ativa
         expect(
-            screen.getByTestId("lista-unidades-inativas")
+            screen.getByTestId("lista-unidades-inativa")
         ).toBeInTheDocument();
 
         // Clica novamente na aba "ativas"
         await user.click(abaAtivas);
 
-        // Verifica se a aba "ativas" está ativa novamente
+        // Verifica se a aba "ativa" está ativa novamente
         expect(
-            screen.getByTestId("lista-unidades-ativas")
+            screen.getByTestId("lista-unidades-ativa")
         ).toBeInTheDocument();
     });
 });
