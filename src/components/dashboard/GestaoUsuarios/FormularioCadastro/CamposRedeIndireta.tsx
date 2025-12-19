@@ -18,6 +18,7 @@ type CamposRedeIndiretaProps = {
     showDRE: boolean;
     showUE: boolean;
     isDreDisabled?: boolean;
+    onDreChange?: (val: string) => void;
 };
 
 export function CamposRedeIndireta({
@@ -27,6 +28,7 @@ export function CamposRedeIndireta({
     showDRE,
     showUE,
     isDreDisabled = false,
+    onDreChange,
 }: Readonly<CamposRedeIndiretaProps>) {
     return (
         <>
@@ -120,7 +122,7 @@ export function CamposRedeIndireta({
                                             value: dre.uuid,
                                         }))}
                                         value={field.value}
-                                        onChange={field.onChange}
+                                        onChange={onDreChange ?? field.onChange}
                                         placeholder="Digite ou selecione"
                                         className="border-[#DADADA]"
                                         disabled={isDreDisabled}

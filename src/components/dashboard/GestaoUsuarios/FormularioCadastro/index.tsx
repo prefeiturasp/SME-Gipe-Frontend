@@ -48,13 +48,16 @@ export default function FormularioCadastroPessoaUsuaria({
         isRedeDireta,
         handleSubmitClick,
         handleConfirmCadastro,
+        handleRedeChange,
+        handleCargoChange,
+        handleDreChange,
         router,
         isDreDisabled,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     return (
         <Form {...form}>
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <h2 className="text-[14px] text-[#42474a] mb-6">
                     Cadastre as informações do perfil.
                 </h2>
@@ -70,7 +73,8 @@ export default function FormularioCadastroPessoaUsuaria({
                                 </FormLabel>
                                 <Select
                                     value={field.value}
-                                    onValueChange={field.onChange}
+                                    /* CORREÇÃO: Usar o handler do hook em vez de field.onChange puro */
+                                    onValueChange={handleRedeChange}
                                 >
                                     <FormControl>
                                         <SelectTrigger
@@ -106,7 +110,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 </FormLabel>
                                 <Select
                                     value={field.value}
-                                    onValueChange={field.onChange}
+                                    onValueChange={handleCargoChange}
                                     disabled={!isRedeSelected}
                                 >
                                     <FormControl>
@@ -144,6 +148,8 @@ export default function FormularioCadastroPessoaUsuaria({
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
+                                /* Se o componente interno tiver Select de DRE, passe o handleDreChange */
+                                onDreChange={handleDreChange}
                             />
                         )}
 
@@ -155,6 +161,8 @@ export default function FormularioCadastroPessoaUsuaria({
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
+                                /* Se o componente interno tiver Select de DRE, passe o handleDreChange */
+                                onDreChange={handleDreChange}
                             />
                         )}
                     </>

@@ -18,6 +18,7 @@ type CamposRedeDiretaProps = {
     showDRE: boolean;
     showUE: boolean;
     isDreDisabled?: boolean;
+    onDreChange?: (val: string) => void;
 };
 
 export function CamposRedeDireta({
@@ -27,6 +28,7 @@ export function CamposRedeDireta({
     showDRE,
     showUE,
     isDreDisabled = false,
+    onDreChange,
 }: Readonly<CamposRedeDiretaProps>) {
     return (
         <>
@@ -144,7 +146,7 @@ export function CamposRedeDireta({
                                             value: dre.uuid,
                                         }))}
                                         value={field.value}
-                                        onChange={field.onChange}
+                                        onChange={onDreChange ?? field.onChange}
                                         placeholder="Digite ou selecione"
                                         className="border-[#DADADA]"
                                         disabled={isDreDisabled}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +42,8 @@ export function useCadastroUsuarioForm({
     const [modalOpen, setModalOpen] = useState(false);
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
+    const [carregandoDados, setCarregandoDados] = useState(false);
+    const montagemInicialRef = useRef(true);
 
     const { user } = useUserStore();
     const { isPontoFocal, isGipe } = useUserPermissions();
@@ -83,7 +85,13 @@ export function useCadastroUsuarioForm({
         enabled: mode === "edit" && !!usuarioUuid,
     });
 
-    console.log("usuarioData", usuarioData);
+    useEffect(() => {
+        if (mode === "edit" && usuarioUuid) {
+            setDadosIniciaisCarregados(false);
+            setCarregandoDados(false);
+            montagemInicialRef.current = true;
+        }
+    }, [usuarioUuid, mode]);
 
     const cargoOptions = useMemo(() => {
         const options =
@@ -107,7 +115,13 @@ export function useCadastroUsuarioForm({
     }, [watchedRede, watchedCargo]);
 
     useEffect(() => {
-        if (mode === "edit" && usuarioData && dreOptions.length > 0) {
+        if (
+            mode === "edit" &&
+            usuarioData &&
+            dreOptions.length > 0 &&
+            !dadosIniciaisCarregados
+        ) {
+            setCarregandoDados(true);
             const cargo = mapCargoNumericoParaString(usuarioData.cargo);
             const dreMatch = dreOptions.find(
                 (d: UnidadeEducacional) =>
@@ -126,15 +140,20 @@ export function useCadastroUsuarioForm({
                 isAdmin: usuarioData.is_app_admin,
             });
             setDadosIniciaisCarregados(true);
+            setTimeout(() => {
+                setCarregandoDados(false);
+                montagemInicialRef.current = false;
+            }, 200);
         }
-    }, [mode, usuarioData, dreOptions, reset]);
+    }, [mode, usuarioData, dreOptions, reset, dadosIniciaisCarregados]);
 
     useEffect(() => {
         if (
             mode === "edit" &&
             dadosIniciaisCarregados &&
             ueOptions.length > 0 &&
-            usuarioData?.codigo_eol_unidade
+            usuarioData?.codigo_eol_unidade &&
+            !getValues("ue")
         ) {
             const ueMatch = ueOptions.find(
                 (u: UnidadeEducacional) =>
@@ -144,7 +163,14 @@ export function useCadastroUsuarioForm({
                 setValue("ue", ueMatch.uuid, { shouldValidate: true });
             }
         }
-    }, [mode, ueOptions, usuarioData, dadosIniciaisCarregados, setValue]);
+    }, [
+        mode,
+        ueOptions,
+        usuarioData,
+        dadosIniciaisCarregados,
+        setValue,
+        getValues,
+    ]);
 
     useEffect(() => {
         const podeAutoPreencher =
@@ -153,7 +179,8 @@ export function useCadastroUsuarioForm({
             podeAutoPreencher &&
             watchedRede &&
             watchedCargo &&
-            (mode === "create" || dadosIniciaisCarregados)
+            (mode === "create" || dadosIniciaisCarregados) &&
+            !watchedDre
         ) {
             setValue("dre", user.unidades[0].dre.dre_uuid || "");
         }
@@ -165,28 +192,67 @@ export function useCadastroUsuarioForm({
         mode,
         dadosIniciaisCarregados,
         setValue,
+        watchedDre,
     ]);
 
-    const handleRedeChange = (val: string) => {
-        setValue("rede", val);
-        if (mode === "create") {
-            reset({
-                ...form.getValues(),
-                cargo: "",
-                dre: "",
-                ue: "",
-                fullName: "",
-                rf: "",
-                cpf: "",
-                email: "",
-            });
-        }
-    };
+    const handleRedeChange = useCallback(
+        (val: string) => {
+            if (val === getValues("rede")) return;
 
-    const handleDreChange = (val: string) => {
-        setValue("dre", val);
-        setValue("ue", "", { shouldValidate: true });
-    };
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
+
+            setValue("rede", val, { shouldValidate: true });
+
+            if (mode === "create" || dadosIniciaisCarregados) {
+                setValue("cargo", "");
+                setValue("dre", "");
+                setValue("ue", "");
+
+                if (mode === "create") {
+                    setValue("fullName", "");
+                    setValue("rf", "");
+                    setValue("cpf", "");
+                    setValue("email", "");
+                }
+            }
+        },
+        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues]
+    );
+
+    const handleDreChange = useCallback(
+        (val: string) => {
+            if (val === getValues("dre")) return;
+
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
+
+            setValue("dre", val, { shouldValidate: true });
+            setValue("ue", "", { shouldValidate: true });
+        },
+        [mode, carregandoDados, setValue, getValues]
+    );
+
+    const handleCargoChange = useCallback(
+        (val: string) => {
+            if (val === getValues("cargo")) return;
+
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
+
+            setValue("cargo", val, { shouldValidate: true });
+        },
+        [mode, carregandoDados, setValue, getValues]
+    );
 
     function handleConfirmCadastro() {
         const payload = buildCadastroPayload(
@@ -246,6 +312,7 @@ export function useCadastroUsuarioForm({
         },
         handleConfirmCadastro,
         handleRedeChange,
+        handleCargoChange,
         handleDreChange,
         isDreDisabled: isPontoFocal,
         router,
