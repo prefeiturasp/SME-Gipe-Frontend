@@ -180,8 +180,8 @@ export function useCadastroUsuarioForm({
     ]);
 
     useEffect(() => {
-        const podeAutoPreencher =
-            isPontoFocal && user?.unidades?.[0]?.dre?.dre_uuid;
+        const dreUUID = user?.unidades?.[0]?.dre?.dre_uuid;
+        const podeAutoPreencher = isPontoFocal && dreUUID;
         if (
             podeAutoPreencher &&
             watchedRede &&
@@ -189,7 +189,7 @@ export function useCadastroUsuarioForm({
             (mode === "create" || dadosIniciaisCarregados) &&
             !watchedDre
         ) {
-            setValue("dre", user.unidades[0].dre.dre_uuid || "");
+            setValue("dre", dreUUID);
         }
     }, [
         isPontoFocal,
@@ -257,6 +257,10 @@ export function useCadastroUsuarioForm({
                 return;
 
             setValue("cargo", val, { shouldValidate: true });
+
+            if (val === "ponto_focal" || val === "gipe") {
+                setValue("ue", "", { shouldValidate: true });
+            }
         },
         [mode, carregandoDados, setValue, getValues]
     );

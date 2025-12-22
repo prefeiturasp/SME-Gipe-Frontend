@@ -7,9 +7,11 @@ import type { FormDataCadastroUsuario } from "./schema";
 const TestWrapper = ({
     showDRE = true,
     showUE = true,
+    mode = "create",
 }: {
     showDRE?: boolean;
     showUE?: boolean;
+    mode?: "create" | "edit";
 }) => {
     const methods = useForm<FormDataCadastroUsuario>({
         defaultValues: {
@@ -39,6 +41,7 @@ const TestWrapper = ({
                 ueOptions={ueOptions}
                 showDRE={showDRE}
                 showUE={showUE}
+                mode={mode}
             />
         </FormProvider>
     );
@@ -98,5 +101,50 @@ describe("CamposRedeIndireta", () => {
 
         const grids = container.querySelectorAll(".grid");
         expect(grids.length).toBeGreaterThan(0);
+    });
+
+    it("desabilita campo CPF no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const cpfInput = screen.getByTestId("input-cpf");
+        expect(cpfInput).toBeDisabled();
+    });
+
+    it("habilita campo CPF no modo create", () => {
+        render(<TestWrapper mode="create" />);
+
+        const cpfInput = screen.getByTestId("input-cpf");
+        expect(cpfInput).not.toBeDisabled();
+    });
+
+    it("aplica estilos corretos no modo edit para CPF", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const cpfInput = screen.getByTestId("input-cpf");
+
+        expect(cpfInput).toHaveClass("text-[#B0B0B0]");
+        expect(cpfInput).toHaveClass("border-[#B0B0B0]");
+        expect(cpfInput).toHaveClass("disabled:opacity-100");
+    });
+
+    it("aplica estilos corretos no modo create para CPF", () => {
+        render(<TestWrapper mode="create" />);
+
+        const cpfInput = screen.getByTestId("input-cpf");
+        expect(cpfInput).toHaveClass("border-[#DADADA]");
+    });
+
+    it("não desabilita campo email no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const emailInput = screen.getByTestId("input-email");
+        expect(emailInput).not.toBeDisabled();
+    });
+
+    it("não desabilita campo fullName no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const fullNameInput = screen.getByTestId("input-fullName");
+        expect(fullNameInput).not.toBeDisabled();
     });
 });

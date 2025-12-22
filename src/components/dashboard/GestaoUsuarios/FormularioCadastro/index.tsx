@@ -59,7 +59,7 @@ export default function FormularioCadastroPessoaUsuaria({
 
     return (
         <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form>
                 <h2 className="text-[14px] text-[#42474a] mb-6">
                     Cadastre as informações do perfil.
                 </h2>
