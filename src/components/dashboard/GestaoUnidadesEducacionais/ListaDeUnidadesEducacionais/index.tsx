@@ -1,20 +1,25 @@
 "use client";
 
 import React from "react";
-import { dataUnidades } from "../dataUnidades";
+
 import TabelaUnidades from "./TabelaUnidades";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 
 type ListaDeUnidadesEducacionaisProps = {
-    status: "ativas" | "inativas";
+    status: "ativa" | "inativa";
 };
 
 export default function ListaDeUnidadesEducacionais({
     status,
 }: Readonly<ListaDeUnidadesEducacionaisProps>) {
+
+    const { data: unidades } = useGetUnidades(status === "ativa");
+
     return (
         <>
-            <p className="py-4">Exibindo o status: {status}</p>
-            <TabelaUnidades dataUnidades={dataUnidades} />
+            {unidades && unidades.length > 0 && (
+                <TabelaUnidades dataUnidades={unidades} />
+            )}
         </>
     );
 }

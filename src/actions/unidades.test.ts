@@ -34,7 +34,7 @@ describe("unidades actions", () => {
         const result = await getDREs();
 
         expect(axiosGetMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/unidades",
+            "https://api.exemplo.com/unidades/",
             { params: { tipo: "DRE" } }
         );
         expect(result).toEqual(fakeDREs);
@@ -47,7 +47,7 @@ describe("unidades actions", () => {
         const result = await getUEs("dre-uuid");
 
         expect(axiosGetMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/unidades",
+            "https://api.exemplo.com/unidades/",
             { params: { tipo: "UE", dre: "dre-uuid" } }
         );
         expect(result).toEqual(fakeUEs);
@@ -60,7 +60,7 @@ describe("unidades actions", () => {
         const result = await getTodasUEs();
 
         expect(axiosGetMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/unidades",
+            "https://api.exemplo.com/unidades/",
         );
         expect(result).toEqual(fakeDREs);
     });

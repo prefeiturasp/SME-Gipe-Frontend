@@ -5,10 +5,6 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 const locators = new Editar_Ocorrencia_Localizadores()
 const locators_login = new Login_Gipe_Localizadores()
 
-Given('que eu acesso o sistema', () => {
-  cy.visit('/')
-})
-
 Given('eu efetuo login com RF', () => {
   const RF = '29379960000'
   const SENHA = 'Sgp0000'

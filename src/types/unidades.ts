@@ -2,10 +2,10 @@ export type UnidadeEducacional = {
     id: number;
     uuid: string;
     nome: string;
-    tipo: string;
-    rede: string;
+    tipo_unidade: string;
+    rede_label: string;
     codigo_eol: string;
-    dre: string;
-    sigla_dre: string;
+    dre_nome: string;
+    sigla: string;
     status: string;
 };
