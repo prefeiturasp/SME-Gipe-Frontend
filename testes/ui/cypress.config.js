@@ -19,7 +19,7 @@ module.exports = defineConfig({
   e2e: {
     supportFile: 'cypress/support/e2e.js',
     watchForFileChanges: true,
-    baseUrl: 'https://qa-gipe.sme.prefeitura.sp.gov.br/',
+    baseUrl: 'https://qa-gipe.sme.prefeitura.sp.gov.br',
     viewportWidth: 1600,
     viewportHeight: 1050,
     video: false,
@@ -39,6 +39,16 @@ module.exports = defineConfig({
 
     env: {
       TAGS: 'not @skip', // Ignora cenários marcados como @wip por padrão
+      
+      // Credenciais de Teste - Login
+      RF_VALIDO: '29379960000',
+      SENHA_VALIDA: 'Sgp0000',
+      RF_INVALIDO: '6913261',
+      SENHA_INVALIDA: 'Sgp326',
+      
+      // Credenciais de Teste - Perfil DRE
+      RF_DRE: '7311559',
+      SENHA_DRE: 'Sgp1559',
       
       // Configurações GIPE Estudantes
       GIPE_ESTUDANTES_BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br',

@@ -3,26 +3,21 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 
 const locators_login = new Login_Gipe_Localizadores()
 
-const CREDENCIAIS_DRE = {
-  RF: '7311559',
-  SENHA: 'Sgp1559'
-}
-
+// Constantes de timeout otimizadas
 const TIMEOUTS = {
-  MINIMAL: 1000,
-  SHORT: 2000,
-  DEFAULT: 3000,
-  EXTENDED: 5000,
-  LONG: 15000,
+  MINIMAL: 500,
+  SHORT: 1000,
+  DEFAULT: 2000,
+  EXTENDED: 3000,
+  LONG: 10000,
   VERY_LONG: 30000
 }
 
-const LOG_MESSAGES = {
-  LOGIN_INICIO: 'REALIZANDO LOGIN COM PERFIL DRE',
-  LOGIN_SUCESSO: 'Login DRE realizado com sucesso',
-  VALIDACAO: 'VALIDANDO ELEMENTO'
-}
-
+/**
+ * Gera texto aleatório para preenchimento de campos
+ * @param {number} maxLength - Tamanho máximo do texto
+ * @returns {string} Texto gerado com timestamp
+ */
 function gerarTextoAleatorio(maxLength = 500) {
   const frases = [
     'Teste de automacao realizado com sucesso.',
@@ -53,6 +48,10 @@ function gerarTextoAleatorio(maxLength = 500) {
   return texto.trim().substring(0, maxLength)
 }
 
+/**
+ * Seleciona uma linha aleatória da tabela de ocorrências
+ * @returns {number} Número da linha selecionada
+ */
 function selecionarLinhaAleatoria() {
   const linhasPossiveis = [2, 3, 4, 5]
   const indiceAleatorio = Math.floor(Math.random() * linhasPossiveis.length)
@@ -68,30 +67,35 @@ After(() => {
   cy.log('Cenario finalizado')
 })
 
+/**
+ * Realiza login com credenciais de perfil DRE
+ */
 Given('que eu acesso o sistema como DRE', () => {
-  cy.log(LOG_MESSAGES.LOGIN_INICIO)
-  cy.clearCookies()
-  cy.clearLocalStorage()
-  cy.visit('/', { 
-    timeout: TIMEOUTS.VERY_LONG,
-    retryOnNetworkFailure: true
-  })
-  cy.wait(TIMEOUTS.DEFAULT)
-  cy.url({ timeout: TIMEOUTS.VERY_LONG }).should('include', 'gipe.sme.prefeitura.sp.gov.br')
+  cy.log('🔐 Acessando sistema com perfil DRE')
+  // Usa o step comum de acesso
+  cy.login_gipe()
+  cy.wait(TIMEOUTS.SHORT)
 })
 
+/**
+ * Realiza login com credenciais do perfil DRE
+ */
 When('eu efetuo login com RF DRE', () => {
-  cy.log(`Login com RF: ${CREDENCIAIS_DRE.RF}`)
+  const rfDRE = Cypress.env('RF_DRE')
+  const senhaDRE = Cypress.env('SENHA_DRE')
+  
+  cy.log('🔑 Efetuando login com perfil DRE')
   
   cy.get(locators_login.campo_usuario(), { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .clear()
-    .type(CREDENCIAIS_DRE.RF, { delay: 100 })
+    .type(rfDRE, { delay: 50 })
+    .should('have.value', rfDRE)
   
   cy.get(locators_login.campo_senha(), { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .clear()
-    .type(CREDENCIAIS_DRE.SENHA, { delay: 100 })
+    .type(senhaDRE, { delay: 50 })
   
   cy.get('button')
     .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
@@ -99,8 +103,8 @@ When('eu efetuo login com RF DRE', () => {
     .should('not.be.disabled')
     .click()
   
-  cy.wait(TIMEOUTS.EXTENDED)
-  cy.log(LOG_MESSAGES.LOGIN_SUCESSO)
+  cy.wait(TIMEOUTS.DEFAULT)
+  cy.log('✅ Login DRE realizado com sucesso')
 })
 
 Then('devo ser redirecionado para o dashboard', () => {
@@ -108,11 +112,19 @@ Then('devo ser redirecionado para o dashboard', () => {
   cy.wait(TIMEOUTS.DEFAULT)
 })
 
+/**
+ * Valida que a página principal está carregada
+ */
 Then('devo visualizar a página principal do sistema', () => {
-  cy.get('body', { timeout: TIMEOUTS.LONG }).should('be.visible')
+  cy.get('body', { timeout: TIMEOUTS.LONG })
+    .should('be.visible')
+    .and('not.be.empty')
+  
   cy.get('.text-\\[24px\\]', { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .and('contain.text', 'Histórico de ocorrências registradas')
+  
+  cy.log('✅ Página principal carregada')
 })
 
 When('estou na página principal do sistema', () => {
@@ -120,10 +132,15 @@ When('estou na página principal do sistema', () => {
   cy.wait(TIMEOUTS.SHORT)
 })
 
+/**
+ * Valida que o título esperado está visível
+ * @param {string} titulo - Título esperado na página
+ */
 Then('devo ver o título {string}', (titulo) => {
-  cy.log(`${LOG_MESSAGES.VALIDACAO} - ${titulo}`)
+  cy.log(`🔍 Validando título: ${titulo}`)
   cy.contains('h1, h2', titulo, { timeout: TIMEOUTS.LONG })
     .should('be.visible')
+  cy.log('✅ Título validado')
 })
 
 Then('o sistema deve exibir as funcionalidades disponíveis para DRE', () => {
@@ -131,15 +148,18 @@ Then('o sistema deve exibir as funcionalidades disponíveis para DRE', () => {
   cy.wait(TIMEOUTS.SHORT)
 })
 
+/**
+ * Seleciona e visualiza uma ocorrência aleatória da tabela
+ */
 When('eu visualizo uma ocorrência registrada', () => {
   cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG })
     .should('be.visible')
   
-  cy.wait(TIMEOUTS.DEFAULT)
+  cy.wait(TIMEOUTS.SHORT)
   
   const linhaAleatoria = selecionarLinhaAleatoria()
   
-  cy.log(`Selecionando linha ${linhaAleatoria} da tabela de ocorrencias`)
+  cy.log(`📋 Selecionando linha ${linhaAleatoria} da tabela de ocorrências`)
   
   cy.get('table tbody tr', { timeout: TIMEOUTS.LONG })
     .eq(linhaAleatoria - 1)
@@ -149,7 +169,8 @@ When('eu visualizo uma ocorrência registrada', () => {
     .should('be.visible')
     .click()
   
-  cy.wait(TIMEOUTS.EXTENDED)
+  cy.wait(TIMEOUTS.DEFAULT)
+  cy.log('✅ Ocorrência aberta')
 })
 
 Then('devo visualizar todos os campos do formulário de ocorrência', () => {
@@ -305,6 +326,9 @@ Then('devo preencher os campos complementares das interlocuções', () => {
     .should('be.visible')
 })
 
+/**
+ * Finaliza o preenchimento do formulário e confirma ação se necessário
+ */
 When('eu finalizo o preenchimento', () => {
   cy.wait(TIMEOUTS.SHORT)
   
@@ -318,16 +342,139 @@ When('eu finalizo o preenchimento', () => {
   
   cy.wait(TIMEOUTS.DEFAULT)
   
-  cy.get('body', { timeout: TIMEOUTS.DEFAULT }).then(($body) => {
-    if ($body.text().includes('Confirmar') || $body.text().includes('OK') || $body.text().includes('Sim')) {
-      cy.contains('button', /Confirmar|OK|Sim/i, { timeout: TIMEOUTS.DEFAULT })
-        .first()
-        .click()
+  // Verifica se há modal de confirmação e clica se existir (sem falhar se não houver)
+  cy.get('body', { timeout: TIMEOUTS.SHORT }).then(($body) => {
+    const textoBody = $body.text()
+    
+    // Verifica se existe texto de confirmação no body
+    if (textoBody.includes('Confirmar') || textoBody.includes('OK') || textoBody.includes('Sim')) {
+      cy.log('🔍 Modal de confirmação detectado')
+      
+      // Tenta encontrar e clicar no botão de confirmação
+      cy.get('body').then(($bodyElement) => {
+        const $botoes = $bodyElement.find('button:visible')
+        let botaoEncontrado = false
+        
+        $botoes.each((index, botao) => {
+          const textoBotao = Cypress.$(botao).text()
+          if (/Confirmar|OK|Sim/i.test(textoBotao)) {
+            cy.wrap(botao).click({ force: true })
+            botaoEncontrado = true
+            cy.log('✅ Botão de confirmação clicado')
+            return false // Para o loop
+          }
+        })
+        
+        if (!botaoEncontrado) {
+          cy.log('⚠️ Modal detectado mas botão de confirmação não encontrado - continuando')
+        }
+      })
+      
       cy.wait(TIMEOUTS.SHORT)
+    } else {
+      cy.log('ℹ️ Nenhum modal de confirmação necessário')
     }
   })
   
   cy.wait(TIMEOUTS.EXTENDED)
+  cy.log('✅ Preenchimento finalizado')
+})
+
+/**
+ * Valida se modal de conclusão foi exibido
+ */
+Then('sistema pode exibir modal de conclusão', () => {
+  cy.wait(TIMEOUTS.DEFAULT)
+  
+  cy.get('body').then(($body) => {
+    const temModal = $body.find('div[role="dialog"]').length > 0
+    
+    if (temModal) {
+      cy.log('🔔 Modal de conclusão detectado')
+      cy.get('div[role="dialog"]', { timeout: TIMEOUTS.EXTENDED })
+        .should('be.visible')
+    } else {
+      cy.log('ℹ️ Modal de conclusão não foi exibido - prosseguindo')
+    }
+  })
+})
+
+/**
+ * Preenche modal de conclusão se ele existir
+ */
+Then('preencho modal de conclusão se necessário', () => {
+  cy.get('body').then(($body) => {
+    const temModal = $body.find('div[role="dialog"]').length > 0
+    
+    if (temModal) {
+      cy.log('📝 Preenchendo modal de conclusão')
+      
+      // Valida título do modal
+      cy.get('div[role="dialog"]')
+        .should('contain.text', /Conclusão|Finalizar/i)
+      
+      cy.wait(TIMEOUTS.SHORT)
+      
+      // Preenche campo de motivo/observação se existir
+      cy.get('div[role="dialog"]').then(($modal) => {
+        const temTextarea = $modal.find('textarea').length > 0
+        
+        if (temTextarea) {
+          cy.get('div[role="dialog"] textarea')
+            .last()
+            .should('be.visible')
+            .click({ force: true })
+            .clear()
+            .type('Complementação DRE concluída com sucesso - Teste Automatizado', { delay: 30 })
+          
+          cy.wait(TIMEOUTS.MINIMAL)
+          cy.log('✅ Campo de motivo preenchido')
+        }
+      })
+      
+      cy.wait(TIMEOUTS.SHORT)
+      
+      // Clica no botão Finalizar
+      cy.get('div[role="dialog"]').within(() => {
+        cy.contains('button', /Finalizar|Concluir|Salvar/i, { timeout: TIMEOUTS.LONG })
+          .should('be.visible')
+          .should('not.be.disabled')
+          .click({ force: true })
+      })
+      
+      cy.wait(TIMEOUTS.DEFAULT)
+      cy.log('✅ Modal finalizado')
+      
+      // Aguarda mensagem de sucesso e fecha modal
+      cy.wait(TIMEOUTS.DEFAULT)
+      
+      cy.get('body').then(($bodyCheck) => {
+        const temBotaoFechar = $bodyCheck.find('button').filter((_, btn) => {
+          const texto = btn.innerText?.toLowerCase() || ''
+          const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || ''
+          return texto.includes('fechar') || texto.includes('ok') || ariaLabel.includes('close')
+        }).length > 0
+        
+        if (temBotaoFechar) {
+          cy.get('button').filter((_, btn) => {
+            const texto = btn.innerText?.toLowerCase() || ''
+            const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || ''
+            return texto.includes('fechar') || texto.includes('ok') || ariaLabel.includes('close')
+          }).first().click({ force: true })
+          
+          cy.log('✅ Modal fechado')
+        } else {
+          cy.get('body').type('{esc}')
+          cy.log('✅ Modal fechado com ESC')
+        }
+      })
+      
+      cy.wait(TIMEOUTS.EXTENDED)
+      
+    } else {
+      cy.log('ℹ️ Nenhum modal para preencher')
+    }
+  })
 })
 
 Then('devo retornar para o histórico de ocorrências', () => {

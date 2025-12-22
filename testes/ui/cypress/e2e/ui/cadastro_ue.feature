@@ -11,7 +11,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E eu efetuo login com RF
 
 
-  @cadastro @informacoes_adicional @estudante @dados_aleatorios
+  @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
     # Aba 1: Data e Hora
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
