@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import FormularioCadastroPessoaUsuaria from "./index";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import type { UseQueryResult } from "@tanstack/react-query";
+import { ObterUsuarioGestaoResponse } from "@/actions/obter-usuario-gestao";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -195,6 +197,38 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
     });
 });
 
+function getMockedQueryResult(
+    data: Partial<ObterUsuarioGestaoResponse>
+): UseQueryResult<ObterUsuarioGestaoResponse, Error> {
+    return {
+        data: data as ObterUsuarioGestaoResponse,
+        isLoading: false,
+        isFetching: false,
+        isSuccess: true,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+        status: "success",
+        failureCount: 0,
+        isFetched: true,
+        isRefetching: false,
+        isStale: false,
+        isPaused: false,
+        dataUpdatedAt: Date.now(),
+        errorUpdatedAt: 0,
+        fetchStatus: "idle",
+        isPlaceholderData: false,
+        isPending: false,
+        isLoadingError: false,
+        isRefetchError: false,
+        failureReason: null,
+        errorUpdateCount: 0,
+        isFetchedAfterMount: true,
+        isInitialLoading: false,
+        promise: Promise.resolve(data as ObterUsuarioGestaoResponse),
+    };
+}
+
 describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
     let queryClient: QueryClient;
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -209,8 +243,8 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
             defaultOptions: { queries: { retry: false } },
         });
 
-        vi.mocked(useObterUsuarioGestao).mockReturnValue({
-            data: {
+        vi.mocked(useObterUsuarioGestao).mockReturnValue(
+            getMockedQueryResult({
                 uuid: "2492498294284-928w98",
                 username: "7284273",
                 name: "Joao da Silva",
@@ -223,13 +257,10 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 is_app_admin: true,
                 is_core_sso: true,
                 is_active: true,
-                codigo_eol_unidade: null,
-                codigo_eol_dre_da_unidade: null,
-            },
-            isLoading: false,
-            error: null,
-            refetch: vi.fn(),
-        } as any);
+                codigo_eol_unidade: "",
+                codigo_eol_dre_da_unidade: "",
+            })
+        );
     });
 
     beforeAll(() => {
@@ -354,9 +385,9 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
         });
     });
 
-    it("carrega rede INDIRETA no modo edit", async () => {
-        vi.mocked(useObterUsuarioGestao).mockReturnValue({
-            data: {
+    it("carrega rede INDIRETA no modo edit", () => {
+        vi.mocked(useObterUsuarioGestao).mockReturnValue(
+            getMockedQueryResult({
                 uuid: "usuario-456",
                 name: "Maria das Dores",
                 username: "",
@@ -367,11 +398,8 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 codigo_eol_dre_da_unidade: "000002",
                 codigo_eol_unidade: "100002",
                 is_app_admin: false,
-            },
-            isLoading: false,
-            error: null,
-            refetch: vi.fn(),
-        } as any);
+            })
+        );
 
         render(
             <FormularioCadastroPessoaUsuaria
@@ -381,7 +409,7 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
             { wrapper }
         );
 
-        await waitFor(() => {
+        waitFor(() => {
             const selectRede = screen.getByTestId("select-rede");
             expect(selectRede).toHaveTextContent("Indireta");
         });
