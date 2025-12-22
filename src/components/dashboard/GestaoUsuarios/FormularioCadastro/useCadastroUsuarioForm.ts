@@ -338,6 +338,12 @@ export function useCadastroUsuarioForm({
         }
     }
 
+    let cargoAlterado = false;
+    if (mode === "edit" && usuarioData) {
+        const cargoInicial = mapCargoNumericoParaString(usuarioData.cargo);
+        cargoAlterado = watchedCargo !== cargoInicial;
+    }
+
     return {
         form,
         isValid,
@@ -368,6 +374,6 @@ export function useCadastroUsuarioForm({
         isDreDisabled: isPontoFocal,
         router,
         mode,
-        hasChanges: isDirty,
+        hasChanges: isDirty || cargoAlterado,
     };
 }
