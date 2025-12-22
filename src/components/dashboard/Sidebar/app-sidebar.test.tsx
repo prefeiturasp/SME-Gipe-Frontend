@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import * as sidebarUi from "@/components/ui/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import userEvent from "@testing-library/user-event";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 vi.mock("@/assets/images/logo-gipe-nome.webp", () => ({
     default: {
@@ -16,6 +17,14 @@ vi.mock("@/assets/images/logo-gipe-nome.webp", () => ({
 vi.mock("next/navigation", () => ({
     usePathname: vi.fn(),
 }));
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: vi.fn(),
+}));
+
+const mockedUseUserPermissions = useUserPermissions as unknown as ReturnType<
+    typeof vi.fn
+>;
 
 vi.spyOn(sidebarUi, "useSidebar").mockReturnValue({
     state: "expanded",
@@ -44,6 +53,9 @@ describe("AppSidebar", () => {
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
             "/dashboard"
         );
+        mockedUseUserPermissions.mockReturnValue({
+            isGipeAdmin: true,
+        });
     });
 
     const renderWithProvider = (ui: React.ReactNode) =>
@@ -105,6 +117,11 @@ describe("AppSidebar", () => {
         });
         renderWithProvider(<AppSidebar />);
         expect(screen.getByText("Gestão")).toBeInTheDocument();
+    });
+    it("não renderiza o menu Gestão quando o usuário não é admin", () => {
+        mockedUseUserPermissions.mockReturnValue({ isGipeAdmin: false });
+        renderWithProvider(<AppSidebar />);
+        expect(screen.queryByText("Gestão")).not.toBeInTheDocument();
     });
 
     it("renderiza ChevronDown quando o collapsible está fechado", () => {

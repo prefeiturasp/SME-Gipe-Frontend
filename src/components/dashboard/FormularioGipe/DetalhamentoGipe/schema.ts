@@ -19,7 +19,9 @@ export const formSchema = z.object({
     cicloAprendizagem: z.string({
         required_error: "Campo obrigatório",
     }),
-    informacoesInteracoesVirtuais: z.string().optional(),
+    informacoesInteracoesVirtuais: z.string({
+        required_error: "Campo obrigatório",
+    }),
     encaminhamentos: z.string().min(1, { message: "Campo obrigatório" }),
 });
 
