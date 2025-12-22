@@ -7,9 +7,11 @@ import type { FormDataCadastroUsuario } from "./schema";
 const TestWrapper = ({
     showDRE = true,
     showUE = true,
+    mode = "create",
 }: {
     showDRE?: boolean;
     showUE?: boolean;
+    mode?: "create" | "edit";
 }) => {
     const methods = useForm<FormDataCadastroUsuario>({
         defaultValues: {
@@ -40,6 +42,7 @@ const TestWrapper = ({
                 ueOptions={ueOptions}
                 showDRE={showDRE}
                 showUE={showUE}
+                mode={mode}
             />
         </FormProvider>
     );
@@ -101,5 +104,61 @@ describe("CamposRedeDireta", () => {
 
         const grids = container.querySelectorAll(".grid");
         expect(grids.length).toBeGreaterThan(0);
+    });
+
+    it("desabilita campos RF e CPF no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const rfInput = screen.getByTestId("input-rf");
+        const cpfInput = screen.getByTestId("input-cpf");
+
+        expect(rfInput).toBeDisabled();
+        expect(cpfInput).toBeDisabled();
+    });
+
+    it("habilita campos RF e CPF no modo create", () => {
+        render(<TestWrapper mode="create" />);
+
+        const rfInput = screen.getByTestId("input-rf");
+        const cpfInput = screen.getByTestId("input-cpf");
+
+        expect(rfInput).not.toBeDisabled();
+        expect(cpfInput).not.toBeDisabled();
+    });
+
+    it("aplica estilos corretos no modo edit para RF e CPF", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const rfInput = screen.getByTestId("input-rf");
+        const cpfInput = screen.getByTestId("input-cpf");
+
+        expect(rfInput).toHaveClass("text-[#B0B0B0]");
+        expect(rfInput).toHaveClass("border-[#B0B0B0]");
+        expect(cpfInput).toHaveClass("text-[#B0B0B0]");
+        expect(cpfInput).toHaveClass("border-[#B0B0B0]");
+    });
+
+    it("aplica estilos corretos no modo create para RF e CPF", () => {
+        render(<TestWrapper mode="create" />);
+
+        const rfInput = screen.getByTestId("input-rf");
+        const cpfInput = screen.getByTestId("input-cpf");
+
+        expect(rfInput).toHaveClass("border-[#DADADA]");
+        expect(cpfInput).toHaveClass("border-[#DADADA]");
+    });
+
+    it("não desabilita campo email no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const emailInput = screen.getByTestId("input-email");
+        expect(emailInput).not.toBeDisabled();
+    });
+
+    it("não desabilita campo fullName no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+
+        const fullNameInput = screen.getByTestId("input-fullName");
+        expect(fullNameInput).not.toBeDisabled();
     });
 });

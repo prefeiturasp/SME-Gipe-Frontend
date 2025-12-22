@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { removeMask, maskCPF, buildCadastroPayload } from "./utils";
+import {
+    removeMask,
+    maskCPF,
+    buildCadastroPayload,
+    mapCargoNumericoParaString,
+} from "./utils";
 import type { FormDataCadastroUsuario } from "./schema";
 
 describe("utils - Funções utilitárias", () => {
@@ -231,6 +236,36 @@ describe("utils - Funções utilitárias", () => {
             );
 
             expect(payload.unidades).toEqual([]);
+        });
+    });
+
+    describe("mapCargoNumericoParaString", () => {
+        it("deve mapear 3360 para diretor", () => {
+            expect(mapCargoNumericoParaString(3360)).toBe("diretor");
+        });
+
+        it("deve mapear 3085 para assistente", () => {
+            expect(mapCargoNumericoParaString(3085)).toBe("assistente");
+        });
+
+        it("deve mapear 1 para ponto_focal", () => {
+            expect(mapCargoNumericoParaString(1)).toBe("ponto_focal");
+        });
+
+        it("deve mapear 0 para gipe", () => {
+            expect(mapCargoNumericoParaString(0)).toBe("gipe");
+        });
+
+        it("deve retornar string vazia para cargo desconhecido", () => {
+            expect(mapCargoNumericoParaString(9999)).toBe("");
+        });
+
+        it("deve retornar string vazia para número negativo", () => {
+            expect(mapCargoNumericoParaString(-1)).toBe("");
+        });
+
+        it("deve retornar string vazia para cargo 2", () => {
+            expect(mapCargoNumericoParaString(2)).toBe("");
         });
     });
 });
