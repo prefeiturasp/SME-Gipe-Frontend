@@ -50,13 +50,13 @@ describe("EditarPessoaUsuaria", () => {
         vi.clearAllMocks();
     });
 
-    it("deve renderizar o título 'Editar pessoa usuária'", () => {
+    it("deve renderizar o título 'Editar perfil'", () => {
         const params = { uuid: "test-uuid-123" };
         render(<EditarPessoaUsuaria params={params} />, {
             wrapper: createWrapper(),
         });
 
-        expect(screen.getByText("Editar pessoa usuária")).toBeInTheDocument();
+        expect(screen.getByText("Editar perfil")).toBeInTheDocument();
     });
 
     it("deve renderizar o QuadroBranco", () => {

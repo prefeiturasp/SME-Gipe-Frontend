@@ -1,5 +1,5 @@
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
-import PageHeader from "@/components/dashboard/PageHeader/PageHeader";
+import PageHeader from "@/components/dashboard/GestaoUsuarios/PageHeader/PageHeader";
 import FormularioCadastroPessoaUsuaria from "@/components/dashboard/GestaoUsuarios/FormularioCadastro";
 
 type EditarPessoaUsuariaProps = {
@@ -13,7 +13,7 @@ export default function EditarPessoaUsuaria({
 }: EditarPessoaUsuariaProps) {
     return (
         <>
-            <PageHeader title="Editar pessoa usuária" />
+            <PageHeader title="Editar perfil" edit />
             <QuadroBranco>
                 <FormularioCadastroPessoaUsuaria
                     mode="edit"
