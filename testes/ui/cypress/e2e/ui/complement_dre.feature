@@ -28,6 +28,12 @@ Funcionalidade: Gestão de Intercorrências - Perfil DRE
     E devo preencher os campos de interlocução obrigatórios
     E devo preencher os campos complementares das interlocuções
     Quando eu finalizo o preenchimento
+    
+    # MODAL DE CONCLUSÃO (se aparecer)
+    Então sistema pode exibir modal de conclusão
+    E preencho modal de conclusão se necessário
+    
+    # RETORNO AO HISTÓRICO
     Então devo retornar para o histórico de ocorrências
     
 

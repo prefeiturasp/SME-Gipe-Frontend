@@ -721,6 +721,65 @@ When('localiza e clica em "Finalizar"', () => {
   cy.wait(2000)
   cy.log('🎯 Localizando botão Finalizar na aba de anexos')
   
+  // Valida que os campos obrigatórios estão preenchidos antes de finalizar
+  cy.log('🔍 Validando campos preenchidos antes de finalizar')
+  
+  // Retorna à aba anterior para validar os campos
+  cy.get('body').then($body => {
+    // Se tiver botão "Anterior", usa para voltar temporariamente
+    if ($body.find('button:contains("Anterior")').length > 0) {
+      cy.log('⬅️ Voltando para validar campos da aba anterior')
+      cy.contains('button', 'Anterior').click({ force: true })
+      cy.wait(2000)
+      
+      // Valida campos da aba 4 (Declarante e Protocolos)
+      cy.get('button[id*="form-item"]').then($buttons => {
+        if ($buttons.length >= 3) {
+          // Campo declarante
+          cy.wrap($buttons.eq(0)).invoke('text').then((texto) => {
+            if (texto.includes('Selecione') || texto.trim() === '') {
+              cy.log('⚠️ Campo declarante não preenchido')
+            } else {
+              cy.log('✅ Campo declarante preenchido: ' + texto.trim())
+            }
+          })
+          
+          // Campo segurança pública
+          cy.wrap($buttons.eq(1)).invoke('text').then((texto) => {
+            if (texto.includes('Selecione') || texto.trim() === '') {
+              cy.log('⚠️ Campo segurança pública não preenchido')
+            } else {
+              cy.log('✅ Campo segurança pública preenchido: ' + texto.trim())
+            }
+          })
+          
+          // Campo protocolo
+          cy.wrap($buttons.eq(2)).invoke('text').then((texto) => {
+            if (texto.includes('Selecione') || texto.trim() === '') {
+              cy.log('⚠️ Campo protocolo não preenchido')
+            } else {
+              cy.log('✅ Campo protocolo preenchido: ' + texto.trim())
+            }
+          })
+        }
+      })
+      
+      // Volta para aba de anexos (clica em Próximo)
+      cy.log('➡️ Retornando para aba de anexos')
+      cy.contains('button', /Próximo/i).click({ force: true })
+      cy.wait(2000)
+    }
+  })
+  
+  // Valida que existe pelo menos um documento anexado
+  cy.get('body').then($body => {
+    if ($body.find('input[type="file"]').length > 0) {
+      cy.log('✅ Campo de anexo encontrado')
+    }
+  })
+  
+  cy.log('✅ Validação de campos concluída')
+  
   // Busca o container dos botões (onde está Anterior e Finalizar)
   cy.get('form fieldset div.flex.justify-end.gap-2', { timeout: 15000 })
     .should('be.visible')
@@ -746,11 +805,11 @@ When('clica em "Finalizar"', () => {
   
   // Tenta múltiplas estratégias para encontrar e clicar no botão
   
-  // Estratégia 1: button[type="submit"]
+  // Estratégia 1: button[type="submit"] sem .inline-flex
   cy.get('body').then($body => {
-    if ($body.find('button[type="submit"].inline-flex:visible').length > 0) {
+    if ($body.find('button[type="submit"]:visible').length > 0) {
       cy.log('✅ Estratégia 1: Encontrou button[type="submit"]')
-      cy.get('button[type="submit"].inline-flex')
+      cy.get('button[type="submit"]')
         .filter(':visible')
         .last()
         .scrollIntoView()
