@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/headless-toast";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
 import type { UnidadeEducacional } from "@/types/unidades";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
 import { useUserStore } from "@/stores/useUserStore";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
@@ -39,6 +41,7 @@ export function useCadastroUsuarioForm({
     usuarioUuid,
 }: UseCadastroUsuarioFormProps = {}) {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [modalOpen, setModalOpen] = useState(false);
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
@@ -47,7 +50,11 @@ export function useCadastroUsuarioForm({
 
     const { user } = useUserStore();
     const { isPontoFocal, isGipe } = useUserPermissions();
-    const { mutate: cadastrarUsuario, isPending } = useCadastroGestaoUsuario();
+    const { mutate: cadastrarUsuario, isPending: isPendingCreate } =
+        useCadastroGestaoUsuario();
+    const { mutate: atualizarUsuario, isPending: isPendingUpdate } =
+        useAtualizarGestaoUsuario(usuarioUuid || "");
+    const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -69,7 +76,7 @@ export function useCadastroUsuarioForm({
         reset,
         setValue,
         getValues,
-        formState: { isValid },
+        formState: { isValid, isDirty },
         control,
     } = form;
 
@@ -261,34 +268,70 @@ export function useCadastroUsuarioForm({
             ueOptions
         );
 
-        cadastrarUsuario(payload, {
-            onSuccess: (response) => {
-                if (!response.success) {
+        if (mode === "edit") {
+            atualizarUsuario(payload, {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Não conseguimos concluir a ação!",
+                            description:
+                                response.error || "Erro ao atualizar usuário.",
+                            variant: "error",
+                        });
+                        return;
+                    }
+
+                    queryClient.invalidateQueries({
+                        queryKey: ["usuario-gestao", usuarioUuid],
+                    });
+
                     toast({
-                        title: "Não conseguimos concluir a ação!",
-                        description:
-                            response.error || "Erro ao cadastrar usuário.",
+                        title: "Tudo certo por aqui!",
+                        description: "Usuário atualizado com sucesso!",
+                        variant: "success",
+                    });
+                    setModalOpen(false);
+                    router.push("/dashboard/gestao-usuarios?tab=ativos");
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro no servidor",
+                        description: "Tente novamente mais tarde.",
                         variant: "error",
                     });
-                    return;
-                }
+                },
+            });
+        } else {
+            cadastrarUsuario(payload, {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Não conseguimos concluir a ação!",
+                            description:
+                                response.error || "Erro ao cadastrar usuário.",
+                            variant: "error",
+                        });
+                        return;
+                    }
 
-                toast({
-                    title: "Tudo certo por aqui!",
-                    description: "A pessoa usuária foi cadastrada com sucesso!",
-                    variant: "success",
-                });
-                setModalOpen(false);
-                router.push("/dashboard/gestao-usuarios?tab=ativos");
-            },
-            onError: () => {
-                toast({
-                    title: "Erro no servidor",
-                    description: "Tente novamente mais tarde.",
-                    variant: "error",
-                });
-            },
-        });
+                    toast({
+                        title: "Tudo certo por aqui!",
+                        description:
+                            "A pessoa usuária foi cadastrada com sucesso!",
+                        variant: "success",
+                    });
+                    setModalOpen(false);
+                    router.push("/dashboard/gestao-usuarios?tab=ativos");
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro no servidor",
+                        description: "Tente novamente mais tarde.",
+                        variant: "error",
+                    });
+                },
+            });
+        }
     }
 
     return {
@@ -308,7 +351,11 @@ export function useCadastroUsuarioForm({
         isRedeDireta: watchedRede === "DIRETA",
         handleSubmitClick: (e: React.MouseEvent) => {
             e.preventDefault();
-            setModalOpen(true);
+            if (mode === "edit") {
+                handleConfirmCadastro();
+            } else {
+                setModalOpen(true);
+            }
         },
         handleConfirmCadastro,
         handleRedeChange,
@@ -316,5 +363,7 @@ export function useCadastroUsuarioForm({
         handleDreChange,
         isDreDisabled: isPontoFocal,
         router,
+        mode,
+        hasChanges: isDirty,
     };
 }
