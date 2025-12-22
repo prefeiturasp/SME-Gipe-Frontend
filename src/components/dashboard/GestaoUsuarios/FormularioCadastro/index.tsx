@@ -53,6 +53,8 @@ export default function FormularioCadastroPessoaUsuaria({
         handleDreChange,
         router,
         isDreDisabled,
+        mode: currentMode,
+        hasChanges,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     return (
@@ -73,7 +75,6 @@ export default function FormularioCadastroPessoaUsuaria({
                                 </FormLabel>
                                 <Select
                                     value={field.value}
-                                    /* CORREÇÃO: Usar o handler do hook em vez de field.onChange puro */
                                     onValueChange={handleRedeChange}
                                 >
                                     <FormControl>
@@ -148,7 +149,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
-                                /* Se o componente interno tiver Select de DRE, passe o handleDreChange */
+                                mode={currentMode}
                                 onDreChange={handleDreChange}
                             />
                         )}
@@ -161,7 +162,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
-                                /* Se o componente interno tiver Select de DRE, passe o handleDreChange */
+                                mode={currentMode}
                                 onDreChange={handleDreChange}
                             />
                         )}
@@ -169,7 +170,7 @@ export default function FormularioCadastroPessoaUsuaria({
                 )}
 
                 {showFields.adminCheckbox && (
-                    <div className="mt-6">
+                    <div>
                         <FormField
                             control={form.control}
                             name="isAdmin"
@@ -212,11 +213,13 @@ export default function FormularioCadastroPessoaUsuaria({
                     <Button
                         type="button"
                         variant="submit"
-                        disabled={!isValid}
+                        disabled={
+                            !isValid || (currentMode === "edit" && !hasChanges)
+                        }
                         data-testid="button-cadastrar"
                         onClick={handleSubmitClick}
                     >
-                        {mode === "edit"
+                        {currentMode === "edit"
                             ? "Salvar alterações"
                             : "Cadastrar perfil"}
                     </Button>

@@ -19,6 +19,7 @@ type CamposRedeDiretaProps = {
     showUE: boolean;
     isDreDisabled?: boolean;
     onDreChange?: (val: string) => void;
+    mode?: "create" | "edit";
 };
 
 export function CamposRedeDireta({
@@ -29,6 +30,7 @@ export function CamposRedeDireta({
     showUE,
     isDreDisabled = false,
     onDreChange,
+    mode = "create",
 }: Readonly<CamposRedeDiretaProps>) {
     return (
         <>
@@ -59,7 +61,13 @@ export function CamposRedeDireta({
                     name="cpf"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                            <FormLabel
+                                className={`required text-[14px] font-[700] ${
+                                    mode === "edit"
+                                        ? "text-[#B0B0B0]"
+                                        : "text-[#42474a]"
+                                }`}
+                            >
                                 CPF*
                             </FormLabel>
                             <FormControl>
@@ -67,9 +75,14 @@ export function CamposRedeDireta({
                                     {...field}
                                     inputMode="numeric"
                                     placeholder="123.456.789-10"
-                                    className="font-normal border-[#DADADA]"
+                                    className={`font-normal ${
+                                        mode === "edit"
+                                            ? "border-[#B0B0B0] text-[#B0B0B0] disabled:opacity-100"
+                                            : "border-[#DADADA]"
+                                    }`}
                                     data-testid="input-cpf"
                                     maxLength={14}
+                                    disabled={mode === "edit"}
                                     onChange={(e) => {
                                         const masked = maskCPF(e.target.value);
                                         field.onChange(masked);
@@ -88,7 +101,13 @@ export function CamposRedeDireta({
                     name="rf"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                            <FormLabel
+                                className={`required text-[14px] font-[700] ${
+                                    mode === "edit"
+                                        ? "text-[#B0B0B0]"
+                                        : "text-[#42474a]"
+                                }`}
+                            >
                                 RF*
                             </FormLabel>
                             <FormControl>
@@ -96,8 +115,13 @@ export function CamposRedeDireta({
                                     {...field}
                                     inputMode="numeric"
                                     placeholder="Digite o RF"
-                                    className="font-normal border-[#DADADA]"
+                                    className={`font-normal ${
+                                        mode === "edit"
+                                            ? "border-[#B0B0B0] text-[#B0B0B0] disabled:opacity-100"
+                                            : "border-[#DADADA]"
+                                    }`}
                                     data-testid="input-rf"
+                                    disabled={mode === "edit"}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -159,7 +183,7 @@ export function CamposRedeDireta({
                 )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 mb-6">
+            <div className="grid grid-cols-1 gap-6">
                 {showUE && (
                     <FormField
                         control={form.control}
