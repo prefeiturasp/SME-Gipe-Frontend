@@ -7,6 +7,7 @@ import { ObterAnexosResponse } from "@/types/anexo";
 
 type ObterAnexosParams = {
     intercorrenciaUuid: string;
+    perfil?: string;
 };
 
 type ObterAnexosResult =
@@ -15,6 +16,7 @@ type ObterAnexosResult =
 
 export async function obterAnexos({
     intercorrenciaUuid,
+    perfil,
 }: ObterAnexosParams): Promise<ObterAnexosResult> {
     try {
         const cookieStore = cookies();
@@ -27,8 +29,9 @@ export async function obterAnexos({
             };
         }
 
+        const perfilParam = perfil ? `&perfil=${perfil}` : "";
         const response = await apiAnexos.get<ObterAnexosResponse>(
-            `/anexos/?intercorrencia_uuid=${intercorrenciaUuid}`,
+            `/anexos/?intercorrencia_uuid=${intercorrenciaUuid}${perfilParam}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

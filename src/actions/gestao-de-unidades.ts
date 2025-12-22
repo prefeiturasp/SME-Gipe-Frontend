@@ -1,9 +1,9 @@
-"use server";
+"use server"
 
 import axios from "axios";
 import { cookies } from "next/headers";
 
-export async function getUsuarios(ativo?: boolean, dre?: string, unidade?: string, pendente_aprovacao?: boolean) {
+export async function getUnidades(ativa?: boolean) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
     try {
@@ -18,14 +18,14 @@ export async function getUsuarios(ativo?: boolean, dre?: string, unidade?: strin
             };
         }
 
-        const { data } = await axios.get(`${API_URL}/users/gestao-usuarios/`, {
-            params: {ativo, dre, unidade, pendente_aprovacao},
+        const { data } = await axios.get(`${API_URL}/unidades/gestao-unidades/`, {
+            params: { ativa },
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
         return data;
     } catch {
-        throw new Error("Não foi possível buscar os usuários");
+        throw new Error("Não foi possível buscar as unidades");
     }
 }

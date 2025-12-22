@@ -25,6 +25,7 @@ export type AnexoAPI = {
     arquivo_url: string;
     criado_em: string;
     usuario_username: string;
+    usuario_nome: string;
 };
 
 export type ObterAnexosResponse = {
