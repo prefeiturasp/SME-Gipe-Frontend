@@ -85,7 +85,7 @@ export function useCadastroUsuarioForm({
     const watchedDre = useWatch({ control, name: "dre" });
 
     const { data: dreOptions = [] } = useFetchDREs();
-    const { data: ueOptions = [] } = useFetchUEs(watchedDre);
+    const { data: ueOptions = [] } = useFetchUEs(watchedDre, watchedRede);
 
     const { data: usuarioData } = useObterUsuarioGestao({
         uuid: usuarioUuid || "",

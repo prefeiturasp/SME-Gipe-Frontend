@@ -30,7 +30,7 @@ type FormularioCadastroPessoaUsuariaProps = {
 export default function FormularioCadastroPessoaUsuaria({
     mode = "create",
     usuarioUuid,
-}: FormularioCadastroPessoaUsuariaProps) {
+}: Readonly<FormularioCadastroPessoaUsuariaProps>) {
     const {
         form,
         isValid,
