@@ -6,7 +6,9 @@ import { CardUsuariosPendenciasAprovacao } from "./CardUsuariosPendenciasAprovac
 
 import { RenderMessage } from "../RenderMessage";
 import ModalAprovarUsuario from "./ModalAprovarUsuario";
+import ModalRecusarUsuario from "./ModalRecusarUsuario";
 import { useHandleAprovarUsuario } from "@/hooks/useHandleAprovarUsuario";
+import { useHandleRecusarUsuario } from "@/hooks/useHandleRecusarUsuario";
 
 type ListaDeUsuariosPendenciasAprovacaoProps = {
     usuarios?: Usuario[];
@@ -28,12 +30,19 @@ export default function ListaDeUsuariosPendenciasAprovacao({
         isLoadingAprovar,
     } = useHandleAprovarUsuario();
 
+    const {
+        usuarioParaRecusar,
+        setUsuarioParaRecusar,
+        handleRecusarPerfil,
+        isLoadingRecusar,
+    } = useHandleRecusarUsuario();
+
     const onAprovar = (usuario: Usuario) => {
         setUsuarioParaAprovar(usuario);
     };
 
     const onRecusar = (usuario: Usuario) => {
-        console.log("Recusado:", usuario);
+        setUsuarioParaRecusar(usuario);
     };
 
     return (
@@ -60,6 +69,13 @@ export default function ListaDeUsuariosPendenciasAprovacao({
                 }}
                 onAprovar={handleAprovarPerfil}
                 isLoading={isLoadingAprovar}
+            />
+
+            <ModalRecusarUsuario
+                open={usuarioParaRecusar !== null}
+                onOpenChange={() => setUsuarioParaRecusar(null)}
+                onRecusar={handleRecusarPerfil}
+                isLoading={isLoadingRecusar}
             />
         </>
     );
