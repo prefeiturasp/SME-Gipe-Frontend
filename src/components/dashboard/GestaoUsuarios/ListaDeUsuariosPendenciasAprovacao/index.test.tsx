@@ -1,4 +1,10 @@
-import { render, screen } from "@testing-library/react";
+vi.mock("@/hooks/useRecusarUsuarioGestao", () => ({
+    useRecusarUsuarioGestao: () => ({
+        mutateAsync: async () => ({ success: true }),
+        isPending: false,
+    }),
+}));
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ListaDeUsuariosPendenciasAprovacao from ".";
@@ -81,13 +87,19 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
         const recusarButtons = screen.getAllByText("Recusar");
         await user.click(recusarButtons[0]);
 
-        expect(console.log).toHaveBeenCalledWith(
-            "Recusado:",
-            expect.objectContaining({
-                nome: "João Silva",
-                email: "joao.silva@example.com",
-            })
-        );
+        expect(screen.getByText("Recusar solicitação")).toBeInTheDocument();
+
+        const textarea = screen.getByLabelText(/Motivo da recusa/i);
+        await user.type(textarea, "Motivo qualquer");
+        const btn = screen.getByRole("button", { name: /Recusar perfil/i });
+        expect(btn).not.toBeDisabled();
+        await user.click(btn);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Recusar solicitação")
+            ).not.toBeInTheDocument();
+        });
     });
 
     it("deve aprovar o usuário correto quando houver múltiplos usuários", async () => {
@@ -116,13 +128,19 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
         const recusarButtons = screen.getAllByText("Recusar");
         await user.click(recusarButtons[1]);
 
-        expect(console.log).toHaveBeenCalledWith(
-            "Recusado:",
-            expect.objectContaining({
-                nome: "Maria Oliveira",
-                email: "maria.oliveira@example.com",
-            })
-        );
+        expect(screen.getByText("Recusar solicitação")).toBeInTheDocument();
+
+        const textarea = screen.getByLabelText(/Motivo da recusa/i);
+        await user.type(textarea, "Outro motivo");
+        const btn = screen.getByRole("button", { name: /Recusar perfil/i });
+        expect(btn).not.toBeDisabled();
+        await user.click(btn);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByText("Recusar solicitação")
+            ).not.toBeInTheDocument();
+        });
     });
 
     it("não deve renderizar CardUsuariosPendenciasAprovacao quando usuarios é undefined", () => {
@@ -152,11 +170,15 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
         await user.click(confirmarBtn);
 
         expect(mockToast).toHaveBeenCalledWith(
-            expect.objectContaining({ title: "Tudo certo por aqui!" })
+            expect.objectContaining({
+                description:
+                    "O perfil receberá um e-mail informando sobre a aprovação.",
+                title: "O perfil foi aprovado com sucesso.",
+            })
         );
     });
 
-    it("mostra toast de erro quando a requisição falha", async () => {
+    it("mostra toast de erro quando a requisição de aprovar falha", async () => {
         const hook = await import("@/hooks/useAprovarUsuarioGestao");
         vi.spyOn(hook, "useAprovarUsuarioGestao").mockReturnValue({
             mutateAsync: async () => ({ success: false, error: "Falha geral" }),
@@ -181,7 +203,35 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
         );
     });
 
-    it("mostra mensagem padrão de erro quando não houver error na resposta", async () => {
+    it("mostra toast de erro quando a requisição de recusar falha", async () => {
+        const hook = await import("@/hooks/useRecusarUsuarioGestao");
+        vi.spyOn(hook, "useRecusarUsuarioGestao").mockReturnValue({
+            mutateAsync: async () => ({ success: false, error: "Falha geral" }),
+            isPending: false,
+        } as unknown as ReturnType<typeof hook.useRecusarUsuarioGestao>);
+
+        const user = userEvent.setup();
+        renderComponent();
+
+        const recusarButtons = screen.getAllByText("Recusar");
+        await user.click(recusarButtons[0]);
+
+        expect(screen.getByText("Recusar solicitação")).toBeInTheDocument();
+
+        const textarea = screen.getByLabelText(/Motivo da recusa/i);
+        await user.type(textarea, "Outro motivo");
+        const btn = screen.getByRole("button", { name: /Recusar perfil/i });
+        expect(btn).not.toBeDisabled();
+        await user.click(btn);
+
+        expect(mockToast).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: "Não conseguimos concluir a ação!",
+            })
+        );
+    });
+
+    it("mostra mensagem padrão de erro quando não houver error na resposta de approvacao", async () => {
         const hook = await import("@/hooks/useAprovarUsuarioGestao");
         vi.spyOn(hook, "useAprovarUsuarioGestao").mockReturnValue({
             mutateAsync: async () => ({ success: false }),
@@ -206,7 +256,35 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
         );
     });
 
-    it("deve fechar o modal e limpar o estado quando onOpenChange for disparado", async () => {
+    it("mostra mensagem padrão de erro quando não houver error na resposta de recusa", async () => {
+        const hook = await import("@/hooks/useRecusarUsuarioGestao");
+        vi.spyOn(hook, "useRecusarUsuarioGestao").mockReturnValue({
+            mutateAsync: async () => ({ success: false }),
+            isPending: false,
+        } as unknown as ReturnType<typeof hook.useRecusarUsuarioGestao>);
+
+        const user = userEvent.setup();
+        renderComponent();
+
+        const recusarButtons = screen.getAllByText("Recusar");
+        await user.click(recusarButtons[0]);
+
+        expect(screen.getByText("Recusar solicitação")).toBeInTheDocument();
+
+        const textarea = screen.getByLabelText(/Motivo da recusa/i);
+        await user.type(textarea, "Outro motivo");
+        const btn = screen.getByRole("button", { name: /Recusar perfil/i });
+        expect(btn).not.toBeDisabled();
+        await user.click(btn);
+
+        expect(mockToast).toHaveBeenCalledWith(
+            expect.objectContaining({
+                description: "Erro ao recusar usuário.",
+            })
+        );
+    });
+
+    it("deve fechar o modal de aprovar e limpar o estado quando onOpenChange for disparado", async () => {
         const user = userEvent.setup();
         renderComponent();
 
@@ -219,6 +297,22 @@ describe("ListaDeUsuariosPendenciasAprovacao", () => {
 
         expect(
             screen.queryByText("Aprovação de perfil")
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve fechar o modal de recusar e limpar o estado quando onOpenChange for disparado", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const recusarButtons = screen.getAllByText("Recusar");
+        await user.click(recusarButtons[0]);
+        expect(screen.getByText("Recusar solicitação")).toBeInTheDocument();
+
+        const cancelarBtn = screen.getByRole("button", { name: /cancelar/i });
+        await user.click(cancelarBtn);
+
+        expect(
+            screen.queryByText("Recusar solicitação")
         ).not.toBeInTheDocument();
     });
 });
