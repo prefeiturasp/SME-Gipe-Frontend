@@ -24,28 +24,11 @@ import { formSchema, FormData } from "./schema";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
 import { useFetchDREs } from "@/hooks/useUnidades";
+import { useTiposUnidade } from "@/hooks/useTiposUnidade";
+import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { toast } from "@/components/ui/headless-toast";
 import { useRouter } from "next/navigation";
-
-const tipoOptions = [
-    { label: "ADM", value: "ADM" },
-    { label: "DRE", value: "DRE" },
-    { label: "IFSP", value: "IFSP" },
-    { label: "CMCT", value: "CMCT" },
-    { label: "CECI", value: "CECI" },
-    { label: "CEI", value: "CEI" },
-    { label: "CEMEI", value: "CEMEI" },
-    { label: "CIEJA", value: "CIEJA" },
-    { label: "EMEBS", value: "EMEBS" },
-    { label: "EMEF", value: "EMEF" },
-    { label: "EMEFM", value: "EMEFM" },
-    { label: "EMEI", value: "EMEI" },
-    { label: "CEU", value: "CEU" },
-    { label: "CEU CEI", value: "CEU CEI" },
-    { label: "CEU EMEF", value: "CEU EMEF" },
-    { label: "CEU EMEI", value: "CEU EMEI" },
-    { label: "CEU CEMEI", value: "CEU CEMEI" },
-    { label: "CEI DIRET", value: "CEI DIRET" },
-];
+import { UnidadeCadastroPayload } from "@/actions/cadastrar-unidade";
 
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
@@ -58,6 +41,7 @@ export default function FormularioCadastroUnidadeEducacional() {
     const user = useUserStore((state) => state.user);
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
     const { data: dreOptions = [] } = useFetchDREs();
+    const { data: tipoOptions = [] } = useTiposUnidade();
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -83,8 +67,37 @@ export default function FormularioCadastroUnidadeEducacional() {
 
     const isFormValid = form.formState.isValid;
 
-    const onSubmit = (data: FormData) => {
-        console.log("Dados do formulário:", data);
+    const { mutateAsync: cadastrarUnidade, isPending } = useCadastrarUnidade();
+
+    const onSubmit = async (data: FormData) => {
+        const payload: UnidadeCadastroPayload = {
+            nome: data.nomeUnidadeEducacional,
+            codigo_eol: data.codigoEol,
+            tipo_unidade: data.tipo,
+            rede: data.rede,
+            sigla: data.siglaDre,
+            ativa: true,
+        };
+        if (data.tipo !== "DRE") {
+            payload.dre = data.diretoriaRegional;
+        }
+
+        const response = await cadastrarUnidade(payload);
+        if (response.success) {
+            toast({
+                title: "Tudo certo por aqui!",
+                description:
+                    "A Unidade Educacional foi cadastrada com sucesso.",
+                variant: "success",
+            });
+            router.push("/dashboard/gestao-unidades-educacionais");
+        } else {
+            toast({
+                title: "Não conseguimos concluir a ação!",
+                description: response.error,
+                variant: "error",
+            });
+        }
     };
 
     return (
@@ -114,8 +127,8 @@ export default function FormularioCadastroUnidadeEducacional() {
                                         <SelectContent>
                                             {tipoOptions.map((tipo) => (
                                                 <SelectItem
-                                                    key={tipo.value}
-                                                    value={tipo.value}
+                                                    key={tipo.id}
+                                                    value={tipo.id}
                                                 >
                                                     {tipo.label}
                                                 </SelectItem>
@@ -284,7 +297,8 @@ export default function FormularioCadastroUnidadeEducacional() {
                     <Button
                         type="submit"
                         variant="submit"
-                        disabled={!isFormValid}
+                        disabled={!isFormValid || isPending}
+                        loading={isPending}
                     >
                         Cadastrar UE
                     </Button>
