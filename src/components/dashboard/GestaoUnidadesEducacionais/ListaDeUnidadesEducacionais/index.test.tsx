@@ -2,6 +2,14 @@ import { render, screen } from "@testing-library/react";
 import ListaDeUnidadesEducacionais from ".";
 import { UnidadeEducacional } from "@/types/unidades";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+function renderWithQueryProvider(ui: React.ReactElement) {
+    const queryClient = new QueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    );
+}
 
 vi.mock("@/hooks/useGetUnidades", () => ({
     useGetUnidades: vi.fn(),
@@ -42,9 +50,9 @@ describe("ListaDeUnidadesEducacionais", () => {
             data: unidadesMock,
         } as never);
 
-        render(<ListaDeUnidadesEducacionais status="ativa" />);
+        renderWithQueryProvider(<ListaDeUnidadesEducacionais status="ativa" />);
 
-        expect(mockedUseGetUnidades).toHaveBeenCalledWith(true);
+        expect(mockedUseGetUnidades).toHaveBeenCalledWith(true, undefined);
         expect(screen.getByTestId("tabela-unidades")).toHaveTextContent(
             "Renderizando 1 unidades"
         );
@@ -55,9 +63,9 @@ describe("ListaDeUnidadesEducacionais", () => {
             data: [],
         } as never);
 
-        render(<ListaDeUnidadesEducacionais status="inativa" />);
+        renderWithQueryProvider(<ListaDeUnidadesEducacionais status="inativa" />);
 
-        expect(mockedUseGetUnidades).toHaveBeenCalledWith(false);
+        expect(mockedUseGetUnidades).toHaveBeenCalledWith(false, undefined);
         expect(screen.queryByTestId("tabela-unidades")).not.toBeInTheDocument();
     });
 });
