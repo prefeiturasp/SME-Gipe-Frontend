@@ -18,8 +18,9 @@ export function useHandleAprovarUsuario() {
 
         if (result?.success) {
             toast({
-                title: "Tudo certo por aqui!",
-                description: "Usuário aprovado com sucesso!",
+                title: "O perfil foi aprovado com sucesso.",
+                description:
+                    "O perfil receberá um e-mail informando sobre a aprovação.",
                 variant: "success",
             });
             setUsuarioParaAprovar(null);
