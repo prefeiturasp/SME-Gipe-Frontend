@@ -11,7 +11,7 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     E eu efetuo login com RF GIPE
     E estou na página principal do sistema
 
-  @skip @login @validacao @smoke
+  @login @validacao @smoke
   Cenário: Validar autenticação e acesso ao dashboard
     Então devo ser redirecionado para o dashboard
     E devo visualizar a página principal do sistema
