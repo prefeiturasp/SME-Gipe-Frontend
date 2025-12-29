@@ -11,7 +11,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E eu efetuo login com RF
 
 
-  @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
+  @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
     # Aba 1: Data e Hora
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
@@ -72,5 +72,6 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Então sistema exibe modal com titulo "Conclusão de etapa"
     Quando preenche campo motivo encerramento com "Conclusão para teste"
     E clica em Finalizar modal
+    Então valida a existencia do texto sucesso "Ocorrência registrada com sucesso!"
     E aguarda 20 segundos
     Então valida a existencia do Texto " Histórico de ocorrências registradas"
