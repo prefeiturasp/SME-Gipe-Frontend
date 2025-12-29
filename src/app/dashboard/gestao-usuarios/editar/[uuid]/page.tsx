@@ -13,7 +13,7 @@ export default function EditarPessoaUsuaria({
 }: EditarPessoaUsuariaProps) {
     return (
         <>
-            <PageHeader title="Editar perfil" edit />
+            <PageHeader title="Editar perfil" edit usuarioUuid={params.uuid}/>
             <QuadroBranco>
                 <FormularioCadastroPessoaUsuaria
                     mode="edit"

@@ -91,6 +91,7 @@ export function useCadastroUsuarioForm({
         uuid: usuarioUuid || "",
         enabled: mode === "edit" && !!usuarioUuid,
     });
+    const isFormDisabled = mode === "edit" && usuarioData?.is_active === false;
 
     useEffect(() => {
         if (mode === "edit" && usuarioUuid) {
@@ -375,5 +376,6 @@ export function useCadastroUsuarioForm({
         router,
         mode,
         hasChanges: isDirty || cargoAlterado,
+        isFormDisabled
     };
 }
