@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -9,18 +10,17 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import { CamposRedeDireta } from "./CamposRedeDireta";
+import { CamposRedeIndireta } from "./CamposRedeIndireta";
 import ModalConfirmacao from "./ModalConfirmacao";
 import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
-import { CamposRedeIndireta } from "./CamposRedeIndireta";
-import { CamposRedeDireta } from "./CamposRedeDireta";
 
 type FormularioCadastroPessoaUsuariaProps = {
     mode?: "create" | "edit";
@@ -70,16 +70,27 @@ export default function FormularioCadastroPessoaUsuaria({
                         name="rede"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                                <FormLabel
+                                    className={`required text-[14px] font-[700] ${
+                                        mode === "edit"
+                                            ? "text-[#B0B0B0]"
+                                            : "text-[#42474a]"
+                                    }`}
+                                >
                                     Rede*
                                 </FormLabel>
                                 <Select
                                     value={field.value}
                                     onValueChange={handleRedeChange}
+                                    disabled={currentMode === "edit"}
                                 >
                                     <FormControl>
                                         <SelectTrigger
-                                            className="w-full border-[#DADADA]"
+                                            className={`w-full font-normal ${
+                                                mode === "edit"
+                                                    ? "border-[#B0B0B0] text-[#B0B0B0] disabled:opacity-100"
+                                                    : "border-[#DADADA]"
+                                            }`}
                                             data-testid="select-rede"
                                         >
                                             <SelectValue placeholder="Selecione" />
