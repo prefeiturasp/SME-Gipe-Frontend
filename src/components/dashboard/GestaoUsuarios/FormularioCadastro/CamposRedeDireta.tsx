@@ -18,6 +18,9 @@ type CamposRedeDiretaProps = {
     showDRE: boolean;
     showUE: boolean;
     isDreDisabled?: boolean;
+    onDreChange?: (val: string) => void;
+    mode?: "create" | "edit";
+    isFormDisabled?: boolean;
 };
 
 export function CamposRedeDireta({
@@ -27,7 +30,21 @@ export function CamposRedeDireta({
     showDRE,
     showUE,
     isDreDisabled = false,
+    onDreChange,
+    mode = "create",
+    isFormDisabled = false,
 }: Readonly<CamposRedeDiretaProps>) {
+    const fullNameDisabled = isFormDisabled;
+    const cpfDisabled = isFormDisabled || mode === "edit";
+    const rfDisabled = isFormDisabled || mode === "edit";
+    const emailDisabled = isFormDisabled;
+    const dreDisabled = isFormDisabled || isDreDisabled;
+    const ueDisabled = isFormDisabled;
+
+    const labelClass = (disabled: boolean) => `required text-[14px] font-[700] ${disabled ? "text-[#B0B0B0]" : "text-[#42474a]"}`;
+    const inputClass = (disabled: boolean) => `font-normal border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
+    const comboboxClass = (disabled: boolean) => `border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
+
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -36,14 +53,13 @@ export function CamposRedeDireta({
                     name="fullName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                Nome completo*
-                            </FormLabel>
+                            <FormLabel className={labelClass(fullNameDisabled)}>Nome completo*</FormLabel>
                             <FormControl>
                                 <Input
                                     {...field}
                                     placeholder="Exemplo: Maria Clara Medeiros"
-                                    className="font-normal border-[#DADADA]"
+                                    className={inputClass(fullNameDisabled)}
+                                    disabled={fullNameDisabled}
                                     data-testid="input-fullName"
                                 />
                             </FormControl>
@@ -57,21 +73,17 @@ export function CamposRedeDireta({
                     name="cpf"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                CPF*
-                            </FormLabel>
+                            <FormLabel className={labelClass(cpfDisabled)}>CPF*</FormLabel>
                             <FormControl>
                                 <Input
                                     {...field}
                                     inputMode="numeric"
                                     placeholder="123.456.789-10"
-                                    className="font-normal border-[#DADADA]"
-                                    data-testid="input-cpf"
+                                    className={inputClass(cpfDisabled)}
+                                    disabled={cpfDisabled}
                                     maxLength={14}
-                                    onChange={(e) => {
-                                        const masked = maskCPF(e.target.value);
-                                        field.onChange(masked);
-                                    }}
+                                    onChange={(e) => field.onChange(maskCPF(e.target.value))}
+                                    data-testid="input-cpf"
                                 />
                             </FormControl>
                             <FormMessage />
@@ -86,15 +98,14 @@ export function CamposRedeDireta({
                     name="rf"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                RF*
-                            </FormLabel>
+                            <FormLabel className={labelClass(rfDisabled)}>RF*</FormLabel>
                             <FormControl>
                                 <Input
                                     {...field}
                                     inputMode="numeric"
                                     placeholder="Digite o RF"
-                                    className="font-normal border-[#DADADA]"
+                                    className={inputClass(rfDisabled)}
+                                    disabled={rfDisabled}
                                     data-testid="input-rf"
                                 />
                             </FormControl>
@@ -108,15 +119,14 @@ export function CamposRedeDireta({
                     name="email"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                E-mail*
-                            </FormLabel>
+                            <FormLabel className={labelClass(emailDisabled)}>E-mail*</FormLabel>
                             <FormControl>
                                 <Input
                                     {...field}
                                     type="email"
                                     placeholder="Digite o e-mail corporativo"
-                                    className="font-normal border-[#DADADA]"
+                                    className={inputClass(emailDisabled)}
+                                    disabled={emailDisabled}
                                     data-testid="input-email"
                                 />
                             </FormControl>
@@ -133,21 +143,16 @@ export function CamposRedeDireta({
                         name="dre"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Diretoria Regional*
-                                </FormLabel>
+                                <FormLabel className={labelClass(dreDisabled)}>Diretoria Regional*</FormLabel>
                                 <FormControl>
                                     <Combobox
                                         data-testid="select-dre"
-                                        options={dreOptions.map((dre) => ({
-                                            label: dre.nome,
-                                            value: dre.uuid,
-                                        }))}
+                                        options={dreOptions.map((dre) => ({ label: dre.nome, value: dre.uuid }))}
                                         value={field.value}
-                                        onChange={field.onChange}
+                                        onChange={onDreChange ?? field.onChange}
                                         placeholder="Digite ou selecione"
-                                        className="border-[#DADADA]"
-                                        disabled={isDreDisabled}
+                                        className={comboboxClass(dreDisabled)}
+                                        disabled={dreDisabled}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -157,27 +162,23 @@ export function CamposRedeDireta({
                 )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 mb-6">
+            <div className="grid grid-cols-1 gap-6">
                 {showUE && (
                     <FormField
                         control={form.control}
                         name="ue"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Unidade Educacional*
-                                </FormLabel>
+                                <FormLabel className={labelClass(ueDisabled)}>Unidade Educacional*</FormLabel>
                                 <FormControl>
                                     <Combobox
                                         data-testid="select-ue"
-                                        options={ueOptions.map((ue) => ({
-                                            label: ue.nome,
-                                            value: ue.uuid,
-                                        }))}
+                                        options={ueOptions.map((ue) => ({ label: ue.nome, value: ue.uuid }))}
                                         value={field.value}
                                         onChange={field.onChange}
                                         placeholder="Digite ou selecione"
-                                        className="border-[#DADADA]"
+                                        className={comboboxClass(ueDisabled)}
+                                        disabled={ueDisabled}
                                     />
                                 </FormControl>
                                 <FormMessage />
