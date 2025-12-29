@@ -5,6 +5,7 @@ import UserBlock from "@/assets/icons/UserBlock";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useInativarGestaoUsuario } from "@/hooks/useInativarGestaoUsuario";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -55,6 +56,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
     const handleInactivate = onInactivate || handleInactivateInternal;
     const loading = isLoadingInactivate ?? isPending;
+    const { data: usuarioData } = useObterUsuarioGestao({
+        uuid: usuarioUuid || "",
+    });
+
     return (
         <>
             <div className="flex items-center justify-between w-full px-4">
@@ -71,16 +76,26 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 <ArrowLeft />
                             </Link>
                         </Button>
-                        <Button
-                            variant="outlineDestructive"
-                            type="button"
-                            className="text-center rounded-md text-[14px] font-[700]"
-                            onClick={() => setOpenModal(true)}
-                            disabled={loading}
-                        >
-                            <UserBlock className="mr-2" />
-                            Inativar perfil
-                        </Button>
+                        {usuarioData?.is_active ? (
+                            <Button
+                                variant="outlineDestructive"
+                                type="button"
+                                className="text-center rounded-md text-[14px] font-[700]"
+                                onClick={() => setOpenModal(true)}
+                                disabled={loading}
+                            >
+                                <UserBlock className="mr-2" />
+                                Inativar perfil
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="customOutline"
+                                type="button"
+                                className="text-center rounded-md text-[14px] font-[700]"
+                            >
+                                Reativar perfil
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <Button asChild variant="customOutline">

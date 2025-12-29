@@ -1,4 +1,5 @@
 import { toast } from "@/components/ui/headless-toast";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -6,6 +7,10 @@ import PageHeader from "./PageHeader";
 
 const mockRouterPush = vi.fn();
 const mockMutateAsync = vi.fn();
+
+vi.mock("@/hooks/useObterUsuarioGestao", () => ({
+    useObterUsuarioGestao: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -31,22 +36,31 @@ describe("PageHeader", () => {
         vi.clearAllMocks();
     });
     it("deve renderizar o título", () => {
+        (useObterUsuarioGestao as any).mockReturnValue({
+            data: { is_active: true },
+        });
         render(<PageHeader title="Test Title" />);
         expect(
             screen.getByRole("heading", { name: /test title/i })
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar o botão de voltar e o botão Inativar perfil no modo edit", () => {
+    it("deve renderizar o botão de voltar e o botão Inativar perfil no modo edit quando usuário ativo", () => {
+        (useObterUsuarioGestao as any).mockReturnValue({
+            data: { is_active: true },
+        });
         render(<PageHeader title="Test Title" edit={true} />);
+
         const backButton = screen.getByRole("link");
         expect(backButton).toHaveAttribute(
             "href",
             "/dashboard/gestao-usuarios"
         );
-        expect(
-            screen.getByRole("button", { name: /inativar perfil/i })
-        ).toBeInTheDocument();
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar perfil/i,
+        });
+        expect(inativarButton).toBeInTheDocument();
     });
 
     it("deve renderizar o botão de voltar com texto 'Voltar' quando edit for false", () => {
@@ -200,5 +214,17 @@ describe("PageHeader", () => {
         expect(mockMutateAsync).not.toHaveBeenCalled();
         expect(mockToast).not.toHaveBeenCalled();
         expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("deve renderizar o botão de Reativar perfil quando usuário inativo", () => {
+        (useObterUsuarioGestao as any).mockReturnValue({
+            data: { is_active: false },
+        });
+        render(<PageHeader title="Test Title" edit={true} />);
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).toBeInTheDocument();
     });
 });

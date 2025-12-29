@@ -55,7 +55,16 @@ export default function FormularioCadastroPessoaUsuaria({
         isDreDisabled,
         mode: currentMode,
         hasChanges,
+        isFormDisabled,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
+
+    const labelClass = (disabled: boolean, extra?: string) =>
+        `required text-[14px] font-[700] ${
+            disabled ? "text-[#B0B0B0]" : "text-[#42474a]"
+        } ${extra ?? ""}`;
+    const selectClass = (disabled: boolean) =>
+        `w-full border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
+    const buttonDisabled = isFormDisabled;
 
     return (
         <Form {...form}>
@@ -68,85 +77,87 @@ export default function FormularioCadastroPessoaUsuaria({
                     <FormField
                         control={form.control}
                         name="rede"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel
-                                    className={`required text-[14px] font-[700] ${
-                                        mode === "edit"
-                                            ? "text-[#B0B0B0]"
-                                            : "text-[#42474a]"
-                                    }`}
-                                >
-                                    Rede*
-                                </FormLabel>
-                                <Select
-                                    value={field.value}
-                                    onValueChange={handleRedeChange}
-                                    disabled={currentMode === "edit"}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className={`w-full font-normal ${
-                                                mode === "edit"
-                                                    ? "border-[#B0B0B0] text-[#B0B0B0] disabled:opacity-100"
-                                                    : "border-[#DADADA]"
-                                            }`}
-                                            data-testid="select-rede"
-                                        >
-                                            <SelectValue placeholder="Selecione" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {redeOptions.map((rede) => (
-                                            <SelectItem
-                                                key={rede.value}
-                                                value={rede.value}
+                        render={({ field }) => {
+                            const disabled = isFormDisabled;
+                            return (
+                                <FormItem>
+                                    <FormLabel className={labelClass(disabled)}>
+                                        Rede*
+                                    </FormLabel>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={handleRedeChange}
+                                        disabled={
+                                            disabled || currentMode === "edit"
+                                        }
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger
+                                                className={selectClass(
+                                                    disabled
+                                                )}
+                                                data-testid="select-rede"
                                             >
-                                                {rede.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {redeOptions.map((rede) => (
+                                                <SelectItem
+                                                    key={rede.value}
+                                                    value={rede.value}
+                                                >
+                                                    {rede.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
                     />
 
                     <FormField
                         control={form.control}
                         name="cargo"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Cargo*
-                                </FormLabel>
-                                <Select
-                                    value={field.value}
-                                    onValueChange={handleCargoChange}
-                                    disabled={!isRedeSelected}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className="w-full disabled:bg-[#F5F5F5] border-[#DADADA] disabled:opacity-100"
-                                            data-testid="select-cargo"
-                                        >
-                                            <SelectValue placeholder="Selecione" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {cargoOptions.map((cargo) => (
-                                            <SelectItem
-                                                key={cargo.value}
-                                                value={cargo.value}
+                        render={({ field }) => {
+                            const disabled = !isRedeSelected || isFormDisabled;
+                            return (
+                                <FormItem>
+                                    <FormLabel className={labelClass(disabled)}>
+                                        Cargo*
+                                    </FormLabel>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={handleCargoChange}
+                                        disabled={disabled}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger
+                                                className={selectClass(
+                                                    disabled
+                                                )}
+                                                data-testid="select-cargo"
                                             >
-                                                {cargo.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cargoOptions.map((cargo) => (
+                                                <SelectItem
+                                                    key={cargo.value}
+                                                    value={cargo.value}
+                                                >
+                                                    {cargo.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
                     />
                 </div>
 
@@ -162,6 +173,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 isDreDisabled={isDreDisabled}
                                 mode={currentMode}
                                 onDreChange={handleDreChange}
+                                isFormDisabled={isFormDisabled}
                             />
                         )}
 
@@ -175,6 +187,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 isDreDisabled={isDreDisabled}
                                 mode={currentMode}
                                 onDreChange={handleDreChange}
+                                isFormDisabled={isFormDisabled}
                             />
                         )}
                     </>
@@ -185,28 +198,43 @@ export default function FormularioCadastroPessoaUsuaria({
                         <FormField
                             control={form.control}
                             name="isAdmin"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                        <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            data-testid="checkbox-isAdmin"
-                                            className="h-[18px] w-[18px] border-2 border-[#B0B0B0]"
-                                        />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                        <FormLabel className="text-[14px] font-[700] text-[#42474a]">
-                                            Atribuir perfil administrador
-                                        </FormLabel>
-                                        <p className="text-[12px] font-normal text-[#42474a]">
-                                            Opção disponível para usuários que
-                                            possuem cargo de Ponto Focal ou
-                                            GIPE.
-                                        </p>
-                                    </div>
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const disabled = isFormDisabled;
+                                return (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                disabled={disabled}
+                                                className={`h-[18px] w-[18px] border-2 border-[#B0B0B0] ${
+                                                    disabled
+                                                        ? "bg-white text-[#B0B0B0]"
+                                                        : ""
+                                                }`}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel
+                                                className={labelClass(disabled)}
+                                            >
+                                                Atribuir perfil administrador
+                                            </FormLabel>
+                                            <p
+                                                className={`text-[12px] font-normal ${
+                                                    disabled
+                                                        ? "text-[#B0B0B0]"
+                                                        : "text-[#42474a]"
+                                                }`}
+                                            >
+                                                Opção disponível para usuários
+                                                que possuem cargo de Ponto Focal
+                                                ou GIPE.
+                                            </p>
+                                        </div>
+                                    </FormItem>
+                                );
+                            }}
                         />
                     </div>
                 )}
@@ -225,7 +253,9 @@ export default function FormularioCadastroPessoaUsuaria({
                         type="button"
                         variant="submit"
                         disabled={
-                            !isValid || (currentMode === "edit" && !hasChanges)
+                            buttonDisabled ||
+                            !isValid ||
+                            (currentMode === "edit" && !hasChanges)
                         }
                         data-testid="button-cadastrar"
                         onClick={handleSubmitClick}
