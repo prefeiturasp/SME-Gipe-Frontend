@@ -5,6 +5,9 @@ import FormularioCadastroPessoaUsuaria from "./index";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { ObterUsuarioGestaoResponse } from "@/actions/obter-usuario-gestao";
+import * as permissionsHook from "@/hooks/useUserPermissions";
+import * as obterUsuarioHook from "@/hooks/useObterUsuarioGestao";
+
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -168,33 +171,53 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         expect(cadastrarButton).toBeDisabled();
     });
 
-    it("exibe checkbox de admin apenas para Ponto Focal ou GIPE", async () => {
-        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
-
-        expect(
-            screen.queryByTestId("checkbox-isAdmin")
-        ).not.toBeInTheDocument();
-
-        const selectRede = screen.getByTestId("select-rede");
-        fireEvent.click(selectRede);
-        await waitFor(() => {
-            const option = screen.getByRole("option", { name: "Direta" });
-            fireEvent.click(option);
-        });
-
-        const selectCargo = screen.getByTestId("select-cargo");
-        fireEvent.click(selectCargo);
-        await waitFor(() => {
-            const option = screen.getByRole("option", {
-                name: "Ponto focal",
-            });
-            fireEvent.click(option);
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("checkbox-isAdmin")).toBeInTheDocument();
-        });
+    it("aplica estilos desabilitados no checkbox de administrador quando usuário está inativo", async () => {
+    vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+        isPontoFocal: true,
+        isGipe: false,
+        isAssistenteOuDiretor: false,
+        isGipeAdmin: true,
     });
+
+    vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue({
+        data: {
+            uuid: "usuario-inativo",
+            name: "Usuário Inativo",
+            cpf: "12345678900",
+            email: "inativo@email.com",
+            rede: "DIRETA",
+            cargo: 1,
+            is_active: false,
+            is_app_admin: false,
+            codigo_eol_dre_da_unidade: "",
+            codigo_eol_unidade: "",
+        },
+        isLoading: false,
+        isFetching: false,
+        isSuccess: true,
+    } as any);
+
+    render(
+        <FormularioCadastroPessoaUsuaria
+            mode="edit"
+            usuarioUuid="usuario-inativo"
+        />,
+        { wrapper }
+    );
+
+    const checkbox = await screen.findByRole("checkbox");
+    expect(checkbox).toBeInTheDocument();
+
+    expect(checkbox).toHaveClass("bg-white");
+    expect(checkbox).toHaveClass("text-[#B0B0B0]");
+
+    const descricao = screen.getByText(
+        /Opção disponível para usuários que possuem cargo de Ponto Focal ou GIPE/i
+    );
+
+    expect(descricao).toHaveClass("text-[#B0B0B0]");
+});
+
 });
 
 function getMockedQueryResult(
