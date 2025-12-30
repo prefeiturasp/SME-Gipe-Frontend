@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useInativarGestaoUsuario } from "@/hooks/useInativarGestaoUsuario";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import { useReativarGestaoUsuario } from "@/hooks/useReativarGestaoUsuario";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import ModalInativacao from "./ModalInativacao";
+import ModalConfirmacaoPerfil from "./ModalConfirmacaoPerfil";
 
 interface PageHeaderProps {
     title: string;
     edit?: boolean;
     onClickBack?: () => void;
-    onInactivate?: () => void;
-    isLoadingInactivate?: boolean;
     usuarioUuid?: string;
 }
 
@@ -24,14 +24,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     edit = true,
     onClickBack,
-    onInactivate,
-    isLoadingInactivate,
     usuarioUuid,
 }) => {
     const [openModal, setOpenModal] = useState(false);
+    const [isReativacao, setIsReativacao] = useState(false);
     const router = useRouter();
-    const { mutateAsync: inativarUsuario, isPending } =
+    const { mutateAsync: inativarUsuario, isPending: isPendingInativar } =
         useInativarGestaoUsuario();
+    const { mutateAsync: reativarUsuario, isPending: isPendingReativar } =
+        useReativarGestaoUsuario();
+    const queryClient = useQueryClient();
 
     const handleInactivateInternal = async () => {
         if (!usuarioUuid) return;
@@ -40,9 +42,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
         if (result.success) {
             toast({
-                title: "Perfil inativado com sucesso.",
-                description: "O usuário não terá mais acesso ao GIPE.",
+                title: "Tudo certo por aqui!",
+                description: "O perfil foi inativado com sucesso.",
                 variant: "success",
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["usuario-gestao", usuarioUuid],
             });
             router.push("/dashboard/gestao-usuarios?tab=inativos");
         } else {
@@ -54,8 +59,31 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         }
     };
 
-    const handleInactivate = onInactivate || handleInactivateInternal;
-    const loading = isLoadingInactivate ?? isPending;
+    const handleReativarInternal = async () => {
+        if (!usuarioUuid) return;
+
+        const result = await reativarUsuario(usuarioUuid);
+
+        if (result.success) {
+            toast({
+                title: "Tudo certo por aqui!",
+                description: "O perfil foi reativado com sucesso.",
+                variant: "success",
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["usuario-gestao", usuarioUuid],
+            });
+            router.push("/dashboard/gestao-usuarios?tab=ativos");
+        } else {
+            toast({
+                title: "Não conseguimos concluir a ação!",
+                description: result.error || "Erro ao reativar usuário.",
+                variant: "error",
+            });
+        }
+    };
+
+    const loading = isReativacao ? isPendingReativar : isPendingInativar;
     const { data: usuarioData } = useObterUsuarioGestao({
         uuid: usuarioUuid || "",
     });
@@ -81,7 +109,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 variant="outlineDestructive"
                                 type="button"
                                 className="text-center rounded-md text-[14px] font-[700]"
-                                onClick={() => setOpenModal(true)}
+                                onClick={() => {
+                                    setIsReativacao(false);
+                                    setOpenModal(true);
+                                }}
                                 disabled={loading}
                             >
                                 <UserBlock className="mr-2" />
@@ -89,9 +120,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                             </Button>
                         ) : (
                             <Button
-                                variant="customOutline"
+                                variant="submit"
                                 type="button"
                                 className="text-center rounded-md text-[14px] font-[700]"
+                                onClick={() => {
+                                    setIsReativacao(true);
+                                    setOpenModal(true);
+                                }}
+                                disabled={loading}
                             >
                                 Reativar perfil
                             </Button>
@@ -109,12 +145,17 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     </Button>
                 )}
             </div>
-            {edit && handleInactivate && (
-                <ModalInativacao
+            {edit && (
+                <ModalConfirmacaoPerfil
                     open={openModal}
                     onOpenChange={setOpenModal}
-                    onConfirm={handleInactivate}
+                    onConfirm={
+                        isReativacao
+                            ? handleReativarInternal
+                            : handleInactivateInternal
+                    }
                     isLoading={loading}
+                    isReativacao={isReativacao}
                 />
             )}
         </>
