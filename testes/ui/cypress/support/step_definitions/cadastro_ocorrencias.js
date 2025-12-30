@@ -48,7 +48,7 @@ const clickButtonByIndex = (index, waitAfter = 2500) => {
 Given('que eu acesso o sistema para cadastro de ocorrências', () => {
   cy.clearCookies()
   cy.clearLocalStorage()
-  cy.visit('/', { 
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
     timeout: 60000,
     retryOnNetworkFailure: true,
     failOnStatusCode: false
