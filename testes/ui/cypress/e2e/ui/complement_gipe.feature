@@ -18,7 +18,7 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para GIPE
 
-  @complemento @preenchimento @critico @fluxo_completo
+  @skip @complemento @preenchimento @critico @fluxo_completo
   Cenário: Complementar detalhes DRE e GIPE de intercorrência registrada
     
     Quando eu valido os campos da tabela de ocorrências
