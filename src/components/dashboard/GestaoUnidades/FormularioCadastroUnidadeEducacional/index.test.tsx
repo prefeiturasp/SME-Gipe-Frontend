@@ -1,3 +1,29 @@
+const mockTipoOptions = [
+    { id: "ADM", label: "ADM" },
+    { id: "DRE", label: "DRE" },
+    { id: "EMEF", label: "EMEF" },
+    { id: "EMEI", label: "EMEI" },
+    { id: "CEU", label: "CEU" },
+    { id: "CEI", label: "CEI" },
+];
+vi.mock("@/hooks/useTiposUnidade", () => ({
+    useTiposUnidade: () => ({
+        data: mockTipoOptions,
+        isLoading: false,
+    }),
+}));
+
+const mockCadastrarUnidade = vi.fn();
+vi.mock("@/hooks/useCadastrarUnidade", () => ({
+    useCadastrarUnidade: () => ({
+        mutateAsync: mockCadastrarUnidade,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: vi.fn(),
+}));
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi, describe, it, expect, beforeEach } from "vitest";
@@ -140,32 +166,38 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     });
 
     describe("Campo Tipo", () => {
-        it("deve exibir todas as opções de tipo ao clicar no select", async () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
-
+        const openTipoSelect = () => {
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
+            return tipoSelect;
+        };
+
+        const selectTipoOption = async (optionLabel: string) => {
+            await waitFor(() => {
+                const options = screen.getAllByText(optionLabel);
+                fireEvent.click(options.at(-1)!);
+            });
+        };
+
+        it("deve exibir todas as opções de tipo vindas do backend ao clicar no select", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            openTipoSelect();
 
             await waitFor(() => {
-                expect(screen.getAllByText("ADM").length).toBeGreaterThan(0);
-                expect(screen.getAllByText("DRE").length).toBeGreaterThan(0);
-                expect(screen.getAllByText("EMEF").length).toBeGreaterThan(0);
-                expect(screen.getAllByText("EMEI").length).toBeGreaterThan(0);
-                expect(screen.getAllByText("CEU").length).toBeGreaterThan(0);
-                expect(screen.getAllByText("CEI").length).toBeGreaterThan(0);
+                mockTipoOptions.forEach((opt) => {
+                    expect(
+                        screen.getAllByText(opt.label).length
+                    ).toBeGreaterThan(0);
+                });
             });
         });
 
         it("deve permitir selecionar um tipo", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
-
-            await waitFor(() => {
-                const emefOptions = screen.getAllByText("EMEF");
-                fireEvent.click(emefOptions[emefOptions.length - 1]);
-            });
+            const tipoSelect = openTipoSelect();
+            await selectTipoOption("EMEF");
 
             await waitFor(() => {
                 expect(tipoSelect).toHaveTextContent("EMEF");
@@ -229,7 +261,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
             await waitFor(() => {
                 const diretaOptions = screen.getAllByText("Direta");
-                fireEvent.click(diretaOptions[diretaOptions.length - 1]);
+                fireEvent.click(diretaOptions.at(-1)!);
             });
 
             await waitFor(() => {
@@ -280,7 +312,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
             await waitFor(() => {
                 const dreOptions = screen.getAllByText("DRE - Butantã");
-                fireEvent.click(dreOptions[dreOptions.length - 1]);
+                fireEvent.click(dreOptions.at(-1)!);
             });
 
             await waitFor(() => {
@@ -314,16 +346,19 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     });
 
     describe("Comportamento ao selecionar tipo DRE", () => {
+        const selectTipoAndWait = async (tipo: string) => {
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText(tipo);
+                fireEvent.click(options.at(-1)!);
+            });
+        };
+
         it("deve ocultar campos de Diretoria Regional e Sigla da DRE quando tipo for DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
-
-            await waitFor(() => {
-                const dreOptions = screen.getAllByText("DRE");
-                fireEvent.click(dreOptions[dreOptions.length - 1]);
-            });
+            await selectTipoAndWait("DRE");
 
             await waitFor(() => {
                 expect(
@@ -338,13 +373,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir campos de Diretoria Regional e Sigla quando tipo não for DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
-
-            await waitFor(() => {
-                const emefOptions = screen.getAllByText("EMEF");
-                fireEvent.click(emefOptions[emefOptions.length - 1]);
-            });
+            await selectTipoAndWait("EMEF");
 
             await waitFor(() => {
                 expect(
@@ -402,37 +431,61 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     });
 
     describe("Validação do formulário", () => {
-        it("deve habilitar o botão de cadastrar quando todos os campos obrigatórios forem preenchidos", async () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
-
+        const preencherCamposObrigatorios = async ({
+            tipo,
+            nome,
+            rede,
+            codigo,
+            dre,
+        }: {
+            tipo: string;
+            nome: string;
+            rede: string;
+            codigo: string;
+            dre?: string;
+        }) => {
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
             await waitFor(() => {
-                const options = screen.getAllByText("EMEF");
-                fireEvent.click(options[options.length - 1]);
+                const options = screen.getAllByText(tipo);
+                fireEvent.click(options.at(-1)!);
             });
 
             const nomeInput = screen.getByPlaceholderText(
                 /Exemplo: EMEF João da Silva/i
             );
-            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
+            fireEvent.change(nomeInput, { target: { value: nome } });
 
             const redeSelect = getSelectByLabel("Rede*");
             fireEvent.click(redeSelect);
             await waitFor(() => {
-                const options = screen.getAllByText("Direta");
-                fireEvent.click(options[options.length - 1]);
+                const options = screen.getAllByText(rede);
+                fireEvent.click(options.at(-1)!);
             });
 
             const codigoInput =
                 screen.getByPlaceholderText(/Exemplo: 1234567/i);
-            fireEvent.change(codigoInput, { target: { value: "123456" } });
+            fireEvent.change(codigoInput, { target: { value: codigo } });
 
-            const dreSelect = getSelectByLabel("Diretoria Regional*");
-            fireEvent.click(dreSelect);
-            await waitFor(() => {
-                const dreOptions = screen.getAllByText("DRE - Butantã");
-                fireEvent.click(dreOptions[dreOptions.length - 1]);
+            if (dre) {
+                const dreSelect = getSelectByLabel("Diretoria Regional*");
+                fireEvent.click(dreSelect);
+                await waitFor(() => {
+                    const dreOptions = screen.getAllByText(dre);
+                    fireEvent.click(dreOptions.at(-1)!);
+                });
+            }
+        };
+
+        it("deve habilitar o botão de cadastrar quando todos os campos obrigatórios forem preenchidos", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await preencherCamposObrigatorios({
+                tipo: "EMEF",
+                nome: "EMEF Teste",
+                rede: "Direta",
+                codigo: "123456",
+                dre: "DRE - Butantã",
             });
 
             await waitFor(() => {
@@ -446,30 +499,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve habilitar o botão quando tipo for DRE e campos não-DRE estiverem preenchidos", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
-            await waitFor(() => {
-                const options = screen.getAllByText("DRE");
-                fireEvent.click(options[options.length - 1]);
+            await preencherCamposObrigatorios({
+                tipo: "DRE",
+                nome: "DRE Butantã",
+                rede: "Direta",
+                codigo: "123456",
             });
-
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
-            );
-            fireEvent.change(nomeInput, {
-                target: { value: "DRE Butantã" },
-            });
-
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
-            await waitFor(() => {
-                const options = screen.getAllByText("Direta");
-                fireEvent.click(options[options.length - 1]);
-            });
-
-            const codigoInput =
-                screen.getByPlaceholderText(/Exemplo: 1234567/i);
-            fireEvent.change(codigoInput, { target: { value: "123456" } });
 
             await waitFor(() => {
                 const cadastrarButton = screen.getByRole("button", {
@@ -494,17 +529,16 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             );
         });
 
-        it("deve chamar onSubmit ao clicar em Cadastrar UE com formulário válido", async () => {
-            const consoleSpy = vi
-                .spyOn(console, "log")
-                .mockImplementation(() => {});
+        it("deve chamar o cadastro e exibir toast de sucesso ao submeter o formulário válido", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+            mockCadastrarUnidade.mockResolvedValueOnce({ success: true });
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("EMEF");
-                fireEvent.click(options[options.length - 1]);
+                fireEvent.click(options.at(-1)!);
             });
 
             const nomeInput = screen.getByPlaceholderText(
@@ -516,7 +550,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(redeSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("Direta");
-                fireEvent.click(options[options.length - 1]);
+                fireEvent.click(options.at(-1)!);
             });
 
             const codigoInput =
@@ -527,7 +561,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(dreSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("DRE - Butantã");
-                fireEvent.click(options[options.length - 1]);
+                fireEvent.click(options.at(-1)!);
             });
 
             const cadastrarButton = screen.getByRole("button", {
@@ -541,10 +575,76 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(cadastrarButton);
 
             await waitFor(() => {
-                expect(consoleSpy).toHaveBeenCalled();
+                expect(mockCadastrarUnidade).toHaveBeenCalled();
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        title: expect.stringMatching(/sucesso|certo/i),
+                        variant: "success",
+                    })
+                );
+                expect(mockPush).toHaveBeenCalledWith(
+                    "/dashboard/gestao-unidades-educacionais"
+                );
+            });
+        });
+
+        it("deve exibir toast de erro ao falhar o cadastro", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+            mockCadastrarUnidade.mockResolvedValueOnce({
+                success: false,
+                error: "Erro ao cadastrar unidade",
+            });
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText("EMEF");
+                fireEvent.click(options.at(-1)!);
             });
 
-            consoleSpy.mockRestore();
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i
+            );
+            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
+
+            const redeSelect = getSelectByLabel("Rede*");
+            fireEvent.click(redeSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText("Direta");
+                fireEvent.click(options.at(-1)!);
+            });
+
+            const codigoInput =
+                screen.getByPlaceholderText(/Exemplo: 1234567/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(options.at(-1)!);
+            });
+
+            const cadastrarButton = screen.getByRole("button", {
+                name: /Cadastrar UE/i,
+            });
+
+            await waitFor(() => {
+                expect(cadastrarButton).not.toBeDisabled();
+            });
+
+            fireEvent.click(cadastrarButton);
+
+            await waitFor(() => {
+                expect(mockCadastrarUnidade).toHaveBeenCalled();
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        title: expect.stringMatching(/erro|ação/i),
+                        variant: "error",
+                    })
+                );
+            });
         });
     });
 });

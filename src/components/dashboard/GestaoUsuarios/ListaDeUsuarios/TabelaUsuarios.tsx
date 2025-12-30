@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useMemo, useState, useEffect } from "react";
 
@@ -15,13 +15,15 @@ import Editar from "@/assets/icons/Editar";
 import { Usuario } from "@/types/usuarios";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import Link from "next/link";
 
 type TabelaUsuariosProps = {
     dataUsuarios: Usuario[];
 };
 
-export default function TabelaUsuarios({ dataUsuarios }: Readonly<TabelaUsuariosProps>) {
+export default function TabelaUsuarios({
+    dataUsuarios,
+}: Readonly<TabelaUsuariosProps>) {
     const PAGE_SIZE = 10;
     const styeTable = "px-2 text-[#42474a] text-left last:text-text-left!";
     const [pageIndex, setPageIndex] = useState(0);
@@ -42,55 +44,94 @@ export default function TabelaUsuarios({ dataUsuarios }: Readonly<TabelaUsuarios
 
     return (
         <>
-        <div className="rounded-md border border-gray-300">
-
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className={styeTable}>Perfil</TableHead>
-                        <TableHead className={styeTable}>Nome</TableHead>
-                        <TableHead className={styeTable}>RF ou CPF</TableHead>
-                        <TableHead className={styeTable}>Email</TableHead>
-                        <TableHead className={styeTable}>Rede</TableHead>
-                        <TableHead className={styeTable}>Diretoria Regional</TableHead>
-                        <TableHead className={styeTable}>Unidade Educacional</TableHead>
-                        <TableHead className="text-center">Ação</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {paginatedUsuarios.length > 0 ? (
-                        paginatedUsuarios.map((usuario, index) => {
-                            const rowKey = usuario.uuid ?? String(usuario.id ?? index);
-
-                            return (
-                                <TableRow key={rowKey}>
-                                    <TableCell>{usuario.perfil}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.nome}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.rf_ou_cpf}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.email}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.rede}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.diretoria_regional}</TableCell>
-                                    <TableCell className={styeTable}>{usuario.unidade_educacional}</TableCell>
-                                    <TableCell className={styeTable}><Editar /></TableCell>
-                                </TableRow>
-                            );
-                        })
-                    ) : (
+            <div className="rounded-md border border-gray-300">
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell colSpan={8} className="h-24 text-center">
-                                Nenhum usuário encontrado.
-                            </TableCell>
+                            <TableHead className={styeTable}>Perfil</TableHead>
+                            <TableHead className={styeTable}>Nome</TableHead>
+                            <TableHead className={styeTable}>
+                                RF ou CPF
+                            </TableHead>
+                            <TableHead className={styeTable}>Email</TableHead>
+                            <TableHead className={styeTable}>Rede</TableHead>
+                            <TableHead className={styeTable}>
+                                Diretoria Regional
+                            </TableHead>
+                            <TableHead className={styeTable}>
+                                Unidade Educacional
+                            </TableHead>
+                            <TableHead className="text-center">Ação</TableHead>
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedUsuarios.length > 0 ? (
+                            paginatedUsuarios.map((usuario, index) => {
+                                const rowKey =
+                                    usuario.uuid ?? String(usuario.id ?? index);
 
-        </div>
-        <div className="flex items-center justify-center space-x-2 py-4">
+                                return (
+                                    <TableRow key={rowKey}>
+                                        <TableCell>{usuario.perfil}</TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.nome}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.rf_ou_cpf}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.email}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.rede}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.diretoria_regional}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.unidade_educacional}
+                                        </TableCell>
+                                        <TableCell className={styeTable}>
+                                            <Button
+                                                variant="ghost"
+                                                className={
+                                                    "h-[27px] w-[27px] p-0 rounded-[4px] bg-white hover:bg-gray-100"
+                                                }
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={`/dashboard/gestao-usuarios/editar/${usuario.uuid}`}
+                                                >
+                                                    <span className="sr-only">
+                                                        Visualizar
+                                                    </span>
+                                                    <Editar />
+                                                </Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={8}
+                                    className="h-24 text-center"
+                                >
+                                    Nenhum usuário encontrado.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="flex items-center justify-center space-x-2 py-4">
                 <Button
                     variant="pagination"
                     size="icon"
-                    onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+                    onClick={() =>
+                        setPageIndex((prev) => Math.max(prev - 1, 0))
+                    }
                     disabled={!canPreviousPage}
                     className="w-[32px] h-[32px]"
                     data-testid="prev-page-button"
@@ -102,7 +143,11 @@ export default function TabelaUsuarios({ dataUsuarios }: Readonly<TabelaUsuarios
                     {Array.from({ length: pageCount }).map((_, index) => (
                         <Button
                             key={`page-${index + 1}`}
-                            variant={pageIndex === index ? "paginationActive" : "pagination"}
+                            variant={
+                                pageIndex === index
+                                    ? "paginationActive"
+                                    : "pagination"
+                            }
                             size="sm"
                             className="w-[32px] h-[32px]"
                             onClick={() => setPageIndex(index)}
@@ -116,7 +161,9 @@ export default function TabelaUsuarios({ dataUsuarios }: Readonly<TabelaUsuarios
                     variant="pagination"
                     size="icon"
                     onClick={() =>
-                        setPageIndex((prev) => Math.min(prev + 1, pageCount - 1))
+                        setPageIndex((prev) =>
+                            Math.min(prev + 1, pageCount - 1)
+                        )
                     }
                     disabled={!canNextPage}
                     className="w-[32px] h-[32px]"
