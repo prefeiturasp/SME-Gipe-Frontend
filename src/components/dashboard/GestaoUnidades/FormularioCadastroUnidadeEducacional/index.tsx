@@ -1,8 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { UnidadeCadastroPayload } from "@/actions/cadastrar-unidade";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -12,23 +10,25 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
 import { Input } from "@/components/ui/input";
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { formSchema, FormData } from "./schema";
+import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useTiposUnidade } from "@/hooks/useTiposUnidade";
+import { useFetchDREs } from "@/hooks/useUnidades";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
-import { useFetchDREs } from "@/hooks/useUnidades";
-import { useTiposUnidade } from "@/hooks/useTiposUnidade";
-import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
-import { toast } from "@/components/ui/headless-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { UnidadeCadastroPayload } from "@/actions/cadastrar-unidade";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { FormData, formSchema } from "./schema";
 
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
@@ -60,11 +60,10 @@ export default function FormularioCadastroUnidadeEducacional() {
     const isDreSelected = tipoSelecionado === "DRE";
 
     useEffect(() => {
-        if (isPontoFocal && userDreUuid) {
+        if (isPontoFocal && userDreUuid && dreOptions.length > 0) {
             form.setValue("diretoriaRegional", userDreUuid);
         }
-    }, [isPontoFocal, userDreUuid, form]);
-
+    }, [isPontoFocal, userDreUuid, dreOptions, form]);
     const isFormValid = form.formState.isValid;
 
     const { mutateAsync: cadastrarUnidade, isPending } = useCadastrarUnidade();
