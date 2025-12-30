@@ -1,3 +1,3 @@
 Cypress.Commands.add('cadastro_gipe', () => {
-  cy.visit('/cadastro')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/cadastro')
 })
