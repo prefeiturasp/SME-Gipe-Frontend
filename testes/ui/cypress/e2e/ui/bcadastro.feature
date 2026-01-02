@@ -7,32 +7,23 @@ Funcionalidade: Cadastro de usuários no sistema GIPE
     E o usuário seleciona o campo "Selecione a DRE" com "DRE CAPELA DO SOCORRO"
     E o usuário seleciona o campo "Digite o nome da UE" com "AURELIO BUARQUE DE HOLANDA FERREIRA"
 
- @skip Cenário: Usuário realiza cadastro completo
-    Dado que o usuário está na página de cadastro
-    Quando o usuário seleciona o campo "Selecione a DRE" com "DRE CAPELA DO SOCORRO"
-    E o usuário seleciona o campo "Digite o nome da UE" com "AURELIO BUARQUE DE HOLANDA FERREIRA"
-    E o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
+  Cenário: Usuário realiza cadastro completo
+    Quando o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
     E o usuário preenche o campo "Qual o seu CPF" com "044.194.250-40"
     E o usuário preenche o campo "Qual o seu e-mail?" com "testesgipe3@sme.prefeitura.sp.gov.br"
     E o usuário clica no botão cadastrar agora
     Então o sistema deve mostrar a próxima tela para continuar o cadastro
 
-  @skip Cenário: Cadastro com email já cadastrado
-    Dado que o usuário está na página de cadastro
-    Quando o usuário seleciona o campo "Selecione a DRE" com "DRE CAPELA DO SOCORRO"
-    E o usuário seleciona o campo "Digite o nome da UE" com "AURELIO BUARQUE DE HOLANDA FERREIRA"
-    E o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
+  Cenário: Cadastro com email já cadastrado
+    Quando o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
     E o usuário preenche o campo "Qual o seu CPF" com "045.194.250-40"
     E o usuário preenche o campo "Qual o seu e-mail?" com "testesgipe3@sme.prefeitura.sp.gov.br"
     E o usuário clica no botão cadastrar agora
     E o usuário preenche o campo "Qual o seu e-mail?" com "testesgipe3@sme.prefeitura.sp.gov.br"
     Então o sistema deve exibir a mensagem "Este e-mail já está cadastrado."
 
-  @skip Cenário: Cadastro com CPF já cadastrado
-    Dado que o usuário está na página de cadastro
-    Quando o usuário seleciona o campo "Selecione a DRE" com "DRE CAPELA DO SOCORRO"
-    E o usuário seleciona o campo "Digite o nome da UE" com "AURELIO BUARQUE DE HOLANDA FERREIRA"
-    E o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
+  Cenário: Cadastro com CPF já cadastrado
+    Quando o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
     E o usuário preenche o campo "Qual o seu CPF" com "044.194.250-40"
     E o usuário preenche o campo "Qual o seu e-mail?" com "testesgipe3@sme.prefeitura.sp.gov.br"
     E o usuário clica no botão cadastrar agora
