@@ -1,12 +1,14 @@
 import { toast } from "@/components/ui/headless-toast";
-import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import * as useObterUsuarioGestaoModule from "@/hooks/useObterUsuarioGestao";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import PageHeader from "./PageHeader";
 
 const mockRouterPush = vi.fn();
-const mockMutateAsync = vi.fn();
+const mockMutateAsyncInativar = vi.fn();
+const mockMutateAsyncReativar = vi.fn();
 
 vi.mock("@/hooks/useObterUsuarioGestao", () => ({
     useObterUsuarioGestao: vi.fn(),
@@ -20,7 +22,14 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/hooks/useInativarGestaoUsuario", () => ({
     useInativarGestaoUsuario: () => ({
-        mutateAsync: mockMutateAsync,
+        mutateAsync: mockMutateAsyncInativar,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/hooks/useReativarGestaoUsuario", () => ({
+    useReativarGestaoUsuario: () => ({
+        mutateAsync: mockMutateAsyncReativar,
         isPending: false,
     }),
 }));
@@ -31,25 +40,52 @@ vi.mock("@/components/ui/headless-toast", () => ({
 
 const mockToast = vi.mocked(toast);
 
+const createWrapper = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
+    Wrapper.displayName = "QueryClientTestWrapper";
+    return Wrapper;
+};
+
 describe("PageHeader", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-    });
-    it("deve renderizar o título", () => {
-        (useObterUsuarioGestao as any).mockReturnValue({
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
             data: { is_active: true },
-        });
-        render(<PageHeader title="Test Title" />);
+            isLoading: false,
+            error: null,
+        } as never);
+    });
+
+    it("deve renderizar o título", () => {
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" />
+            </Wrapper>
+        );
         expect(
             screen.getByRole("heading", { name: /test title/i })
         ).toBeInTheDocument();
     });
 
     it("deve renderizar o botão de voltar e o botão Inativar perfil no modo edit quando usuário ativo", () => {
-        (useObterUsuarioGestao as any).mockReturnValue({
-            data: { is_active: true },
-        });
-        render(<PageHeader title="Test Title" edit={true} />);
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" edit={true} />
+            </Wrapper>
+        );
 
         const backButton = screen.getByRole("link");
         expect(backButton).toHaveAttribute(
@@ -64,7 +100,12 @@ describe("PageHeader", () => {
     });
 
     it("deve renderizar o botão de voltar com texto 'Voltar' quando edit for false", () => {
-        render(<PageHeader title="Test Title" edit={false} />);
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" edit={false} />
+            </Wrapper>
+        );
         const backButton = screen.getByRole("link", { name: /voltar/i });
         expect(backButton).toBeInTheDocument();
         expect(backButton).toHaveAttribute(
@@ -76,12 +117,15 @@ describe("PageHeader", () => {
     it("deve abrir o modal ao clicar em Inativar perfil", async () => {
         const user = userEvent.setup();
 
+        const Wrapper = createWrapper();
         render(
-            <PageHeader
-                title="Test Title"
-                edit={true}
-                usuarioUuid="test-uuid"
-            />
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -89,20 +133,22 @@ describe("PageHeader", () => {
         });
         await user.click(inativarButton);
 
-        // Verifica se o modal abriu
         expect(screen.getByText("Inativação de perfil")).toBeInTheDocument();
     });
 
     it("deve inativar usuário com sucesso", async () => {
         const user = userEvent.setup();
-        mockMutateAsync.mockResolvedValue({ success: true });
+        mockMutateAsyncInativar.mockResolvedValue({ success: true });
 
+        const Wrapper = createWrapper();
         render(
-            <PageHeader
-                title="Test Title"
-                edit={true}
-                usuarioUuid="test-uuid"
-            />
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -117,10 +163,10 @@ describe("PageHeader", () => {
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsync).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
         expect(mockToast).toHaveBeenCalledWith({
-            title: "Perfil inativado com sucesso.",
-            description: "O usuário não terá mais acesso ao GIPE.",
+            title: "Tudo certo por aqui!",
+            description: "O perfil foi inativado com sucesso.",
             variant: "success",
         });
         expect(mockRouterPush).toHaveBeenCalledWith(
@@ -130,17 +176,20 @@ describe("PageHeader", () => {
 
     it("deve mostrar erro ao tentar inativar usuário", async () => {
         const user = userEvent.setup();
-        mockMutateAsync.mockResolvedValue({
+        mockMutateAsyncInativar.mockResolvedValue({
             success: false,
             error: "Erro de teste",
         });
 
+        const Wrapper = createWrapper();
         render(
-            <PageHeader
-                title="Test Title"
-                edit={true}
-                usuarioUuid="test-uuid"
-            />
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -153,7 +202,7 @@ describe("PageHeader", () => {
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsync).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
         expect(mockToast).toHaveBeenCalledWith({
             title: "Não conseguimos concluir a ação!",
             description: "Erro de teste",
@@ -164,16 +213,19 @@ describe("PageHeader", () => {
 
     it("deve usar mensagem de erro padrão quando result.error é undefined", async () => {
         const user = userEvent.setup();
-        mockMutateAsync.mockResolvedValue({
+        mockMutateAsyncInativar.mockResolvedValue({
             success: false,
         });
 
+        const Wrapper = createWrapper();
         render(
-            <PageHeader
-                title="Test Title"
-                edit={true}
-                usuarioUuid="test-uuid"
-            />
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -186,7 +238,7 @@ describe("PageHeader", () => {
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsync).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
         expect(mockToast).toHaveBeenCalledWith({
             title: "Não conseguimos concluir a ação!",
             description: "Erro ao inativar usuário.",
@@ -197,9 +249,14 @@ describe("PageHeader", () => {
 
     it("não deve chamar mutateAsync quando usuarioUuid não é fornecido", async () => {
         const user = userEvent.setup();
-        mockMutateAsync.mockResolvedValue({ success: true });
+        mockMutateAsyncInativar.mockResolvedValue({ success: true });
 
-        render(<PageHeader title="Test Title" edit={true} />);
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" edit={true} />
+            </Wrapper>
+        );
 
         const inativarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
@@ -211,20 +268,240 @@ describe("PageHeader", () => {
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsync).not.toHaveBeenCalled();
+        expect(mockMutateAsyncInativar).not.toHaveBeenCalled();
         expect(mockToast).not.toHaveBeenCalled();
         expect(mockRouterPush).not.toHaveBeenCalled();
     });
 
     it("deve renderizar o botão de Reativar perfil quando usuário inativo", () => {
-        (useObterUsuarioGestao as any).mockReturnValue({
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
             data: { is_active: false },
-        });
-        render(<PageHeader title="Test Title" edit={true} />);
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" edit={true} />
+            </Wrapper>
+        );
 
         const reativarButton = screen.getByRole("button", {
             name: /reativar perfil/i,
         });
         expect(reativarButton).toBeInTheDocument();
+    });
+
+    it("deve abrir o modal de reativação ao clicar em Reativar perfil", async () => {
+        const user = userEvent.setup();
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(reativarButton);
+
+        expect(screen.getByText("Reativação de perfil")).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "Ao reativar o perfil, a pessoa terá acesso ao GIPE novamente. Tem certeza que deseja continuar?"
+            )
+        ).toBeInTheDocument();
+    });
+
+    it("deve reativar usuário com sucesso", async () => {
+        const user = userEvent.setup();
+        mockMutateAsyncReativar.mockResolvedValue({ success: true });
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(reativarButton);
+
+        expect(screen.getByText("Reativação de perfil")).toBeInTheDocument();
+
+        const confirmarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(confirmarButton);
+
+        expect(mockMutateAsyncReativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockToast).toHaveBeenCalledWith({
+            title: "Tudo certo por aqui!",
+            description: "O perfil foi reativado com sucesso.",
+            variant: "success",
+        });
+        expect(mockRouterPush).toHaveBeenCalledWith(
+            "/dashboard/gestao-usuarios?tab=ativos"
+        );
+    });
+
+    it("deve mostrar erro ao tentar reativar usuário", async () => {
+        const user = userEvent.setup();
+        mockMutateAsyncReativar.mockResolvedValue({
+            success: false,
+            error: "Erro de teste",
+        });
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(reativarButton);
+
+        const confirmarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(confirmarButton);
+
+        expect(mockMutateAsyncReativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockToast).toHaveBeenCalledWith({
+            title: "Não conseguimos concluir a ação!",
+            description: "Erro de teste",
+            variant: "error",
+        });
+        expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("não deve chamar mutateAsync de reativação quando usuarioUuid não é fornecido", async () => {
+        const user = userEvent.setup();
+        mockMutateAsyncReativar.mockResolvedValue({ success: true });
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader title="Test Title" edit={true} />
+            </Wrapper>
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(reativarButton);
+
+        const confirmarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(confirmarButton);
+
+        expect(mockMutateAsyncReativar).not.toHaveBeenCalled();
+        expect(mockToast).not.toHaveBeenCalled();
+        expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("deve usar mensagem de erro padrão quando result.error é undefined na reativação", async () => {
+        const user = userEvent.setup();
+        mockMutateAsyncReativar.mockResolvedValue({
+            success: false,
+        });
+
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao"
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(reativarButton);
+
+        const confirmarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        await user.click(confirmarButton);
+
+        expect(mockMutateAsyncReativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockToast).toHaveBeenCalledWith({
+            title: "Não conseguimos concluir a ação!",
+            description: "Erro ao reativar usuário.",
+            variant: "error",
+        });
+        expect(mockRouterPush).not.toHaveBeenCalled();
     });
 });

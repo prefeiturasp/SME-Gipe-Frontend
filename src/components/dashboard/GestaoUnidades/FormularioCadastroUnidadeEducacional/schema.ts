@@ -6,7 +6,7 @@ export const formSchema = z
         nomeUnidadeEducacional: z
             .string()
             .min(3, { message: "Campo obrigatório" }),
-        rede: z.string(),
+        rede: z.string().min(1, { message: "Campo obrigatório" }),
         codigoEol: z.string().min(1, { message: "Campo obrigatório" }),
         diretoriaRegional: z.string().optional(),
         siglaDre: z.string().optional(),

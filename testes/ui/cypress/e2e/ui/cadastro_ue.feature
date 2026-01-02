@@ -72,5 +72,6 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Então sistema exibe modal com titulo "Conclusão de etapa"
     Quando preenche campo motivo encerramento com "Conclusão para teste"
     E clica em Finalizar modal
+    Então valida a existencia do texto sucesso "Ocorrência registrada com sucesso!"
     E aguarda 20 segundos
     Então valida a existencia do Texto " Histórico de ocorrências registradas"

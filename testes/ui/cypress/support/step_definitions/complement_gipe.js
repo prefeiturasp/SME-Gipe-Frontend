@@ -60,7 +60,7 @@ After(() => {
 Given('que eu acesso o sistema como GIPE', () => {
   cy.clearCookies()
   cy.clearLocalStorage()
-  cy.visit('/', { 
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
     timeout: TIMEOUTS.VERY_LONG,
     retryOnNetworkFailure: true
   })

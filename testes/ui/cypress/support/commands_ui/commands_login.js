@@ -8,14 +8,14 @@ Cypress.Commands.add('login_gipe', () => {
     cy.intercept('**/*recuperar-senha*', { statusCode: 200, body: '' })
     cy.intercept('**/*cadastro*', { statusCode: 200, body: '' })
     
-    // Visita a página com timeout reduzido
-    cy.visit('/', { 
-        timeout: 30000,
+    // Visita a página com timeout aumentado
+    cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
+        timeout: 120000,
         failOnStatusCode: false
     })
     
     // Aguarda elementos críticos da página
-    cy.get('input[placeholder*="RF"], input[placeholder*="CPF"]', { timeout: 10000 })
+    cy.get('input[placeholder*="RF"], input[placeholder*="CPF"]', { timeout: 20000 })
         .should('exist')
     
     cy.log('✅ Página de login carregada')
