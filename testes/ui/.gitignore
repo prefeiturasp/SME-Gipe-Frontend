@@ -26,6 +26,8 @@ run-validacao-tests.js
 run-validacao-tests.bat
 validate-token.js
 TOKEN-VALIDATION-README.md
+GHERKIN_SYNTAX_CHECKLIST.md
+JENKINS_SETUP.md
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
