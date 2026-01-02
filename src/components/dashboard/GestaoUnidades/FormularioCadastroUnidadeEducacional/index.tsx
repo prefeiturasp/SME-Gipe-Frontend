@@ -1,8 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { UnidadeCadastroPayload } from "@/actions/cadastrar-unidade";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -12,23 +10,25 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
 import { Input } from "@/components/ui/input";
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { formSchema, FormData } from "./schema";
+import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useTiposUnidade } from "@/hooks/useTiposUnidade";
+import { useFetchDREs } from "@/hooks/useUnidades";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
-import { useFetchDREs } from "@/hooks/useUnidades";
-import { useTiposUnidade } from "@/hooks/useTiposUnidade";
-import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
-import { toast } from "@/components/ui/headless-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { UnidadeCadastroPayload } from "@/actions/cadastrar-unidade";
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { FormData, formSchema } from "./schema";
 
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
@@ -43,27 +43,26 @@ export default function FormularioCadastroUnidadeEducacional() {
     const { data: dreOptions = [] } = useFetchDREs();
     const { data: tipoOptions = [] } = useTiposUnidade();
 
-    const form = useForm<FormData>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
+    const defaultValues = useMemo(
+        () => ({
             tipo: "",
             nomeUnidadeEducacional: "",
             rede: "",
             codigoEol: "",
-            diretoriaRegional: "",
+            diretoriaRegional: isPontoFocal && userDreUuid ? userDreUuid : "",
             siglaDre: "",
-        },
+        }),
+        [isPontoFocal, userDreUuid]
+    );
+
+    const form = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues,
         mode: "onChange",
     });
 
     const tipoSelecionado = form.watch("tipo");
     const isDreSelected = tipoSelecionado === "DRE";
-
-    useEffect(() => {
-        if (isPontoFocal && userDreUuid) {
-            form.setValue("diretoriaRegional", userDreUuid);
-        }
-    }, [isPontoFocal, userDreUuid, form]);
 
     const isFormValid = form.formState.isValid;
 
