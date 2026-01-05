@@ -1,20 +1,31 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
 import ConsultaFiltroLocalizadores from '../locators/consulta_filtro_locators'
-import { acessarSistema, efetuarLogin } from '../commands_ui/commands_login'
 
 const locators = new ConsultaFiltroLocalizadores()
 
 const RF_PADRAO = '29379960000'
 const SENHA_PADRAO = 'Sgp0000'
 
-Given('que eu acesso o sistema', () => {
-  cy.log('Acessando sistema GIPE...')
-  acessarSistema()
-})
-
 Given('eu efetuo login com RF', () => {
   cy.log(`Efetuando login com RF: ${RF_PADRAO}`)
-  efetuarLogin(RF_PADRAO, SENHA_PADRAO)
+  
+  cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
+    .should('be.visible')
+    .clear()
+    .type(RF_PADRAO, { delay: 50 })
+  
+  cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
+    .should('be.visible')
+    .clear()
+    .type(SENHA_PADRAO, { delay: 50 })
+  
+  cy.get('button')
+    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
+    .should('be.visible')
+    .should('not.be.disabled')
+    .click()
+  
+  cy.wait(3000)
 })
 
 When('o usuário está na página principal do sistema', () => {

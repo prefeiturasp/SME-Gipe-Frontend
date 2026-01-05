@@ -28,8 +28,9 @@ describe("getUsuarios", () => {
         const response = await getUsuarios(true, "dre-uuid", "ue-uuid", false);
 
         expect(response).toEqual({ success: true });
+
         expect(mockedAxios.get).toHaveBeenCalledWith(
-            `${API_URL}/users/gestao-usuarios`,
+            `${API_URL}/users/gestao-usuarios/`,
             expect.objectContaining({
                 params: {
                     ativo: true,

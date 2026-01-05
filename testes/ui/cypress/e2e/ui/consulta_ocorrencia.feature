@@ -10,7 +10,7 @@ Funcionalidade: Consulta de Ocorrência
   Contexto:
     Dado que o usuário realizou o login com sucesso
 
-  @skip@consulta @visualizacao @smoke
+  @skip @consulta @visualizacao @smoke
   Cenário: Usuário visualiza ocorrência registrada
     Quando o usuário está na página principal do sistema
     E localiza e valida o título "Histórico de ocorrências registradas"
@@ -18,7 +18,7 @@ Funcionalidade: Consulta de Ocorrência
     E clica em "Visualizar"
     Então o sistema exibe o resultado e valida o campo "Quando a ocorrência aconteceu?"
 
-  @skip@consulta @negativo
+  @skip @consulta @negativo
   Cenário: Validar elementos obrigatórios na página de consulta
     Quando o usuário está na página principal do sistema
     Então o título "Histórico de ocorrências registradas" deve estar visível

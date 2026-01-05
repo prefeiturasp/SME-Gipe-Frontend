@@ -238,4 +238,101 @@ describe("obterAnexos", () => {
             expect(resultado.data.previous).toBe(null);
         }
     });
+
+    it("deve incluir parâmetro perfil na URL quando fornecido", async () => {
+        const mockResponse = {
+            data: {
+                count: 1,
+                next: null,
+                previous: null,
+                results: [
+                    {
+                        uuid: "anexo-uuid-1",
+                        nome_original: "documento1.pdf",
+                        categoria: "boletim_ocorrencia",
+                        categoria_display: "Boletim de ocorrência",
+                        perfil: "diretor",
+                        perfil_display: "Diretor de Escola",
+                        tamanho_formatado: "1.2 MB",
+                        extensao: "pdf",
+                        arquivo_url: "https://example.com/anexo1.pdf",
+                        criado_em: "2025-11-17T10:00:00Z",
+                        usuario_username: "diretor1",
+                    },
+                ],
+            },
+        };
+
+        vi.mocked(apiAnexos.get).mockResolvedValue(mockResponse);
+
+        const resultado = await obterAnexos({
+            intercorrenciaUuid: "uuid-123",
+            perfil: "UE",
+        });
+
+        expect(resultado.success).toBe(true);
+        expect(apiAnexos.get).toHaveBeenCalledWith(
+            "/anexos/?intercorrencia_uuid=uuid-123&perfil=UE",
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: "Bearer fake-token",
+                }),
+            })
+        );
+    });
+
+    it("não deve incluir parâmetro perfil na URL quando não fornecido", async () => {
+        const mockResponse = {
+            data: {
+                count: 0,
+                next: null,
+                previous: null,
+                results: [],
+            },
+        };
+
+        vi.mocked(apiAnexos.get).mockResolvedValue(mockResponse);
+
+        const resultado = await obterAnexos({
+            intercorrenciaUuid: "uuid-123",
+        });
+
+        expect(resultado.success).toBe(true);
+        expect(apiAnexos.get).toHaveBeenCalledWith(
+            "/anexos/?intercorrencia_uuid=uuid-123",
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: "Bearer fake-token",
+                }),
+            })
+        );
+    });
+
+    it("não deve incluir parâmetro perfil na URL quando undefined", async () => {
+        const mockResponse = {
+            data: {
+                count: 0,
+                next: null,
+                previous: null,
+                results: [],
+            },
+        };
+
+        vi.mocked(apiAnexos.get).mockResolvedValue(mockResponse);
+
+        const resultado = await obterAnexos({
+            intercorrenciaUuid: "uuid-123",
+            perfil: undefined,
+        });
+
+        expect(resultado.success).toBe(true);
+        expect(apiAnexos.get).toHaveBeenCalledWith(
+            "/anexos/?intercorrencia_uuid=uuid-123",
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: "Bearer fake-token",
+                }),
+            })
+        );
+    });
 });

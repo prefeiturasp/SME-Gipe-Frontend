@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/headless-toast";
 import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import type { UnidadeEducacional } from "@/types/unidades";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
 import { useUserStore } from "@/stores/useUserStore";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import formSchema, { FormDataCadastroUsuario } from "./schema";
-import { buildCadastroPayload } from "./utils";
+import { buildCadastroPayload, mapCargoNumericoParaString } from "./utils";
 
 const REDE_OPTIONS = [
     { value: "DIRETA", label: "Direta" },
@@ -27,13 +31,30 @@ const CARGO_OPTIONS_DIRETA = [
     { value: "gipe", label: "GIPE" },
 ];
 
-export function useCadastroUsuarioForm() {
+type UseCadastroUsuarioFormProps = {
+    mode?: "create" | "edit";
+    usuarioUuid?: string;
+};
+
+export function useCadastroUsuarioForm({
+    mode = "create",
+    usuarioUuid,
+}: UseCadastroUsuarioFormProps = {}) {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [modalOpen, setModalOpen] = useState(false);
-    const { data: dreOptions = [] } = useFetchDREs();
-    const { mutate: cadastrarUsuario, isPending } = useCadastroGestaoUsuario();
-    const user = useUserStore((state) => state.user);
+    const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
+        useState(false);
+    const [carregandoDados, setCarregandoDados] = useState(false);
+    const montagemInicialRef = useRef(true);
+
+    const { user } = useUserStore();
     const { isPontoFocal, isGipe } = useUserPermissions();
+    const { mutate: cadastrarUsuario, isPending: isPendingCreate } =
+        useCadastroGestaoUsuario();
+    const { mutate: atualizarUsuario, isPending: isPendingUpdate } =
+        useAtualizarGestaoUsuario(usuarioUuid || "");
+    const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -49,122 +70,279 @@ export function useCadastroUsuarioForm() {
             isAdmin: false,
         },
         mode: "onChange",
-        reValidateMode: "onChange",
     });
 
-    const { isValid } = form.formState;
-    const values = form.watch();
-    const { data: ueOptions = [] } = useFetchUEs(values.dre);
+    const {
+        reset,
+        setValue,
+        getValues,
+        formState: { isValid, isDirty },
+        control,
+    } = form;
+
+    const watchedRede = useWatch({ control, name: "rede" });
+    const watchedCargo = useWatch({ control, name: "cargo" });
+    const watchedDre = useWatch({ control, name: "dre" });
+
+    const { data: dreOptions = [] } = useFetchDREs();
+    const { data: ueOptions = [] } = useFetchUEs(watchedDre, watchedRede);
+
+    const { data: usuarioData } = useObterUsuarioGestao({
+        uuid: usuarioUuid || "",
+        enabled: mode === "edit" && !!usuarioUuid,
+    });
+    const isFormDisabled = mode === "edit" && usuarioData?.is_active === false;
 
     useEffect(() => {
-        if (values.rede) {
-            form.setValue("cargo", "");
-            form.setValue("fullName", "");
-            form.setValue("rf", "");
-            form.setValue("cpf", "");
-            form.setValue("email", "");
-            form.setValue("dre", "");
-            form.setValue("ue", "");
+        if (mode === "edit" && usuarioUuid) {
+            setDadosIniciaisCarregados(false);
+            setCarregandoDados(false);
+            montagemInicialRef.current = true;
         }
-    }, [values.rede, form]);
+    }, [usuarioUuid, mode]);
+
+    const cargoOptions = useMemo(() => {
+        const options =
+            watchedRede === "INDIRETA"
+                ? CARGO_OPTIONS_INDIRETA
+                : CARGO_OPTIONS_DIRETA;
+        if (isGipe) return options;
+        return options.filter((option) => option.value !== "gipe");
+    }, [watchedRede, isGipe]);
+
+    const showFields = useMemo(() => {
+        const base = !!watchedRede && !!watchedCargo;
+        const isSpecialCargo = ["gipe", "admin"].includes(watchedCargo);
+
+        return {
+            dre: base && !isSpecialCargo,
+            ue: base && !isSpecialCargo && watchedCargo !== "ponto_focal",
+            adminCheckbox:
+                base && ["ponto_focal", "gipe"].includes(watchedCargo),
+        };
+    }, [watchedRede, watchedCargo]);
 
     useEffect(() => {
         if (
-            isPontoFocal &&
-            user?.unidades?.[0]?.dre?.dre_uuid &&
-            values.rede &&
-            values.cargo
+            mode === "edit" &&
+            usuarioData &&
+            dreOptions.length > 0 &&
+            !dadosIniciaisCarregados
         ) {
-            form.setValue("dre", user.unidades[0].dre.dre_uuid);
+            setCarregandoDados(true);
+            const cargo = mapCargoNumericoParaString(usuarioData.cargo);
+            const dreMatch = dreOptions.find(
+                (d: UnidadeEducacional) =>
+                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade
+            );
+
+            reset({
+                rede: usuarioData.rede,
+                cargo,
+                fullName: usuarioData.name,
+                rf: usuarioData.rede === "DIRETA" ? usuarioData.username : "",
+                cpf: usuarioData.cpf,
+                email: usuarioData.email,
+                dre: dreMatch?.uuid || "",
+                ue: "",
+                isAdmin: usuarioData.is_app_admin,
+            });
+            setDadosIniciaisCarregados(true);
+            setTimeout(() => {
+                setCarregandoDados(false);
+                montagemInicialRef.current = false;
+            }, 200);
         }
-    }, [isPontoFocal, user, form, values.rede, values.cargo]);
+    }, [mode, usuarioData, dreOptions, reset, dadosIniciaisCarregados]);
 
     useEffect(() => {
-        if (values.cargo === "gipe") {
-            form.setValue("dre", "");
-            form.setValue("ue", "");
-        } else if (values.cargo === "ponto_focal") {
-            form.setValue("ue", "");
+        if (
+            mode === "edit" &&
+            dadosIniciaisCarregados &&
+            ueOptions.length > 0 &&
+            usuarioData?.codigo_eol_unidade &&
+            !getValues("ue")
+        ) {
+            const ueMatch = ueOptions.find(
+                (u: UnidadeEducacional) =>
+                    u.codigo_eol === usuarioData.codigo_eol_unidade
+            );
+            if (ueMatch) {
+                setValue("ue", ueMatch.uuid, { shouldValidate: true });
+            }
         }
-    }, [values.cargo, form]);
+    }, [
+        mode,
+        ueOptions,
+        usuarioData,
+        dadosIniciaisCarregados,
+        setValue,
+        getValues,
+    ]);
 
     useEffect(() => {
-        form.setValue("ue", "", { shouldValidate: true });
-    }, [values.dre, form]);
-
-    const getCargoOptions = () => {
-        if (values.rede === "INDIRETA") {
-            return CARGO_OPTIONS_INDIRETA;
+        const dreUUID = user?.unidades?.[0]?.dre?.dre_uuid;
+        const podeAutoPreencher = isPontoFocal && dreUUID;
+        if (
+            podeAutoPreencher &&
+            watchedRede &&
+            watchedCargo &&
+            (mode === "create" || dadosIniciaisCarregados) &&
+            !watchedDre
+        ) {
+            setValue("dre", dreUUID);
         }
-        if (isGipe) {
-            return CARGO_OPTIONS_DIRETA;
-        }
-        return CARGO_OPTIONS_DIRETA.filter((option) => option.value !== "gipe");
-    };
+    }, [
+        isPontoFocal,
+        user,
+        watchedRede,
+        watchedCargo,
+        mode,
+        dadosIniciaisCarregados,
+        setValue,
+        watchedDre,
+    ]);
 
-    const cargoOptions = getCargoOptions();
+    const handleRedeChange = useCallback(
+        (val: string) => {
+            if (val === getValues("rede")) return;
 
-    const isRedeSelected = !!values.rede;
-    const isCargoSelected = !!values.cargo;
-    const shouldShowExtraFields = isRedeSelected && isCargoSelected;
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
 
-    const showFields = {
-        dre:
-            shouldShowExtraFields &&
-            values.cargo !== "gipe" &&
-            values.cargo !== "admin",
-        ue:
-            shouldShowExtraFields &&
-            values.cargo !== "ponto_focal" &&
-            values.cargo !== "gipe" &&
-            values.cargo !== "admin",
-        adminCheckbox:
-            shouldShowExtraFields &&
-            (values.cargo === "ponto_focal" || values.cargo === "gipe"),
-    };
+            setValue("rede", val, { shouldValidate: true });
 
-    const isRedeIndireta = values.rede === "INDIRETA";
-    const isRedeDireta = values.rede === "DIRETA";
+            if (mode === "create" || dadosIniciaisCarregados) {
+                setValue("cargo", "");
+                setValue("dre", "");
+                setValue("ue", "");
 
-    function handleSubmitClick(e: React.MouseEvent<HTMLButtonElement>) {
-        e.preventDefault();
-        setModalOpen(true);
-    }
+                if (mode === "create") {
+                    setValue("fullName", "");
+                    setValue("rf", "");
+                    setValue("cpf", "");
+                    setValue("email", "");
+                }
+            }
+        },
+        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues]
+    );
+
+    const handleDreChange = useCallback(
+        (val: string) => {
+            if (val === getValues("dre")) return;
+
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
+
+            setValue("dre", val, { shouldValidate: true });
+            setValue("ue", "", { shouldValidate: true });
+        },
+        [mode, carregandoDados, setValue, getValues]
+    );
+
+    const handleCargoChange = useCallback(
+        (val: string) => {
+            if (val === getValues("cargo")) return;
+
+            if (
+                mode === "edit" &&
+                (carregandoDados || montagemInicialRef.current)
+            )
+                return;
+
+            setValue("cargo", val, { shouldValidate: true });
+
+            if (val === "ponto_focal" || val === "gipe") {
+                setValue("ue", "", { shouldValidate: true });
+            }
+        },
+        [mode, carregandoDados, setValue, getValues]
+    );
 
     function handleConfirmCadastro() {
-        const formValues = form.getValues();
-        const payload = buildCadastroPayload(formValues, dreOptions, ueOptions);
+        const payload = buildCadastroPayload(
+            getValues(),
+            dreOptions,
+            ueOptions
+        );
 
-        cadastrarUsuario(payload, {
-            onSuccess: (response) => {
-                if (!response.success) {
+        if (mode === "edit") {
+            atualizarUsuario(payload, {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Não conseguimos concluir a ação!",
+                            description:
+                                response.error || "Erro ao atualizar usuário.",
+                            variant: "error",
+                        });
+                        return;
+                    }
+
+                    queryClient.invalidateQueries({
+                        queryKey: ["usuario-gestao", usuarioUuid],
+                    });
+
                     toast({
-                        title: "Não conseguimos concluir a ação!",
-                        description:
-                            response.error ||
-                            "Ocorreu um erro e não conseguimos cadastrar a pessoa usuária. Por favor,  tente novamente.",
+                        title: "Tudo certo por aqui!",
+                        description: "Usuário atualizado com sucesso!",
+                        variant: "success",
+                    });
+                    setModalOpen(false);
+                    router.push("/dashboard/gestao-usuarios?tab=ativos");
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro no servidor",
+                        description: "Tente novamente mais tarde.",
                         variant: "error",
                     });
-                    return;
-                }
+                },
+            });
+        } else {
+            cadastrarUsuario(payload, {
+                onSuccess: (response) => {
+                    if (!response.success) {
+                        toast({
+                            title: "Não conseguimos concluir a ação!",
+                            description:
+                                response.error || "Erro ao cadastrar usuário.",
+                            variant: "error",
+                        });
+                        return;
+                    }
 
-                toast({
-                    title: "Tudo certo por aqui!",
-                    description: "A pessoa usuária foi cadastrada com sucesso!",
-                    variant: "success",
-                });
-                setModalOpen(false);
-                router.push("/dashboard/gestao-usuarios?tab=ativos");
-            },
-            onError: () => {
-                toast({
-                    title: "Não conseguimos concluir a ação!",
-                    description:
-                        "Ocorreu um erro e não conseguimos cadastrar a pessoa usuária. Por favor,  tente novamente.",
-                    variant: "error",
-                });
-            },
-        });
+                    toast({
+                        title: "Tudo certo por aqui!",
+                        description:
+                            "A pessoa usuária foi cadastrada com sucesso!",
+                        variant: "success",
+                    });
+                    setModalOpen(false);
+                    router.push("/dashboard/gestao-usuarios?tab=ativos");
+                },
+                onError: () => {
+                    toast({
+                        title: "Erro no servidor",
+                        description: "Tente novamente mais tarde.",
+                        variant: "error",
+                    });
+                },
+            });
+        }
+    }
+
+    let cargoAlterado = false;
+    if (mode === "edit" && usuarioData) {
+        const cargoInicial = mapCargoNumericoParaString(usuarioData.cargo);
+        cargoAlterado = watchedCargo !== cargoInicial;
     }
 
     return {
@@ -177,14 +355,27 @@ export function useCadastroUsuarioForm() {
         ueOptions,
         redeOptions: REDE_OPTIONS,
         cargoOptions,
-        isRedeSelected,
-        shouldShowExtraFields,
         showFields,
-        isRedeIndireta,
-        isRedeDireta,
-        handleSubmitClick,
+        isRedeSelected: !!watchedRede,
+        shouldShowExtraFields: !!watchedRede && !!watchedCargo,
+        isRedeIndireta: watchedRede === "INDIRETA",
+        isRedeDireta: watchedRede === "DIRETA",
+        handleSubmitClick: (e: React.MouseEvent) => {
+            e.preventDefault();
+            if (mode === "edit") {
+                handleConfirmCadastro();
+            } else {
+                setModalOpen(true);
+            }
+        },
         handleConfirmCadastro,
-        router,
+        handleRedeChange,
+        handleCargoChange,
+        handleDreChange,
         isDreDisabled: isPontoFocal,
+        router,
+        mode,
+        hasChanges: isDirty || cargoAlterado,
+        isFormDisabled
     };
 }

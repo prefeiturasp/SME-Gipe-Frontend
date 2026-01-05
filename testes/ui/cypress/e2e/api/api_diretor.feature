@@ -135,6 +135,7 @@ Funcionalidade: API Diretor - Endpoint Diretor
   @validacao @protocolo_acionado
   Cenário: Validar campo protocolo_acionado
     Quando eu faço uma requisição GET para "/diretor/"
+    Então o campo "protocolo_acionado" deve aceitar os valores
       | sim_gcm     |
       | nao         |
       | registro |

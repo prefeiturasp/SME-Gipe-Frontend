@@ -189,7 +189,17 @@ class CadastroUeLocalizadores {
   }
 
   btn_finalizar_modal() {
-    return '//*[@id="radix-:rfn:"]/form/div[2]/button[2]'
+    return '/html/body/div[3]/form/div[2]/button[2]'
+  }
+
+  // Mensagem de sucesso
+  mensagem_sucesso() {
+    return 'div[role="alertdialog"]'
+  }
+
+  // Botão fechar modal de sucesso
+  btn_fechar_sucesso() {
+    return '/html/body/div[3]/div[4]/button'
   }
 
   btn_fechar_final() {

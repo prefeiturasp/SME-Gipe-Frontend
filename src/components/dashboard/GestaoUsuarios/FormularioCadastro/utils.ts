@@ -24,6 +24,13 @@ const CARGO_MAP: Record<string, number> = {
     gipe: PERFIL_GIPE,
 };
 
+const CARGO_REVERSE_MAP: Record<number, string> = {
+    [PERFIL_DIRETOR]: "diretor",
+    [PERFIL_ASSISTENTE_DIRETOR]: "assistente",
+    [PERFIL_PONTO_FOCAL]: "ponto_focal",
+    [PERFIL_GIPE]: "gipe",
+};
+
 /**
  * Remove todos os caracteres não numéricos de uma string
  */
@@ -85,4 +92,11 @@ export function buildCadastroPayload(
         unidades,
         is_app_admin: formValues.isAdmin,
     };
+}
+
+/**
+ * Converte código de cargo numérico para string
+ */
+export function mapCargoNumericoParaString(cargoNumerico: number): string {
+    return CARGO_REVERSE_MAP[cargoNumerico] || "";
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -9,20 +10,27 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import { CamposRedeDireta } from "./CamposRedeDireta";
+import { CamposRedeIndireta } from "./CamposRedeIndireta";
 import ModalConfirmacao from "./ModalConfirmacao";
 import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
-import { CamposRedeIndireta } from "./CamposRedeIndireta";
-import { CamposRedeDireta } from "./CamposRedeDireta";
 
-export default function FormularioCadastroPessoaUsuaria() {
+type FormularioCadastroPessoaUsuariaProps = {
+    mode?: "create" | "edit";
+    usuarioUuid?: string;
+};
+
+export default function FormularioCadastroPessoaUsuaria({
+    mode = "create",
+    usuarioUuid,
+}: Readonly<FormularioCadastroPessoaUsuariaProps>) {
     const {
         form,
         isValid,
@@ -40,89 +48,116 @@ export default function FormularioCadastroPessoaUsuaria() {
         isRedeDireta,
         handleSubmitClick,
         handleConfirmCadastro,
+        handleRedeChange,
+        handleCargoChange,
+        handleDreChange,
         router,
         isDreDisabled,
-    } = useCadastroUsuarioForm();
+        mode: currentMode,
+        hasChanges,
+        isFormDisabled,
+    } = useCadastroUsuarioForm({ mode, usuarioUuid });
+
+    const labelClass = (disabled: boolean, extra?: string) =>
+        `required text-[14px] font-[700] ${
+            disabled ? "text-[#B0B0B0]" : "text-[#42474a]"
+        } ${extra ?? ""}`;
+    const selectClass = (disabled: boolean) =>
+        `w-full border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
+    const buttonDisabled = isFormDisabled;
 
     return (
         <Form {...form}>
             <form>
                 <h2 className="text-[14px] text-[#42474a] mb-6">
-                    Cadastre as informações da pessoa usuária.
+                    Cadastre as informações do perfil.
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <FormField
                         control={form.control}
                         name="rede"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Rede*
-                                </FormLabel>
-                                <Select
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className="w-full border-[#DADADA]"
-                                            data-testid="select-rede"
-                                        >
-                                            <SelectValue placeholder="Selecione" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {redeOptions.map((rede) => (
-                                            <SelectItem
-                                                key={rede.value}
-                                                value={rede.value}
+                        render={({ field }) => {
+                            const disabled = isFormDisabled;
+                            return (
+                                <FormItem>
+                                    <FormLabel className={labelClass(disabled)}>
+                                        Rede*
+                                    </FormLabel>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={handleRedeChange}
+                                        disabled={
+                                            disabled || currentMode === "edit"
+                                        }
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger
+                                                className={selectClass(
+                                                    disabled
+                                                )}
+                                                data-testid="select-rede"
                                             >
-                                                {rede.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {redeOptions.map((rede) => (
+                                                <SelectItem
+                                                    key={rede.value}
+                                                    value={rede.value}
+                                                >
+                                                    {rede.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
                     />
 
                     <FormField
                         control={form.control}
                         name="cargo"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Cargo*
-                                </FormLabel>
-                                <Select
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                    disabled={!isRedeSelected}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger
-                                            className="w-full disabled:bg-[#F5F5F5] border-[#DADADA] disabled:opacity-100"
-                                            data-testid="select-cargo"
-                                        >
-                                            <SelectValue placeholder="Selecione" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {cargoOptions.map((cargo) => (
-                                            <SelectItem
-                                                key={cargo.value}
-                                                value={cargo.value}
+                        render={({ field }) => {
+                            const disabled = !isRedeSelected || isFormDisabled;
+                            return (
+                                <FormItem>
+                                    <FormLabel className={labelClass(disabled)}>
+                                        Cargo*
+                                    </FormLabel>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={handleCargoChange}
+                                        disabled={disabled}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger
+                                                className={selectClass(
+                                                    disabled
+                                                )}
+                                                data-testid="select-cargo"
                                             >
-                                                {cargo.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cargoOptions.map((cargo) => (
+                                                <SelectItem
+                                                    key={cargo.value}
+                                                    value={cargo.value}
+                                                >
+                                                    {cargo.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
                     />
                 </div>
 
@@ -136,6 +171,9 @@ export default function FormularioCadastroPessoaUsuaria() {
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
+                                mode={currentMode}
+                                onDreChange={handleDreChange}
+                                isFormDisabled={isFormDisabled}
                             />
                         )}
 
@@ -147,38 +185,56 @@ export default function FormularioCadastroPessoaUsuaria() {
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
+                                mode={currentMode}
+                                onDreChange={handleDreChange}
+                                isFormDisabled={isFormDisabled}
                             />
                         )}
                     </>
                 )}
 
                 {showFields.adminCheckbox && (
-                    <div className="mt-6">
+                    <div>
                         <FormField
                             control={form.control}
                             name="isAdmin"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                        <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            data-testid="checkbox-isAdmin"
-                                            className="h-[18px] w-[18px] border-2 border-[#B0B0B0]"
-                                        />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                        <FormLabel className="text-[14px] font-[700] text-[#42474a]">
-                                            Atribuir perfil administrador
-                                        </FormLabel>
-                                        <p className="text-[12px] font-normal text-[#42474a]">
-                                            Opção disponível para usuários que
-                                            possuem cargo de Ponto Focal ou
-                                            GIPE.
-                                        </p>
-                                    </div>
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const disabled = isFormDisabled;
+                                return (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                disabled={disabled}
+                                                className={`h-[18px] w-[18px] border-2 border-[#B0B0B0] ${
+                                                    disabled
+                                                        ? "bg-white text-[#B0B0B0]"
+                                                        : ""
+                                                }`}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel
+                                                className={labelClass(disabled)}
+                                            >
+                                                Atribuir perfil administrador
+                                            </FormLabel>
+                                            <p
+                                                className={`text-[12px] font-normal ${
+                                                    disabled
+                                                        ? "text-[#B0B0B0]"
+                                                        : "text-[#42474a]"
+                                                }`}
+                                            >
+                                                Opção disponível para usuários
+                                                que possuem cargo de Ponto Focal
+                                                ou GIPE.
+                                            </p>
+                                        </div>
+                                    </FormItem>
+                                );
+                            }}
                         />
                     </div>
                 )}
@@ -188,7 +244,7 @@ export default function FormularioCadastroPessoaUsuaria() {
                         type="button"
                         variant="customOutline"
                         onClick={() =>
-                            router.push("/dashboard/gestao/pessoa-usuaria")
+                            router.push("/dashboard/gestao-usuarios")
                         }
                     >
                         Cancelar
@@ -196,11 +252,17 @@ export default function FormularioCadastroPessoaUsuaria() {
                     <Button
                         type="button"
                         variant="submit"
-                        disabled={!isValid}
+                        disabled={
+                            buttonDisabled ||
+                            !isValid ||
+                            (currentMode === "edit" && !hasChanges)
+                        }
                         data-testid="button-cadastrar"
                         onClick={handleSubmitClick}
                     >
-                        Cadastrar pessoa usuária
+                        {currentMode === "edit"
+                            ? "Salvar alterações"
+                            : "Cadastrar perfil"}
                     </Button>
                 </div>
             </form>
