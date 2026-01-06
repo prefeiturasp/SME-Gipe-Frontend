@@ -1,6 +1,6 @@
-import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 export interface DateTimeInputProps {
     dateValue?: string;
@@ -11,6 +11,7 @@ export interface DateTimeInputProps {
     datePlaceholder?: string;
     timePlaceholder?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
@@ -24,6 +25,7 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
             datePlaceholder = "Selecione a data",
             timePlaceholder = "Digite o horário",
             className,
+            disabled = false,
         },
         ref
     ) => {
@@ -31,7 +33,8 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
             <div
                 ref={ref}
                 className={cn(
-                    "flex items-center gap-0 border border-input rounded-md overflow-hidden bg-background",
+                    "flex items-center gap-0 border rounded-md overflow-hidden bg-background",
+                    disabled ? "border-[#B0B0B0]" : "border-input",
                     className
                 )}
             >
@@ -42,7 +45,12 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
                         value={dateValue}
                         onChange={(e) => onDateChange?.(e.target.value)}
                         max={maxDate}
-                        className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar"
+                        readOnly={disabled}
+                        className={cn(
+                            "border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar",
+                            disabled &&
+                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50"
+                        )}
                     />
                 </div>
                 <div className="flex-1">
@@ -50,8 +58,13 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
                         type="time"
                         placeholder={timePlaceholder}
                         value={timeValue}
+                        readOnly={disabled}
                         onChange={(e) => onTimeChange?.(e.target.value)}
-                        className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar"
+                        className={cn(
+                            "border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar",
+                            disabled &&
+                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50"
+                        )}
                     />
                 </div>
             </div>

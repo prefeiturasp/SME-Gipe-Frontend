@@ -1,6 +1,6 @@
-import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
+import * as React from "react";
 import {
     Controller,
     ControllerProps,
@@ -10,8 +10,8 @@ import {
     useFormContext,
 } from "react-hook-form";
 
-import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 const Form = FormProvider;
 
@@ -86,8 +86,10 @@ FormItem.displayName = "FormItem";
 
 const FormLabel = React.forwardRef<
     React.ElementRef<typeof LabelPrimitive.Root>,
-    React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+    React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & {
+        disabled?: boolean;
+    }
+>(({ className, disabled, ...props }, ref) => {
     const { error, formItemId } = useFormField();
 
     return (
@@ -96,6 +98,7 @@ const FormLabel = React.forwardRef<
             className={cn(
                 "text-[#42474a] text-[14px] font-bold",
                 error && "text-destructive",
+                disabled && "text-[#B0B0B0]",
                 className
             )}
             htmlFor={formItemId}
@@ -170,12 +173,12 @@ const FormMessage = React.forwardRef<
 FormMessage.displayName = "FormMessage";
 
 export {
-    useFormField,
     Form,
-    FormItem,
-    FormLabel,
     FormControl,
     FormDescription,
-    FormMessage,
     FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+    useFormField,
 };
