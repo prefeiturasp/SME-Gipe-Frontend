@@ -2,12 +2,12 @@
 
 import axios from "axios";
 
-export async function getDREs() {
+export async function getDREs(ativas?: boolean) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
     try {
         const { data } = await axios.get(`${API_URL}/unidades/`, {
-            params: { tipo: "DRE" },
+            params: { tipo: "DRE", ativas },
         });
         return data;
     } catch {
@@ -15,12 +15,12 @@ export async function getDREs() {
     }
 }
 
-export async function getUEs(dre: string, rede?: string) {
+export async function getUEs(dre: string, rede?: string, ativas?: boolean) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
     try {
         const { data } = await axios.get(`${API_URL}/unidades/`, {
-            params: { tipo: "UE", dre, rede },
+            params: { tipo: "UE", dre, rede, ativas },
         });
         return data;
     } catch {
