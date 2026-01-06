@@ -1,7 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
@@ -10,7 +9,8 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
     Select,
     SelectContent,
@@ -19,21 +19,22 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import QuadroBranco from "../../QuadroBranco/QuadroBranco";
-import Anexos from "../../CadastrarOcorrencia/Anexos";
-import { formSchema, FormularioGipeData } from "./schema";
-import { RadioForm } from "./RadioForm";
-import { TextareaForm } from "./TextareaForm";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useState } from "react";
-import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
-import { useUserStore } from "@/stores/useUserStore";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { useEnvolvidos } from "@/hooks/useEnvolvidos";
-import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
-import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useAtualizarOcorrenciaGipe } from "@/hooks/useAtualizarOcorrenciaGipe";
-import { toast } from "@/components/ui/headless-toast";
+import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
+import { useEnvolvidos } from "@/hooks/useEnvolvidos";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Anexos from "../../CadastrarOcorrencia/Anexos";
+import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import QuadroBranco from "../../QuadroBranco/QuadroBranco";
+import { RadioForm } from "./RadioForm";
+import { formSchema, FormularioGipeData } from "./schema";
+import { TextareaForm } from "./TextareaForm";
 
 export type DetalhamentoGipeProps = {
     readonly onPrevious?: () => void;
@@ -44,6 +45,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+    const router = useRouter();
 
     const { mutate: atualizarOcorrenciaGipe } = useAtualizarOcorrenciaGipe();
 
@@ -123,6 +125,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             description: response.error,
                             variant: "error",
                         });
+                        return;
+                    }
+                    const finalizada = formData.status === "finalizada";
+
+                    if (finalizada) {
+                        router.push("/dashboard");
                         return;
                     }
 
