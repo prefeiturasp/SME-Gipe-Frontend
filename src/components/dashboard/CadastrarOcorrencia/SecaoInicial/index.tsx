@@ -1,10 +1,7 @@
 "use client";
 
-import React, { useEffect, forwardRef, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/headless-toast";
+import { DateTimeInput } from "@/components/ui/date-time-input";
 import {
     Form,
     FormControl,
@@ -13,6 +10,8 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     Select,
     SelectContent,
@@ -20,19 +19,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DateTimeInput } from "@/components/ui/date-time-input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useUserStore } from "@/stores/useUserStore";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { formSchema, SecaoInicialData } from "./schema";
-import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
+import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { hasFormDataChanged } from "@/lib/formUtils";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { formSchema, SecaoInicialData } from "./schema";
 
 export type SecaoInicialProps = {
     onSuccess?: () => void;
     showButtons?: boolean;
     onFormChange?: (data: Partial<SecaoInicialData>) => void;
+    disabled?: boolean;
 };
 
 export type SecaoInicialRef = {
@@ -42,7 +43,10 @@ export type SecaoInicialRef = {
 };
 
 const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
-    ({ onSuccess, showButtons = true, onFormChange }, ref) => {
+    (
+        { onSuccess, showButtons = true, onFormChange, disabled = false },
+        ref
+    ) => {
         const user = useUserStore((state) => state.user);
         const { mutateAsync: criarOcorrencia, isPending: isCriando } =
             useSecaoInicial();
@@ -188,7 +192,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                 name="dataOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel disabled={disabled}>
                                             Quando a ocorrência aconteceu?*
                                         </FormLabel>
                                         <FormControl>
@@ -207,6 +211,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                     )
                                                 }
                                                 maxDate={maxDate}
+                                                disabled={disabled}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -218,7 +223,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                 name="dre"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[#b0b0b0]">
+                                        <FormLabel disabled>
                                             Qual a DRE?*
                                         </FormLabel>
                                         <Select
@@ -252,7 +257,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                             name="unidadeEducacional"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-[#b0b0b0]">
+                                    <FormLabel disabled>
                                         Qual a Unidade Educacional?*
                                     </FormLabel>
                                     <Select
@@ -283,7 +288,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                             name="tipoOcorrencia"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         A ocorrência é sobre furto, roubo,
                                         invasão ou depredação?*
                                     </FormLabel>
@@ -293,16 +298,29 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                 onValueChange={field.onChange}
                                                 value={field.value ?? ""}
                                                 className="flex flex-col space-y-2"
+                                                disabled={disabled}
                                             >
                                                 <label className="flex items-center space-x-2">
                                                     <RadioGroupItem value="Sim" />
-                                                    <span className="text-sm text-[#42474a]">
+                                                    <span
+                                                        className={
+                                                            disabled
+                                                                ? "text-sm text-[#B0B0B0]"
+                                                                : "text-sm text-[#42474a]"
+                                                        }
+                                                    >
                                                         Sim
                                                     </span>
                                                 </label>
                                                 <label className="flex items-center space-x-2">
                                                     <RadioGroupItem value="Não" />
-                                                    <span className="text-sm text-[#42474a]">
+                                                    <span
+                                                        className={
+                                                            disabled
+                                                                ? "text-sm text-[#B0B0B0]"
+                                                                : "text-sm text-[#42474a]"
+                                                        }
+                                                    >
                                                         Não
                                                     </span>
                                                 </label>

@@ -1,7 +1,4 @@
 "use client";
-import { forwardRef, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -11,7 +8,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     Select,
     SelectContent,
@@ -19,23 +19,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/components/ui/headless-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { formSchema, InformacoesAdicionaisData } from "./schema";
-import { Search } from "lucide-react";
 import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
-import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
-import { hasFormDataChanged } from "@/lib/formUtils";
+import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+import { hasFormDataChanged } from "@/lib/formUtils";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Search } from "lucide-react";
+import { forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 export type InformacoesAdicionaisProps = {
     onPrevious?: () => void;
     onNext?: () => void;
     showButtons?: boolean;
+    disabled?: boolean;
 };
 
 export type InformacoesAdicionaisRef = {
@@ -47,7 +48,7 @@ export type InformacoesAdicionaisRef = {
 const InformacoesAdicionais = forwardRef<
     InformacoesAdicionaisRef,
     InformacoesAdicionaisProps
->(({ onPrevious, onNext, showButtons = true }, ref) => {
+>(({ onPrevious, onNext, showButtons = true, disabled = false }, ref) => {
     const {
         formData,
         savedFormData,
@@ -244,11 +245,12 @@ const InformacoesAdicionais = forwardRef<
                         name="nomeAgressor"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     Qual o nome da pessoa agressora?*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
+                                        disabled={disabled}
                                         placeholder="Digite aqui..."
                                         {...field}
                                     />
@@ -263,11 +265,12 @@ const InformacoesAdicionais = forwardRef<
                         name="idadeAgressor"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     Qual a idade da pessoa agressora?*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
+                                        disabled={disabled}
                                         type="number"
                                         placeholder="Digite aqui..."
                                         {...field}
@@ -279,7 +282,13 @@ const InformacoesAdicionais = forwardRef<
                     />
 
                     <div className="border border-[#DADADA] rounded-md p-6 space-y-3 my-3">
-                        <h3 className="text-[14px] font-bold text-[#42474a]">
+                        <h3
+                            className={
+                                disabled
+                                    ? "text-[14px] font-bold text-[#B0B0B0]"
+                                    : "text-[14px] font-bold text-[#42474a]"
+                            }
+                        >
                             Qual o endereço da pessoa agressora?
                         </h3>
 
@@ -289,7 +298,9 @@ const InformacoesAdicionais = forwardRef<
                                 name="cep"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
-                                        <FormLabel>CEP*</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            CEP*
+                                        </FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
@@ -302,6 +313,7 @@ const InformacoesAdicionais = forwardRef<
                                                     }
                                                     maxLength={9}
                                                     className="pr-10"
+                                                    disabled={disabled}
                                                 />
                                                 <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#717FC7] pointer-events-none" />
                                             </div>
@@ -328,9 +340,12 @@ const InformacoesAdicionais = forwardRef<
                                 name="logradouro"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Logradouro</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            Logradouro
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
+                                                disabled={disabled}
                                                 placeholder="Digite o logradouro..."
                                                 {...field}
                                             />
@@ -345,11 +360,12 @@ const InformacoesAdicionais = forwardRef<
                                 name="numero"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel disabled={disabled}>
                                             Número da residência
                                         </FormLabel>
                                         <FormControl>
                                             <Input
+                                                disabled={disabled}
                                                 placeholder="Digite o número..."
                                                 {...field}
                                             />
@@ -364,9 +380,12 @@ const InformacoesAdicionais = forwardRef<
                                 name="complemento"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Complemento</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            Complemento
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
+                                                disabled={disabled}
                                                 placeholder="Digite o complemento..."
                                                 {...field}
                                             />
@@ -383,10 +402,13 @@ const InformacoesAdicionais = forwardRef<
                                 name="estado"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Estado</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            Estado
+                                        </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
+                                            disabled={disabled}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
@@ -416,9 +438,12 @@ const InformacoesAdicionais = forwardRef<
                                 name="cidade"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Cidade</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            Cidade
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
+                                                disabled={disabled}
                                                 placeholder="Digite a cidade..."
                                                 {...field}
                                             />
@@ -433,9 +458,12 @@ const InformacoesAdicionais = forwardRef<
                                 name="bairro"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Bairro</FormLabel>
+                                        <FormLabel disabled={disabled}>
+                                            Bairro
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
+                                                disabled={disabled}
                                                 placeholder="Digite o bairro..."
                                                 {...field}
                                             />
@@ -453,11 +481,12 @@ const InformacoesAdicionais = forwardRef<
                             name="motivoOcorrencia"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         O que motivou a ocorrência?*
                                     </FormLabel>
                                     <FormControl>
                                         <MultiSelect
+                                            disabled={disabled}
                                             options={
                                                 categoriasDisponiveis?.motivo_ocorrencia ||
                                                 []
@@ -481,10 +510,13 @@ const InformacoesAdicionais = forwardRef<
                             name="genero"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Qual o gênero?*</FormLabel>
+                                    <FormLabel disabled={disabled}>
+                                        Qual o gênero?*
+                                    </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
+                                        disabled={disabled}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -516,12 +548,13 @@ const InformacoesAdicionais = forwardRef<
                             name="grupoEtnicoRacial"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Qual o grupo étnico-racial?*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
+                                        disabled={disabled}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -551,12 +584,13 @@ const InformacoesAdicionais = forwardRef<
                             name="etapaEscolar"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Qual a etapa escolar?*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
+                                        disabled={disabled}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -586,12 +620,13 @@ const InformacoesAdicionais = forwardRef<
                             name="frequenciaEscolar"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Qual a frequência escolar?*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
+                                        disabled={disabled}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -622,12 +657,13 @@ const InformacoesAdicionais = forwardRef<
                         name="interacaoAmbienteEscolar"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     Como é a interação da pessoa agressora no
                                     ambiente escolar?*
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
+                                        disabled={disabled}
                                         placeholder="Digite aqui..."
                                         className="min-h-[100px]"
                                         {...field}
@@ -643,12 +679,13 @@ const InformacoesAdicionais = forwardRef<
                         name="redesProtecao"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     Quais as redes de proteção estão
                                     acompanhando o caso?*
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
+                                        disabled={disabled}
                                         placeholder="Digite aqui..."
                                         className="min-h-[100px]"
                                         {...field}
@@ -664,7 +701,7 @@ const InformacoesAdicionais = forwardRef<
                         name="notificadoConselhoTutelar"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     A ocorrência foi notificada ao Conselho
                                     Tutelar?*
                                 </FormLabel>
@@ -673,17 +710,30 @@ const InformacoesAdicionais = forwardRef<
                                         <RadioGroup
                                             onValueChange={field.onChange}
                                             value={field.value || ""}
+                                            disabled={disabled}
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
                                                 <RadioGroupItem value="Sim" />
-                                                <span className="text-sm text-[#42474a]">
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
                                                     Sim
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2">
                                                 <RadioGroupItem value="Não" />
-                                                <span className="text-sm text-[#42474a]">
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
                                                     Não
                                                 </span>
                                             </label>
@@ -700,7 +750,7 @@ const InformacoesAdicionais = forwardRef<
                         name="acompanhadoNAAPA"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={disabled}>
                                     A ocorrência foi acompanhada pelo NAAPA?*
                                 </FormLabel>
                                 <FormControl>
@@ -708,17 +758,30 @@ const InformacoesAdicionais = forwardRef<
                                         <RadioGroup
                                             onValueChange={field.onChange}
                                             value={field.value || ""}
+                                            disabled={disabled}
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2">
                                                 <RadioGroupItem value="Sim" />
-                                                <span className="text-sm text-[#42474a]">
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
                                                     Sim
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2">
                                                 <RadioGroupItem value="Não" />
-                                                <span className="text-sm text-[#42474a]">
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
                                                     Não
                                                 </span>
                                             </label>

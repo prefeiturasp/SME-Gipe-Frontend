@@ -1,19 +1,21 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
-import { Paperclip, Trash2 } from "lucide-react";
-import { AnexoAPI } from "@/types/anexo";
-import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
 import { useBaixarAnexo } from "@/hooks/useBaixarAnexo";
+import { AnexoAPI } from "@/types/anexo";
+import { Paperclip, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
 
 type ListagemAnexosProps = {
     anexosAPI?: AnexoAPI[];
     modoVisualizacao?: boolean;
+    disabled?: boolean;
 };
 
 export function ListagemAnexos({
     anexosAPI = [],
     modoVisualizacao,
+    disabled,
 }: Readonly<ListagemAnexosProps>) {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
@@ -107,8 +109,15 @@ export function ListagemAnexos({
 
                                     <Button
                                         variant="customOutline"
-                                        className="h-10 w-10 p-0 border border-[#B40C02] text-[#B40C02] flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                        onClick={() => abrirModal(anexo.uuid)}
+                                        className={
+                                            disabled
+                                                ? "h-10 w-10 p-0 border border-[#B0B0B0] text-[#B0B0B0] flex items-center justify-center cursor-not-allowed"
+                                                : "h-10 w-10 p-0 border border-[#B40C02] text-[#B40C02] flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
+                                        }
+                                        onClick={() =>
+                                            !disabled && abrirModal(anexo.uuid)
+                                        }
+                                        disabled={disabled}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
@@ -118,8 +127,15 @@ export function ListagemAnexos({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
-                                    onClick={() => abrirModal(anexo.uuid)}
+                                    className={
+                                        disabled
+                                            ? "h-10 w-full p-0 border border-[#B0B0B0] text-[#B0B0B0] font-bold flex items-center justify-center cursor-not-allowed"
+                                            : "h-10 w-full p-0 border border-[#B40C02] text-[#B40C02] font-bold flex items-center justify-center hover:bg-[#B40C02] hover:text-white transition-colors"
+                                    }
+                                    onClick={() =>
+                                        !disabled && abrirModal(anexo.uuid)
+                                    }
+                                    disabled={disabled}
                                 >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Excluir arquivo
