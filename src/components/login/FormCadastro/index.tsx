@@ -35,12 +35,11 @@ import AlertSmall from "@/assets/icons/AlertSmall";
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [cadastroFinalizado, setCadastroFinalizado] = useState(false);
-    const { data: dreOptions = [] } = useFetchDREs();
     const router = useRouter();
     const cadastroMutation = useCadastro();
     const { mutateAsync, isPending } = cadastroMutation;
     const isLoading = isPending;
-
+    
     const form = useForm<FormDataSignup>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -55,7 +54,8 @@ export default function FormCadastro() {
     });
 
     const values = form.watch();
-    const { data: ueOptions = [] } = useFetchUEs(values.dre);
+    const { data: dreOptions = [] } = useFetchDREs(true);
+    const { data: ueOptions = [] } = useFetchUEs(values.dre, undefined, true);
 
     async function tratarCadastro() {
         setErrorMessage(null);
