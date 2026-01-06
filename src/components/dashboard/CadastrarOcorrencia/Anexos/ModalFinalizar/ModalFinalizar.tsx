@@ -1,47 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
-    DialogDescription
 } from "@/components/ui/dialog";
 
 import {
     Form,
+    FormControl,
     FormField,
     FormItem,
     FormLabel,
-    FormControl,
     FormMessage,
 } from "@/components/ui/form";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/headless-toast";
+import { Textarea } from "@/components/ui/textarea";
 
-
-import Aviso from "@/components/login/FormCadastro/Aviso";
 import Exclamation from "@/assets/icons/Exclamation";
+import Aviso from "@/components/login/FormCadastro/Aviso";
 
-import {
-    formSchema,
-    FormDataMotivoEncerramento,
-} from "./schema";
+import { FormDataMotivoEncerramento, formSchema } from "./schema";
 
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useFinalizarEtapa } from "@/hooks/useFinalizarEtapa";
 import { useFinalizarEtapaDre } from "@/hooks/useFinalizarEtapaDre";
 import { useFinalizarEtapaGipe } from "@/hooks/useFinalizarEtapaGipe";
-import { FinalizarOcorrenciaResponse, FinalizarEtapaResponse } from "@/types/finalizar-etapa";
-
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import {
+    FinalizarEtapaResponse,
+    FinalizarOcorrenciaResponse,
+} from "@/types/finalizar-etapa";
 
 type ModalFinalizarEtapaProps = {
     open: boolean;
@@ -50,35 +48,61 @@ type ModalFinalizarEtapaProps = {
 };
 
 type CamposFinalizarEtapaProps = {
-  label: string;
-  key: keyof FinalizarOcorrenciaResponse;
-  perfisVisiveis: string[];
+    label: string;
+    key: keyof FinalizarOcorrenciaResponse;
+    perfisVisiveis: string[];
 };
 
 const camposFinalizarEtapa: CamposFinalizarEtapaProps[] = [
-  { label: "Responsável", key: "responsavel_nome", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
-  { label: "CPF", key: "responsavel_cpf", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
-  { label: "E-mail", key: "responsavel_email", perfisVisiveis: ["diretor", "assistente", "dre", "gipe"] },
-  { label: "Perfil de acesso", key: "perfil_acesso", perfisVisiveis: ["diretor", "assistente"] },
-  { label: "Diretoria Regional", key: "nome_dre", perfisVisiveis: ["diretor", "assistente", "dre"] },
-  { label: "Unidade Educacional", key: "nome_unidade", perfisVisiveis: ["diretor", "assistente"] },
+    {
+        label: "Responsável",
+        key: "responsavel_nome",
+        perfisVisiveis: ["diretor", "assistente", "dre", "gipe"],
+    },
+    {
+        label: "CPF",
+        key: "responsavel_cpf",
+        perfisVisiveis: ["diretor", "assistente", "dre", "gipe"],
+    },
+    {
+        label: "E-mail",
+        key: "responsavel_email",
+        perfisVisiveis: ["diretor", "assistente", "dre", "gipe"],
+    },
+    {
+        label: "Perfil de acesso",
+        key: "perfil_acesso",
+        perfisVisiveis: ["diretor", "assistente"],
+    },
+    {
+        label: "Diretoria Regional",
+        key: "nome_dre",
+        perfisVisiveis: ["diretor", "assistente", "dre"],
+    },
+    {
+        label: "Unidade Educacional",
+        key: "nome_unidade",
+        perfisVisiveis: ["diretor", "assistente"],
+    },
 ];
 
 export default function ModalFinalizarEtapa({
     open,
     onOpenChange,
-    perfilUsuario
+    perfilUsuario,
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
-    const [apiData, setApiData] = useState<FinalizarOcorrenciaResponse | null>(null);
-    const {
-        formData,
-        ocorrenciaUuid
-    } = useOcorrenciaFormStore();
+    const [apiData, setApiData] = useState<FinalizarOcorrenciaResponse | null>(
+        null
+    );
+    const { formData, ocorrenciaUuid } = useOcorrenciaFormStore();
 
-    const { mutateAsync: finalizarEtapaUE, isPending: isPendingEtapaUE } = useFinalizarEtapa();
-    const { mutateAsync: finalizarEtapaDRE, isPending: isPendingEtapaDRE } = useFinalizarEtapaDre();
-    const { mutateAsync: finalizarEtapaGIPE, isPending: isPendingEtapaGIPE } = useFinalizarEtapaGipe();
+    const { mutateAsync: finalizarEtapaUE, isPending: isPendingEtapaUE } =
+        useFinalizarEtapa();
+    const { mutateAsync: finalizarEtapaDRE, isPending: isPendingEtapaDRE } =
+        useFinalizarEtapaDre();
+    const { mutateAsync: finalizarEtapaGIPE, isPending: isPendingEtapaGIPE } =
+        useFinalizarEtapaGipe();
 
     const router = useRouter();
 
@@ -94,7 +118,6 @@ export default function ModalFinalizarEtapa({
             form.reset();
             setSuccess(false);
             router.push("/dashboard");
-
         }
     }
 
@@ -114,7 +137,9 @@ export default function ModalFinalizarEtapa({
         }
     }
 
-    async function encerrarIntercorrenciaUE(values: FormDataMotivoEncerramento) {
+    async function encerrarIntercorrenciaUE(
+        values: FormDataMotivoEncerramento
+    ) {
         const body = {
             unidade_codigo_eol: formData.unidadeEducacional,
             dre_codigo_eol: formData.dre,
@@ -129,7 +154,9 @@ export default function ModalFinalizarEtapa({
         return processarEncerramento(response);
     }
 
-    async function encerrarIntercorrenciaDRE(values: FormDataMotivoEncerramento) {
+    async function encerrarIntercorrenciaDRE(
+        values: FormDataMotivoEncerramento
+    ) {
         const body = {
             unidade_codigo_eol: formData.unidadeEducacional,
             dre_codigo_eol: formData.dre,
@@ -144,7 +171,9 @@ export default function ModalFinalizarEtapa({
         return processarEncerramento(response);
     }
 
-    async function encerrarIntercorrenciaGIPE(values: FormDataMotivoEncerramento) {
+    async function encerrarIntercorrenciaGIPE(
+        values: FormDataMotivoEncerramento
+    ) {
         const body = {
             unidade_codigo_eol: formData.unidadeEducacional,
             dre_codigo_eol: formData.dre,
@@ -159,7 +188,10 @@ export default function ModalFinalizarEtapa({
         return processarEncerramento(response);
     }
 
-    function getApiResponseByPerfil(perfil: string, values: FormDataMotivoEncerramento) {
+    function getApiResponseByPerfil(
+        perfil: string,
+        values: FormDataMotivoEncerramento
+    ) {
         switch (perfil) {
             case "diretor":
             case "assistente":
@@ -181,117 +213,137 @@ export default function ModalFinalizarEtapa({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-
-                {!success && (
-                    <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
-                            
-                        <DialogHeader className="pt-2">
-                            <DialogTitle>Conclusão de etapa</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescription className="sr-only">
-                            Etapa finalizada, intercorrência criada.
-                        </DialogDescription>
-                        <Aviso icon={<Exclamation className="w-[50px] text-[#42474a]" />}>
-                            Você está finalizando esta etapa da intercorrência e isso registrará o 
-                            encerramento no sistema e ficará disponível para consulta e auditoria. 
-                            Descreva o motivo pelo qual esta intercorrência está sendo encerrada.
-                        </Aviso>
-
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(handleSubmit)}>
-                                <FormField
-                                    control={form.control}
-                                    name="motivo"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-[14px] font-[700] text-[#42474a]">
-                                                Motivo do encerramento*
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    {...field}
-                                            placeholder="Exemplo: Situação resolvida com conversa, medidas disciplinares aplicadas, encaminhamento realizado, etc."
-                                                    className="min-h-[80px] text-[14px] font-normal"
-                                                    data-testid="input-motivo"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-
-                                            <p className="text-[12px] text-[#6B6B6B] mt-1">
-                                                Esta justificativa será registrada permanentemente no histórico da intercorrência.
-                                            </p>
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <DialogFooter className="mt-6">
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="customOutline"
-                                        onClick={() => handleClose(false)}
-                                    >
-                                        Voltar
-                                    </Button>
-
-                                    <Button
-                                        type="submit"
-                                        size="sm"
-                                        className="min-w-[86px] text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                        disabled={!form.formState.isValid || isPendingEtapaUE || isPendingEtapaDRE || isPendingEtapaGIPE}
-                                    >
-                                        Finalizar
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                )}
-
-
-                {success && (
+            {!success && (
                 <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
-                
                     <DialogHeader className="pt-2">
-                        <DialogTitle className="text-[20px]">Ocorrência registrada com sucesso!</DialogTitle>
+                        <DialogTitle>Conclusão de etapa</DialogTitle>
                     </DialogHeader>
-                        <DialogDescription className="sr-only">
-                            Confira os dados o protocolo da sua intercorrência.
-                        </DialogDescription>
-                        <Aviso>
-                            <span data-testid="protocolo-text" className="text-[14px] font-[700]">
-                                Protocolo da intercorrência: <strong>{apiData?.protocolo_da_intercorrencia}</strong>
-                            </span>
-                        </Aviso>
+                    <DialogDescription className="sr-only">
+                        Etapa finalizada, intercorrência criada.
+                    </DialogDescription>
+                    <Aviso
+                        icon={
+                            <Exclamation className="w-[50px] text-[#42474a]" />
+                        }
+                    >
+                        Você está finalizando esta etapa da intercorrência e
+                        isso registrará o encerramento no sistema e ficará
+                        disponível para consulta e auditoria. Descreva o motivo
+                        pelo qual esta intercorrência está sendo encerrada.
+                    </Aviso>
 
-                        <Aviso>
-                            <div className="text-[14px] leading-5 text-[#42474a]">
-                                {camposFinalizarEtapa.map((campo) =>
-                                    campo.perfisVisiveis.includes(perfilUsuario) ? (
-                                        <p key={campo.key} data-testid={`campo-${campo.key}`}>
-                                            <strong>{campo.label}:</strong> {apiData?.[campo.key] ?? ""}
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleSubmit)}>
+                            <FormField
+                                control={form.control}
+                                name="motivo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[14px] font-[700] text-[#42474a]">
+                                            Motivo do encerramento*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                {...field}
+                                                placeholder="Exemplo: Situação resolvida com conversa, medidas disciplinares aplicadas, encaminhamento realizado, etc."
+                                                className="min-h-[80px] text-[14px] font-normal"
+                                                data-testid="input-motivo"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+
+                                        <p className="text-[12px] text-[#6B6B6B] mt-1">
+                                            Esta justificativa será registrada
+                                            permanentemente no histórico da
+                                            intercorrência.
                                         </p>
-                                    ) : null
+                                    </FormItem>
                                 )}
-                            </div>
-                        </Aviso>
+                            />
 
-                        <p className="text-[12px] text-[#6B6B6B] mt-2 px-1">
-                            Você pode acompanhar o status no histórico de ocorrência registradas.
-                        </p>
+                            <DialogFooter className="mt-6">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="customOutline"
+                                    onClick={() => onOpenChange(false)}
+                                >
+                                    Voltar
+                                </Button>
 
-                        <DialogFooter className="mt-6">
-                            <Button
-                                size="sm"
-                                className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
-                                onClick={() => handleClose(false)}
-                            >
-                                Fechar
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                )}
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    className="min-w-[86px] text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                                    disabled={
+                                        !form.formState.isValid ||
+                                        isPendingEtapaUE ||
+                                        isPendingEtapaDRE ||
+                                        isPendingEtapaGIPE
+                                    }
+                                >
+                                    Finalizar
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            )}
 
+            {success && (
+                <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
+                    <DialogHeader className="pt-2">
+                        <DialogTitle className="text-[20px]">
+                            Ocorrência registrada com sucesso!
+                        </DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription className="sr-only">
+                        Confira os dados o protocolo da sua intercorrência.
+                    </DialogDescription>
+                    <Aviso>
+                        <span
+                            data-testid="protocolo-text"
+                            className="text-[14px] font-[700]"
+                        >
+                            Protocolo da intercorrência:{" "}
+                            <strong>
+                                {apiData?.protocolo_da_intercorrencia}
+                            </strong>
+                        </span>
+                    </Aviso>
+
+                    <Aviso>
+                        <div className="text-[14px] leading-5 text-[#42474a]">
+                            {camposFinalizarEtapa.map((campo) =>
+                                campo.perfisVisiveis.includes(perfilUsuario) ? (
+                                    <p
+                                        key={campo.key}
+                                        data-testid={`campo-${campo.key}`}
+                                    >
+                                        <strong>{campo.label}:</strong>{" "}
+                                        {apiData?.[campo.key] ?? ""}
+                                    </p>
+                                ) : null
+                            )}
+                        </div>
+                    </Aviso>
+
+                    <p className="text-[12px] text-[#6B6B6B] mt-2 px-1">
+                        Você pode acompanhar o status no histórico de ocorrência
+                        registradas.
+                    </p>
+
+                    <DialogFooter className="mt-6">
+                        <Button
+                            size="sm"
+                            className="text-center rounded-md text-[14px] font-[700] bg-[#717FC7] text-white hover:bg-[#5a65a8]"
+                            onClick={() => handleClose(false)}
+                        >
+                            Fechar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            )}
         </Dialog>
     );
 }

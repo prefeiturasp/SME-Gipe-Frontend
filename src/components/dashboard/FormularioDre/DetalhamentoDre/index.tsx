@@ -1,22 +1,22 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import QuadroBranco from "../../QuadroBranco/QuadroBranco";
-import Anexos from "../../CadastrarOcorrencia/Anexos";
-import { formSchema, FormularioDreData } from "./schema";
-import { RadioForm } from "./RadioForm";
-import { TextareaForm } from "./TextareaForm";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
+import { Form } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { useState } from "react";
-import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
-import { useUserStore } from "@/stores/useUserStore";
+import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Anexos from "../../CadastrarOcorrencia/Anexos";
+import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import QuadroBranco from "../../QuadroBranco/QuadroBranco";
+import { RadioForm } from "./RadioForm";
+import { formSchema, FormularioDreData } from "./schema";
+import { TextareaForm } from "./TextareaForm";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
@@ -134,6 +134,8 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         setFormData(data);
     };
 
+    const finalizarTexts = isPontoFocal ? "Finalizar" : "Próximo";
+
     return (
         <>
             <Form {...form}>
@@ -231,7 +233,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                     >
                         {isPontoFocal && formData.status === "enviado_para_dre"
                             ? "Salvar informações"
-                            : "Próximo"}
+                            : finalizarTexts}
                     </Button>
                 </div>
             </QuadroBranco>
