@@ -315,7 +315,7 @@ describe("EditarOcorrenciaPage", () => {
                 dre: "108400",
                 unidadeEducacional: "654321",
                 tipoOcorrencia: "Sim",
-                tiposOcorrencia: ["uuid-1", "uuid-2"],
+                tiposOcorrencia: "uuid-1",
                 descricao: "Descrição detalhada da ocorrência",
                 smartSampa: "sim_com_dano",
             })
@@ -863,6 +863,12 @@ describe("EditarOcorrenciaPage", () => {
             tipos_ocorrencia_detalhes: [
                 { uuid: "tipo-uuid-1", nome: "Violência física" },
             ],
+            envolve_arma_ataque: "sim",
+            ameaca_realizada_qual_maneira: "verbal",
+            motivacao_ocorrencia: ["bullying"],
+            qual_ciclo_aprendizagem: "fundamental_i",
+            info_sobre_interacoes_virtuais_pessoa_agressora: "Info virtual",
+            encaminhamentos_gipe: "Encaminhamentos GIPE",
         };
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -910,7 +916,11 @@ describe("EditarOcorrenciaPage", () => {
         await waitFor(() => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    tipoOcorrenciaGipe: "tipo-uuid-1",
+                    ameacaRealizada: "verbal",
+                    cicloAprendizagem: "fundamental_i",
+                    encaminhamentos: "Encaminhamentos GIPE",
+                    envolveArmaOuAtaque: "sim",
+                    informacoesInteracoesVirtuais: "Info virtual",
                 })
             );
         });
@@ -1171,8 +1181,7 @@ describe("EditarOcorrenciaPage", () => {
         await waitFor(() => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    tiposOcorrencia: ["tipo-ue-1"],
-                    tipoOcorrenciaGipe: "tipo-gipe-1",
+                    tiposOcorrencia: "tipo-ue-1",
                 })
             );
         });

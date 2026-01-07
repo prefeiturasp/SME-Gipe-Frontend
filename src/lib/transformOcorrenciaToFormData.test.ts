@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { transformOcorrenciaToFormData } from "./transformOcorrenciaToFormData";
 import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
+import { describe, expect, it } from "vitest";
+import { transformOcorrenciaToFormData } from "./transformOcorrenciaToFormData";
 
 describe("transformOcorrenciaToFormData", () => {
     const baseOcorrencia: OcorrenciaDetalheAPI = {
@@ -86,7 +86,7 @@ describe("transformOcorrenciaToFormData", () => {
 
         const result = transformOcorrenciaToFormData(ocorrencia);
 
-        expect(result.tiposOcorrencia).toEqual(["tipo-1", "tipo-2"]);
+        expect(result.tiposOcorrencia).toEqual("tipo-1");
     });
 
     it("deve incluir descrição quando presente", () => {
@@ -238,7 +238,7 @@ describe("transformOcorrenciaToFormData", () => {
             tipoOcorrencia: "Não",
             nomeDre: "DRE Centro",
             nomeUnidade: "EMEF Teste",
-            tiposOcorrencia: ["tipo-1"],
+            tiposOcorrencia: "tipo-1",
             descricao: "Descrição da ocorrência",
             smartSampa: "sim_com_dano",
             declarante: "declarante-uuid",

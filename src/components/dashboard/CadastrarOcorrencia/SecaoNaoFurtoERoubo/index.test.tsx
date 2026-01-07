@@ -164,20 +164,30 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         await waitFor(() => {
-            expect(screen.getByText("Violência física")).toBeInTheDocument();
             expect(
-                screen.getByText("Violência psicológica")
+                screen.getByRole("option", { name: "Violência física" })
             ).toBeInTheDocument();
-            expect(screen.getByText("Violência sexual")).toBeInTheDocument();
-            expect(screen.getByText("Negligência")).toBeInTheDocument();
-            expect(screen.getByText("Bullying")).toBeInTheDocument();
-            expect(screen.getByText("Cyberbullying")).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Violência psicológica" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Violência sexual" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Negligência" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Bullying" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Cyberbullying" })
+            ).toBeInTheDocument();
         });
     });
 
@@ -220,10 +230,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         const opcaoViolencia = await screen.findByRole("option", {
             name: /violência física/i,
@@ -294,10 +304,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         const opcaoViolencia = await screen.findByRole("option", {
             name: /violência física/i,
@@ -453,7 +463,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve desabilitar multiselect quando tipos de ocorrência estão carregando", () => {
+    it("deve desabilitar select quando tipos de ocorrência estão carregando", () => {
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
             data: undefined,
             isLoading: true,
@@ -469,13 +479,13 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        expect(multiSelectButton).toBeDisabled();
+        expect(selectButton).toBeDisabled();
     });
 
-    it("deve permitir selecionar múltiplos tipos de ocorrência", async () => {
+    it("deve permitir selecionar um tipo de ocorrência", async () => {
         const user = userEvent.setup();
         render(
             <SecaoNaoFurtoERoubo
@@ -485,30 +495,18 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         const opcaoViolenciaFisica = await screen.findByRole("option", {
             name: /^violência física$/i,
         });
         await user.click(opcaoViolenciaFisica);
 
-        const opcaoBullying = await screen.findByRole("option", {
-            name: /^bullying$/i,
-        });
-        await user.click(opcaoBullying);
-
         await waitFor(() => {
-            const removeViolenciaButton = screen.getByRole("button", {
-                name: /remover violência física/i,
-            });
-            const removeBullyingButton = screen.getByRole("button", {
-                name: /remover bullying/i,
-            });
-            expect(removeViolenciaButton).toBeInTheDocument();
-            expect(removeBullyingButton).toBeInTheDocument();
+            expect(selectButton).toHaveTextContent("Violência física");
         });
     });
 
@@ -534,10 +532,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         const opcaoViolencia = await screen.findByRole("option", {
             name: /violência física/i,
@@ -609,10 +607,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
         const tipoOption = await screen.findByRole("option", {
             name: /violência física/i,
         });
@@ -675,10 +673,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         const opcaoViolencia = await screen.findByRole("option", {
             name: /violência física/i,
@@ -748,10 +746,10 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
         const tipoOption = await screen.findByRole("option", {
             name: /violência física/i,
         });
@@ -863,10 +861,10 @@ describe("SecaoNaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const multiSelectButton = screen.getByRole("button", {
-                name: /selecione os tipos de ocorrência/i,
+            const selectButton = screen.getByRole("combobox", {
+                name: /Qual o tipo de ocorrência\?\*/i,
             });
-            await user.click(multiSelectButton);
+            await user.click(selectButton);
 
             const tipoOption = await screen.findByRole("option", {
                 name: /violência física/i,
@@ -931,12 +929,14 @@ describe("SecaoNaoFurtoERoubo", () => {
             />
         );
 
-        const multiSelect = screen.getByText(
-            /Selecione os tipos de ocorrência/i
-        );
-        expect(multiSelect.closest("button")).toBeDisabled();
+        const tiposSelect = screen.getByRole("combobox", {
+            name: /Qual o tipo de ocorrência\?\*/i,
+        });
+        expect(tiposSelect).toBeDisabled();
 
-        const envolvidosSelect = screen.getByRole("combobox");
+        const envolvidosSelect = screen.getByRole("combobox", {
+            name: /Quem são os envolvidos\?\*/i,
+        });
         expect(envolvidosSelect).toBeDisabled();
 
         const textarea = screen.getByPlaceholderText(/Descreva aqui.../i);
