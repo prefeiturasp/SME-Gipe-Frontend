@@ -7,10 +7,6 @@ export function transformOcorrenciaGipeToFormData(
         envolveArmaOuAtaque: ocorrenciaGipe.envolve_arma_ataque || undefined,
         ameacaRealizada:
             ocorrenciaGipe.ameaca_realizada_qual_maneira || undefined,
-        envolvidosGipe: ocorrenciaGipe.envolvido
-            ? [ocorrenciaGipe.envolvido]
-            : [],
-        motivacaoOcorrenciaGipe: ocorrenciaGipe.motivacao_ocorrencia || [],
         tipoOcorrenciaGipe:
             ocorrenciaGipe.tipos_ocorrencia_detalhes?.[0]?.uuid || "",
         cicloAprendizagem: ocorrenciaGipe.qual_ciclo_aprendizagem || "",

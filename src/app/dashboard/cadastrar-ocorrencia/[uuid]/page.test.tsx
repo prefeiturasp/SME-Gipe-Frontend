@@ -1,12 +1,12 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import EditarOcorrenciaPage from "./page";
-import { vi, type Mock } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
 import { useGetOcorrenciaGipe } from "@/hooks/useGetOcorrenciaGipe";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import { vi, type Mock } from "vitest";
+import EditarOcorrenciaPage from "./page";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -910,7 +910,6 @@ describe("EditarOcorrenciaPage", () => {
         await waitFor(() => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    envolvidosGipe: ["estudante"],
                     tipoOcorrenciaGipe: "tipo-uuid-1",
                 })
             );
@@ -1173,7 +1172,6 @@ describe("EditarOcorrenciaPage", () => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
                     tiposOcorrencia: ["tipo-ue-1"],
-                    envolvidosGipe: ["professor"],
                     tipoOcorrenciaGipe: "tipo-gipe-1",
                 })
             );

@@ -256,15 +256,6 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve exibir os textos auxiliares nos campos multi-select", () => {
-        renderComponent();
-
-        const textosAuxiliares = screen.getAllByText(
-            /se necessário, selecione mais de uma opção/i
-        );
-        expect(textosAuxiliares).toHaveLength(2);
-    });
-
     it("deve marcar todos os campos obrigatórios com asterisco", () => {
         renderComponent();
 
@@ -514,8 +505,8 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
             tipoOcorrenciaGipe: "tipo1",
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
@@ -561,8 +552,8 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
             tipoOcorrenciaGipe: "tipo1",
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
@@ -610,8 +601,8 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
             tipoOcorrenciaGipe: "tipo1",
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
@@ -661,8 +652,8 @@ describe("DetalhamentoGipe", () => {
             status: "finalizada",
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
             tipoOcorrenciaGipe: "tipo1",
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",

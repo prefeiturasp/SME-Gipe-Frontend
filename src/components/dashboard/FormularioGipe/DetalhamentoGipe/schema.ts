@@ -7,10 +7,8 @@ export const formSchema = z.object({
     ameacaRealizada: z.string({
         required_error: "Campo obrigatório",
     }),
-    envolvidosGipe: z
-        .array(z.string())
-        .min(1, { message: "Selecione pelo menos um envolvido" }),
-    motivacaoOcorrenciaGipe: z
+    envolvidos: z.string().min(1, "Selecione os envolvidos."),
+    motivoOcorrencia: z
         .array(z.string())
         .min(1, { message: "Selecione pelo menos uma motivação" }),
     tipoOcorrenciaGipe: z.string({

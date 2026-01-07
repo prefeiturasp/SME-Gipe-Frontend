@@ -87,8 +87,8 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         defaultValues: {
             envolveArmaOuAtaque: formData.envolveArmaOuAtaque ?? undefined,
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
-            envolvidosGipe: formData.envolvidosGipe ?? [],
-            motivacaoOcorrenciaGipe: formData.motivacaoOcorrenciaGipe ?? [],
+            envolvidos: formData.envolvidos ?? "",
+            motivoOcorrencia: formData.motivoOcorrencia ?? [],
             tipoOcorrenciaGipe: formData.tipoOcorrenciaGipe ?? "",
             cicloAprendizagem: formData.cicloAprendizagem ?? "",
             informacoesInteracoesVirtuais:
@@ -108,8 +108,8 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     dre_codigo_eol: formData.dre!,
                     envolve_arma_ataque: data.envolveArmaOuAtaque,
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
-                    envolvido: data.envolvidosGipe[0],
-                    motivacao_ocorrencia: data.motivacaoOcorrenciaGipe,
+                    envolvido: data.envolvidos,
+                    motivacao_ocorrencia: data.motivoOcorrencia,
                     tipos_ocorrencia: [data.tipoOcorrenciaGipe],
                     qual_ciclo_aprendizagem: data.cicloAprendizagem,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
@@ -180,25 +180,39 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control}
-                                name="envolvidosGipe"
+                                name="envolvidos"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
                                             Quem são os envolvidos?*
                                         </FormLabel>
-                                        <FormControl>
-                                            <MultiSelect
-                                                options={envolvidosOptions}
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                placeholder="Selecione"
-                                                disabled={isLoadingEnvolvidos}
-                                            />
-                                        </FormControl>
-                                        <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                            Se necessário, selecione mais de uma
-                                            opção
-                                        </p>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            disabled={isLoadingEnvolvidos}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {envolvidosOptions.map(
+                                                    (envolvido) => (
+                                                        <SelectItem
+                                                            key={
+                                                                envolvido.value
+                                                            }
+                                                            value={
+                                                                envolvido.value
+                                                            }
+                                                        >
+                                                            {envolvido.label}
+                                                        </SelectItem>
+                                                    )
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -206,7 +220,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="motivacaoOcorrenciaGipe"
+                                name="motivoOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
