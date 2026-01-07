@@ -1,18 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDREs, getUEs, getTodasUEs } from "@/actions/unidades";
 
-export function useFetchDREs() {
+export function useFetchDREs(ativas?: boolean) {
     return useQuery({
         queryKey: ["get-dres"],
-        queryFn: () => getDREs(),
+        queryFn: () => getDREs(ativas),
         refetchOnWindowFocus: false,
     });
 }
 
-export function useFetchUEs(dreUuid: string, rede?: string) {
+export function useFetchUEs(dreUuid: string, rede?: string, ativas?: boolean) {
     return useQuery({
-        queryKey: ["get-ues", dreUuid, rede],
-        queryFn: () => getUEs(dreUuid, rede),
+        queryKey: ["get-ues", dreUuid, rede, ativas],
+        queryFn: () => getUEs(dreUuid, rede, ativas),
         enabled: !!dreUuid,
         refetchOnWindowFocus: false,
     });
