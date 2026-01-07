@@ -1,12 +1,12 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoFurtoERoubo, { SecaoFurtoERouboRef } from "./index";
-import userEvent from "@testing-library/user-event";
-import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useAtualizarSecaoFurtoRouboHook from "@/hooks/useAtualizarSecaoFurtoRoubo";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import SecaoFurtoERoubo, { SecaoFurtoERouboRef } from "./index";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -1316,5 +1316,32 @@ describe("SecaoFurtoERoubo", () => {
                 expect(descricaoField).toHaveValue("Texto qualquer");
             });
         });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        const user = userEvent.setup();
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+                disabled={true}
+            />
+        );
+
+        const multiSelect = screen.getByText(
+            /Selecione os tipos de ocorrência/i
+        );
+        expect(multiSelect.closest("button")).toBeDisabled();
+
+        const textarea = screen.getByPlaceholderText(/Descreva aqui.../i);
+        expect(textarea).toBeDisabled();
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
+        });
+
+        await user.type(textarea, "Teste");
+        expect(textarea).toHaveValue("");
     });
 });

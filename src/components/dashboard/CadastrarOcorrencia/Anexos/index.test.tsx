@@ -1263,4 +1263,52 @@ describe("Anexos", () => {
             });
         });
     });
+
+    it("deve desabilitar a interação com anexos quando disabled=true", async () => {
+        vi.mocked(useObterAnexosHook.useObterAnexos).mockReturnValue({
+            data: {
+                results: [
+                    {
+                        arquivo: "documento.pdf",
+                        data_upload: "2024-01-15T10:30:00Z",
+                        categoria: "Boletim de Ocorrência",
+                        uuid: "anexo-uuid-1",
+                    },
+                ],
+            },
+            isLoading: false,
+            isError: false,
+            error: null,
+            refetch: mockRefetch,
+        } as never);
+
+        renderWithProvider(
+            <Anexos
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+                disabled={true}
+            />
+        );
+
+        const tipoSelect = screen.getByRole("combobox");
+        expect(tipoSelect).toBeDisabled();
+
+        const escolherArquivoButton = screen.getByRole("button", {
+            name: /Escolher arquivo/i,
+        });
+        expect(escolherArquivoButton).toBeDisabled();
+
+        const anexarButton = screen.getByRole("button", {
+            name: /Anexar documento/i,
+        });
+        expect(anexarButton).toBeDisabled();
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: /Excluir arquivo/i,
+        });
+        deleteButtons.forEach((button) => {
+            expect(button).toBeDisabled();
+            expect(button).toHaveClass("cursor-not-allowed");
+        });
+    });
 });

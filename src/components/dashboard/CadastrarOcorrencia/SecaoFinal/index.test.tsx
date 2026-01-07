@@ -1,7 +1,7 @@
-import { vi } from "vitest";
-import React from "react";
-import { screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { QueryClient } from "@tanstack/react-query";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { vi } from "vitest";
 import { renderWithClient } from "../__tests__/helpers";
 import SecaoFinal, { SecaoFinalRef } from "./index";
 
@@ -905,5 +905,23 @@ describe("SecaoFinal", () => {
             expect(result).toBe(false);
             expect(mockMutate).not.toHaveBeenCalled();
         });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        renderWithClient(
+            <SecaoFinal
+                onNext={mockOnNext}
+                onPrevious={mockOnPrevious}
+                disabled={true}
+            />
+        );
+
+        const selects = screen.getAllByRole("combobox");
+        selects.forEach((select) => {
+            expect(select).toBeDisabled();
+        });
+
+        const proximoButton = screen.getByRole("button", { name: /Próximo/i });
+        expect(proximoButton).toBeInTheDocument();
     });
 });

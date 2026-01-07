@@ -1,12 +1,12 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoNaoFurtoERoubo, { SecaoNaoFurtoERouboRef } from "./index";
-import userEvent from "@testing-library/user-event";
-import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
-import * as useEnvolvidosHook from "@/hooks/useEnvolvidos";
 import * as useAtualizarSecaoNaoFurtoRouboHook from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
+import * as useEnvolvidosHook from "@/hooks/useEnvolvidos";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import SecaoNaoFurtoERoubo, { SecaoNaoFurtoERouboRef } from "./index";
 
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 
@@ -919,5 +919,35 @@ describe("SecaoNaoFurtoERoubo", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        const user = userEvent.setup();
+        render(
+            <SecaoNaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+                disabled={true}
+            />
+        );
+
+        const multiSelect = screen.getByText(
+            /Selecione os tipos de ocorrência/i
+        );
+        expect(multiSelect.closest("button")).toBeDisabled();
+
+        const envolvidosSelect = screen.getByRole("combobox");
+        expect(envolvidosSelect).toBeDisabled();
+
+        const textarea = screen.getByPlaceholderText(/Descreva aqui.../i);
+        expect(textarea).toBeDisabled();
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
+        });
+
+        await user.type(textarea, "Teste");
+        expect(textarea).toHaveValue("");
     });
 });

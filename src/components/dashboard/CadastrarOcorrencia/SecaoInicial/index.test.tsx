@@ -1,14 +1,14 @@
 import { vi } from "vitest";
 
-import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+    act,
+    fireEvent,
     render,
     screen,
-    fireEvent,
     waitFor,
-    act,
 } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import SecaoInicial, { SecaoInicialRef } from "./index";
 
 vi.mock("next/navigation", () => ({
@@ -649,6 +649,22 @@ describe("SecaoInicial", () => {
 
             expect(result).toBe(false);
             expect(mockCriarOcorrencia).not.toHaveBeenCalled();
+        });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        renderWithClient(
+            <SecaoInicial onSuccess={() => vi.fn()} disabled={true} />
+        );
+
+        const dataInput = screen.getByPlaceholderText("Selecione a data");
+        const horaInput = screen.getByPlaceholderText("Digite o horário");
+        expect(dataInput).toHaveAttribute("readonly");
+        expect(horaInput).toHaveAttribute("readonly");
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
         });
     });
 });

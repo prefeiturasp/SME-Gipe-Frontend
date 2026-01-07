@@ -1,10 +1,10 @@
-import { screen, waitFor, act } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { toast } from "@/components/ui/headless-toast";
+import { act, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { forwardRef, useImperativeHandle } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
 import { FormularioUE } from "./FormularioUE";
-import userEvent from "@testing-library/user-event";
-import { toast } from "@/components/ui/headless-toast";
 
 const mockSecaoInicialTrigger = vi.fn();
 const mockSecaoInicialGetData = vi.fn();
@@ -1310,6 +1310,94 @@ describe("FormularioUE", () => {
                 expect(mockSecaoInicialTrigger).toHaveBeenCalled();
                 expect(mockSecaoFinalTrigger).toHaveBeenCalled();
             });
+        });
+    });
+
+    describe("Redirect para dashboard quando finalizada", () => {
+        it("deve redirecionar para dashboard quando ocorrência está finalizada e usuário é assistente/diretor", async () => {
+            const user = userEvent.setup();
+
+            mockStoreState.formData = {
+                status: "finalizada",
+                tipoOcorrencia: "Sim",
+                unidadeEducacional: "123456",
+                dre: "654321",
+            };
+
+            hookStates.isAssistenteOuDiretor = true;
+
+            mockSecaoInicialGetData.mockReturnValue({
+                dataOcorrencia: "2024-01-01",
+                horaOcorrencia: "10:00",
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+                tipoOcorrencia: "Sim",
+            });
+
+            mockSecaoFurtoGetData.mockReturnValue({
+                tiposOcorrencia: ["Furto"],
+                descricao: "Descrição do furto",
+                smartSampa: "monitorada",
+            });
+
+            mockSecaoFinalGetData.mockReturnValue({
+                declarante: "Diretor",
+                comunicacaoSeguranca: "Sim, com a GCM",
+                protocoloAcionado: "Ameaça",
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoFinalizar = screen.getByRole("button", {
+                name: /finalizar/i,
+            });
+
+            expect(botaoFinalizar).toBeInTheDocument();
+            expect(botaoFinalizar).toHaveTextContent("Finalizar");
+
+            await user.click(botaoFinalizar);
+
+            expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
+            expect(mockMutate).not.toHaveBeenCalled();
+        });
+
+        it("não deve redirecionar quando ocorrência não está finalizada", async () => {
+            mockStoreState.formData = {
+                status: "em_andamento",
+                tipoOcorrencia: "Sim",
+                unidadeEducacional: "123456",
+                dre: "654321",
+            };
+
+            hookStates.isAssistenteOuDiretor = true;
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoFinalizar = screen.getByRole("button", {
+                name: /finalizar/i,
+            });
+
+            expect(botaoFinalizar).toHaveTextContent("Finalizar");
+        });
+
+        it("não deve redirecionar quando usuário não é assistente/diretor", async () => {
+            mockStoreState.formData = {
+                status: "finalizada",
+                tipoOcorrencia: "Sim",
+                unidadeEducacional: "123456",
+                dre: "654321",
+            };
+
+            hookStates.isAssistenteOuDiretor = false;
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByRole("button", {
+                name: /próximo/i,
+            });
+
+            expect(botaoProximo).toBeInTheDocument();
+            expect(botaoProximo).toHaveTextContent("Próximo");
         });
     });
 });
