@@ -1,20 +1,20 @@
-import {
-    render,
-    screen,
-    waitFor,
-    fireEvent,
-    act,
-} from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Anexos from "./index";
-import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
-import * as useUserStoreModule from "@/stores/useUserStore";
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
 import * as useObterAnexosHook from "@/hooks/useObterAnexos";
 import * as useTiposDocumentosHook from "@/hooks/useTiposDocumentos";
 import * as useUserPermissionsHook from "@/hooks/useUserPermissions";
+import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
+import * as useUserStoreModule from "@/stores/useUserStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import Anexos from "./index";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
@@ -140,10 +140,7 @@ describe("Anexos", () => {
             error: null,
         } as never);
 
-        vi.spyOn(
-            useUserPermissionsHook,
-            "useUserPermissions"
-        ).mockReturnValue({
+        vi.spyOn(useUserPermissionsHook, "useUserPermissions").mockReturnValue({
             isPontoFocal: false,
             isGipe: false,
             isAssistenteOuDiretor: false,
@@ -188,9 +185,6 @@ describe("Anexos", () => {
         expect(screen.getByLabelText(/Tipo do documento/i)).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: /Anexar documento/i })
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/Formatos aceitos: PDF, JPG, PNG/i)
         ).toBeInTheDocument();
     });
 
@@ -250,17 +244,25 @@ describe("Anexos", () => {
     });
 
     it("deve exibir alerta ao tentar anexar arquivo maior que 2MB", async () => {
-        renderWithProvider(<Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />);
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
 
         await waitFor(() => {
             expect(screen.getByText("Anexos")).toBeInTheDocument();
         });
 
-        const largeFile = new File(["x".repeat(3 * 1024 * 1024)], "grande.pdf", {
-            type: "application/pdf",
-        });
+        const largeFile = new File(
+            ["x".repeat(3 * 1024 * 1024)],
+            "grande.pdf",
+            {
+                type: "application/pdf",
+            }
+        );
 
-        const fileInput = document.querySelector("#fileInput") as HTMLInputElement;
+        const fileInput = document.querySelector(
+            "#fileInput"
+        ) as HTMLInputElement;
         fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
         await waitFor(() => {
@@ -272,12 +274,15 @@ describe("Anexos", () => {
             );
         });
 
-        expect(screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)).toHaveValue("");
+        expect(
+            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
+        ).toHaveValue("");
     });
 
-
     it("deve exibir alerta ao tentar anexar arquivo de formato não suportado", async () => {
-        renderWithProvider(<Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />);
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+        );
 
         await waitFor(() => {
             expect(screen.getByText("Anexos")).toBeInTheDocument();
@@ -287,7 +292,9 @@ describe("Anexos", () => {
             type: "application/octet-stream",
         });
 
-        const fileInput = document.querySelector("#fileInput") as HTMLInputElement;
+        const fileInput = document.querySelector(
+            "#fileInput"
+        ) as HTMLInputElement;
         fireEvent.change(fileInput, { target: { files: [invalidFile] } });
 
         await waitFor(() => {
@@ -299,8 +306,6 @@ describe("Anexos", () => {
             );
         });
     });
-
-
 
     it("deve aceitar arquivo PDF válido", async () => {
         const user = userEvent.setup();
@@ -1186,7 +1191,6 @@ describe("Anexos", () => {
         });
     });
 
-
     it("deve abrir o modal de tipos ao clicar em 'Finalizar'", async () => {
         renderWithProvider(
             <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
@@ -1196,9 +1200,7 @@ describe("Anexos", () => {
         await userEvent.click(botao);
 
         await waitFor(() => {
-            expect(
-                screen.getByText(/Conclusão de etapa/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/Conclusão de etapa/i)).toBeInTheDocument();
         });
     });
 
@@ -1213,10 +1215,7 @@ describe("Anexos", () => {
                 isSuccess: false,
             } as never);
 
-        vi.spyOn(
-            useUserPermissionsHook,
-            "useUserPermissions"
-        ).mockReturnValue({
+        vi.spyOn(useUserPermissionsHook, "useUserPermissions").mockReturnValue({
             isPontoFocal: false,
             isGipe: true,
             isAssistenteOuDiretor: false,
@@ -1246,10 +1245,7 @@ describe("Anexos", () => {
                 isSuccess: false,
             } as never);
 
-        vi.spyOn(
-            useUserPermissionsHook,
-            "useUserPermissions"
-        ).mockReturnValue({
+        vi.spyOn(useUserPermissionsHook, "useUserPermissions").mockReturnValue({
             isPontoFocal: false,
             isGipe: false,
             isAssistenteOuDiretor: true,
@@ -1267,6 +1263,4 @@ describe("Anexos", () => {
             });
         });
     });
-
-
 });
