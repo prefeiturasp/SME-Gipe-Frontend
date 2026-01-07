@@ -1,9 +1,9 @@
 import * as z from "zod";
 
 export const formSchema = z.object({
-    tiposOcorrencia: z
-        .array(z.string())
-        .min(1, "Selecione pelo menos um tipo de ocorrência."),
+    tiposOcorrencia: z.string({
+        required_error: "Campo obrigatório",
+    }),
     descricao: z
         .string()
         .min(1, "A descrição é obrigatória.")

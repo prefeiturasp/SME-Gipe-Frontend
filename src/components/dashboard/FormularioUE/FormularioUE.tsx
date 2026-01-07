@@ -222,7 +222,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
-            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
+            tipos_ocorrencia: [secaoTipoData?.tiposOcorrencia ?? ""],
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: isFurtoRoubo
                 ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||

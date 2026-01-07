@@ -89,7 +89,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
             envolvidos: formData.envolvidos ?? "",
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
-            tipoOcorrenciaGipe: formData.tipoOcorrenciaGipe ?? "",
+            tiposOcorrencia: formData.tiposOcorrencia ?? "",
             cicloAprendizagem: formData.cicloAprendizagem ?? "",
             informacoesInteracoesVirtuais:
                 formData.informacoesInteracoesVirtuais ?? "",
@@ -110,7 +110,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
                     envolvido: data.envolvidos,
                     motivacao_ocorrencia: data.motivoOcorrencia,
-                    tipos_ocorrencia: [data.tipoOcorrenciaGipe],
+                    tipos_ocorrencia: [data.tiposOcorrencia],
                     qual_ciclo_aprendizagem: data.cicloAprendizagem,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
@@ -248,7 +248,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="tipoOcorrenciaGipe"
+                                name="tiposOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>

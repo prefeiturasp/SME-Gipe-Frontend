@@ -10,8 +10,14 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
@@ -69,7 +75,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
-                tiposOcorrencia: formData.tiposOcorrencia || [],
+                tiposOcorrencia: formData.tiposOcorrencia || "",
                 descricao: formData.descricao ?? "",
                 smartSampa: formData.smartSampa ?? undefined,
             },
@@ -117,7 +123,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                     {
                         uuid: ocorrenciaUuid,
                         body: {
-                            tipos_ocorrencia: data.tiposOcorrencia,
+                            tipos_ocorrencia: [data.tiposOcorrencia],
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },
@@ -168,22 +174,29 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                     <FormLabel disabled={disabled}>
                                         Qual o tipo de ocorrência?*
                                     </FormLabel>
-
-                                    <FormControl>
-                                        <MultiSelect
-                                            options={tiposOcorrenciaOptions}
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            placeholder="Selecione os tipos de ocorrência"
-                                            disabled={
-                                                isLoadingTipos || disabled
-                                            }
-                                        />
-                                    </FormControl>
-                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                        Se necessário, selecione mais de uma
-                                        opção
-                                    </p>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        disabled={isLoadingTipos || disabled}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {tiposOcorrenciaOptions.map(
+                                                (tipo) => (
+                                                    <SelectItem
+                                                        key={tipo.value}
+                                                        value={tipo.value}
+                                                    >
+                                                        {tipo.label}
+                                                    </SelectItem>
+                                                )
+                                            )}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -207,7 +207,7 @@ export function transformOcorrenciaToFormData(
         ...(ocorrencia.nome_unidade && {
             nomeUnidade: ocorrencia.nome_unidade,
         }),
-        ...(tiposOcorrencia && { tiposOcorrencia }),
+        ...(tiposOcorrencia && { tiposOcorrencia: tiposOcorrencia[0] }),
         ...(ocorrencia.descricao_ocorrencia && {
             descricao: ocorrencia.descricao_ocorrencia,
         }),
