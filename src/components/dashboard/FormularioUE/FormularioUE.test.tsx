@@ -1268,15 +1268,6 @@ describe("FormularioUE", () => {
             expect(screen.queryByText("Finalizar")).not.toBeInTheDocument();
         });
 
-        it("deve desabilitar botão 'Finalizar' quando isPending é true para Assistente/Diretor", () => {
-            hookStates.isAssistenteOuDiretor = true;
-            hookStates.isPending = true;
-            renderWithClient(<FormularioUE />);
-
-            const botaoSalvar = screen.getByText("Salvando...");
-            expect(botaoSalvar).toBeDisabled();
-        });
-
         it("deve exibir 'Salvando...' no botão Próximo quando isPending é true", () => {
             hookStates.isPending = true;
             renderWithClient(<FormularioUE />);
@@ -1291,25 +1282,6 @@ describe("FormularioUE", () => {
 
             const botaoSalvar = screen.getByText("Salvando...");
             expect(botaoSalvar).toBeDisabled();
-        });
-
-        it("deve chamar handleSaveAll ao clicar em 'Finalizar' quando isAssistenteOuDiretor é true", async () => {
-            hookStates.isAssistenteOuDiretor = true;
-            mockMutate.mockImplementation((data, callbacks) => {
-                callbacks?.onSuccess?.({ success: true });
-            });
-            mockInvalidateQueries.mockResolvedValue(undefined);
-
-            renderWithClient(<FormularioUE />);
-
-            const botaoFinalizar = screen.getByText("Finalizar");
-            await userEvent.click(botaoFinalizar);
-
-            await waitFor(() => {
-                expect(mockMutate).toHaveBeenCalled();
-                expect(mockSecaoInicialTrigger).toHaveBeenCalled();
-                expect(mockSecaoFinalTrigger).toHaveBeenCalled();
-            });
         });
     });
 

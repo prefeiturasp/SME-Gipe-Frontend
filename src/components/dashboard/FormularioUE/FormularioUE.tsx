@@ -41,8 +41,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const router = useRouter();
 
-    const isOcorrenciaFinalizada = formData.status === "finalizada";
-    const isReadOnly = isAssistenteOuDiretor && isOcorrenciaFinalizada;
+    const isReadOnly = isAssistenteOuDiretor;
 
     const { mutate: atualizarFormularioCompletoUE, isPending } =
         useAtualizarFormularioCompletoUE();

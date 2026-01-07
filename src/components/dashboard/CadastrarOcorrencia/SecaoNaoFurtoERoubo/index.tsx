@@ -253,7 +253,13 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                     <FormLabel disabled={disabled}>
                                         Descreva a ocorrência*
                                     </FormLabel>
-                                    <p className="text-sm text-[#42474a] mt-1 mb-2">
+                                    <p
+                                        className={`text-sm mt-1 mb-2 ${
+                                            disabled
+                                                ? "text-[#B0B0B0]"
+                                                : "text-[#42474a]"
+                                        }`}
+                                    >
                                         se houver informações sobre agressores
                                         ou vítimas, preencher aqui
                                     </p>
