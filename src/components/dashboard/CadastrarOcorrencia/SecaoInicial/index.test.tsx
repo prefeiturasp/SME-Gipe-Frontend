@@ -170,7 +170,7 @@ describe("SecaoInicial", () => {
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const yyyy = tomorrow.getFullYear();
+        const yyyy = tomorrow.getFullYear() + 1;
         const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
         const dd = String(tomorrow.getDate()).padStart(2, "0");
         const futureDate = `${yyyy}-${mm}-${dd}`;
