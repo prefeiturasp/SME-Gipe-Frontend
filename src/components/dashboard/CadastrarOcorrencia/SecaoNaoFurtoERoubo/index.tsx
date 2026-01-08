@@ -280,13 +280,13 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                 className="flex flex-col space-y-2"
                                                 disabled={disabled}
                                             >
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="Sim" />
                                                     <span className="text-sm text-[#42474a]">
                                                         Sim
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="Não" />
                                                     <span className="text-sm text-[#42474a]">
                                                         Não

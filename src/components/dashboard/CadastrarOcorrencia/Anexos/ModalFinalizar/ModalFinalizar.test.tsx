@@ -359,6 +359,23 @@ describe("ModalFinalizarEtapa", () => {
         expect(onOpenChangeMock).toHaveBeenCalledWith(false);
     });
 
+    it("Fecha modal ao clicar no X (botão de fechar do Dialog)", async () => {
+        const onOpenChangeMock = vi.fn();
+
+        render(
+            <ModalFinalizar
+                open={true}
+                onOpenChange={onOpenChangeMock}
+                perfilUsuario="diretor"
+            />
+        );
+
+        const closeButton = screen.getByRole("button", { name: /close/i });
+        await userEvent.click(closeButton);
+
+        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
+    });
+
     it("Fecha modal ao clicar em Fechar na segunda fase", async () => {
         mutateAsyncMock.mockResolvedValue({
             success: true,

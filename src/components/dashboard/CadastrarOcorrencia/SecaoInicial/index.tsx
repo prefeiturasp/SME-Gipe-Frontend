@@ -207,7 +207,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                 onTimeChange={(value) =>
                                                     form.setValue(
                                                         "horaOcorrencia",
-                                                        value
+                                                        value,
+                                                        { shouldValidate: true }
                                                     )
                                                 }
                                                 maxDate={maxDate}
@@ -300,7 +301,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                 className="flex flex-col space-y-2"
                                                 disabled={disabled}
                                             >
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="Sim" />
                                                     <span
                                                         className={
@@ -312,7 +313,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                         Sim
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="Não" />
                                                     <span
                                                         className={

@@ -2,7 +2,6 @@
 
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import PageHeader from "../PageHeader/PageHeader";
 import { DetalhamentoDre } from "./DetalhamentoDre";
 
@@ -18,7 +17,6 @@ export default function FormularioDrePage({
         (state) => state.ocorrenciaUuid
     );
     const queryClient = useQueryClient();
-    const router = useRouter();
 
     const handleClickBack = async () => {
         reset();
@@ -26,8 +24,6 @@ export default function FormularioDrePage({
         await queryClient.invalidateQueries({
             queryKey: ["ocorrencia", ocorrenciaUuid],
         });
-
-        router.back();
     };
 
     return (
