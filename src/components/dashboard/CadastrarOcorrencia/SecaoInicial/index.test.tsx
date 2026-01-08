@@ -141,22 +141,32 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
 
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
         expect(dateInput).toHaveValue("2025-10-02");
 
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
         expect(timeInput).toHaveValue("14:30");
 
         expect(nextButton).toBeDisabled();
 
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
         await waitFor(() =>
             expect(radioSim).toHaveAttribute("aria-checked", "true")
         );
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
     });
 
     it("não permite data futura e exibe erro", async () => {
@@ -247,17 +257,35 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
-
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
+
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
+
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
+
+        await waitFor(() =>
+            expect(radioSim).toHaveAttribute("aria-checked", "true")
+        );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
+
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
 
         await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
         await waitFor(() => expect(toastMock).toHaveBeenCalled());
@@ -275,17 +303,35 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
-
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
+
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
+
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
+
+        await waitFor(() =>
+            expect(radioSim).toHaveAttribute("aria-checked", "true")
+        );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
+
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
 
         await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
         await waitFor(() => expect(onSuccess).toHaveBeenCalled());

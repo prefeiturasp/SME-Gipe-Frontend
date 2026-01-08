@@ -207,7 +207,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                 onTimeChange={(value) =>
                                                     form.setValue(
                                                         "horaOcorrencia",
-                                                        value
+                                                        value,
+                                                        { shouldValidate: true }
                                                     )
                                                 }
                                                 maxDate={maxDate}
