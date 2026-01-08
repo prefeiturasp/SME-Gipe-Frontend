@@ -140,8 +140,8 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /qual o tipo de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -206,8 +206,8 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /qual o tipo de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -277,8 +277,8 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /qual o tipo de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -356,8 +356,8 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /qual o tipo de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
 
         expect(selectButton).toBeDisabled();
@@ -383,8 +383,8 @@ describe("SecaoFurtoERoubo", () => {
             screen.getByText("Qual o tipo de ocorrência?*")
         ).toBeInTheDocument();
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /qual o tipo de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
 
         expect(selectButton).toBeInTheDocument();
@@ -460,12 +460,12 @@ describe("SecaoFurtoERoubo", () => {
                 "useOcorrenciaFormStore"
             ).mockReturnValue({
                 formData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original da ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
                 savedFormData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original da ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
@@ -657,10 +657,12 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const selectButton = screen.getByRole("combobox", {
-                name: /qual o tipo de ocorrência/i,
+            // O botão mostra o nome do primeiro valor selecionado
+            // Usa getAllByRole e pega o primeiro (que é o botão principal, não o de remover)
+            const selectButtons = screen.getAllByRole("button", {
+                name: /Violência física/i,
             });
-            await user.click(selectButton);
+            await user.click(selectButtons[0]);
 
             const opcaoBullying = await screen.findByRole("option", {
                 name: /^Bullying$/i,
@@ -682,9 +684,11 @@ describe("SecaoFurtoERoubo", () => {
                     expect.objectContaining({
                         uuid: "test-uuid-123",
                         body: expect.objectContaining({
-                            tipos_ocorrencia: [
-                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
-                            ],
+                            // MultiSelect mantém ambos os valores (o original + o novo)
+                            tipos_ocorrencia: expect.arrayContaining([
+                                "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97", // Violência física
+                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73", // Bullying
+                            ]),
                         }),
                     }),
                     expect.any(Object)
@@ -727,8 +731,8 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const selectButton = screen.getByRole("combobox", {
-                name: /qual o tipo de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
             await user.click(selectButton);
 
@@ -803,12 +807,12 @@ describe("SecaoFurtoERoubo", () => {
                 "useOcorrenciaFormStore"
             ).mockReturnValue({
                 formData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição modificada localmente",
                     smartSampa: "sim_com_dano",
                 },
                 savedFormData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original do backend",
                     smartSampa: "nao_faz_parte",
                 },
@@ -861,7 +865,7 @@ describe("SecaoFurtoERoubo", () => {
                 "useOcorrenciaFormStore"
             ).mockReturnValue({
                 formData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição da nova ocorrência",
                     smartSampa: "nao_faz_parte",
                 },
@@ -905,12 +909,12 @@ describe("SecaoFurtoERoubo", () => {
                 "useOcorrenciaFormStore"
             ).mockReturnValue({
                 formData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
                     smartSampa: "nao_faz_parte",
                 },
                 savedFormData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
                     smartSampa: "nao_faz_parte",
                 },
@@ -968,7 +972,7 @@ describe("SecaoFurtoERoubo", () => {
                 "useOcorrenciaFormStore"
             ).mockReturnValue({
                 formData: {
-                    tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
                     smartSampa: "nao_faz_parte",
                 },
@@ -1093,8 +1097,8 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const selectButton = screen.getByRole("combobox", {
-                name: /qual o tipo de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
             await user.click(selectButton);
 
@@ -1184,8 +1188,8 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const selectButton = screen.getByRole("combobox", {
-                name: /qual o tipo de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
             await user.click(selectButton);
 
@@ -1197,7 +1201,9 @@ describe("SecaoFurtoERoubo", () => {
             await waitFor(() => {
                 expect(mockOnFormChange).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        tiposOcorrencia: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        tiposOcorrencia: [
+                            "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        ],
                     })
                 );
             });
@@ -1261,8 +1267,8 @@ describe("SecaoFurtoERoubo", () => {
             />
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         expect(selectButton).toBeDisabled();
 

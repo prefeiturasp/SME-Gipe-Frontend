@@ -86,7 +86,7 @@ describe("transformOcorrenciaToFormData", () => {
 
         const result = transformOcorrenciaToFormData(ocorrencia);
 
-        expect(result.tiposOcorrencia).toEqual("tipo-1");
+        expect(result.tiposOcorrencia).toEqual(["tipo-1", "tipo-2"]);
     });
 
     it("deve incluir descrição quando presente", () => {
@@ -238,7 +238,7 @@ describe("transformOcorrenciaToFormData", () => {
             tipoOcorrencia: "Não",
             nomeDre: "DRE Centro",
             nomeUnidade: "EMEF Teste",
-            tiposOcorrencia: "tipo-1",
+            tiposOcorrencia: ["tipo-1"],
             descricao: "Descrição da ocorrência",
             smartSampa: "sim_com_dano",
             declarante: "declarante-uuid",

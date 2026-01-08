@@ -26,6 +26,7 @@ import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,6 +46,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+    const queryClient = useQueryClient();
     const router = useRouter();
 
     const { mutate: atualizarOcorrenciaGipe } = useAtualizarOcorrenciaGipe();
@@ -89,7 +91,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
             envolvidos: formData.envolvidos ?? "",
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
-            tiposOcorrencia: formData.tiposOcorrencia ?? "",
+            tiposOcorrencia: formData.tiposOcorrencia ?? [],
             cicloAprendizagem: formData.cicloAprendizagem ?? "",
             informacoesInteracoesVirtuais:
                 formData.informacoesInteracoesVirtuais ?? "",
@@ -110,7 +112,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
                     envolvido: data.envolvidos,
                     motivacao_ocorrencia: data.motivoOcorrencia,
-                    tipos_ocorrencia: [data.tiposOcorrencia],
+                    tipos_ocorrencia: data.tiposOcorrencia,
                     qual_ciclo_aprendizagem: data.cicloAprendizagem,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
@@ -130,6 +132,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     const finalizada = formData.status === "finalizada";
 
                     if (finalizada) {
+                        queryClient.invalidateQueries({
+                            queryKey: ["ocorrencia", ocorrenciaUuid],
+                        });
                         router.push("/dashboard");
                         return;
                     }
@@ -150,6 +155,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
         setFormData(data);
     };
+
+    const tiposOcorrenciaOptions =
+        tiposOcorrencia?.map((tipo) => ({
+            value: tipo.uuid,
+            label: tipo.nome,
+        })) || [];
 
     return (
         <>
@@ -254,29 +265,15 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                         <FormLabel>
                                             Qual o tipo da ocorrência?*
                                         </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={isLoadingTipos}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {tiposOcorrencia?.map(
-                                                    (tipo) => (
-                                                        <SelectItem
-                                                            key={tipo.uuid}
-                                                            value={tipo.uuid}
-                                                        >
-                                                            {tipo.nome}
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <MultiSelect
+                                                options={tiposOcorrenciaOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione os tipos de ocorrência"
+                                                disabled={isLoadingTipos}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

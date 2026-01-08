@@ -8,6 +8,7 @@ import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const { mutate: atualizarOcorrenciaDre } = useAtualizarOcorrenciaDre();
 
@@ -114,6 +116,9 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                     }
 
                     if (isPontoFocal) {
+                        queryClient.invalidateQueries({
+                            queryKey: ["ocorrencia", ocorrenciaUuid],
+                        });
                         router.push("/dashboard");
                         return;
                     }

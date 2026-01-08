@@ -1,5 +1,6 @@
 import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
 import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
+import * as useTiposOcorrenciaModule from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -378,6 +379,22 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
+    it("deve retornar array vazio para tiposOcorrenciaOptions quando tiposOcorrencia é undefined", () => {
+        vi.spyOn(
+            useTiposOcorrenciaModule,
+            "useTiposOcorrencia"
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
+
+        renderComponent();
+
+        expect(
+            screen.getByText(/qual o tipo da ocorrência\?/i)
+        ).toBeInTheDocument();
+    });
+
     it("deve mapear corretamente os envolvidos para options", () => {
         renderComponent();
 
@@ -507,6 +524,7 @@ describe("DetalhamentoGipe", () => {
             ameacaRealizada: "presencialmente",
             envolvidos: "env1",
             motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -553,6 +571,7 @@ describe("DetalhamentoGipe", () => {
             ameacaRealizada: "presencialmente",
             envolvidos: "env1",
             motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -601,6 +620,7 @@ describe("DetalhamentoGipe", () => {
             ameacaRealizada: "presencialmente",
             envolvidos: "env1",
             motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -651,6 +671,7 @@ describe("DetalhamentoGipe", () => {
             ameacaRealizada: "presencialmente",
             envolvidos: "env1",
             motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",

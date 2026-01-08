@@ -10,6 +10,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     Select,
@@ -76,7 +77,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
-                tiposOcorrencia: formData.tiposOcorrencia ?? "",
+                tiposOcorrencia: formData.tiposOcorrencia ?? [],
                 envolvidos: formData.envolvidos ?? "",
                 descricao: formData.descricao ?? "",
                 possuiInfoAgressorVitima:
@@ -121,7 +122,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 data.possuiInfoAgressorVitima === "Sim" ? "sim" : "nao";
 
             const body = {
-                tipos_ocorrencia: [data.tiposOcorrencia],
+                tipos_ocorrencia: data.tiposOcorrencia,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
                 tem_info_agressor_ou_vitima: temInfo,
@@ -172,31 +173,17 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                         <FormLabel disabled={disabled}>
                                             Qual o tipo de ocorrência?*
                                         </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={
-                                                isLoadingTipos || disabled
-                                            }
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {tiposOcorrenciaOptions.map(
-                                                    (tipo) => (
-                                                        <SelectItem
-                                                            key={tipo.value}
-                                                            value={tipo.value}
-                                                        >
-                                                            {tipo.label}
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <MultiSelect
+                                                options={tiposOcorrenciaOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione os tipos de ocorrência"
+                                                disabled={
+                                                    isLoadingTipos || disabled
+                                                }
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

@@ -315,7 +315,7 @@ describe("EditarOcorrenciaPage", () => {
                 dre: "108400",
                 unidadeEducacional: "654321",
                 tipoOcorrencia: "Sim",
-                tiposOcorrencia: "uuid-1",
+                tiposOcorrencia: ["uuid-1", "uuid-2"],
                 descricao: "Descrição detalhada da ocorrência",
                 smartSampa: "sim_com_dano",
             })
@@ -1181,7 +1181,7 @@ describe("EditarOcorrenciaPage", () => {
         await waitFor(() => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    tiposOcorrencia: "tipo-ue-1",
+                    tiposOcorrencia: ["tipo-ue-1"],
                 })
             );
         });

@@ -164,8 +164,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -230,8 +230,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -304,8 +304,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -479,8 +479,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         expect(selectButton).toBeDisabled();
     });
@@ -495,8 +495,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -532,8 +532,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -607,8 +607,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
         const tipoOption = await screen.findByRole("option", {
@@ -673,8 +673,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
 
@@ -746,8 +746,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const selectButton = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         await user.click(selectButton);
         const tipoOption = await screen.findByRole("option", {
@@ -861,8 +861,8 @@ describe("SecaoNaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const selectButton = screen.getByRole("combobox", {
-                name: /Qual o tipo de ocorrência\?\*/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
             await user.click(selectButton);
 
@@ -929,8 +929,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             />
         );
 
-        const tiposSelect = screen.getByRole("combobox", {
-            name: /Qual o tipo de ocorrência\?\*/i,
+        const tiposSelect = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
         expect(tiposSelect).toBeDisabled();
 
