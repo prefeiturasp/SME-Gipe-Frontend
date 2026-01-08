@@ -11,7 +11,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 
-import AlertSmall from "@/assets/icons/AlertSmall";
+import Alert from "@/assets/icons/Alert";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -137,14 +137,14 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                             <TableRow>
                                 <TableCell
                                     colSpan={table.getAllLeafColumns().length}
-                                    className="h-[400px] text-center" // Adicione text-center aqui
+                                    className="h-[150px] !table-cell text-center"
                                 >
-                                    <div className="flex flex-col items-center justify-center gap-3 h-full">
-                                        <AlertSmall
+                                    <div className="flex flex-col items-center justify-center gap-3 h-full w-full">
+                                        <Alert
                                             className="w-6 h-6"
                                             style={{ fill: "#717FC7" }}
                                         />
-                                        <h3 className="text-[14px] font-bold text-[#42474A]">
+                                        <h3 className="text-[14px] font-bold text-[#42474A] mb-[-15px]">
                                             Nenhum resultado encontrado!
                                         </h3>
                                         <p className="text-[14px] text-[#42474A] max-w-md">
