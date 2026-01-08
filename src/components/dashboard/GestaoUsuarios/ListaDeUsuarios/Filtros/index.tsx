@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useUserStore } from "@/stores/useUserStore";
 import { Combobox } from "@/components/ui/Combobox";
 
@@ -40,10 +40,10 @@ export default function FiltrosUsuarios({
     }, [user, dreUuid]);
 
     // Busca DREs
-    const {data: dresData, isLoading: isLoadingDres, isError: isErrorDres,} = useFetchDREs();
+    const {data: dresData, isLoading: isLoadingDres, isError: isErrorDres,} = useGetUnidades(true, undefined, "DRE");
 
     // Busca UEs da DRE selecionada
-    const {data: uesData, isLoading: isLoadingUes, isError: isErrorUes,} = useFetchUEs(dreUuid, "TODAS");
+    const {data: uesData, isLoading: isLoadingUes, isError: isErrorUes,} = useGetUnidades(true, dreUuid);
 
     // Sempre que mudar algum filtro, avisa o componente pai
     useEffect(() => {
