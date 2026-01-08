@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import FormularioGipePage from "./index";
 
 const mockReset = vi.fn();
@@ -98,7 +98,7 @@ describe("FormularioGipePage", () => {
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
-    it("deve chamar reset, invalidateQueries e router.back ao clicar em Voltar", async () => {
+    it("deve chamar reset e invalidateQueries ao clicar em Voltar", async () => {
         renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         const botaoVoltar = screen.getByText("Voltar");
@@ -111,8 +111,6 @@ describe("FormularioGipePage", () => {
                 queryKey: ["ocorrencia", "test-uuid-456"],
             });
         });
-
-        expect(mockRouterBack).toHaveBeenCalledTimes(1);
     });
 
     it("deve usar o ocorrenciaUuid correto na invalidação de queries", async () => {

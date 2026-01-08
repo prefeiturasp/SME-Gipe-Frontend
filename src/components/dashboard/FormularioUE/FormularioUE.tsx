@@ -2,30 +2,30 @@
 
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 import { Stepper } from "@/components/stepper/Stepper";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
+import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import SecaoInicial, {
-    SecaoInicialRef,
-} from "../CadastrarOcorrencia/SecaoInicial";
-import SecaoFurtoERoubo, {
-    SecaoFurtoERouboRef,
-} from "../CadastrarOcorrencia/SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo, {
-    SecaoNaoFurtoERouboRef,
-} from "../CadastrarOcorrencia/SecaoNaoFurtoERoubo";
-import SecaoFinal, { SecaoFinalRef } from "../CadastrarOcorrencia/SecaoFinal";
+import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import Anexos from "../CadastrarOcorrencia/Anexos";
 import InformacoesAdicionais, {
     InformacoesAdicionaisRef,
 } from "../CadastrarOcorrencia/InformacoesAdicionais";
-import Anexos from "../CadastrarOcorrencia/Anexos";
-import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import SecaoFinal, { SecaoFinalRef } from "../CadastrarOcorrencia/SecaoFinal";
+import SecaoFurtoERoubo, {
+    SecaoFurtoERouboRef,
+} from "../CadastrarOcorrencia/SecaoFurtoERoubo";
+import SecaoInicial, {
+    SecaoInicialRef,
+} from "../CadastrarOcorrencia/SecaoInicial";
+import SecaoNaoFurtoERoubo, {
+    SecaoNaoFurtoERouboRef,
+} from "../CadastrarOcorrencia/SecaoNaoFurtoERoubo";
 import PageHeader from "../PageHeader/PageHeader";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/components/ui/headless-toast";
-import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
-import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
-import { useRouter } from "next/navigation";
 
 export type FormularioUEProps = {
     readonly onNext?: () => void;
@@ -40,6 +40,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const router = useRouter();
+
+    const isReadOnly = isAssistenteOuDiretor;
 
     const { mutate: atualizarFormularioCompletoUE, isPending } =
         useAtualizarFormularioCompletoUE();
@@ -272,6 +274,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     };
 
     const handleSaveAll = async () => {
+        if (isReadOnly) {
+            router.push("/dashboard");
+            return;
+        }
+
         try {
             const isValid = await validateAllForms();
             if (!isValid) return;
@@ -371,6 +378,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             ref={secaoInicialRef}
                             showButtons={false}
                             onFormChange={handleSecaoInicialChange}
+                            disabled={isReadOnly}
                         />
                     </div>
 
@@ -379,12 +387,14 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             <SecaoFurtoERoubo
                                 ref={secaoFurtoERouboRef}
                                 showButtons={false}
+                                disabled={isReadOnly}
                             />
                         ) : (
                             <SecaoNaoFurtoERoubo
                                 ref={secaoNaoFurtoERouboRef}
                                 showButtons={false}
                                 onFormChange={handleSecaoNaoFurtoChange}
+                                disabled={isReadOnly}
                             />
                         )}
                     </div>
@@ -394,16 +404,25 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             <InformacoesAdicionais
                                 ref={informacoesAdicionaisRef}
                                 showButtons={false}
+                                disabled={isReadOnly}
                             />
                         </div>
                     )}
 
                     <div>
-                        <SecaoFinal ref={secaoFinalRef} showButtons={false} />
+                        <SecaoFinal
+                            ref={secaoFinalRef}
+                            showButtons={false}
+                            disabled={isReadOnly}
+                        />
                     </div>
 
                     <div>
-                        <Anexos showButtons={false} modoVisualizacao />
+                        <Anexos
+                            showButtons={false}
+                            modoVisualizacao
+                            disabled={isReadOnly}
+                        />
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
@@ -419,7 +438,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                         <Button
                             variant="submit"
                             onClick={() => handleSaveAll()}
-                            disabled={isPending}
+                            disabled={isReadOnly ? false : isPending}
                         >
                             {isPending ? "Salvando..." : finalizarText}
                         </Button>
