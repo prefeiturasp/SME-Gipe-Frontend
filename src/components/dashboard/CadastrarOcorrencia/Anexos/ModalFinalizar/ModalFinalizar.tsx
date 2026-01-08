@@ -212,7 +212,7 @@ export default function ModalFinalizarEtapa({
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
+        <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
             {!success && (
                 <DialogContent className="max-w-[700px] p-6 rounded-[4px]">
                     <DialogHeader className="pt-2">
