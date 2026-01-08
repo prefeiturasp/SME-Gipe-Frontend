@@ -1,17 +1,18 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
+    Cell,
     flexRender,
     getCoreRowModel,
-    useReactTable,
     getPaginationRowModel,
-    Header,
-    Cell,
     getSortedRowModel,
+    Header,
+    useReactTable,
 } from "@tanstack/react-table";
 
+import AlertSmall from "@/assets/icons/AlertSmall";
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -20,10 +21,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Ocorrencia } from "@/types/ocorrencia";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useOcorrenciasColumns } from "./useOcorrenciasColumns";
-import { Ocorrencia } from "@/types/ocorrencia";
 
 export function resolveColId<TData, TValue>(
     node: Header<TData, TValue> | Cell<TData, TValue>
@@ -136,10 +136,22 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                         ) : (
                             <TableRow>
                                 <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
+                                    colSpan={table.getAllLeafColumns().length}
+                                    className="h-[400px] text-center" // Adicione text-center aqui
                                 >
-                                    Nenhum resultado encontrado.
+                                    <div className="flex flex-col items-center justify-center gap-3 h-full">
+                                        <AlertSmall
+                                            className="w-6 h-6"
+                                            style={{ fill: "#717FC7" }}
+                                        />
+                                        <h3 className="text-[14px] font-bold text-[#42474A]">
+                                            Nenhum resultado encontrado!
+                                        </h3>
+                                        <p className="text-[14px] text-[#42474A] max-w-md">
+                                            Não há registros de intercorrências
+                                            que atendam aos filtros aplicados.
+                                        </p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )}
