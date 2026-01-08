@@ -233,7 +233,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 className="flex flex-col space-y-2"
                                                 disabled={disabled}
                                             >
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="sim_com_dano" />
                                                     <span
                                                         className={`text-sm ${
@@ -245,7 +245,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                         Sim e houve dano
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="sim_sem_dano" />
                                                     <span
                                                         className={`text-sm ${
@@ -257,7 +257,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                         Sim, mas não houve dano
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="nao_faz_parte" />
                                                     <span
                                                         className={`text-sm ${

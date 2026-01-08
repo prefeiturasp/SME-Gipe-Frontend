@@ -713,7 +713,7 @@ const InformacoesAdicionais = forwardRef<
                                             disabled={disabled}
                                             className="flex flex-col space-y-2"
                                         >
-                                            <label className="flex items-center space-x-2">
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                 <RadioGroupItem value="Sim" />
                                                 <span
                                                     className={
@@ -725,7 +725,7 @@ const InformacoesAdicionais = forwardRef<
                                                     Sim
                                                 </span>
                                             </label>
-                                            <label className="flex items-center space-x-2">
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                 <RadioGroupItem value="Não" />
                                                 <span
                                                     className={
@@ -761,7 +761,7 @@ const InformacoesAdicionais = forwardRef<
                                             disabled={disabled}
                                             className="flex flex-col space-y-2"
                                         >
-                                            <label className="flex items-center space-x-2">
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                 <RadioGroupItem value="Sim" />
                                                 <span
                                                     className={
@@ -773,7 +773,7 @@ const InformacoesAdicionais = forwardRef<
                                                     Sim
                                                 </span>
                                             </label>
-                                            <label className="flex items-center space-x-2">
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                 <RadioGroupItem value="Não" />
                                                 <span
                                                     className={
