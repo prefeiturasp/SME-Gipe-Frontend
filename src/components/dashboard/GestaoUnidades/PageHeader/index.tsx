@@ -37,7 +37,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         type="button"
                         className="text-center rounded-md text-[14px] font-[700]"
                     >
-                        <Ban className="mr-2" size="sm" />
+                        <Ban className="mr-2" width="20" />
                         Inativar Unidade Educacional
                     </Button>
                 </div>

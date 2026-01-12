@@ -19,14 +19,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useAtualizarUnidade } from "@/hooks/useAtualizarUnidade";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
 import { useFetchDREs } from "@/hooks/useUnidades";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormData, formSchema } from "./schema";
 
@@ -35,25 +38,52 @@ const redeOptions = [
     { label: "Indireta", value: "INDIRETA" },
 ];
 
-export default function FormularioCadastroUnidadeEducacional() {
+type FormularioCadastroUnidadeEducacionalProps = {
+    mode?: "create" | "edit";
+    unidadeUuid?: string;
+};
+
+export default function FormularioCadastroUnidadeEducacional({
+    mode = "create",
+    unidadeUuid,
+}: Readonly<FormularioCadastroUnidadeEducacionalProps>) {
     const router = useRouter();
     const { isPontoFocal } = useUserPermissions();
     const user = useUserStore((state) => state.user);
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
     const { data: dreOptions = [] } = useFetchDREs();
     const { data: tipoOptions = [] } = useTiposUnidade();
+    const queryClient = useQueryClient();
+    const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
+        useState(false);
+    const [carregandoDados, setCarregandoDados] = useState(false);
+    const montagemInicialRef = useRef(true);
 
-    const defaultValues = useMemo(
-        () => ({
+    const { data: unidadeData } = useObterUnidadeGestao({
+        uuid: unidadeUuid || "",
+        enabled: mode === "edit" && !!unidadeUuid,
+    });
+
+    const defaultValues = useMemo(() => {
+        if (mode === "edit" && unidadeData) {
+            return {
+                tipo: unidadeData.tipo_unidade,
+                nomeUnidadeEducacional: unidadeData.nome,
+                rede: unidadeData.rede,
+                codigoEol: unidadeData.codigo_eol,
+                diretoriaRegional: unidadeData.dre_uuid,
+                siglaDre: unidadeData.sigla,
+            };
+        }
+        return {
             tipo: "",
             nomeUnidadeEducacional: "",
             rede: "",
             codigoEol: "",
             diretoriaRegional: isPontoFocal && userDreUuid ? userDreUuid : "",
             siglaDre: "",
-        }),
-        [isPontoFocal, userDreUuid]
-    );
+        };
+    }, [isPontoFocal, userDreUuid, mode, unidadeData]);
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -61,12 +91,60 @@ export default function FormularioCadastroUnidadeEducacional() {
         mode: "onChange",
     });
 
+    useEffect(() => {
+        if (mode === "edit") {
+            setDadosIniciaisCarregados(false);
+            setCarregandoDados(false);
+            montagemInicialRef.current = true;
+        }
+    }, [mode, unidadeUuid]);
+
+    useEffect(() => {
+        if (
+            mode === "edit" &&
+            unidadeData &&
+            dreOptions.length > 0 &&
+            tipoOptions.length > 0 &&
+            !dadosIniciaisCarregados
+        ) {
+            setCarregandoDados(true);
+
+            form.reset({
+                tipo: unidadeData.tipo_unidade,
+                nomeUnidadeEducacional: unidadeData.nome,
+                rede: unidadeData.rede,
+                codigoEol: unidadeData.codigo_eol,
+                diretoriaRegional: unidadeData.dre_uuid,
+                siglaDre: unidadeData.sigla,
+            });
+
+            setDadosIniciaisCarregados(true);
+            setTimeout(() => {
+                setCarregandoDados(false);
+                montagemInicialRef.current = false;
+            }, 200);
+        }
+    }, [
+        mode,
+        unidadeData,
+        dreOptions,
+        tipoOptions,
+        form,
+        dadosIniciaisCarregados,
+        unidadeData?.uuid,
+    ]);
+
     const tipoSelecionado = form.watch("tipo");
     const isDreSelected = tipoSelecionado === "DRE";
 
     const isFormValid = form.formState.isValid;
 
-    const { mutateAsync: cadastrarUnidade, isPending } = useCadastrarUnidade();
+    const { mutateAsync: cadastrarUnidade, isPending: isPendingCreate } =
+        useCadastrarUnidade();
+    const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
+        useAtualizarUnidade(unidadeUuid || "");
+
+    const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
 
     const onSubmit = async (data: FormData) => {
         const payload: UnidadeCadastroPayload = {
@@ -81,14 +159,25 @@ export default function FormularioCadastroUnidadeEducacional() {
             payload.dre = data.diretoriaRegional;
         }
 
-        const response = await cadastrarUnidade(payload);
+        const response =
+            mode === "edit"
+                ? await atualizarUnidade(payload)
+                : await cadastrarUnidade(payload);
+
         if (response.success) {
             toast({
                 title: "Tudo certo por aqui!",
                 description:
-                    "A Unidade Educacional foi cadastrada com sucesso.",
+                    mode === "edit"
+                        ? "As alterações foram salvas com sucesso!"
+                        : "A Unidade Educacional foi cadastrada com sucesso.",
                 variant: "success",
             });
+            if (mode === "edit") {
+                queryClient.invalidateQueries({
+                    queryKey: ["unidade-gestao", unidadeUuid],
+                });
+            }
             router.push("/dashboard/gestao-unidades-educacionais");
         } else {
             toast({
@@ -111,14 +200,14 @@ export default function FormularioCadastroUnidadeEducacional() {
                         name="tipo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                    Tipo*
-                                </FormLabel>
+                                <FormLabel>Tipo*</FormLabel>
                                 <FormControl>
                                     <Select
                                         value={field.value}
                                         onValueChange={field.onChange}
-                                        disabled={field.disabled}
+                                        disabled={
+                                            field.disabled || carregandoDados
+                                        }
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Selecione" />
@@ -144,7 +233,7 @@ export default function FormularioCadastroUnidadeEducacional() {
                         name="nomeUnidadeEducacional"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                                <FormLabel>
                                     Nome da Unidade Educacional*
                                 </FormLabel>
                                 <FormControl>
@@ -167,13 +256,16 @@ export default function FormularioCadastroUnidadeEducacional() {
                         name="rede"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                                <FormLabel disabled={mode === "edit"}>
                                     Rede*
                                 </FormLabel>
                                 <FormControl>
                                     <Select
                                         value={field.value}
                                         onValueChange={field.onChange}
+                                        disabled={
+                                            mode === "edit" || carregandoDados
+                                        }
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Selecione" />
@@ -200,11 +292,12 @@ export default function FormularioCadastroUnidadeEducacional() {
                         name="codigoEol"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
+                                <FormLabel disabled={mode === "edit"}>
                                     Código EOL*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
+                                        disabled={mode === "edit"}
                                         {...field}
                                         type="number"
                                         placeholder="Exemplo: 1234567"
@@ -224,9 +317,7 @@ export default function FormularioCadastroUnidadeEducacional() {
                             name="diretoriaRegional"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="required text-[#42474a] text-[14px] font-[700]">
-                                        Diretoria Regional*
-                                    </FormLabel>
+                                    <FormLabel>Diretoria Regional*</FormLabel>
                                     <FormControl>
                                         <Select
                                             value={field.value}
@@ -299,7 +390,7 @@ export default function FormularioCadastroUnidadeEducacional() {
                         disabled={!isFormValid || isPending}
                         loading={isPending}
                     >
-                        Cadastrar UE
+                        {mode === "edit" ? "Salvar alterações" : "Cadastrar UE"}
                     </Button>
                 </div>
             </form>
