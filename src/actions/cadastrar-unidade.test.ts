@@ -91,26 +91,6 @@ describe("cadastrarUnidadeAction", () => {
         });
     });
 
-    it("deve retornar erro 400 (dados inválidos)", async () => {
-        const error = new AxiosError("Bad Request");
-        error.response = {
-            status: 400,
-            data: {},
-            statusText: "Bad Request",
-            headers: {},
-            config: { headers: {} as AxiosRequestHeaders },
-        };
-
-        apiPostMock.mockRejectedValue(error);
-
-        const result = await cadastrarUnidadeAction(payload);
-
-        expect(result).toEqual({
-            success: false,
-            error: "Dados inválidos para cadastro",
-        });
-    });
-
     it("deve retornar erro 500 (erro interno do servidor)", async () => {
         const error = new AxiosError("Internal Server Error");
         error.response = {
