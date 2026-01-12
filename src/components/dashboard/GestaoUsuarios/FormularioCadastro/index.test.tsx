@@ -16,15 +16,19 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
-vi.mock("@/hooks/useUnidades", () => ({
-    useFetchDREs: () => ({
-        data: [
-            { uuid: "dre-1", codigo_eol: "000001", nome: "DRE Butantã" },
-            { uuid: "dre-2", codigo_eol: "000002", nome: "DRE Centro" },
-        ],
-    }),
-    useFetchUEs: vi.fn((dreUuid: string) => {
-        if (dreUuid === "dre-1") {
+vi.mock("@/hooks/useGetUnidades", () => ({
+    useGetUnidades: vi.fn((ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+        if (tipo_unidade === "DRE") {
+            return {
+                data: [
+                    { uuid: "dre-1", codigo_eol: "000001", nome: "DRE Butantã" },
+                    { uuid: "dre-2", codigo_eol: "000002", nome: "DRE Centro" },
+                ],
+                isLoading: false,
+                error: null,
+            };
+        }
+        if (dre === "dre-1") {
             return {
                 data: [
                     {
@@ -38,9 +42,15 @@ vi.mock("@/hooks/useUnidades", () => ({
                         nome: "EMEF Maria das Dores",
                     },
                 ],
+                isLoading: false,
+                error: null,
             };
         }
-        return { data: [] };
+        return {
+            data: [],
+            isLoading: false,
+            error: null
+        };
     }),
 }));
 
@@ -77,13 +87,15 @@ vi.mock("@/hooks/useUserPermissions", () => ({
     }),
 }));
 
+let queryClient: QueryClient;
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+        {children}
+    </QueryClientProvider>
+);
+
 describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
-    let queryClient: QueryClient;
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
-    );
+
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -179,8 +191,8 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         isGipeAdmin: true,
     });
 
-    vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue({
-        data: {
+    vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+        getMockedQueryResult({
             uuid: "usuario-inativo",
             name: "Usuário Inativo",
             cpf: "12345678900",
@@ -191,11 +203,8 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             is_app_admin: false,
             codigo_eol_dre_da_unidade: "",
             codigo_eol_unidade: "",
-        },
-        isLoading: false,
-        isFetching: false,
-        isSuccess: true,
-    } as any);
+        })
+    );
 
     render(
         <FormularioCadastroPessoaUsuaria
@@ -253,12 +262,6 @@ function getMockedQueryResult(
 }
 
 describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
-    let queryClient: QueryClient;
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
-    );
 
     beforeEach(() => {
         vi.clearAllMocks();

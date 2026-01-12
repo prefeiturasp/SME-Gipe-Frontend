@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { DataTable } from "./data-table";
-import { Button } from "@/components/ui/button";
-import { ListFilter } from "lucide-react";
 import Export from "@/assets/icons/Export";
-import Filtros, { FiltrosValues } from "./filtros";
+import { Button } from "@/components/ui/button";
 import { useOcorrencias } from "@/hooks/useOcorrencias";
+import { ListFilter } from "lucide-react";
+import { useMemo, useState } from "react";
+import { DataTable } from "./data-table";
+import Filtros, { FiltrosValues } from "./filtros";
 
+import Alert from "@/assets/icons/Alert";
 import {
     hasAnyFilter,
     matchCodigo,
@@ -84,7 +85,13 @@ export default function TabelaOcorrencias() {
                     detalhes.
                 </span>
                 <div className="flex flex-row space-x-2">
-                    <Button variant="customOutline" size="sm">
+                    <Button
+                        variant="customOutline"
+                        size="sm"
+                        disabled={
+                            !ocorrenciasData || ocorrenciasData.length === 0
+                        }
+                    >
                         <Export className="mr-1" />
                         Exportar
                     </Button>
@@ -92,6 +99,9 @@ export default function TabelaOcorrencias() {
                         variant="customOutline"
                         size="sm"
                         onClick={() => setShowFilters((v) => !v)}
+                        disabled={
+                            !ocorrenciasData || ocorrenciasData.length === 0
+                        }
                     >
                         <ListFilter size="16" className="mr-1" />
                         Filtrar
@@ -105,7 +115,19 @@ export default function TabelaOcorrencias() {
                     onApply={handleApplyFilters}
                 />
             )}
-            <DataTable data={filteredData} />
+            {ocorrenciasData?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 h-[400px] w-full">
+                    <Alert className="w-6 h-6" style={{ fill: "#717FC7" }} />
+                    <h3 className="text-[14px] font-bold text-[#42474A] mb-[-15px]">
+                        Você ainda não possui nenhuma intercorrência registrada.
+                    </h3>
+                    <p className="text-[14px] text-[#42474A] max-w-md">
+                        Clique em nova ocorrência para começar.
+                    </p>
+                </div>
+            ) : (
+                <DataTable data={filteredData} />
+            )}
         </div>
     );
 }

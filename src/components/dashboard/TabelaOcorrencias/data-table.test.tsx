@@ -1,10 +1,10 @@
-import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
-import { DataTable } from "./data-table";
 import { Ocorrencia } from "@/types/ocorrencia";
+import { DataTable } from "./data-table";
 
 vi.mock("@/hooks/useUserPermissions", () => ({
     useUserPermissions: () => ({
@@ -38,6 +38,7 @@ function makeRows(n: number): Ocorrencia[] {
         nomeUe: `UE-${i + 1}`,
         tipoOcorrencia: "Física",
         status: "Em andamento",
+        statusId: `status-${i + 1}`,
     }));
 }
 
@@ -75,7 +76,13 @@ describe("DataTable - paginação e empty", () => {
     it("renderiza mensagem de 'Nenhum resultado encontrado.' quando data é vazia", () => {
         renderWithQueryProvider(<DataTable data={[]} />);
         expect(
-            screen.getByText("Nenhum resultado encontrado.")
+            screen.getByText("Nenhum resultado encontrado!")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText(
+                "Não há registros de intercorrências que atendam aos filtros aplicados."
+            )
         ).toBeInTheDocument();
     });
 });

@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { AnexoAPI } from "@/types/anexo";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import { ListagemAnexos } from "./ListagemAnexos";
-import { AnexoAPI } from "@/types/anexo";
 import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
 
 vi.mock(
@@ -637,5 +637,70 @@ describe("ListagemAnexos", () => {
         );
 
         expect(baixarMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("deve desabilitar os botões de excluir quando disabled=true", () => {
+        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} disabled={true} />);
+
+        const excluirButton = screen.getByRole("button", {
+            name: /Excluir arquivo/i,
+        });
+
+        expect(excluirButton).toBeDisabled();
+
+        expect(excluirButton).toHaveClass("border-[#B0B0B0]");
+        expect(excluirButton).toHaveClass("text-[#B0B0B0]");
+        expect(excluirButton).toHaveClass("cursor-not-allowed");
+
+        fireEvent.click(excluirButton);
+        expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
+    });
+
+    it("deve desabilitar os botões no modo visualização quando disabled=true", () => {
+        const { container } = render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock]}
+                modoVisualizacao={true}
+                disabled={true}
+            />
+        );
+
+        const excluirButton = container.querySelector(
+            "button.border-\\[\\#B0B0B0\\].w-10"
+        ) as HTMLButtonElement;
+        expect(excluirButton).toBeInTheDocument();
+        expect(excluirButton).toBeDisabled();
+        expect(excluirButton).toHaveClass("cursor-not-allowed");
+
+        fireEvent.click(excluirButton);
+        expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
+    });
+
+    it("deve desabilitar todos os botões de múltiplos anexos quando disabled=true", () => {
+        const anexo2: AnexoAPI = {
+            ...anexoAPIMock,
+            uuid: "api-uuid-2",
+            nome_original: "documento2.pdf",
+        };
+
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock, anexo2]}
+                disabled={true}
+            />
+        );
+
+        const excluirButtons = screen.getAllByRole("button", {
+            name: /Excluir arquivo/i,
+        });
+
+        expect(excluirButtons).toHaveLength(2);
+
+        excluirButtons.forEach((button) => {
+            expect(button).toBeDisabled();
+            expect(button).toHaveClass("border-[#B0B0B0]");
+            expect(button).toHaveClass("text-[#B0B0B0]");
+            expect(button).toHaveClass("cursor-not-allowed");
+        });
     });
 });

@@ -8,8 +8,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useFetchDREs } from "@/hooks/useUnidades";
 import { useUserStore } from "@/stores/useUserStore";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 
 type FiltrosUnidadesEducacionaisProps = {
     readonly onFilterChange?: (filters: { dreUuid?: string }) => void;
@@ -35,12 +35,7 @@ export default function FiltrosUnidadesEducacionais({
         }
     }, [user, dreUuid]);
 
-    // Busca DREs
-    const {
-        data: dresData,
-        isLoading: isLoadingDres,
-        isError: isErrorDres,
-    } = useFetchDREs();
+    const {data: dresData, isLoading: isLoadingDres, isError: isErrorDres,} = useGetUnidades(true, undefined, "DRE");
 
     useEffect(() => {
         onFilterChange?.({
