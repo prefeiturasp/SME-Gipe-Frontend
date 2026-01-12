@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
-import { useFetchDREs } from "@/hooks/useUnidades";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,7 +40,7 @@ export default function FormularioCadastroUnidadeEducacional() {
     const { isPontoFocal } = useUserPermissions();
     const user = useUserStore((state) => state.user);
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
-    const { data: dreOptions = [] } = useFetchDREs();
+    const {data: dreOptions = []} = useGetUnidades(true, undefined, "DRE");
     const { data: tipoOptions = [] } = useTiposUnidade();
 
     const defaultValues = useMemo(
