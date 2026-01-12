@@ -8,7 +8,7 @@ export type AtualizarUnidadeRequest = {
     nome: string;
     rede: string;
     codigo_eol: string;
-    dre?: string;
+    dre?: string | null;
     sigla?: string;
     ativa: boolean;
 };

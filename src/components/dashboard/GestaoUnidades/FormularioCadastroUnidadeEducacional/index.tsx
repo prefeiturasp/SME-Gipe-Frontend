@@ -154,6 +154,7 @@ export default function FormularioCadastroUnidadeEducacional({
             rede: data.rede,
             sigla: data.siglaDre,
             ativa: true,
+            dre: null,
         };
         if (data.tipo !== "DRE") {
             payload.dre = data.diretoriaRegional;

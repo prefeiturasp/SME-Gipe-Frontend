@@ -10,7 +10,7 @@ export type UnidadeCadastroPayload = {
     tipo_unidade: string;
     rede: string;
     sigla?: string;
-    dre?: string;
+    dre?: string | null;
     ativa: boolean;
 };
 
