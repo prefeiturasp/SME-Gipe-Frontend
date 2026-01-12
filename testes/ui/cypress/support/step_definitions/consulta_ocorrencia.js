@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview Step Definitions para Consulta de Ocorrência
  * @description Implementação dos steps para consulta e visualização de ocorrências
  * @author Equipe de Automação - SME Gipe Frontend
@@ -45,7 +45,7 @@ const CREDENCIAIS = {
  */
 const LOG_MESSAGES = {
   LOGIN_INICIO: '=== REALIZANDO LOGIN COM SUCESSO ===',
-  LOGIN_SUCESSO: '✅ Login realizado com sucesso - Redirecionado para dashboard',
+  LOGIN_SUCESSO: 'Login realizado com sucesso - Redirecionado para dashboard',
   VALIDACAO_TITULO: '=== VALIDANDO TÍTULO DA PÁGINA ===',
   VALIDACAO_CAMPO: '=== VALIDANDO CAMPO DE AÇÃO ===',
   CLIQUE_VISUALIZAR: '=== CLICANDO EM VISUALIZAR ===',
@@ -59,11 +59,11 @@ const LOG_MESSAGES = {
 Before(() => {
   cy.clearCookies()
   cy.clearLocalStorage()
-  cy.log('🔄 Iniciando cenário - ambiente limpo')
+  cy.log('Iniciando cenário - ambiente limpo')
 })
 
 After(() => {
-  cy.log('✅ Cenário finalizado')
+  cy.log('Cenário finalizado')
 })
 
 // =============================================================================
@@ -79,26 +79,22 @@ function realizarLogin() {
   // Acesso à URL base
   cy.login_gipe()
   
-  // Preencher RF com validações
   cy.get(locators_login.campo_usuario(), { timeout: TIMEOUTS.EXTENDED })
     .should('be.visible')
     .clear()
     .type(CREDENCIAIS.RF)
   
-  // Preencher senha com validações  
   cy.get(locators_login.campo_senha(), { timeout: TIMEOUTS.DEFAULT })
     .should('be.visible')
     .clear()
     .type(CREDENCIAIS.SENHA)
-  
-  // Clicar no botão Acessar com validações
+
   cy.get('button', { timeout: TIMEOUTS.DEFAULT })
     .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
     .should('be.visible')
     .should('not.be.disabled')
     .click()
-  
-  // Validar redirecionamento
+
   cy.url({ timeout: TIMEOUTS.EXTENDED }).should('include', '/dashboard')
   
   cy.log(LOG_MESSAGES.LOGIN_SUCESSO)
@@ -118,7 +114,7 @@ function validarTitulo(tituloEsperado) {
         .should('be.visible')
         .should('contain.text', tituloEsperado)
         .then(() => {
-          cy.log('✅ Título encontrado com seletor CSS específico')
+          cy.log('Título encontrado com seletor CSS específico')
         })
     } else {
       // Fallback: seletor por texto
@@ -126,7 +122,7 @@ function validarTitulo(tituloEsperado) {
         .should('be.visible')
         .should('contain.text', tituloEsperado)
         .then(() => {
-          cy.log('✅ Título encontrado com seletor por texto')
+          cy.log('Título encontrado com seletor por texto')
         })
     }
   })
@@ -145,7 +141,7 @@ function validarCampoAcao() {
         .should('be.visible')
         .should('contain.text', 'Ação')
         .then(() => {
-          cy.log('✅ Campo Ação encontrado com seletor específico')
+          cy.log(' Campo Ação encontrado com seletor específico')
         })
     } else {
       // Fallback: seletor alternativo
@@ -153,7 +149,7 @@ function validarCampoAcao() {
         .should('be.visible')
         .should('contain.text', 'Ação')
         .then(() => {
-          cy.log('✅ Campo Ação encontrado com seletor alternativo')
+          cy.log(' Campo Ação encontrado com seletor alternativo')
         })
     }
   })
@@ -170,14 +166,14 @@ function clicarVisualizar() {
     const seletorRobusto = locators.btn_visualizar_robusto()
     
     if ($body.find(seletorRobusto).length > 0) {
-      cy.log('✅ Botão encontrado com seletor robusto')
+      cy.log(' Botão encontrado com seletor robusto')
       cy.get(seletorRobusto, { timeout: TIMEOUTS.DEFAULT })
         .first()
         .should('be.visible')
         .click({ force: true })
     } else {
       // Segunda tentativa: seletor alternativo
-      cy.log('⚠️ Tentando seletor alternativo...')
+      cy.log(' Tentando seletor alternativo...')
       const seletorAlt = locators.btn_visualizar()
       
       if ($body.find(seletorAlt).length > 0) {
@@ -186,17 +182,17 @@ function clicarVisualizar() {
           .should('be.visible')
           .click({ force: true })
           .then(() => {
-            cy.log('✅ Botão encontrado com seletor alternativo')
+            cy.log(' Botão encontrado com seletor alternativo')
           })
       } else {
         // Terceira tentativa: link visualizar
-        cy.log('⚠️ Tentando link visualizar...')
+        cy.log(' Tentando link visualizar...')
         cy.get(locators.link_visualizar(), { timeout: TIMEOUTS.DEFAULT })
           .first()
           .should('be.visible')
           .click({ force: true })
           .then(() => {
-            cy.log('✅ Botão encontrado via link')
+            cy.log(' Botão encontrado via link')
           })
       }
     }
@@ -209,7 +205,6 @@ function clicarVisualizar() {
 function validarCampoQuandoOcorrencia() {
   cy.log(LOG_MESSAGES.VALIDACAO_FINAL)
   
-  // Aguardar carregamento da página
   cy.wait(TIMEOUTS.SHORT)
   
   // Primeira tentativa: seletor por texto
@@ -219,7 +214,7 @@ function validarCampoQuandoOcorrencia() {
         .should('be.visible')
         .should('contain.text', 'Quando a ocorrência aconteceu?')
         .then(() => {
-          cy.log('✅ Campo "Quando a ocorrência aconteceu?" encontrado')
+          cy.log(' Campo "Quando a ocorrência aconteceu?" encontrado')
         })
     } else {
       // Fallback: seletor alternativo
@@ -227,7 +222,7 @@ function validarCampoQuandoOcorrencia() {
         .should('be.visible')
         .should('contain.text', 'Quando a ocorrência aconteceu?')
         .then(() => {
-          cy.log('✅ Campo encontrado com seletor alternativo')
+          cy.log(' Campo encontrado com seletor alternativo')
         })
     }
   })
@@ -264,12 +259,11 @@ When('o usuário está na página principal do sistema', () => {
   cy.log('=== VALIDANDO PÁGINA PRINCIPAL ===')
   
   cy.url({ timeout: TIMEOUTS.DEFAULT }).should('include', '/dashboard')
-  
-  // Validar elementos da página principal
+
   cy.get(locators.area_dashboard(), { timeout: TIMEOUTS.DEFAULT })
     .should('be.visible')
     
-  cy.log('✅ Usuário está na página principal do sistema')
+  cy.log(' Usuário está na página principal do sistema')
 })
 
 /**
@@ -286,7 +280,7 @@ When('localiza e valida o campo {string}', (campo) => {
   if (campo.toLowerCase().includes('ação')) {
     validarCampoAcao()
   } else {
-    cy.log(`⚠️ Validação não implementada para o campo: ${campo}`)
+    cy.log(` Validação não implementada para o campo: ${campo}`)
     cy.get('body').should('contain.text', campo)
   }
 })
@@ -298,7 +292,7 @@ When('clica em {string}', (botao) => {
   if (botao.toLowerCase().includes('visualizar')) {
     clicarVisualizar()
   } else {
-    cy.log(`⚠️ Clique não implementado para: ${botao}`)
+    cy.log(` Clique não implementado para: ${botao}`)
     cy.contains(botao, { timeout: TIMEOUTS.DEFAULT }).click()
   }
 })
@@ -312,18 +306,17 @@ When('clica em {string}', (botao) => {
  */
 Then('o sistema exibe o resultado e valida o campo {string}', (campo) => {
   cy.log('=== VALIDANDO RESULTADO FINAL ===')
-  
-  // Validar que a página carregou
+
   cy.url({ timeout: TIMEOUTS.EXTENDED }).should('include', '/cadastrar-ocorrencia/')
   
   if (campo.includes('Quando a ocorrência aconteceu?')) {
     validarCampoQuandoOcorrencia()
   } else {
-    cy.log(`⚠️ Validação não implementada para o campo: ${campo}`)
+    cy.log(` Validação não implementada para o campo: ${campo}`)
     cy.get('body', { timeout: TIMEOUTS.DEFAULT }).should('contain.text', campo)
   }
   
-  cy.log('✅ Validação do resultado concluída com sucesso')
+  cy.log(' Validação do resultado concluída com sucesso')
 })
 
 /**
@@ -355,6 +348,6 @@ Then('deve existir pelo menos uma ocorrência listada', () => {
   cy.get(locators.linhas_tabela(), { timeout: TIMEOUTS.DEFAULT })
     .should('have.length.greaterThan', 0)
     .then(($linhas) => {
-      cy.log(`✅ Encontradas ${$linhas.length} ocorrência(s) listada(s)`)
+      cy.log(` Encontradas ${$linhas.length} ocorrência(s) listada(s)`)
     })
 })

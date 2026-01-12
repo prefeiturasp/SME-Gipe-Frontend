@@ -112,7 +112,7 @@ When('preenche o campo nome agressor aleatorio', () => {
     .clear({ force: true })
     .type(nomeAleatorio, { delay: 50, force: true })
   cy.wait(1000)
-  cy.log(`✅ Nome preenchido: ${nomeAleatorio}`)
+  cy.log(` Nome preenchido: ${nomeAleatorio}`)
 })
 
 When('preenche o campo idade agressor aleatorio', () => {
@@ -129,7 +129,7 @@ When('preenche o campo idade agressor aleatorio', () => {
     .clear({ force: true })
     .type(String(idadeAleatoria), { delay: 50, force: true })
   cy.wait(1000)
-  cy.log(`✅ Idade preenchida: ${idadeAleatoria}`)
+  cy.log(` Idade preenchida: ${idadeAleatoria}`)
 })
 
 When('preenche o campo CEP aleatorio', () => {
@@ -149,7 +149,7 @@ When('preenche o campo CEP aleatorio', () => {
     .type(cepAleatorio, { delay: 50, force: true })
     .blur()
   cy.wait(1000)
-  cy.log(`✅ CEP preenchido: ${cepAleatorio}`)
+  cy.log(` CEP preenchido: ${cepAleatorio}`)
 })
 
 When('localiza valida e preenche o campo CEP com {string}', (cep) => {
@@ -196,7 +196,7 @@ When('insere numero residencia aleatorio', () => {
     .clear({ force: true })
     .type(String(numeroAleatorio), { delay: 50, force: true })
   cy.wait(1000)
-  cy.log(`✅ Número residência preenchido: ${numeroAleatorio}`)
+  cy.log(` Número residência preenchido: ${numeroAleatorio}`)
 })
 
 When('localiza e valida o texto {string} e insere {string}', (labelTexto, numero) => {
@@ -564,7 +564,7 @@ When('Localiza o button {string}', (textoBotao) => {
   cy.contains('button', new RegExp(textoBotao, 'i'), { timeout: 15000 })
     .should('exist')
     .should('be.visible')
-  cy.log(`✅ Botão "${textoBotao}" encontrado e visível`)
+  cy.log(` Botão "${textoBotao}" encontrado e visível`)
 })
 
 When('localiza e clica em "Finalizar"', () => {
@@ -581,7 +581,7 @@ When('localiza e clica em "Finalizar"', () => {
         .click({ force: true })
     })
   cy.wait(3000)
-  cy.log('✅ Botão Finalizar CLICADO - aguardando modal')
+  cy.log(' Botão Finalizar CLICADO - aguardando modal')
 })
 
 When('clica em "Finalizar"', () => {
@@ -589,7 +589,7 @@ When('clica em "Finalizar"', () => {
   cy.log('Localizando e clicando no botão Finalizar')
   cy.get('body').then($body => {
     if ($body.find('button[type="submit"]:visible').length > 0) {
-      cy.log('✅ Encontrou button[type="submit"]')
+      cy.log(' Encontrou button[type="submit"]')
       cy.get('button[type="submit"]')
         .filter(':visible')
         .last()
@@ -604,7 +604,7 @@ When('clica em "Finalizar"', () => {
     }
   })
   cy.wait(3000)
-  cy.log('✅ Botão Finalizar CLICADO - aguardando modal')
+  cy.log(' Botão Finalizar CLICADO - aguardando modal')
 })
 
 When('clica em {string}', (botao) => {
@@ -661,7 +661,7 @@ Then('valida a existencia do texto sucesso {string}', (texto) => {
   cy.log(`Validando mensagem de sucesso: ${texto}`)
   cy.get('body').then($body => {
     if ($body.text().includes(texto)) {
-      cy.log('✅ Mensagem de sucesso encontrada no DOM')
+      cy.log(' Mensagem de sucesso encontrada no DOM')
     }
   })
   cy.wait(1000)
@@ -670,7 +670,7 @@ Then('valida a existencia do texto sucesso {string}', (texto) => {
     .should('be.visible')
     .click({ force: true })
   cy.wait(2000)
-  cy.log('✅ Modal fechado com sucesso')
+  cy.log(' Modal fechado com sucesso')
 })
 
 When('clica em {string} modal sucesso', (textoBotao) => {
@@ -682,7 +682,7 @@ When('clica em {string} modal sucesso', (textoBotao) => {
     .should('contain.text', textoBotao)
     .click({ force: true })
   cy.wait(2000)
-  cy.log('✅ Modal fechado com sucesso')
+  cy.log(' Modal fechado com sucesso')
 })
 
 When('aguarda {int} segundos', (segundos) => {
@@ -696,7 +696,7 @@ Then('valida a existencia do Texto {string}', (texto) => {
   cy.get('h1', { timeout: 15000 })
     .should('be.visible')
     .and('contain.text', texto.trim())
-  cy.log('✅ Texto validado com sucesso')
+  cy.log(' Texto validado com sucesso')
 })
 
 When('clica no botão {string}', (botao) => {

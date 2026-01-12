@@ -11,12 +11,21 @@ videos/
 # Relatórios gerados
 allure-report/
 allure-results/
+allure-results-*.zip
+mochawesome-report/
+cypress-cloud/
+
+# Cache do Cypress Cloud
+.currents/
+.cypress-cloud/
 
 
 # Testes complement (não subir)
+gestão_pessoas.feature
+gestao_pessoas.feature
+cypress/e2e/ui/gestao_pessoas.feature
 
 # Scripts auxiliares
-obter_token.cy.js
 token.txt
 token.json
 run-api-tests.js
@@ -31,3 +40,8 @@ JENKINS_SETUP.md
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
+
+# Scripts de limpeza de código
+remove_emojis.py
+remove-emojis.ps1
+RELATORIO_LIMPEZA.md

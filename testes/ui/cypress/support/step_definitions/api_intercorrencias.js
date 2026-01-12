@@ -1,4 +1,4 @@
-import { Given, When, Then, Before } from 'cypress-cucumber-preprocessor/steps'
+﻿import { Given, When, Then, Before } from 'cypress-cucumber-preprocessor/steps'
 
 const BASE_URL = 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1'
 
@@ -7,7 +7,7 @@ let response
 // ==================== BACKGROUND ====================
 
 Given('que possuo um token de autenticação válido', () => {
-  Cypress.log({ name: 'Autenticação', message: '✅ Token será obtido via autenticação automática' });
+  Cypress.log({ name: 'Autenticação', message: ' Token será obtido via autenticação automática' });
 })
 
 // ==================== TESTES GET ====================
@@ -307,5 +307,29 @@ Then('a resposta deve estar em formato YAML', () => {
       expect(isValidFormat).to.be.true
       expect(res.body).to.exist
     }
+  })
+})
+
+When('eu consulto a lista de intercorrências do diretor', () => {
+  cy.api_get('/diretor/').then((res) => {
+    response = res
+    cy.wrap(response).as('response')
+    Cypress.log({ name: 'GET', message: `Lista de intercorrências diretor - Status: ${res.status}` })
+  })
+})
+
+Then('a resposta deve conter pelo menos uma intercorrência com UUID válido', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.be.an('array')
+    expect(res.body.length).to.be.at.least(1)
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    
+    res.body.forEach((intercorrencia, index) => {
+      expect(intercorrencia).to.have.property('uuid')
+      expect(intercorrencia.uuid, `UUID na intercorrência ${index}`).to.match(uuidRegex)
+    })
+    
+    Cypress.log({ name: 'Validação', message: ` ${res.body.length} intercorrências com UUIDs válidos` })
   })
 })
