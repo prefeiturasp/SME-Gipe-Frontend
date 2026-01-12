@@ -8,6 +8,28 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
+vi.mock("next/link", () => ({
+    default: ({
+        children,
+        href,
+        onClick,
+    }: {
+        children: React.ReactNode;
+        href: string;
+        onClick?: () => void;
+    }) => (
+        <a
+            href={href}
+            onClick={(e) => {
+                e.preventDefault();
+                onClick?.();
+            }}
+        >
+            {children}
+        </a>
+    ),
+}));
+
 describe("PageHeader - Gestão de Unidades", () => {
     beforeEach(() => {
         vi.clearAllMocks();
