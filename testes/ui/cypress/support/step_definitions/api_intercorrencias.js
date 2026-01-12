@@ -309,3 +309,28 @@ Then('a resposta deve estar em formato YAML', () => {
     }
   })
 })
+
+When('eu consulto a lista de intercorrências do diretor', () => {
+  cy.api_get('/diretor/').then((res) => {
+    response = res
+    cy.wrap(response).as('response')
+    Cypress.log({ name: 'GET', message: `Lista de intercorrências diretor - Status: ${res.status}` })
+  })
+})
+
+Then('a resposta deve conter pelo menos uma intercorrência com UUID válido', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.be.an('array')
+    expect(res.body.length).to.be.at.least(1)
+    
+    // Valida formato UUID v4
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    
+    res.body.forEach((intercorrencia, index) => {
+      expect(intercorrencia).to.have.property('uuid')
+      expect(intercorrencia.uuid, `UUID na intercorrência ${index}`).to.match(uuidRegex)
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ ${res.body.length} intercorrências com UUIDs válidos` })
+  })
+})

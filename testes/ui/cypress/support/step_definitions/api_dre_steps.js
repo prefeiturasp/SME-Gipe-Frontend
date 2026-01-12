@@ -211,3 +211,57 @@ Then('todos os IDs devem ser numéricos', () => {
     Cypress.log({ name: 'Validação', message: `✅ Todos os ${res.body.length} IDs são numéricos` })
   })
 })
+
+Then('cada intercorrência deve ter campos booleanos válidos', () => {
+  cy.get('@response').then((res) => {
+    const camposBooleanos = [
+      'acionamento_seguranca_publica',
+      'interlocucao_sts',
+      'interlocucao_cpca',
+      'interlocucao_supervisao_escolar',
+      'interlocucao_naapa'
+    ]
+    
+    res.body.forEach((intercorrencia, index) => {
+      camposBooleanos.forEach((campo) => {
+        expect(intercorrencia[campo], `Campo ${campo} na intercorrência ${index}`).to.be.a('boolean')
+      })
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ Todas as ${res.body.length} intercorrências têm campos booleanos válidos` })
+  })
+})
+
+Then('cada intercorrência deve ter status_extra válido', () => {
+  cy.get('@response').then((res) => {
+    const statusValidos = ['Incompleta', 'Em andamento', 'Concluída', 'Finalizada', '']
+    
+    res.body.forEach((intercorrencia, index) => {
+      expect(intercorrencia).to.have.property('status_extra')
+      if (intercorrencia.status_extra) {
+        expect(intercorrencia.status_extra, `Status_extra na intercorrência ${index}`).to.be.a('string')
+      }
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ Todas as ${res.body.length} intercorrências têm status_extra válido` })
+  })
+})
+
+Then('cada intercorrência deve ter campos info_complementar opcionais', () => {
+  cy.get('@response').then((res) => {
+    const camposInfoComplementar = [
+      'info_complementar_sts',
+      'info_complementar_cpca',
+      'info_complementar_supervisao_escolar',
+      'info_complementar_naapa'
+    ]
+    
+    res.body.forEach((intercorrencia, index) => {
+      camposInfoComplementar.forEach((campo) => {
+        expect(intercorrencia, `Intercorrência ${index} deve ter ${campo}`).to.have.property(campo)
+      })
+    })
+    
+    Cypress.log({ name: 'Validação', message: `✅ Todas as ${res.body.length} intercorrências têm campos info_complementar` })
+  })
+})

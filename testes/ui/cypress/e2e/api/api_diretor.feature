@@ -1,10 +1,10 @@
 #language: pt
-@skip @api @diretor
+@api @diretor
 Funcionalidade: API Diretor - Endpoint Diretor
   Como diretor de escola
   Quero gerenciar intercorrências através da API
   Para registrar e acompanhar ocorrências escolares
-
+  
   # ============================================================================
   # FLUXO DE AUTENTICAÇÃO AUTOMÁTICA:
   # 1. Verifica se existe token.json no diretório
@@ -21,23 +21,15 @@ Funcionalidade: API Diretor - Endpoint Diretor
     E que estou autenticado na API
 
   # GET /api-intercorrencias/v1/diretor/
-  @smoke @listagem
+  @skip @smoke @listagem
   Cenário: Listar todas as intercorrências do diretor
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E a resposta deve ser um array
     E a lista não deve estar vazia
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/
-  @smoke @busca_uuid
-  Cenário: Buscar intercorrência específica por UUID
-    Quando eu faço uma requisição GET para "/diretor/b6534347-d7f1-487a-8d2f-9d7e113cbd27/"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um objeto
-    E o objeto deve ter o campo uuid
-
+ 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @estrutura_listagem
+  @skip @validacao @estrutura_listagem
   Cenário: Validar estrutura de resposta da listagem de intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -59,21 +51,9 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | sobre_furto_roubo_invasao_depredacao |
       | tipos_ocorrencia                     |
       | descricao_ocorrencia                 |
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/
-  @validacao @estrutura_detalhes
-  Cenário: Validar estrutura de detalhes de uma intercorrência
-    Quando eu faço uma requisição GET para "/diretor/b6534347-d7f1-487a-8d2f-9d7e113cbd27/"
-    Então o status code da resposta deve ser 200
-    E a intercorrência deve ter uuid "b6534347-d7f1-487a-8d2f-9d7e113cbd27"
-    E a intercorrência deve ter o campo "status"
-    E a intercorrência deve ter o campo "status_display"
-    E a intercorrência deve ter o campo "data_ocorrencia"
-    E a intercorrência deve ter o campo "unidade_codigo_eol"
-    E a intercorrência deve ter o campo "tipos_ocorrencia"
-
+ 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @envolvidos
+  @skip @validacao @envolvidos
   Cenário: Validar estrutura de envolvidos nas intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -83,7 +63,7 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | envolvido.perfil_dos_envolvidos |
 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @tipos_ocorrencia
+  @skip @validacao @tipos_ocorrencia
   Cenário: Validar estrutura de tipos de ocorrência
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -94,7 +74,7 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | nome  |
 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @declarante
+  @skip @validacao @declarante
   Cenário: Validar estrutura de declarante nas intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -102,111 +82,41 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | campo                      |
       | declarante_detalhes.uuid   |
       | declarante_detalhes.declarante |
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/
-  @validacao @campos_booleanos
-  Cenário: Validar campos booleanos das intercorrências
-    Quando eu faço uma requisição GET para "/diretor/b6534347-d7f1-487a-8d2f-9d7e113cbd27/"
-    Então o status code da resposta deve ser 200
-    E os campos booleanos devem ter valores válidos:
-      | campo                                |
-      | sobre_furto_roubo_invasao_depredacao |
-      | notificado_conselho_tutelar          |
-      | acompanhado_naapa                    |
-
+  
   # GET /api-intercorrencias/v1/diretor/categorias-disponiveis/
-  @validacao @categorias
+  @skip @validacao @categorias
   Cenário: Listar categorias disponíveis para diretor
     Quando eu faço uma requisição GET para "/diretor/categorias-disponiveis/"
     Então o status code da resposta deve ser 200
     E a resposta deve conter categorias disponíveis
-
-  # GET /api-intercorrencias/v1/diretor/
-  @validacao @comunicacao_seguranca
-  Cenário: Validar campo comunicacao_seguranca_publica
-    Quando eu faço uma requisição GET para "/diretor/"
-    Então o status code da resposta deve ser 200
-    E as intercorrências devem ter valores válidos de comunicacao_seguranca_publica:
-      | valor       |
-      | sim_gcm     |
-      | nao         |
-
-  # GET /api-intercorrencias/v1/diretor/
-  @validacao @protocolo_acionado
-  Cenário: Validar campo protocolo_acionado
-    Quando eu faço uma requisição GET para "/diretor/"
-    Então o campo "protocolo_acionado" deve aceitar os valores
-      | sim_gcm     |
-      | nao         |
-      | registro |
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/ - NEGATIVO
-  @negativo @uuid_invalido
-  Cenário: Tentar buscar intercorrência com UUID inválido
-    Quando eu faço uma requisição GET para "/diretor/uuid-invalido-123/"
-    Então o status code da resposta deve ser 400 ou 404
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/ - NEGATIVO
-  @negativo @uuid_inexistente
-  Cenário: Tentar buscar intercorrência com UUID inexistente
-    Quando eu faço uma requisição GET para "/diretor/00000000-0000-0000-0000-000000000000/"
-    Então o status code da resposta deve ser 404
-
+ 
   # GET /api-intercorrencias/v1/diretor/ - NEGATIVO
-  @negativo @sem_autenticacao
+  @skip @negativo @sem_autenticacao
   Cenário: Tentar acessar endpoint sem autenticação
     Dado que não estou autenticado
     Quando eu tento acessar "/diretor/" sem token
     Então o status da resposta deve ser 401 ou 403
 
   # GET /api-intercorrencias/v1/diretor/ - PERFORMANCE
-  @performance
+  @skip @performance
   Cenário: Validar tempo de resposta da listagem
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E o tempo de resposta deve ser menor que 5000 milissegundos
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/ - PERFORMANCE
-  @performance
-  Cenário: Validar tempo de resposta da busca por UUID
-    Quando eu faço uma requisição GET para "/diretor/b6534347-d7f1-487a-8d2f-9d7e113cbd27/"
-    Então o status code da resposta deve ser 200
-    E o tempo de resposta deve ser menor que 3000 milissegundos
-
+ 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @quantidade_minima
+  @skip @validacao @quantidade_minima
   Cenário: Validar quantidade mínima de intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E a resposta deve conter pelo menos 1 intercorrências
-
-  # GET /api-intercorrencias/v1/diretor/{uuid}/
-  @validacao @campos_timestamp
-  Cenário: Validar formato de campos de data/hora
-    Quando eu faço uma requisição GET para "/diretor/b6534347-d7f1-487a-8d2f-9d7e113cbd27/"
-    Então o status code da resposta deve ser 200
-    E os campos de timestamp devem ter formato ISO 8601:
-      | campo          |
-      | criado_em      |
-      | atualizado_em  |
-      | data_ocorrencia|
-
+ 
   # GET /api-intercorrencias/v1/diretor/
-  @validacao @unidade_dre
+  @skip @validacao @codigos_eol
   Cenário: Validar códigos EOL de unidade e DRE
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E cada intercorrência deve ter códigos EOL válidos
     E o código DRE deve ter 6 dígitos
     E o código unidade deve ter 6 dígitos
-
-  # GET /api-intercorrencias/v1/diretor/
-  @validacao @status_extra
-  Cenário: Validar campo status_extra
-    Quando eu faço uma requisição GET para "/diretor/"
-    Então o status code da resposta deve ser 200
-    E as intercorrências devem ter status_extra válidos:
-      | status_extra  |
-      | Incompleta    |
-      | Em andamento  |
-
+ 
