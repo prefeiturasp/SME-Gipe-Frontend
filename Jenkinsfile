@@ -17,6 +17,7 @@ pipeline {
     environment {
         ALLURE_PATH = 'testes/ui/allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
+        BUILD_ID_UNIQUE = "SME-GIPE_${BUILD_NUMBER}_${new Date().format('yyyyMMdd_HHmmss')}"
     }
 
     stages {
@@ -49,16 +50,35 @@ pipeline {
                                             --key somekey \
                                             --reporter mocha-allure-reporter \
                                             --reporter-options reportDir=allure-results \
-                                            --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                            --ci-build-id ${BUILD_ID_UNIQUE} && \
                                         chown 1001:1001 * -R
                                         chmod 777 * -R"
                         '''
                     }
                     echo "Testes Cypress finalizados."
-                    def logText = currentBuild.rawBuild.getLog(20).join('\n')
-                    def match = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
-                    if (match) {
-                        env.CYPRESS_RUN_URL = match[0][1]
+                    
+                    // Validar se os testes foram executados
+                    def logText = currentBuild.rawBuild.getLog(100).join('\n')
+                    
+                    // Capturar URL do Dashboard
+                    def matchUrl = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
+                    if (matchUrl) {
+                        env.CYPRESS_RUN_URL = matchUrl[0][1]
+                    }
+                    
+                    // Verificar se nenhum teste foi executado
+                    if (logText.contains('No specs executed')) {
+                        echo "❌ ERRO: Nenhum teste foi executado!"
+                        echo "⚠️ Verifique o conflito de specs no cypress-cloud."
+                        error("Pipeline abortado: Nenhum teste executado. Verifique os logs acima.")
+                    }
+                    
+                    // Verificar se houve specs executados com sucesso
+                    def matchSpecs = logText =~ /(\d+)\s+of\s+(\d+)\s+spec files? complete/
+                    if (!matchSpecs) {
+                        echo "⚠️ Aviso: Não foi possível confirmar a execução dos specs."
+                    } else {
+                        echo "✅ Specs executados: ${matchSpecs[0][1]} de ${matchSpecs[0][2]}"
                     }
                 }
             }

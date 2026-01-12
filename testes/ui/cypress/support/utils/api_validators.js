@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview Validadores customizados para testes de API
  * @module api_validators
  * @author QA Team
@@ -25,21 +25,18 @@ export class APIValidator {
       warnings: [],
       metrics: {}
     };
-    
-    // Validar status code
+
     if (options.expectedStatus && response.status !== options.expectedStatus) {
       results.valid = false;
       results.errors.push(`Status esperado ${options.expectedStatus}, recebido ${response.status}`);
     }
-    
-    // Validar headers
+
     if (options.validateHeaders) {
       const headerResults = this.validateHeaders(response.headers);
       results.errors.push(...headerResults.errors);
       results.warnings.push(...headerResults.warnings);
     }
-    
-    // Validar corpo da resposta
+
     if (options.validateBody && response.body) {
       const bodyResults = this.validateBody(response.body, options.schema);
       results.errors.push(...bodyResults.errors);
@@ -60,13 +57,11 @@ export class APIValidator {
    */
   static validateHeaders(headers) {
     const results = { errors: [], warnings: [] };
-    
-    // Validar Content-Type
+
     if (!headers['content-type']) {
       results.warnings.push('Header Content-Type ausente');
     }
-    
-    // Validar headers de segurança recomendados
+
     const securityHeaders = [
       'x-frame-options',
       'x-content-type-options',
@@ -115,8 +110,7 @@ export class APIValidator {
    */
   static validateObject(obj, schema, context = 'Object') {
     const results = { errors: [], warnings: [] };
-    
-    // Validar campos obrigatórios
+
     Object.keys(schema).forEach(field => {
       if (!obj.hasOwnProperty(field)) {
         results.errors.push(`${context}: Campo obrigatório '${field}' ausente`);
@@ -124,8 +118,7 @@ export class APIValidator {
         results.errors.push(`${context}: Campo '${field}' deve ser ${schema[field]}, é ${typeof obj[field]}`);
       }
     });
-    
-    // Validar campos sensíveis
+
     SENSITIVE_FIELDS.forEach(field => {
       if (obj.hasOwnProperty(field)) {
         results.errors.push(`${context}: Campo sensível '${field}' exposto na resposta`);
@@ -218,8 +211,7 @@ export class APIValidator {
         endpoint: response.requestHeaders?.url || 'unknown'
       }
     };
-    
-    // Validar status code do contrato
+
     if (contract.status && response.status !== contract.status) {
       results.valid = false;
       results.violations.push({
@@ -228,8 +220,7 @@ export class APIValidator {
         actual: response.status
       });
     }
-    
-    // Validar schema do contrato
+
     if (contract.schema) {
       const schemaResults = this.validateObject(
         Array.isArray(response.body) ? response.body[0] : response.body,
@@ -245,8 +236,7 @@ export class APIValidator {
         });
       }
     }
-    
-    // Validar headers do contrato
+
     if (contract.headers) {
       Object.keys(contract.headers).forEach(header => {
         if (!response.headers[header]) {

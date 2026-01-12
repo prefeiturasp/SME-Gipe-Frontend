@@ -40,3 +40,8 @@ JENKINS_SETUP.md
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
+
+# Scripts de limpeza de código
+remove_emojis.py
+remove-emojis.ps1
+RELATORIO_LIMPEZA.md

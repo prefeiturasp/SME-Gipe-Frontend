@@ -1,4 +1,4 @@
-/// <reference types="cypress" />
+﻿/// <reference types="cypress" />
 
 /**
  * @fileoverview Step definitions para testes de API - Gestão de Pessoas
@@ -47,11 +47,11 @@ Before({ tags: '@api' }, function() {
 
 After({ tags: '@api' }, function() {
   const duration = Date.now() - this.testData.startTime;
-  cy.log(`✅ Teste de API finalizado em ${formatDuration(duration)}`);
+  cy.log(` Teste de API finalizado em ${formatDuration(duration)}`);
   
   // Log de métricas coletadas
   if (this.testData.metrics && Object.keys(this.testData.metrics).length > 0) {
-    cy.log('📊 Métricas coletadas:', JSON.stringify(this.testData.metrics, null, 2));
+    cy.log(' Métricas coletadas:', JSON.stringify(this.testData.metrics, null, 2));
   }
 });
 
@@ -212,7 +212,7 @@ Given('que tenho todos os dados necessários para uma ocorrência', function() {
 });
 
 // ============================================================================
-// VALIDAÇÕES DE RESPOSTA
+
 // ============================================================================
 
 Then('o status code da resposta deve ser {int}', (expectedStatus) => {
@@ -405,7 +405,7 @@ Then('a intercorrência deve estar finalizada no sistema', function() {
 });
 
 // ============================================================================
-// VALIDAÇÕES ADICIONAIS
+
 // ============================================================================
 
 Then('a resposta deve ser um array', () => {
@@ -619,8 +619,7 @@ Then('todos os usuários devem ter data_solicitacao em formato válido', () => {
       expect(user.data_solicitacao, `usuário ${index}: data_solicitacao deve existir`).to.exist;
       expect(user.data_solicitacao, `usuário ${index}: data_solicitacao deve ser string`).to.be.a('string');
       expect(user.data_solicitacao, `usuário ${index}: data_solicitacao não pode ser vazia`).to.not.be.empty;
-      
-      // Validar formato ISO 8601 (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss) ou formato brasileiro (DD/MM/YYYY)
+
       const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$|^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$/;
       expect(user.data_solicitacao, `usuário ${index}: data_solicitacao deve estar em formato válido`).to.match(dateRegex);
     });
@@ -667,11 +666,9 @@ Then('todos os usernames devem ter formato válido', () => {
       expect(user.username, `usuário ${index}: username deve existir`).to.exist;
       expect(user.username, `usuário ${index}: username deve ser string`).to.be.a('string');
       expect(user.username, `usuário ${index}: username não pode ser vazio`).to.not.be.empty;
-      
-      // Validar que username não contém espaços no início ou fim
+
       expect(user.username, `usuário ${index}: username não deve ter espaços no início ou fim`).to.equal(user.username.trim());
-      
-      // Validar comprimento mínimo
+
       expect(user.username.length, `usuário ${index}: username deve ter pelo menos 3 caracteres`).to.be.at.least(3);
     });
   });
@@ -683,17 +680,15 @@ Then('todos os usuários devem ter rede, diretoria regional e unidade educaciona
     expect(response.body.length).to.be.greaterThan(0);
     
     response.body.forEach((user, index) => {
-      // Validar rede
+
       expect(user.rede, `usuário ${index}: rede deve existir`).to.exist;
       expect(user.rede, `usuário ${index}: rede deve ser string`).to.be.a('string');
       expect(user.rede.trim(), `usuário ${index}: rede não pode ser vazia`).to.not.be.empty;
-      
-      // Validar diretoria_regional
+
       expect(user.diretoria_regional, `usuário ${index}: diretoria_regional deve existir`).to.exist;
       expect(user.diretoria_regional, `usuário ${index}: diretoria_regional deve ser string`).to.be.a('string');
       expect(user.diretoria_regional.trim(), `usuário ${index}: diretoria_regional não pode ser vazia`).to.not.be.empty;
-      
-      // Validar unidade_educacional
+
       expect(user.unidade_educacional, `usuário ${index}: unidade_educacional deve existir`).to.exist;
       expect(user.unidade_educacional, `usuário ${index}: unidade_educacional deve ser string`).to.be.a('string');
       expect(user.unidade_educacional.trim(), `usuário ${index}: unidade_educacional não pode ser vazia`).to.not.be.empty;
@@ -705,7 +700,7 @@ Then('a resposta não deve conter campos sensíveis como senha', () => {
     expect(response.body).to.be.an('array');
     
     response.body.forEach((user, index) => {
-      // Validar que não existem campos sensíveis
+
       expect(user, `usuário ${index}: não deve ter campo password`).to.not.have.property('password');
       expect(user, `usuário ${index}: não deve ter campo senha`).to.not.have.property('senha');
       expect(user, `usuário ${index}: não deve ter campo token`).to.not.have.property('token');
@@ -753,15 +748,12 @@ Then('todos os nomes devem ter formato válido sem caracteres especiais indevido
       expect(user.nome, `usuário ${index}: nome deve existir`).to.exist;
       expect(user.nome, `usuário ${index}: nome deve ser string`).to.be.a('string');
       expect(user.nome.trim(), `usuário ${index}: nome não pode ser vazio`).to.not.be.empty;
-      
-      // Validar comprimento mínimo razoável
+
       expect(user.nome.length, `usuário ${index}: nome deve ter pelo menos 3 caracteres`).to.be.at.least(3);
-      
-      // Validar que não tem apenas números
+
       const isOnlyNumbers = /^\d+$/.test(user.nome);
       expect(isOnlyNumbers, `usuário ${index}: nome não pode conter apenas números`).to.be.false;
-      
-      // Validar que não contém caracteres estranhos como <>{}[]
+
       const hasInvalidChars = /[<>{}[\]\\]/.test(user.nome);
       expect(hasInvalidChars, `usuário ${index}: nome não deve conter caracteres inválidos`).to.be.false;
     });
@@ -829,12 +821,10 @@ Then('o header Content-Type deve ser {string}', (expectedContentType) => {
 Then('o header deve conter informações de segurança', () => {
   cy.get('@response').then((response) => {
     const headers = response.headers;
-    
-    // Validar que existem headers de segurança recomendados
+
     // Nota: não são obrigatórios, mas é boa prática ter
     cy.log('Headers de resposta:', JSON.stringify(headers));
-    
-    // Validar que existe algum tipo de controle
+
     expect(headers, 'Response deve ter headers').to.exist;
   });
 });
@@ -868,12 +858,11 @@ Then('devo gerar relatório de qualidade dos dados retornados', function() {
     this.testData.qualityReport = qualityReport;
     
     // Log detalhado do relatório
-    cy.log('📊 RELATÓRIO DE QUALIDADE DE DADOS');
+    cy.log(' RELATÓRIO DE QUALIDADE DE DADOS');
     cy.log(`Total de registros: ${qualityReport.totalRecords}`);
     cy.log('Completude dos campos:', JSON.stringify(qualityReport.completeness, null, 2));
     cy.log('Duplicados:', JSON.stringify(qualityReport.duplicates, null, 2));
-    
-    // Validações de qualidade
+
     Object.keys(qualityReport.completeness).forEach(field => {
       const fieldReport = qualityReport.completeness[field];
       const percentage = parseFloat(fieldReport.percentage);
@@ -954,15 +943,14 @@ Then('devo analisar a distribuição de perfis com métricas detalhadas', functi
     this.testData.metrics.distribution = metrics;
     
     // Log detalhado
-    cy.log('📊 ANÁLISE DE DISTRIBUIÇÃO');
+    cy.log(' ANÁLISE DE DISTRIBUIÇÃO');
     cy.log(`Total de usuários: ${metrics.totalUsuarios}`);
     cy.log(`Perfis únicos: ${metrics.perfis.quantidade}`);
     cy.log(`Perfil mais comum: ${metrics.perfis.perfilMaisComum} (${metrics.perfis.distribuicao[metrics.perfis.perfilMaisComum]} usuários)`);
     cy.log(`Status: ${metrics.status.percentualAtivos} ativos, ${metrics.status.percentualInativos} inativos`);
     cy.log(`Validação: ${metrics.validacao.percentualValidados} validados, ${metrics.validacao.percentualNaoValidados} não validados`);
     cy.log('Distribuição detalhada:', JSON.stringify(metrics, null, 2));
-    
-    // Validações
+
     expect(metrics.perfis.quantidade, 'Deve haver pelo menos 2 tipos de perfis').to.be.at.least(LIMITS.MIN_DIFFERENT_PROFILES);
   });
 });
@@ -986,12 +974,11 @@ Then('todos os UUIDs devem estar em formato UUID v4 válido', () => {
     
     // Log de UUIDs inválidos se houver
     if (invalidUUIDs.length > 0) {
-      cy.log('❌ UUIDs inválidos encontrados:', JSON.stringify(invalidUUIDs, null, 2));
+      cy.log(' UUIDs inválidos encontrados:', JSON.stringify(invalidUUIDs, null, 2));
     }
-    
-    // Validação
+
     expect(invalidUUIDs.length, 'Todos os UUIDs devem estar em formato UUID v4 válido').to.equal(0);
     
-    cy.log(`✅ Todos os ${response.body.length} UUIDs estão em formato válido`);
+    cy.log(` Todos os ${response.body.length} UUIDs estão em formato válido`);
   });
 });

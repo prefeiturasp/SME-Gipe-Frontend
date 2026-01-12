@@ -104,7 +104,7 @@ When('clico no botão de acessar', () => {
  */
 Then('devo ser redirecionado para o dashboard', () => {
   cy.url({ timeout: 30000 }).should('include', '/dashboard')
-  cy.log('✅ Redirecionado para dashboard')
+  cy.log('Redirecionado para dashboard')
 })
 
 /**
@@ -114,7 +114,7 @@ Then('devo visualizar a página principal do sistema', () => {
   cy.get('body', { timeout: TIMEOUT_PADRAO })
     .should('be.visible')
     .and('not.be.empty')
-  cy.log('✅ Página principal carregada com sucesso')
+  cy.log('Página principal carregada com sucesso')
 })
 
 /**
@@ -137,7 +137,7 @@ Then('devo visualizar mensagem de erro de autenticação', () => {
     }
   })
   
-  cy.log('✅ Mensagem de erro de autenticação validada')
+  cy.log('Mensagem de erro de autenticação validada')
 })
 
 /**
@@ -160,7 +160,7 @@ Then('devo visualizar validação de senha obrigatória', () => {
     }
   })
   
-  cy.log('✅ Validação de senha obrigatória verificada')
+  cy.log('Validação de senha obrigatória verificada')
 })
 
 /**
@@ -183,8 +183,6 @@ Then('devo visualizar validação de RF obrigatório', () => {
     }
   })
   
-  cy.log('✅ Validação de RF obrigatório verificada')
+  cy.log('Validação de RF obrigatório verificada')
 })
-
-
 

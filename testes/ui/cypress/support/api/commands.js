@@ -205,7 +205,6 @@ Cypress.Commands.add('api_autenticar', () => {
   });
 });
 
-
 Cypress.Commands.add('gerar_token_gipe_estudantes', () => {
   cy.log('Gerando token GIPE Estudantes');
   

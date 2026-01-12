@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps';
+﻿import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps';
 import Esqueci_Senha_Localizadores from '../locators/esqueci_senha_locators';
 
 const locators = new Esqueci_Senha_Localizadores();
@@ -16,7 +16,7 @@ Given('que eu acesso o sistema GIPE', () => {
   cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/');
   cy.url({ timeout: 10000 }).should('include', 'qa-gipe.sme.prefeitura.sp.gov.br');
   cy.wait(2000);
-  cy.log('✅ Sistema GIPE acessado');
+  cy.log('Sistema GIPE acessado');
 });
 
 /**
@@ -27,7 +27,7 @@ Given('valido a existência do link {string}', (textoLink) => {
     .should('exist')
     .and('be.visible')
     .and('contain.text', textoLink);
-  cy.log(`✅ Link "${textoLink}" encontrado`);
+  cy.log(`Link "${textoLink}" encontrado`);
 });
 
 /**
@@ -36,7 +36,7 @@ Given('valido a existência do link {string}', (textoLink) => {
 When('clico no link {string}', () => {
   cy.xpath(locators.link_esqueci_senha()).click();
   cy.wait(3000);
-  cy.log('✅ Clicou no link "Esqueci minha senha"');
+  cy.log('Clicou no link "Esqueci minha senha"');
 });
 
 /**
@@ -44,14 +44,13 @@ When('clico no link {string}', () => {
  */
 When('valido que estou na página de recuperação de senha', () => {
   cy.url({ timeout: 10000 }).should('include', '/recuperar-senha');
-  
-  // Valida título "Recuperação de senha"
+
   cy.get(locators.titulo_recuperacao(), { timeout: 10000 })
     .should('exist')
     .and('be.visible')
     .and('contain.text', 'Recuperação de senha');
   
-  cy.log('✅ Página de recuperação de senha carregada');
+  cy.log('Página de recuperação de senha carregada');
 });
 
 /**
@@ -63,7 +62,7 @@ When('valido a existência do campo RF ou CPF', () => {
     .and('be.visible')
     .and('contain.text', 'RF ou CPF');
   
-  cy.log('✅ Campo RF ou CPF encontrado');
+  cy.log('Campo RF ou CPF encontrado');
 });
 
 /**
@@ -77,7 +76,7 @@ When('preencho o campo RF com {string}', (rf) => {
     .clear({ force: true })
     .type(rf, { delay: 50 });
   
-  cy.log(`✅ RF "${rf}" preenchido`);
+  cy.log(`RF "${rf}" preenchido`);
 });
 
 /**
@@ -91,19 +90,19 @@ When('clico no botão continuar', () => {
     .click({ force: true });
   
   cy.wait(2000);
-  cy.log('✅ Botão continuar clicado');
+  cy.log('Botão continuar clicado');
 });
 
 /**
  * Valida mensagem de confirmação
  */
 Then('o sistema deve exibir a mensagem de confirmação', () => {
-  // Valida que ainda está na página ou que título continua visível
+
   cy.get(locators.titulo_recuperacao(), { timeout: 10000 })
     .should('exist')
     .and('be.visible');
   
-  cy.log('✅ Mensagem de confirmação exibida');
+  cy.log('Mensagem de confirmação exibida');
 });
 
 /**
@@ -117,7 +116,7 @@ Then('clico no botão continuar para voltar', () => {
     .click({ force: true });
   
   cy.wait(2000);
-  cy.log('✅ Botão continuar final clicado');
+  cy.log('Botão continuar final clicado');
 });
 
 /**
@@ -129,5 +128,5 @@ Then('o sistema deve exibir mensagem de erro {string}', (mensagemErro) => {
     .and('be.visible')
     .and('contain.text', mensagemErro);
   
-  cy.log(`✅ Mensagem de erro "${mensagemErro}" exibida`);
+  cy.log(`Mensagem de erro "${mensagemErro}" exibida`);
 });

@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+﻿import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
 import CadastroUeLocalizadores from '../locators/cadastro_ue_locators'
 
 const locators = new CadastroUeLocalizadores()
@@ -79,12 +79,10 @@ When('valida a aba {string}', (titulo) => {
 When('preenche o campo nome agressor com {string}', (nome) => {
   cy.wait(2000)
   cy.log(`Preenchendo nome: ${nome}`)
-  
-  // Valida que o label existe
+
   cy.contains('label', /Qual o nome.*pessoa agressora/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Preenche o campo
+
   cy.get('input', { timeout: 15000 })
     .filter(':visible')
     .first()
@@ -101,12 +99,10 @@ When('preenche o campo nome agressor com {string}', (nome) => {
 When('preenche o campo idade agressor com {string}', (idade) => {
   cy.wait(1000)
   cy.log(`Preenchendo idade: ${idade}`)
-  
-  // Valida que o label existe
+
   cy.contains('label', /Qual a idade.*pessoa agressora/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Preenche o campo
+
   cy.get('input', { timeout: 15000 })
     .filter(':visible')
     .eq(1)
@@ -126,12 +122,10 @@ When('preenche o campo nome agressor aleatorio', () => {
   const nomeAleatorio = getNomeAleatorio()
   cy.wait(2000)
   cy.log(`Preenchendo nome aleatório: ${nomeAleatorio}`)
-  
-  // Valida que o label existe
+
   cy.contains('label', /Qual o nome.*pessoa agressora/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Preenche o campo
+
   cy.get('input', { timeout: 15000 })
     .filter(':visible')
     .first()
@@ -142,19 +136,17 @@ When('preenche o campo nome agressor aleatorio', () => {
     .type(nomeAleatorio, { delay: 50, force: true })
   
   cy.wait(1000)
-  cy.log(`✅ Nome preenchido: ${nomeAleatorio}`)
+  cy.log(` Nome preenchido: ${nomeAleatorio}`)
 })
 
 When('preenche o campo idade agressor aleatorio', () => {
   const idadeAleatoria = getIdadeAleatoria()
   cy.wait(1000)
   cy.log(`Preenchendo idade aleatória: ${idadeAleatoria}`)
-  
-  // Valida que o label existe
+
   cy.contains('label', /Qual a idade.*pessoa agressora/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Preenche o campo
+
   cy.get('input', { timeout: 15000 })
     .filter(':visible')
     .eq(1)
@@ -165,19 +157,17 @@ When('preenche o campo idade agressor aleatorio', () => {
     .type(String(idadeAleatoria), { delay: 50, force: true })
   
   cy.wait(1000)
-  cy.log(`✅ Idade preenchida: ${idadeAleatoria}`)
+  cy.log(` Idade preenchida: ${idadeAleatoria}`)
 })
 
 When('preenche o campo CEP aleatorio', () => {
   const cepAleatorio = getCepAleatorio()
   cy.wait(1500)
   cy.log(`Preenchendo CEP aleatório: ${cepAleatorio}`)
-  
-  // Valida que o label CEP está visível
+
   cy.contains('label', 'CEP', { timeout: 15000 })
     .should('be.visible')
-  
-  // Busca o input do CEP
+
   cy.get('form fieldset div').contains('label', 'CEP')
     .parent()
     .parent()
@@ -191,18 +181,16 @@ When('preenche o campo CEP aleatorio', () => {
     .blur()
   
   cy.wait(1000)
-  cy.log(`✅ CEP preenchido: ${cepAleatorio}`)
+  cy.log(` CEP preenchido: ${cepAleatorio}`)
 })
 
 When('localiza valida e preenche o campo CEP com {string}', (cep) => {
   cy.wait(1500)
   cy.log(`Preenchendo CEP: ${cep}`)
-  
-  // Valida que o label CEP está visível
+
   cy.contains('label', 'CEP', { timeout: 15000 })
     .should('be.visible')
-  
-  // Busca o input do CEP
+
   cy.get('form fieldset div').contains('label', 'CEP')
     .parent()
     .parent()
@@ -235,8 +223,7 @@ When('insere numero residencia aleatorio', () => {
   const numeroAleatorio = getNumeroResidenciaAleatorio()
   cy.wait(3000)
   cy.log(`Inserindo número aleatório: ${numeroAleatorio}`)
-  
-  // Valida que o label 'Número da residência' existe
+
   cy.contains('label', /Número.*residência/i, { timeout: 15000 })
     .should('be.visible')
     .parent()
@@ -249,14 +236,13 @@ When('insere numero residencia aleatorio', () => {
     .type(String(numeroAleatorio), { delay: 50, force: true })
   
   cy.wait(1000)
-  cy.log(`✅ Número residência preenchido: ${numeroAleatorio}`)
+  cy.log(` Número residência preenchido: ${numeroAleatorio}`)
 })
 
 When('localiza e valida o texto {string} e insere {string}', (labelTexto, numero) => {
   cy.wait(3000)
   cy.log(`Inserindo número: ${numero}`)
-  
-  // Valida que o label 'Número da residência' existe
+
   cy.contains('label', new RegExp(labelTexto, 'i'), { timeout: 15000 })
     .should('be.visible')
     .parent()
@@ -392,12 +378,10 @@ When('clica no campo frequencia e seleciona {string}', (opcao) => {
 When('preenche campo interacao com {string}', (texto) => {
   cy.wait(1500)
   cy.log('Preenchendo interação')
-  
-  // Valida label e busca o campo usando regex
+
   cy.contains('label', /interação.*pessoa.*agressora/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Busca o textarea usando a estrutura
+
   cy.get('form fieldset div').contains('label', /interação.*pessoa.*agressora/i)
     .parent()
     .parent()
@@ -417,12 +401,10 @@ When('preenche campo interacao com {string}', (texto) => {
 When('preenche campo redes com {string}', (texto) => {
   cy.wait(1500)
   cy.log('Preenchendo redes')
-  
-  // Valida label e busca o campo usando regex
+
   cy.contains('label', /redes.*proteção/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Busca o textarea usando a estrutura
+
   cy.get('form fieldset div').contains('label', /redes.*proteção/i)
     .parent()
     .parent()
@@ -442,8 +424,7 @@ When('preenche campo redes com {string}', (texto) => {
 When('seleciona e clica em {string} conselho', (opcao) => {
   cy.wait(1500)
   cy.log('Selecionando Conselho Tutelar')
-  
-  // Busca label que contém "Conselho" e depois o radio Sim
+
   cy.contains('label', /Conselho.*Tutelar/i, { timeout: 15000 })
     .parent()
     .parent()
@@ -458,17 +439,15 @@ When('seleciona e clica em {string} conselho', (opcao) => {
 When('seleciona e clica em {string} naapa', (opcao) => {
   cy.wait(1500)
   cy.log('Selecionando NAAPA')
-  
-  // Valida que existe o label principal com texto NAAPA
+
   cy.contains('label', /acompanhada pelo NAAPA/i, { timeout: 15000 })
     .should('be.visible')
     .parent()
     .within(() => {
-      // Valida que existem as opções Sim e Não
+
       cy.contains('label', 'Sim').should('exist')
       cy.contains('label', 'Não').should('exist')
-      
-      // Clica no span da opção escolhida (Sim ou Não)
+
       cy.contains('label', opcao)
         .find('span')
         .first()
@@ -530,8 +509,7 @@ When('clica no campo do declarante ue', () => {
 
 When('seleciona GIPE ue', () => {
   cy.wait(1500)
-  
-  // Busca a opção GIPE no dropdown aberto
+
   cy.contains('[role="option"]', /GIPE/i, { timeout: 15000 })
     .should('exist')
     .click({ force: true })
@@ -708,21 +686,19 @@ When('seleciona {string}', (opcao) => {
 When('Localiza o button {string}', (textoBotao) => {
   cy.wait(2000)
   cy.log(`Validando existência do botão: ${textoBotao}`)
-  
-  // Valida que o botão Anterior existe e está visível
+
   cy.contains('button', new RegExp(textoBotao, 'i'), { timeout: 15000 })
     .should('exist')
     .should('be.visible')
   
-  cy.log(`✅ Botão "${textoBotao}" encontrado e visível`)
+  cy.log(` Botão "${textoBotao}" encontrado e visível`)
 })
 
 When('localiza e clica em "Finalizar"', () => {
   cy.wait(2000)
-  cy.log('🎯 Localizando botão Finalizar na aba de anexos')
-  
-  // Valida que os campos obrigatórios estão preenchidos antes de finalizar
-  cy.log('🔍 Validando campos preenchidos antes de finalizar')
+  cy.log(' Localizando botão Finalizar na aba de anexos')
+
+  cy.log(' Validando campos preenchidos antes de finalizar')
   
   // Retorna à aba anterior para validar os campos
   cy.get('body').then($body => {
@@ -731,34 +707,33 @@ When('localiza e clica em "Finalizar"', () => {
       cy.log('⬅️ Voltando para validar campos da aba anterior')
       cy.contains('button', 'Anterior').click({ force: true })
       cy.wait(2000)
-      
-      // Valida campos da aba 4 (Declarante e Protocolos)
+
       cy.get('button[id*="form-item"]').then($buttons => {
         if ($buttons.length >= 3) {
           // Campo declarante
           cy.wrap($buttons.eq(0)).invoke('text').then((texto) => {
             if (texto.includes('Selecione') || texto.trim() === '') {
-              cy.log('⚠️ Campo declarante não preenchido')
+              cy.log(' Campo declarante não preenchido')
             } else {
-              cy.log('✅ Campo declarante preenchido: ' + texto.trim())
+              cy.log(' Campo declarante preenchido: ' + texto.trim())
             }
           })
           
           // Campo segurança pública
           cy.wrap($buttons.eq(1)).invoke('text').then((texto) => {
             if (texto.includes('Selecione') || texto.trim() === '') {
-              cy.log('⚠️ Campo segurança pública não preenchido')
+              cy.log(' Campo segurança pública não preenchido')
             } else {
-              cy.log('✅ Campo segurança pública preenchido: ' + texto.trim())
+              cy.log(' Campo segurança pública preenchido: ' + texto.trim())
             }
           })
           
           // Campo protocolo
           cy.wrap($buttons.eq(2)).invoke('text').then((texto) => {
             if (texto.includes('Selecione') || texto.trim() === '') {
-              cy.log('⚠️ Campo protocolo não preenchido')
+              cy.log(' Campo protocolo não preenchido')
             } else {
-              cy.log('✅ Campo protocolo preenchido: ' + texto.trim())
+              cy.log(' Campo protocolo preenchido: ' + texto.trim())
             }
           })
         }
@@ -770,24 +745,21 @@ When('localiza e clica em "Finalizar"', () => {
       cy.wait(2000)
     }
   })
-  
-  // Valida que existe pelo menos um documento anexado
+
   cy.get('body').then($body => {
     if ($body.find('input[type="file"]').length > 0) {
-      cy.log('✅ Campo de anexo encontrado')
+      cy.log(' Campo de anexo encontrado')
     }
   })
   
-  cy.log('✅ Validação de campos concluída')
-  
-  // Busca o container dos botões (onde está Anterior e Finalizar)
+  cy.log(' Validação de campos concluída')
+
   cy.get('form fieldset div.flex.justify-end.gap-2', { timeout: 15000 })
     .should('be.visible')
     .within(() => {
-      // Valida que existem 2 botões: Anterior e Finalizar
+
       cy.get('button').should('have.length.at.least', 2)
-      
-      // Clica no segundo botão (Finalizar) - último da sequência
+
       cy.get('button').last()
         .should('contain.text', 'Finalizar')
         .should('not.be.disabled')
@@ -796,26 +768,26 @@ When('localiza e clica em "Finalizar"', () => {
     })
   
   cy.wait(3000)
-  cy.log('✅ Botão Finalizar CLICADO - aguardando modal')
+  cy.log(' Botão Finalizar CLICADO - aguardando modal')
 })
 
 When('clica em "Finalizar"', () => {
   cy.wait(3000)
-  cy.log('🎯 Localizando e clicando no botão Finalizar')
+  cy.log(' Localizando e clicando no botão Finalizar')
   
   // Tenta múltiplas estratégias para encontrar e clicar no botão
   
   // Estratégia 1: button[type="submit"] sem .inline-flex
   cy.get('body').then($body => {
     if ($body.find('button[type="submit"]:visible').length > 0) {
-      cy.log('✅ Estratégia 1: Encontrou button[type="submit"]')
+      cy.log(' Estratégia 1: Encontrou button[type="submit"]')
       cy.get('button[type="submit"]')
         .filter(':visible')
         .last()
         .scrollIntoView()
         .click({ force: true })
     } else {
-      cy.log('⚠️ Estratégia 1 falhou, tentando estratégia 2')
+      cy.log(' Estratégia 1 falhou, tentando estratégia 2')
       
       // Estratégia 2: Busca por texto "Finalizar"
       cy.contains('button', /finalizar/i)
@@ -827,7 +799,7 @@ When('clica em "Finalizar"', () => {
   })
   
   cy.wait(3000)
-  cy.log('✅ Botão Finalizar CLICADO - aguardando modal')
+  cy.log(' Botão Finalizar CLICADO - aguardando modal')
 })
 
 When('clica em {string}', (botao) => {
@@ -854,12 +826,12 @@ Then('sistema exibe modal com titulo {string}', (titulo) => {
     const temModal = $body.find('div[role="dialog"]').length > 0
     
     if (temModal) {
-      cy.log('✅ Modal encontrado - validando título')
+      cy.log(' Modal encontrado - validando título')
       cy.get('div[role="dialog"]', { timeout: 5000 })
         .should('be.visible')
         .should('contain.text', titulo)
     } else {
-      cy.log('⚠️ Modal não encontrado - prosseguindo (comportamento pode ter mudado)')
+      cy.log(' Modal não encontrado - prosseguindo (comportamento pode ter mudado)')
     }
   })
   
@@ -876,7 +848,7 @@ When('preenche campo motivo encerramento com {string}', (texto) => {
     const temTextarea = $body.find('textarea[id*="form-item"]').length > 0
     
     if (temTextarea) {
-      cy.log('✅ Campo de motivo encontrado')
+      cy.log(' Campo de motivo encontrado')
       cy.get('textarea[id*="form-item"]', { timeout: 5000 })
         .last()
         .should('be.visible')
@@ -886,7 +858,7 @@ When('preenche campo motivo encerramento com {string}', (texto) => {
         .blur()
       cy.log('Motivo preenchido')
     } else {
-      cy.log('⚠️ Campo de motivo não encontrado - pulando step')
+      cy.log(' Campo de motivo não encontrado - pulando step')
     }
   })
   
@@ -901,7 +873,7 @@ When('clica em Finalizar modal', () => {
     const temBotao = $body.find('button:contains("Finalizar")').length > 0
     
     if (temBotao) {
-      cy.log('✅ Botão Finalizar encontrado')
+      cy.log(' Botão Finalizar encontrado')
       cy.xpath('/html/body/div[3]/form/div[2]/button[2]', { timeout: 5000 })
         .should('exist')
         .should('be.visible')
@@ -909,7 +881,7 @@ When('clica em Finalizar modal', () => {
         .click({ force: true })
       cy.log('Cadastro finalizado')
     } else {
-      cy.log('⚠️ Botão Finalizar não encontrado - pulando step')
+      cy.log(' Botão Finalizar não encontrado - pulando step')
     }
   })
   
@@ -922,9 +894,9 @@ Then('valida a existencia do texto sucesso {string}', (texto) => {
   
   cy.get('body').then($body => {
     if ($body.text().includes(texto)) {
-      cy.log('✅ Mensagem de sucesso encontrada no DOM')
+      cy.log(' Mensagem de sucesso encontrada no DOM')
     } else {
-      cy.log('⚠️ Mensagem de sucesso não encontrada - prosseguindo')
+      cy.log(' Mensagem de sucesso não encontrada - prosseguindo')
     }
     
     // Tenta fechar modal se existir
@@ -934,9 +906,9 @@ Then('valida a existencia do texto sucesso {string}', (texto) => {
         .should('exist')
         .should('be.visible')
         .click({ force: true })
-      cy.log('✅ Modal fechado com sucesso')
+      cy.log(' Modal fechado com sucesso')
     } else {
-      cy.log('⚠️ Botão Fechar não encontrado - pulando step')
+      cy.log(' Botão Fechar não encontrado - pulando step')
     }
   })
   
@@ -946,8 +918,7 @@ Then('valida a existencia do texto sucesso {string}', (texto) => {
 When('clica em {string} modal sucesso', (textoBotao) => {
   cy.wait(2000)
   cy.log(`Clicando no botão: ${textoBotao}`)
-  
-  // Valida que o botão Fechar existe e está visível
+
   cy.xpath('/html/body/div[3]/div[4]/button', { timeout: 15000 })
     .should('exist')
     .should('be.visible')
@@ -955,7 +926,7 @@ When('clica em {string} modal sucesso', (textoBotao) => {
     .click({ force: true })
   
   cy.wait(2000)
-  cy.log('✅ Modal fechado com sucesso')
+  cy.log(' Modal fechado com sucesso')
 })
 
 When('aguarda {int} segundos', (segundos) => {
@@ -966,13 +937,12 @@ When('aguarda {int} segundos', (segundos) => {
 Then('valida a existencia do Texto {string}', (texto) => {
   cy.wait(2000)
   cy.log(`Validando existência do texto: ${texto}`)
-  
-  // Valida que o h1 com o texto existe e está visível
+
   cy.get('h1', { timeout: 15000 })
     .should('be.visible')
     .and('contain.text', texto.trim())
   
-  cy.log('✅ Texto validado com sucesso')
+  cy.log(' Texto validado com sucesso')
 })
 
 When('clica no botão {string}', (botao) => {
@@ -1024,8 +994,7 @@ function gerarTextoAleatorio(tipo) {
 When('Selecionar tipo de ocorrencia aleatorio', () => {
   cy.wait(2000)
   cy.log('Selecionando tipo de ocorrência aleatório')
-  
-  // Busca especificamente as opções do dropdown de tipo de ocorrência
+
   cy.get('div[role="listbox"], div[class*="dropdown"], div[class*="menu"]', { timeout: 10000 })
     .should('be.visible')
     .find('div[role="option"], li, button')
@@ -1268,12 +1237,10 @@ When('seleciona frequencia aleatoria', () => {
   // Fecha qualquer dropdown aberto com ESC
   cy.get('body').type('{esc}')
   cy.wait(1000)
-  
-  // Valida que o label de frequência existe
+
   cy.contains('label', /Qual a frequência escolar/i, { timeout: 15000 })
     .should('be.visible')
-  
-  // Clica no próximo botão "Selecione" disponível (que será o de frequência)
+
   cy.get('button', { timeout: 15000 })
     .filter(':visible')
     .contains(/selecione/i)
@@ -1284,8 +1251,7 @@ When('seleciona frequencia aleatoria', () => {
   
   cy.log('Aguardando dropdown de frequência abrir...')
   cy.wait(3000)
-  
-  // Valida que o dropdown abriu e seleciona opção
+
   cy.get('[role="option"]', { timeout: 15000 })
     .filter(':visible')
     .should('have.length.greaterThan', 0)
