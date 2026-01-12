@@ -57,28 +57,24 @@ pipeline {
                     }
                     echo "Testes Cypress finalizados."
                     
-                    // Validar se os testes foram executados
                     def logText = currentBuild.rawBuild.getLog(100).join('\n')
                     
-                    // Capturar URL do Dashboard
                     def matchUrl = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
                     if (matchUrl) {
                         env.CYPRESS_RUN_URL = matchUrl[0][1]
                     }
                     
-                    // Verificar se nenhum teste foi executado
                     if (logText.contains('No specs executed')) {
-                        echo "❌ ERRO: Nenhum teste foi executado!"
-                        echo "⚠️ Verifique o conflito de specs no cypress-cloud."
+                        echo "ERRO: Nenhum teste foi executado!"
+                        echo "Verifique o conflito de specs no cypress-cloud."
                         error("Pipeline abortado: Nenhum teste executado. Verifique os logs acima.")
                     }
                     
-                    // Verificar se houve specs executados com sucesso
                     def matchSpecs = logText =~ /(\d+)\s+of\s+(\d+)\s+spec files? complete/
                     if (!matchSpecs) {
-                        echo "⚠️ Aviso: Não foi possível confirmar a execução dos specs."
+                        echo "Aviso: Não foi possível confirmar a execução dos specs."
                     } else {
-                        echo "✅ Specs executados: ${matchSpecs[0][1]} de ${matchSpecs[0][2]}"
+                        echo "Specs executados: ${matchSpecs[0][1]} de ${matchSpecs[0][2]}"
                     }
                 }
             }
@@ -91,7 +87,7 @@ pipeline {
                         def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
                         if (hasResults) {
-                            echo "📊 Gerando relatório Allure..."
+                            echo "Gerando relatório Allure..."
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -100,7 +96,7 @@ pipeline {
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
                             """
                         } else {
-                            echo "⚠️ Nenhum resultado Allure encontrado em ${ALLURE_PATH}."
+                            echo "Nenhum resultado Allure encontrado em ${ALLURE_PATH}."
                         }
                     }
                 }
@@ -126,24 +122,22 @@ pipeline {
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
                 } else {
-                    echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin não será acionado."
+                    echo "Resultados do Allure não encontrados ou vazios, plugin não será acionado."
                 }
 
                 def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
                 if (zipExists) {
                     archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
                 } else {
-                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
+                    echo "Nenhum .zip de Allure encontrado para arquivamento."
                 }
             }
         }
 
-        
-        success { sendTelegram("<b>SUCESSO! ✅</b>") }
-        unstable { sendTelegram("<b>INSTÁVEL! ⚠️</b>") }
-        failure { sendTelegram("<b>FALHA! ❌</b>\n") }
-        aborted { sendTelegram("<b>CANCELADO! ✖️</b>\n") }
-        
+        success { sendTelegram("<b>SUCESSO</b>") }
+        unstable { sendTelegram("<b>INSTAVEL</b>") }
+        failure { sendTelegram("<b>FALHA</b>\n") }
+        aborted { sendTelegram("<b>CANCELADO</b>\n") }
     }
 }
 
