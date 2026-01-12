@@ -34,7 +34,7 @@ Then('o array de intercorrências não deve estar vazio', () => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
     expect(response.body.length).to.be.greaterThan(0);
-    cy.log(`📊 Total de intercorrências: ${response.body.length}`);
+    cy.log(`Total de intercorrências: ${response.body.length}`);
   });
 });
 
@@ -58,7 +58,7 @@ Then('o objeto não deve ser um array', () => {
 Then('o objeto deve conter o campo {string}', (campo) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.have.property(campo);
-    cy.log(`✅ Campo "${campo}" encontrado: ${response.body[campo]}`);
+    cy.log(`Campo "${campo}" encontrado: ${response.body[campo]}`);
   });
 });
 
@@ -94,7 +94,7 @@ Then('cada item deve ter a estrutura de declarante', (dataTable) => {
             break;
         }
         
-        cy.log(`✅ Campo ${row.campo} (${row.tipo}): OK`);
+        cy.log(`Campo ${row.campo} (${row.tipo}): OK`);
       });
     }
   });
@@ -111,11 +111,11 @@ Then('se houver declarantes cada um deve conter todos os campos necessários', (
         });
         
         if (index === 0) {
-          cy.log(`✅ Declarante ${index + 1}: Estrutura validada`);
+          cy.log(`Declarante ${index + 1}: Estrutura validada`);
         }
       });
       
-      cy.log(`📊 Total validados: ${response.body.length} declarantes`);
+      cy.log(`Total validados: ${response.body.length} declarantes`);
     }
   });
 });
@@ -131,7 +131,7 @@ Then('os campos de declarante devem ter tipos corretos', () => {
       expect(primeiroDeclarante.telefone).to.be.a('string');
       expect(primeiroDeclarante.email).to.be.a('string');
       
-      cy.log('✅ Todos os tipos de campo estão corretos');
+      cy.log('Todos os tipos de campo estão corretos');
     }
   });
 });
@@ -162,7 +162,7 @@ Then('cada item deve ter a estrutura de envolvido', (dataTable) => {
             break;
         }
         
-        cy.log(`✅ Campo ${row.campo} (${row.tipo}): OK`);
+        cy.log(`Campo ${row.campo} (${row.tipo}): OK`);
       });
     }
   });
@@ -179,11 +179,11 @@ Then('se houver envolvidos cada um deve conter todos os campos necessários', ()
         });
         
         if (index === 0) {
-          cy.log(`✅ Envolvido ${index + 1}: Estrutura validada`);
+          cy.log(`Envolvido ${index + 1}: Estrutura validada`);
         }
       });
       
-      cy.log(`📊 Total validados: ${response.body.length} envolvidos`);
+      cy.log(`Total validados: ${response.body.length} envolvidos`);
     }
   });
 });
@@ -198,7 +198,7 @@ Then('os campos de envolvido devem ter tipos corretos', () => {
       expect(primeiroEnvolvido.tipo_envolvimento).to.be.a('string');
       expect(primeiroEnvolvido.necessita_atendimento).to.be.a('boolean');
       
-      cy.log('✅ Todos os tipos de campo estão corretos');
+      cy.log('Todos os tipos de campo estão corretos');
     }
   });
 });
@@ -229,10 +229,10 @@ Then('se houver intercorrências cada item deve ter os campos principais', (data
             break;
         }
         
-        cy.log(`✅ Campo ${row.campo} (${row.tipo}): OK`);
+        cy.log(`Campo ${row.campo} (${row.tipo}): OK`);
       });
       
-      cy.log(`📊 Total de intercorrências com estrutura validada: ${response.body.length}`);
+      cy.log(`Total de intercorrências com estrutura validada: ${response.body.length}`);
     }
   });
 });
@@ -266,10 +266,10 @@ Then('cada tipo de ocorrência deve ter os campos obrigatórios', (dataTable) =>
           break;
       }
       
-      cy.log(`✅ Campo ${row.campo} (${row.tipo}): ${valor}`);
+      cy.log(`Campo ${row.campo} (${row.tipo}): ${valor}`);
     });
     
-    cy.log(`📊 Total de tipos de ocorrência: ${response.body.length}`);
+    cy.log(`Total de tipos de ocorrência: ${response.body.length}`);
   });
 });
 

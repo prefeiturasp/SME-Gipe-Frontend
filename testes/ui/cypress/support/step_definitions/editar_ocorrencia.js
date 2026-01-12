@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+﻿import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
 import Editar_Ocorrencia_Localizadores from '../locators/editar_ocorrencia_locators'
 import Login_Gipe_Localizadores from '../locators/login_locators'
 
@@ -46,11 +46,11 @@ When('clico em Visualizar', () => {
     cy.log(`[INFO] Links com "cadastrar-ocorrencia": ${linksComOcorrencia}`)
     
     if (linksComOcorrencia === 0) {
-      cy.log('[ERRO] ❌ Nenhum link encontrado!')
+      cy.log('[ERRO]  Nenhum link encontrado!')
       cy.screenshot('erro-sem-links')
       throw new Error('Nenhum link de visualização encontrado')
     } else {
-      cy.log(`[INFO] ✅ Encontrados ${linksComOcorrencia} links!`)
+      cy.log(`[INFO]  Encontrados ${linksComOcorrencia} links!`)
     }
   })
   
@@ -67,9 +67,9 @@ When('clico em Visualizar', () => {
       cy.log(`[INFO] Href: ${href}`)
       cy.log(`[INFO] URL completa: ${urlCompleta}`)
       
-      cy.log('[INFO] ⏳ NAVEGANDO AGORA...')
+      cy.log('[INFO]  NAVEGANDO AGORA...')
       cy.visit(urlCompleta, { failOnStatusCode: false, timeout: 30000 })
-      cy.log('[INFO] ✅ cy.visit() executado')
+      cy.log('[INFO]  cy.visit() executado')
       cy.wait(5000)
     })
   
@@ -78,9 +78,9 @@ When('clico em Visualizar', () => {
     cy.log(`[INFO] URL FINAL: ${url}`)
     
     if (url.includes('cadastrar-ocorrencia')) {
-      cy.log('[INFO] ✅✅✅ SUCESSO! Navegou corretamente')
+      cy.log('[INFO]  SUCESSO! Navegou corretamente')
     } else {
-      cy.log('[ERRO] ❌ FALHOU - URL: ' + url)
+      cy.log('[ERRO]  FALHOU - URL: ' + url)
       cy.screenshot('ERRO-url-errada')
     }
   })
@@ -112,11 +112,11 @@ When('clico em {string}', (acao) => {
       cy.log(`[INFO] Links com "cadastrar-ocorrencia": ${linksComOcorrencia}`)
       
       if (linksComOcorrencia === 0) {
-        cy.log('[ERRO] ❌ Nenhum link encontrado!')
+        cy.log('[ERRO]  Nenhum link encontrado!')
         cy.screenshot('erro-sem-links')
         throw new Error('Nenhum link de visualização encontrado')
       } else {
-        cy.log(`[INFO] ✅ Encontrados ${linksComOcorrencia} links!`)
+        cy.log(`[INFO]  Encontrados ${linksComOcorrencia} links!`)
       }
     })
     
@@ -133,9 +133,9 @@ When('clico em {string}', (acao) => {
         cy.log(`[INFO] Href: ${href}`)
         cy.log(`[INFO] URL completa: ${urlCompleta}`)
         
-        cy.log('[INFO] ⏳ NAVEGANDO AGORA...')
+        cy.log('[INFO]  NAVEGANDO AGORA...')
         cy.visit(urlCompleta, { failOnStatusCode: false, timeout: 30000 })
-        cy.log('[INFO] ✅ cy.visit() executado')
+        cy.log('[INFO]  cy.visit() executado')
         cy.wait(5000)
       })
     
@@ -144,9 +144,9 @@ When('clico em {string}', (acao) => {
       cy.log(`[INFO] URL FINAL: ${url}`)
       
       if (url.includes('cadastrar-ocorrencia')) {
-        cy.log('[INFO] ✅✅✅ SUCESSO! Navegou corretamente')
+        cy.log('[INFO]  SUCESSO! Navegou corretamente')
       } else {
-        cy.log('[ERRO] ❌ FALHOU - URL: ' + url)
+        cy.log('[ERRO]  FALHOU - URL: ' + url)
         cy.screenshot('ERRO-url-errada')
       }
     })
@@ -164,8 +164,7 @@ When('clico em {string}', (acao) => {
           .scrollIntoView()
           .click({ force: true })
         cy.wait(5000)
-        
-        // Validação mais flexível - apenas verificar se avançou para próxima aba
+
         cy.log('[INFO] Verificando se avançou para aba de tipos de ocorrência')
         cy.get('body').should('exist')
         
@@ -220,9 +219,9 @@ Then('o sistema exibe os detalhes da ocorrência', () => {
     cy.log(`[INFO] Indicadores: ${encontrados.length}/${indicadores.length}`)
     
     if (encontrados.length > 0) {
-      cy.log('[INFO] ✅ Página de detalhes OK')
+      cy.log('[INFO]  Página de detalhes OK')
     } else {
-      cy.log('[ERRO] ❌ Indicadores não encontrados')
+      cy.log('[ERRO]  Indicadores não encontrados')
       cy.screenshot('erro-sem-indicadores')
     }
   })
@@ -288,7 +287,7 @@ When('adiciono os tipos de ocorrência {string} e {string}', () => {
         .first()
         .click({ force: true })
       cy.wait(2000)
-      cy.log('[INFO] ✅ Acidentes no Transporte Escolar selecionado')
+      cy.log('[INFO]  Acidentes no Transporte Escolar selecionado')
     }
     
     // Selecionar "Agressão Física" se ainda não estiver (dropdown continua aberto)
@@ -326,7 +325,7 @@ When('adiciono os tipos de ocorrência {string} e {string}', () => {
       })
       
       cy.wait(2000)
-      cy.log('[INFO] ✅ Agressão Física selecionada')
+      cy.log('[INFO]  Agressão Física selecionada')
     }
     
     // Fechar dropdown clicando fora após selecionar ambas

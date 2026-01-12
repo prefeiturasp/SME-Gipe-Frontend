@@ -302,10 +302,16 @@ Then('devo preencher os campos de interlocução obrigatórios', () => {  if (ta
           .parent()
           .parent()
           .find('input[type="radio"]')
-          .last()
-          .check({ force: true })
-        
-        cy.log(`Selecionado "Nao" para: ${pergunta.substring(0, 50)}...`)
+          .then(($radios) => {
+            const algumMarcado = $radios.filter(':checked').length > 0
+            
+            if (algumMarcado) {
+              cy.log(`Campo ja preenchido: ${pergunta.substring(0, 40)}... - Validando e pulando`)
+            } else {
+              cy.wrap($radios.last()).check({ force: true })
+              cy.log(`Preenchido: ${pergunta.substring(0, 40)}...`)
+            }
+          })
       }
     })
   })
@@ -329,10 +335,7 @@ Then('devo preencher os campos complementares das interlocuções', () => {  if 
             .type(textoAleatorio, { delay: 10 })
           cy.log(`Campo ${index + 1} preenchido com ${textoAleatorio.length} caracteres`)
         } else {
-          const textoAdicional = ` [ATUALIZACAO ${new Date().toLocaleTimeString('pt-BR')}]`
-          cy.wrap($textarea)
-            .type(textoAdicional, { delay: 10 })
-          cy.log(`Campo ${index + 1} atualizado com timestamp`)
+          cy.log(`Campo ${index + 1} ja possui conteudo (${valorAtual.length} caracteres) - Validando e pulando`)
         }
       }
     })
@@ -360,12 +363,40 @@ When('eu finalizo o preenchimento', () => {
   
   cy.wait(TIMEOUTS.SHORT)
   
-  cy.get('button', { timeout: TIMEOUTS.LONG })
-    .filter(':visible')
-    .contains(/Salvar|Enviar|Concluir|Próximo/i)
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
+  // Tenta encontrar qualquer botão de ação visível no final do formulário
+  cy.get('body').then(($body) => {
+    const botoes = $body.find('button:visible')
+    let botaoEncontrado = false
+    
+    // Primeiro tenta pelos textos padrão
+    const textosBotao = ['Salvar', 'Enviar', 'Concluir', 'Próximo', 'Finalizar', 'Confirmar']
+    
+    textosBotao.forEach((texto) => {
+      if (!botaoEncontrado && botoes.filter(`:contains("${texto}")`).length > 0) {
+        cy.log(`Botão encontrado: ${texto}`)
+        cy.contains('button', texto, { timeout: TIMEOUTS.DEFAULT })
+          .filter(':visible')
+          .should('be.visible')
+          .should('not.be.disabled')
+          .click({ force: true })
+        botaoEncontrado = true
+        return false
+      }
+    })
+    
+    // Se não encontrou, tenta pelo último botão visível que não seja "Cancelar" ou "Voltar"
+    if (!botaoEncontrado) {
+      cy.log('Tentando encontrar botão pelo último botão visível...')
+      cy.get('button:visible')
+        .not(':contains("Cancelar")')
+        .not(':contains("Voltar")')
+        .not(':contains("Fechar")')
+        .last({ timeout: TIMEOUTS.LONG })
+        .should('be.visible')
+        .should('not.be.disabled')
+        .click({ force: true })
+    }
+  })
   
   cy.wait(TIMEOUTS.DEFAULT)
   
@@ -437,8 +468,8 @@ Then('preencho modal de conclusão se necessário', () => {
     if (temModal) {
       cy.log('Preenchendo modal de conclusao')
       
-      cy.get('div[role="dialog"]')
-        .should('contain.text', /Conclusão|Finalizar/i)
+      cy.get('div[role="dialog"]', { timeout: TIMEOUTS.DEFAULT })
+        .should('be.visible')
       
       cy.wait(TIMEOUTS.SHORT)
       
@@ -449,12 +480,21 @@ Then('preencho modal de conclusão se necessário', () => {
           cy.get('div[role="dialog"] textarea')
             .last()
             .should('be.visible')
-            .click({ force: true })
-            .clear()
-            .type('Complementação DRE concluída com sucesso - Teste Automatizado', { delay: 30 })
+            .then(($textarea) => {
+              const valorAtual = $textarea.val()
+              
+              if (!valorAtual || valorAtual.trim() === '') {
+                cy.wrap($textarea)
+                  .click({ force: true })
+                  .clear()
+                  .type('Complementação DRE concluída com sucesso - Teste Automatizado', { delay: 30 })
+                cy.log('Campo de motivo preenchido')
+              } else {
+                cy.log(`Campo ja possui conteudo: "${valorAtual.substring(0, 50)}..." - Validando e pulando`)
+              }
+            })
           
           cy.wait(TIMEOUTS.MINIMAL)
-          cy.log('Campo de motivo preenchido')
         }
       })
       

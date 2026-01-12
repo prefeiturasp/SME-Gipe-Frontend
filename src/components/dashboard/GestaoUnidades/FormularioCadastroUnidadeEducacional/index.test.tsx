@@ -58,8 +58,8 @@ const mockDreOptions = [
     { uuid: "dre-3", codigo_eol: "000003", nome: "DRE - Capela do Socorro" },
 ];
 
-vi.mock("@/hooks/useUnidades", () => ({
-    useFetchDREs: () => ({
+vi.mock("@/hooks/useGetUnidades", () => ({
+    useGetUnidades: () => ({
         data: mockDreOptions,
     }),
 }));

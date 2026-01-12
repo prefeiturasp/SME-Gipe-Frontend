@@ -1,6 +1,5 @@
 export default Alterar_Email_Localizadores;
 
-
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
 import Login_Gipe_Localizadores from '../locators/login_locators'
 import Alterar_Senha_Localizadores from '../locators/alterar_senha_locators';

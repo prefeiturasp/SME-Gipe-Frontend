@@ -3,7 +3,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 
-export async function getUnidades(ativa?: boolean, dre?: string, tipo_unidade?:string) {
+export async function getUnidades(ativa?: boolean, dre?: string, tipo_unidade?:string, rede?:string) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
     try {
@@ -19,7 +19,7 @@ export async function getUnidades(ativa?: boolean, dre?: string, tipo_unidade?:s
         }
 
         const { data } = await axios.get(`${API_URL}/unidades/gestao-unidades/`, {
-            params: { ativa, dre, tipo_unidade },
+            params: { ativa, dre, tipo_unidade, rede },
             headers: {
                 Authorization: `Bearer ${token}`,
             },
