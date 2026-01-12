@@ -8,11 +8,11 @@ const loc = new Cadastro_Localizadores();
 Before(() => {
   cy.clearCookies();
   cy.clearLocalStorage();
-  cy.log('🔄 Iniciando cenário - ambiente limpo');
+  cy.log(' Iniciando cenário - ambiente limpo');
 });
 
 After(() => {
-  cy.log('✅ Cenário finalizado');
+  cy.log(' Cenário finalizado');
 });
 
 // ---------- Funções de apoio ----------

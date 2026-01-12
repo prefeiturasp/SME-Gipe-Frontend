@@ -17,6 +17,7 @@ pipeline {
     environment {
         ALLURE_PATH = 'testes/ui/allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
+        BUILD_ID_UNIQUE = "SME-GIPE_${BUILD_NUMBER}_${new Date().format('yyyyMMdd_HHmmss')}"
     }
 
     stages {
@@ -49,16 +50,31 @@ pipeline {
                                             --key somekey \
                                             --reporter mocha-allure-reporter \
                                             --reporter-options reportDir=allure-results \
-                                            --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                            --ci-build-id ${BUILD_ID_UNIQUE} && \
                                         chown 1001:1001 * -R
                                         chmod 777 * -R"
                         '''
                     }
                     echo "Testes Cypress finalizados."
-                    def logText = currentBuild.rawBuild.getLog(20).join('\n')
-                    def match = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
-                    if (match) {
-                        env.CYPRESS_RUN_URL = match[0][1]
+                    
+                    def logText = currentBuild.rawBuild.getLog(100).join('\n')
+                    
+                    def matchUrl = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
+                    if (matchUrl) {
+                        env.CYPRESS_RUN_URL = matchUrl[0][1]
+                    }
+                    
+                    if (logText.contains('No specs executed')) {
+                        echo "ERRO: Nenhum teste foi executado!"
+                        echo "Verifique o conflito de specs no cypress-cloud."
+                        error("Pipeline abortado: Nenhum teste executado. Verifique os logs acima.")
+                    }
+                    
+                    def matchSpecs = logText =~ /(\d+)\s+of\s+(\d+)\s+spec files? complete/
+                    if (!matchSpecs) {
+                        echo "Aviso: Não foi possível confirmar a execução dos specs."
+                    } else {
+                        echo "Specs executados: ${matchSpecs[0][1]} de ${matchSpecs[0][2]}"
                     }
                 }
             }
@@ -71,7 +87,7 @@ pipeline {
                         def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
                         if (hasResults) {
-                            echo "📊 Gerando relatório Allure..."
+                            echo "Gerando relatório Allure..."
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -80,7 +96,7 @@ pipeline {
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
                             """
                         } else {
-                            echo "⚠️ Nenhum resultado Allure encontrado em ${ALLURE_PATH}."
+                            echo "Nenhum resultado Allure encontrado em ${ALLURE_PATH}."
                         }
                     }
                 }
@@ -106,24 +122,22 @@ pipeline {
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
                 } else {
-                    echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin não será acionado."
+                    echo "Resultados do Allure não encontrados ou vazios, plugin não será acionado."
                 }
 
                 def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
                 if (zipExists) {
                     archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
                 } else {
-                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
+                    echo "Nenhum .zip de Allure encontrado para arquivamento."
                 }
             }
         }
 
-        
-        success { sendTelegram("<b>SUCESSO! ✅</b>") }
-        unstable { sendTelegram("<b>INSTÁVEL! ⚠️</b>") }
-        failure { sendTelegram("<b>FALHA! ❌</b>\n") }
-        aborted { sendTelegram("<b>CANCELADO! ✖️</b>\n") }
-        
+        success { sendTelegram("<b>SUCESSO</b>") }
+        unstable { sendTelegram("<b>INSTAVEL</b>") }
+        failure { sendTelegram("<b>FALHA</b>\n") }
+        aborted { sendTelegram("<b>CANCELADO</b>\n") }
     }
 }
 
