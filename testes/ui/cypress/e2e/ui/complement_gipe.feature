@@ -1,6 +1,6 @@
 # language: pt
 
-@skip @complement_gipe @gipe
+@complement_gipe @gipe
 Funcionalidade: Gestão de Intercorrências - Perfil GIPE
   Como usuário com perfil GIPE
   Eu quero acessar e complementar intercorrências registradas
@@ -18,7 +18,7 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para GIPE
 
-  @skip @complemento @preenchimento @critico @fluxo_completo
+  @complemento @preenchimento @critico @fluxo_completo
   Cenário: Complementar detalhes DRE e GIPE de intercorrência registrada
     
     Quando eu valido os campos da tabela de ocorrências

@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+﻿import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
 import Cadastro_ocorrencias_Localizadores from '../locators/cadastro_ocorrencias_locators'
 
 const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
@@ -112,8 +112,7 @@ When('o usuário seleciona e clica em {string}', (label) => {
       .then(() => cy.log('Click no botão Nova Ocorrência executado'))
     
     cy.wait(4000)
-    
-    // Validação CI/CD: garantir navegação bem-sucedida
+
     cy.url({ timeout: 15000 }).should('include', '/cadastrar-ocorrencia')
   } else {
     cy.contains('a,button', label, { timeout: 15000 })

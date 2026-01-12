@@ -32,7 +32,7 @@ Then('a resposta deve conter todas as categorias do GIPE', () => {
     expect(res.body).to.have.property('ameaca_foi_realizada_de_qual_maneira')
     expect(res.body).to.have.property('motivo_ocorrencia')
     expect(res.body).to.have.property('ciclo_aprendizagem')
-    Cypress.log({ name: 'Validação', message: '✅ Todas as categorias principais encontradas' })
+    Cypress.log({ name: 'Validação', message: ' Todas as categorias principais encontradas' })
   })
 })
 
@@ -41,7 +41,7 @@ Then('a resposta deve ter a estrutura correta de categorias', () => {
     expect(res.body).to.be.an('object')
     const categorias = Object.keys(res.body)
     expect(categorias.length).to.be.greaterThan(0)
-    Cypress.log({ name: 'Validação', message: `✅ Estrutura válida com ${categorias.length} categorias` })
+    Cypress.log({ name: 'Validação', message: ` Estrutura válida com ${categorias.length} categorias` })
   })
 })
 
@@ -56,7 +56,7 @@ Then('cada categoria deve ter campos value e label', () => {
         })
       }
     })
-    Cypress.log({ name: 'Validação', message: '✅ Todas as opções têm value e label' })
+    Cypress.log({ name: 'Validação', message: ' Todas as opções têm value e label' })
   })
 })
 
@@ -66,7 +66,7 @@ Then('a categoria {string} deve existir', (nomeCategoria) => {
   cy.get('@response').then((res) => {
     expect(res.body).to.have.property(nomeCategoria)
     expect(res.body[nomeCategoria]).to.be.an('array')
-    Cypress.log({ name: 'Validação', message: `✅ Categoria "${nomeCategoria}" existe` })
+    Cypress.log({ name: 'Validação', message: ` Categoria "${nomeCategoria}" existe` })
   })
 })
 
@@ -85,7 +85,7 @@ Then('a categoria {string} deve ter as opções:', (nomeCategoria, dataTable) =>
       expect(opcaoEncontrada).to.exist
     })
     
-    Cypress.log({ name: 'Validação', message: `✅ Categoria "${nomeCategoria}" tem todas as opções esperadas` })
+    Cypress.log({ name: 'Validação', message: ` Categoria "${nomeCategoria}" tem todas as opções esperadas` })
   })
 })
 
@@ -94,7 +94,7 @@ Then('a categoria {string} deve conter pelo menos {int} opções', (nomeCategori
     const categoria = res.body[nomeCategoria]
     expect(categoria).to.be.an('array')
     expect(categoria.length).to.be.at.least(quantidadeMinima)
-    Cypress.log({ name: 'Validação', message: `✅ Categoria "${nomeCategoria}" tem ${categoria.length} opções (mínimo: ${quantidadeMinima})` })
+    Cypress.log({ name: 'Validação', message: ` Categoria "${nomeCategoria}" tem ${categoria.length} opções (mínimo: ${quantidadeMinima})` })
   })
 })
 
@@ -105,7 +105,7 @@ Then('a categoria {string} deve conter a opção {string} com label {string}', (
     
     expect(opcaoEncontrada).to.exist
     expect(opcaoEncontrada.label).to.equal(label)
-    Cypress.log({ name: 'Validação', message: `✅ Opção "${value}" encontrada com label "${label}"` })
+    Cypress.log({ name: 'Validação', message: ` Opção "${value}" encontrada com label "${label}"` })
   })
 })
 
@@ -118,13 +118,13 @@ Then('devem existir as seguintes categorias:', (dataTable) => {
       expect(res.body[item.categoria]).to.be.an('array')
     })
     
-    Cypress.log({ name: 'Validação', message: `✅ Todas as ${categoriasEsperadas.length} categorias principais existem` })
+    Cypress.log({ name: 'Validação', message: ` Todas as ${categoriasEsperadas.length} categorias principais existem` })
   })
 })
 
 Then('o status da resposta deve ser 401 ou 403', () => {
   cy.get('@response').then((res) => {
     expect([401, 403]).to.include(res.status)
-    Cypress.log({ name: 'Validação', message: `✅ Acesso negado - Status: ${res.status}` })
+    Cypress.log({ name: 'Validação', message: ` Acesso negado - Status: ${res.status}` })
   })
 })
