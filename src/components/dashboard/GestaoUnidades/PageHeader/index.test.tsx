@@ -1,10 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PageHeader from "./index";
 
+const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
-        push: vi.fn(),
+        push: mockPush,
     }),
 }));
 
@@ -30,9 +31,77 @@ vi.mock("next/link", () => ({
     ),
 }));
 
-describe("PageHeader - Gestão de Unidades", () => {
+const mockInvalidateQueries = vi.fn();
+vi.mock("@tanstack/react-query", () => ({
+    useQueryClient: () => ({
+        invalidateQueries: mockInvalidateQueries,
+    }),
+}));
+
+const mockObterUnidade = vi.fn();
+vi.mock("@/hooks/useObterUnidadeGestao", () => ({
+    useObterUnidadeGestao: (props: { uuid: string }) => {
+        return mockObterUnidade(props);
+    },
+}));
+
+const mockInativarUnidade = vi.fn();
+vi.mock("@/hooks/useInativarUnidadeGestao", () => ({
+    useInativarUnidadeGestao: () => ({
+        mutateAsync: mockInativarUnidade,
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: vi.fn(),
+}));
+
+vi.mock("../FormularioCadastroUnidadeEducacional/ModalInativacao", () => ({
+    default: ({
+        open,
+        onOpenChange,
+        onInativar,
+    }: {
+        open: boolean;
+        onOpenChange: (open: boolean) => void;
+        onInativar: () => void;
+    }) => (
+        <div data-testid="modal-inativacao" data-open={open}>
+            <button onClick={() => onInativar()}>Confirmar Inativação</button>
+            <button onClick={() => onOpenChange(false)}>Cancelar</button>
+        </div>
+    ),
+}));
+
+const mockUnidadeAtiva = {
+    uuid: "unidade-123",
+    nome: "EMEF Teste",
+    rede: "INDIRETA",
+    ativa: true,
+};
+
+const mockUnidadeInativa = {
+    uuid: "unidade-123",
+    nome: "EMEF Teste",
+    rede: "INDIRETA",
+    ativa: false,
+};
+
+const mockUnidadeDireta = {
+    uuid: "unidade-456",
+    nome: "EMEF Direta",
+    rede: "DIRETA",
+    ativa: true,
+};
+
+describe("PageHeader", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockObterUnidade.mockReturnValue({
+            data: mockUnidadeAtiva,
+            isLoading: false,
+        });
     });
 
     it("deve renderizar o título corretamente", () => {
@@ -43,23 +112,220 @@ describe("PageHeader - Gestão de Unidades", () => {
         ).toBeInTheDocument();
     });
 
+    it("deve renderizar botão 'Inativar Unidade Educacional' para unidade ativa não-direta", () => {
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+        expect(inativarButton).toBeInTheDocument();
+    });
+
+    it("deve renderizar botão 'Reativar Unidade Educacional' para unidade inativa", () => {
+        mockObterUnidade.mockReturnValue({
+            data: mockUnidadeInativa,
+            isLoading: false,
+        });
+
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar unidade educacional/i,
+        });
+        expect(reativarButton).toBeInTheDocument();
+    });
+
+    it("não deve renderizar botões de inativar/reativar para unidade de rede DIRETA", () => {
+        mockObterUnidade.mockReturnValue({
+            data: mockUnidadeDireta,
+            isLoading: false,
+        });
+
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-456"
+            />
+        );
+
+        const inativarButton = screen.queryByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+        const reativarButton = screen.queryByRole("button", {
+            name: /reativar unidade educacional/i,
+        });
+
+        expect(inativarButton).not.toBeInTheDocument();
+        expect(reativarButton).not.toBeInTheDocument();
+    });
+
+    it("deve abrir o modal ao clicar em inativar", async () => {
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+
+        fireEvent.click(inativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-inativacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+    });
+
+    it("deve chamar a action de inativar e redirecionar ao confirmar", async () => {
+        const { toast } = await import("@/components/ui/headless-toast");
+        mockInativarUnidade.mockResolvedValueOnce({ success: true });
+
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+        fireEvent.click(inativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-inativacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+
+        const confirmarButton = screen.getByText("Confirmar Inativação");
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(mockInativarUnidade).toHaveBeenCalledWith("unidade-123");
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Tudo certo por aqui!",
+                    description:
+                        "A unidade educacional foi inativada com sucesso.",
+                    variant: "success",
+                })
+            );
+            expect(mockInvalidateQueries).toHaveBeenCalledWith({
+                queryKey: ["unidade-gestao", "unidade-123"],
+            });
+            expect(mockPush).toHaveBeenCalledWith(
+                "/dashboard/gestao-unidades-educacionais?tab=inativas"
+            );
+        });
+    });
+
+    it("deve exibir toast de erro ao falhar a inativação", async () => {
+        const { toast } = await import("@/components/ui/headless-toast");
+        mockInativarUnidade.mockResolvedValueOnce({
+            success: false,
+            error: "Erro ao inativar unidade",
+        });
+
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+        fireEvent.click(inativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-inativacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+
+        const confirmarButton = screen.getByText("Confirmar Inativação");
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(mockInativarUnidade).toHaveBeenCalledWith("unidade-123");
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Não conseguimos concluir a ação!",
+                    description: "Erro ao inativar unidade",
+                    variant: "error",
+                })
+            );
+            expect(mockPush).not.toHaveBeenCalled();
+        });
+    });
+
+    it("não deve chamar a action de inativar quando unidadeUuid não é fornecido", async () => {
+        mockObterUnidade.mockReturnValue({
+            data: { ...mockUnidadeAtiva, rede: "INDIRETA" },
+            isLoading: false,
+        });
+
+        const { rerender } = render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar unidade educacional/i,
+        });
+        fireEvent.click(inativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-inativacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+
+        rerender(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+
+        const confirmarButton = screen.getByText("Confirmar Inativação");
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(mockInativarUnidade).not.toHaveBeenCalled();
+        });
+    });
+
     it("deve renderizar botão de voltar no modo edit", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
 
         const voltarLink = screen.getByRole("link");
         expect(voltarLink).toHaveAttribute(
             "href",
             "/dashboard/gestao-unidades-educacionais"
         );
-    });
-
-    it("deve renderizar botão 'Inativar Unidade Educacional' no modo edit", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
-
-        const inativarButton = screen.getByRole("button", {
-            name: /inativar unidade educacional/i,
-        });
-        expect(inativarButton).toBeInTheDocument();
     });
 
     it("deve renderizar botão 'Voltar' com texto no modo não-edit", () => {
@@ -88,6 +354,7 @@ describe("PageHeader - Gestão de Unidades", () => {
                 title="Editar Unidade Educacional"
                 edit={true}
                 onClickBack={onClickBack}
+                unidadeUuid="unidade-123"
             />
         );
 
@@ -98,7 +365,13 @@ describe("PageHeader - Gestão de Unidades", () => {
     });
 
     it("deve ter link correto para gestão de unidades educacionais no modo edit", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
 
         const voltarLink = screen.getByRole("link");
         expect(voltarLink).toHaveAttribute(
@@ -119,17 +392,14 @@ describe("PageHeader - Gestão de Unidades", () => {
         );
     });
 
-    it("deve renderizar com edit=true por padrão", () => {
-        render(<PageHeader title="Editar Unidade Educacional" />);
-
-        const inativarButton = screen.getByRole("button", {
-            name: /inativar unidade educacional/i,
-        });
-        expect(inativarButton).toBeInTheDocument();
-    });
-
     it("deve renderizar ícone de voltar no botão de navegação no modo edit", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
 
         const voltarLink = screen.getByRole("link");
         expect(voltarLink).toBeInTheDocument();
@@ -137,7 +407,13 @@ describe("PageHeader - Gestão de Unidades", () => {
     });
 
     it("deve renderizar ícone Ban no botão de inativar", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
 
         const inativarButton = screen.getByRole("button", {
             name: /inativar unidade educacional/i,
@@ -157,7 +433,13 @@ describe("PageHeader - Gestão de Unidades", () => {
     });
 
     it("deve aplicar variant outlineDestructive no botão de inativar", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />
+        );
 
         const inativarButton = screen.getByRole("button", {
             name: /inativar unidade educacional/i,
@@ -180,16 +462,6 @@ describe("PageHeader - Gestão de Unidades", () => {
         expect(headerDiv).toHaveClass("justify-between");
         expect(headerDiv).toHaveClass("w-full");
         expect(headerDiv).toHaveClass("px-4");
-    });
-
-    it("deve renderizar dois botões no modo edit", () => {
-        render(<PageHeader title="Editar Unidade Educacional" edit={true} />);
-
-        const buttons = screen.getAllByRole("button");
-        expect(buttons).toHaveLength(1); // Apenas o botão de inativar (o link não é botão)
-
-        const links = screen.getAllByRole("link");
-        expect(links).toHaveLength(1); // Link de voltar
     });
 
     it("deve renderizar apenas um link no modo não-edit", () => {
