@@ -1,7 +1,44 @@
-import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import Page from "./page";
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+    }),
+    useSearchParams: () => ({
+        get: vi.fn(),
+    }),
+}));
+
+vi.mock("@tanstack/react-query", async () => {
+    const actual = await vi.importActual("@tanstack/react-query");
+    return {
+        ...actual,
+        useQueryClient: () => ({
+            invalidateQueries: vi.fn(),
+        }),
+    };
+});
+
+vi.mock("@/hooks/useObterUnidadeGestao", () => ({
+    useObterUnidadeGestao: () => ({
+        data: null,
+        isLoading: false,
+    }),
+}));
+
+vi.mock("@/hooks/useInativarUnidadeGestao", () => ({
+    useInativarUnidadeGestao: () => ({
+        mutateAsync: vi.fn(),
+        isPending: false,
+    }),
+}));
+
+vi.mock("@/components/ui/headless-toast", () => ({
+    toast: vi.fn(),
+}));
 
 vi.mock("@/components/dashboard/PageHeader/PageHeader", () => ({
     __esModule: true,
