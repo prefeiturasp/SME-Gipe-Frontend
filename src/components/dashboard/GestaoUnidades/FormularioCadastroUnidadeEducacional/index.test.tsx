@@ -21,12 +21,28 @@ vi.mock("@/hooks/useCadastrarUnidade", () => ({
     }),
 }));
 
+const mockAtualizarUnidade = vi.fn();
+vi.mock("@/hooks/useAtualizarUnidade", () => ({
+    useAtualizarUnidade: () => ({
+        mutateAsync: mockAtualizarUnidade,
+        isPending: false,
+    }),
+}));
+
+const mockObterUnidade = vi.fn();
+vi.mock("@/hooks/useObterUnidadeGestao", () => ({
+    useObterUnidadeGestao: (props: { uuid: string; enabled: boolean }) => {
+        const result = mockObterUnidade(props);
+        return result || { data: undefined, isLoading: false };
+    },
+}));
+
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: vi.fn(),
 }));
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import FormularioCadastroUnidadeEducacional from "./index";
 
 const mockPush = vi.fn();
@@ -644,6 +660,285 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                         variant: "error",
                     })
                 );
+            });
+        });
+    });
+
+    describe("Modo de Edição", () => {
+        const mockUnidadeData = {
+            uuid: "unidade-123",
+            nome: "EMEF João da Silva",
+            codigo_eol: "123456",
+            tipo_unidade: "EMEF",
+            rede: "DIRETA",
+            dre_uuid: "dre-1",
+            sigla: "JDS",
+            ativa: true,
+        };
+
+        beforeEach(() => {
+            vi.clearAllMocks();
+            mockObterUnidade.mockReturnValue({
+                data: mockUnidadeData,
+                isLoading: false,
+            });
+        });
+
+        it("deve renderizar o formulário em modo de edição com dados carregados", async () => {
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                ) as HTMLInputElement;
+                expect(nomeInput.value).toBe("EMEF João da Silva");
+            });
+        });
+
+        it("deve preencher automaticamente todos os campos com os dados da unidade", async () => {
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                ) as HTMLInputElement;
+                expect(nomeInput.value).toBe("EMEF João da Silva");
+
+                const codigoInput = screen.getByPlaceholderText(
+                    /Exemplo: 1234567/i
+                ) as HTMLInputElement;
+                expect(codigoInput.value).toBe("123456");
+
+                const siglaInput = screen.getByPlaceholderText(
+                    /Digite\.\.\./i
+                ) as HTMLInputElement;
+                expect(siglaInput.value).toBe("JDS");
+
+                const tipoSelect = getSelectByLabel("Tipo*");
+                expect(tipoSelect).toHaveTextContent("EMEF");
+
+                const redeSelect = getSelectByLabel("Rede*");
+                expect(redeSelect).toHaveTextContent("Direta");
+            });
+        });
+
+        it("deve desabilitar os campos Rede e Código EOL no modo de edição", async () => {
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const redeSelect = getSelectByLabel("Rede*");
+                expect(redeSelect).toBeDisabled();
+
+                const codigoInput = screen.getByPlaceholderText(
+                    /Exemplo: 1234567/i
+                ) as HTMLInputElement;
+                expect(codigoInput).toBeDisabled();
+            });
+        });
+
+        it("deve exibir o botão 'Salvar alterações' em vez de 'Cadastrar UE'", async () => {
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                expect(
+                    screen.getByRole("button", { name: /Salvar alterações/i })
+                ).toBeInTheDocument();
+                expect(
+                    screen.queryByRole("button", { name: /Cadastrar UE/i })
+                ).not.toBeInTheDocument();
+            });
+        });
+
+        it("deve chamar atualizarUnidade ao submeter o formulário em modo de edição", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+            mockAtualizarUnidade.mockResolvedValueOnce({ success: true });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i
+            );
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEF João da Silva Atualizado" },
+            });
+
+            const salvarButton = screen.getByRole("button", {
+                name: /Salvar alterações/i,
+            });
+
+            await waitFor(() => {
+                expect(salvarButton).toBeEnabled();
+            });
+
+            fireEvent.click(salvarButton);
+
+            await waitFor(() => {
+                expect(mockAtualizarUnidade).toHaveBeenCalledWith({
+                    nome: "EMEF João da Silva Atualizado",
+                    codigo_eol: "123456",
+                    tipo_unidade: "EMEF",
+                    rede: "DIRETA",
+                    sigla: "JDS",
+                    ativa: true,
+                    dre: "dre-1",
+                });
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        title: "Tudo certo por aqui!",
+                        description: "As alterações foram salvas com sucesso!",
+                        variant: "success",
+                    })
+                );
+            });
+        });
+
+        it("deve exibir toast de erro ao falhar a atualização", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+            mockAtualizarUnidade.mockResolvedValueOnce({
+                success: false,
+                error: "Erro ao atualizar unidade",
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
+            });
+
+            const salvarButton = screen.getByRole("button", {
+                name: /Salvar alterações/i,
+            });
+
+            fireEvent.click(salvarButton);
+
+            await waitFor(() => {
+                expect(mockAtualizarUnidade).toHaveBeenCalled();
+                expect(toast).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        title: "Não conseguimos concluir a ação!",
+                        description: "Erro ao atualizar unidade",
+                        variant: "error",
+                    })
+                );
+            });
+        });
+
+        it("deve invalidar o cache da unidade após atualização bem-sucedida", async () => {
+            mockAtualizarUnidade.mockResolvedValueOnce({ success: true });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i
+            );
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEF Novo Nome" },
+            });
+
+            const salvarButton = screen.getByRole("button", {
+                name: /Salvar alterações/i,
+            });
+
+            await waitFor(() => {
+                expect(salvarButton).toBeEnabled();
+            });
+
+            fireEvent.click(salvarButton);
+
+            await waitFor(() => {
+                expect(mockAtualizarUnidade).toHaveBeenCalled();
+                expect(mockPush).toHaveBeenCalledWith(
+                    "/dashboard/gestao-unidades-educacionais"
+                );
+            });
+        });
+
+        it("não deve chamar cadastrarUnidade no modo de edição", async () => {
+            mockAtualizarUnidade.mockResolvedValueOnce({ success: true });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                const nomeInput = screen.getByPlaceholderText(
+                    /Exemplo: EMEF João da Silva/i
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
+            });
+
+            const salvarButton = screen.getByRole("button", {
+                name: /Salvar alterações/i,
+            });
+
+            fireEvent.click(salvarButton);
+
+            await waitFor(() => {
+                expect(mockAtualizarUnidade).toHaveBeenCalled();
+                expect(mockCadastrarUnidade).not.toHaveBeenCalled();
             });
         });
     });
