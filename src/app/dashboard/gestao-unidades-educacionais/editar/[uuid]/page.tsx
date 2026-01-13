@@ -13,7 +13,11 @@ export default function EditarUnidade({
 }: Readonly<EditarUnidadeProps>) {
     return (
         <>
-            <PageHeader title="Editar Unidade Educacional" edit />
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit
+                unidadeUuid={params.uuid}
+            />
             <QuadroBranco>
                 <FormularioCadastroUnidadeEducacional
                     mode="edit"

@@ -7,6 +7,9 @@ vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: vi.fn(),
     }),
+    useSearchParams: () => ({
+        get: vi.fn().mockReturnValue(null),
+    }),
 }));
 
 const queryClient = new QueryClient();
