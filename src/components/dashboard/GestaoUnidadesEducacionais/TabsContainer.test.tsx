@@ -1,19 +1,34 @@
+import TabsContainer from "@/components/dashboard/GestaoUnidadesEducacionais/TabsContainer";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import TabsContainer from "@/components/dashboard/GestaoUnidadesEducacionais/TabsContainer";
 
-vi.mock("@/components/dashboard/GestaoUnidadesEducacionais/ListaDeUnidadesEducacionais", () => ({
-    __esModule: true,
-    default: ({ status }: { status: "ativa" | "inativa" }) => {
-        return (
-            <div data-testid={`lista-unidades-${status}`}>
-                Exibindo o status: {status}
-            </div>
-        );
-    },
+const mockGet = vi.fn();
+vi.mock("next/navigation", () => ({
+    useSearchParams: () => ({
+        get: mockGet,
+    }),
 }));
 
+vi.mock(
+    "@/components/dashboard/GestaoUnidadesEducacionais/ListaDeUnidadesEducacionais",
+    () => ({
+        __esModule: true,
+        default: ({ status }: { status: "ativa" | "inativa" }) => {
+            return (
+                <div data-testid={`lista-unidades-${status}`}>
+                    Exibindo o status: {status}
+                </div>
+            );
+        },
+    })
+);
+
 describe("TabsContainer", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockGet.mockReturnValue(null);
+    });
+
     it("deve renderizar as abas corretamente", () => {
         render(<TabsContainer />);
 
@@ -40,25 +55,50 @@ describe("TabsContainer", () => {
             name: /Unidades Educacionais inativa/i,
         });
 
-        // Verifica se a aba "ativa" está ativa por padrão
-        expect(
-            screen.getByTestId("lista-unidades-ativa")
-        ).toBeInTheDocument();
+        expect(screen.getByTestId("lista-unidades-ativa")).toBeInTheDocument();
 
-        // Clica na aba "inativas"
         await user.click(abaInativas);
 
-        // Verifica se a aba "inativas" está ativa
         expect(
             screen.getByTestId("lista-unidades-inativa")
         ).toBeInTheDocument();
 
-        // Clica novamente na aba "ativas"
         await user.click(abaAtivas);
 
-        // Verifica se a aba "ativa" está ativa novamente
+        expect(screen.getByTestId("lista-unidades-ativa")).toBeInTheDocument();
+    });
+
+    it("deve iniciar com a aba 'ativas' quando não há parâmetro na URL", () => {
+        mockGet.mockReturnValue(null);
+
+        render(<TabsContainer />);
+
+        expect(screen.getByTestId("lista-unidades-ativa")).toBeInTheDocument();
+    });
+
+    it("deve iniciar com a aba 'inativas' quando o parâmetro tab=inativas está na URL", () => {
+        mockGet.mockReturnValue("inativas");
+
+        render(<TabsContainer />);
+
         expect(
-            screen.getByTestId("lista-unidades-ativa")
+            screen.getByTestId("lista-unidades-inativa")
         ).toBeInTheDocument();
+    });
+
+    it("deve iniciar com a aba 'ativas' quando o parâmetro tab=ativas está na URL", () => {
+        mockGet.mockReturnValue("ativas");
+
+        render(<TabsContainer />);
+
+        expect(screen.getByTestId("lista-unidades-ativa")).toBeInTheDocument();
+    });
+
+    it("deve iniciar com a aba 'ativas' quando o parâmetro tab tem valor inválido", () => {
+        mockGet.mockReturnValue("invalido");
+
+        render(<TabsContainer />);
+
+        expect(screen.getByTestId("lista-unidades-ativa")).toBeInTheDocument();
     });
 });
