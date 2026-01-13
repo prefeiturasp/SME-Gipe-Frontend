@@ -53,7 +53,7 @@ vi.mock("@/components/dashboard/QuadroBranco/QuadroBranco", () => ({
 }));
 
 vi.mock(
-    "@/components/dashboard/GestaoUnidades/FormularioCadastroUnidadeEducacional",
+    "@/components/dashboard/GestaoUnidadesEducacionais/FormularioCadastroUnidadeEducacional",
     () => ({
         __esModule: true,
         default: () => (
