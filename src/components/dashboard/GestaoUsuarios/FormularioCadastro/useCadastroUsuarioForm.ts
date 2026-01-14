@@ -97,7 +97,13 @@ export function useCadastroUsuarioForm({
         uuid: usuarioUuid || "",
         enabled: mode === "edit" && !!usuarioUuid,
     });
+
     const isFormDisabled = mode === "edit" && usuarioData?.is_active === false;
+    const isActive = usuarioData?.is_active ?? true;
+    const dataInativacaoFormatada = usuarioData?.data_inativacao_formatada;
+    const responsavelInativacaoNome = usuarioData?.responsavel_inativacao_nome;
+    const motivoInativacao = usuarioData?.motivo_inativacao;
+    const inativadoViaUnidade = usuarioData?.inativado_via_unidade;
 
     useEffect(() => {
         if (mode === "edit" && usuarioUuid) {
@@ -390,5 +396,10 @@ export function useCadastroUsuarioForm({
         mode,
         hasChanges: isDirty || cargoAlterado,
         isFormDisabled,
+        isActive,
+        dataInativacaoFormatada,
+        responsavelInativacaoNome,
+        motivoInativacao,
+        inativadoViaUnidade,
     };
 }

@@ -231,6 +231,324 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
 
         expect(descricao).toHaveClass("text-[#B0B0B0]");
     });
+
+    it("checkbox de administrador está habilitado quando usuário está ativo e cargo é gipe", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "GIPE" });
+            fireEvent.click(option);
+        });
+
+        await waitFor(() => {
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeInTheDocument();
+            expect(checkbox).not.toBeDisabled();
+            expect(checkbox).not.toHaveClass("bg-white");
+        });
+    });
+
+    it("checkbox de administrador pode ser marcado quando habilitado", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "GIPE" });
+            fireEvent.click(option);
+        });
+
+        const checkbox = await screen.findByRole("checkbox");
+        expect(checkbox).not.toBeChecked();
+
+        fireEvent.click(checkbox);
+
+        await waitFor(() => {
+            expect(checkbox).toBeChecked();
+        });
+    });
+
+    it("checkbox de administrador não pode ser desmarcado quando formulário está desabilitado", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo",
+                name: "Usuário Inativo",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: true,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo"
+            />,
+            { wrapper }
+        );
+
+        const checkbox = await screen.findByRole("checkbox");
+        expect(checkbox).toBeDisabled();
+        expect(checkbox).toBeChecked();
+    });
+
+    it("não exibe checkbox de administrador para cargo ponto focal quando usuário é ponto focal", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const selectCargo = screen.getByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", {
+                name: "Ponto focal",
+            });
+            fireEvent.click(option);
+        });
+
+        await waitFor(() => {
+            const checkbox = screen.queryByRole("checkbox");
+            expect(checkbox).not.toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação quando usuário está inativo", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo",
+                name: "Usuário Inativo",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Usuário solicitou inativação",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: false,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Motivo da inativação do perfil:")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("Usuário solicitou inativação")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(/Inativado por Admin Teste em/i)
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação quando usuário foi inativado via unidade", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-via-ue",
+                name: "Usuário Inativo Via UE",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Unidade foi desativada",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: true,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-via-ue"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Perfil inativo devido a inativação da Unidade Educacional."
+                )
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("Motivo da inativação da UE:")
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("Unidade foi desativada")
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação com valores padrão quando dados são undefined", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-sem-dados",
+                name: "Usuário Sem Dados",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Motivo teste",
+                data_inativacao: undefined,
+                responsavel_inativacao_nome: undefined,
+                inativado_via_unidade: undefined,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-sem-dados"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Motivo da inativação do perfil:")
+            ).toBeInTheDocument();
+            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação com valores padrão quando inativadoViaUnidade é null", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-null",
+                name: "Usuário Null",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Motivo teste",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: null,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-null"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Motivo da inativação do perfil:")
+            ).toBeInTheDocument();
+            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+        });
+    });
 });
 
 function getMockedQueryResult(
@@ -316,19 +634,15 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
             "joao@sme.prefeitura.sp.gov.br"
         );
 
-        // Aguarda o campo ser preenchido com o valor inicial
         const inputNome = await screen.findByTestId("input-fullName");
         const button = screen.getByTestId("button-cadastrar");
 
-        // Inicialmente desabilitado (sem alterações)
         expect(button).toBeDisabled();
 
-        // Altera para um valor válido
         fireEvent.change(inputNome, {
             target: { value: "João da Silva Editado" },
         });
 
-        // Agora deve estar habilitado
         await waitFor(() => {
             expect(button).not.toBeDisabled();
         });
@@ -453,14 +767,12 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
             { wrapper }
         );
 
-        // Espera carregar os dados
         await waitFor(() => {
             expect(screen.getByTestId("input-fullName")).toHaveValue(
                 "Joao da Silva"
             );
         });
 
-        // Altera para um valor inválido (vazio)
         const inputNome = screen.getByTestId("input-fullName");
         fireEvent.change(inputNome, { target: { value: "" } });
 

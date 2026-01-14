@@ -9,6 +9,8 @@ describe("ModalConfirmacaoPerfil", () => {
         onOpenChange: vi.fn(),
         onConfirm: vi.fn(),
         isLoading: false,
+        motivoInativacao: "Este é um motivo de inativação de exemplo.",
+        setMotivoInativacao: vi.fn(),
     };
 
     describe("Modal de Inativação", () => {

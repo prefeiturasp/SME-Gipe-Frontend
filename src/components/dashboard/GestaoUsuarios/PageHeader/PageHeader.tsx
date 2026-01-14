@@ -28,6 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
     const [openModal, setOpenModal] = useState(false);
     const [isReativacao, setIsReativacao] = useState(false);
+    const [motivoInativacao, setMotivoInativacao] = useState<string>("");
     const router = useRouter();
     const { mutateAsync: inativarUsuario, isPending: isPendingInativar } =
         useInativarGestaoUsuario();
@@ -38,7 +39,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     const handleInactivateInternal = async () => {
         if (!usuarioUuid) return;
 
-        const result = await inativarUsuario(usuarioUuid);
+        const result = await inativarUsuario({ uuid: usuarioUuid, motivo_inativacao: motivoInativacao });
 
         if (result.success) {
             toast({
@@ -156,6 +157,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     }
                     isLoading={loading}
                     isReativacao={isReativacao}
+                    motivoInativacao={motivoInativacao}
+                    setMotivoInativacao={setMotivoInativacao}
                 />
             )}
         </>
