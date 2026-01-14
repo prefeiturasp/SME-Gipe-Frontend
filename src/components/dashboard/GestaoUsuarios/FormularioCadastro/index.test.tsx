@@ -1,13 +1,12 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { ObterUsuarioGestaoResponse } from "@/actions/obter-usuario-gestao";
+import * as obterUsuarioHook from "@/hooks/useObterUsuarioGestao";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import * as permissionsHook from "@/hooks/useUserPermissions";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import FormularioCadastroPessoaUsuaria from "./index";
-import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
-import type { UseQueryResult } from "@tanstack/react-query";
-import { ObterUsuarioGestaoResponse } from "@/actions/obter-usuario-gestao";
-import * as permissionsHook from "@/hooks/useUserPermissions";
-import * as obterUsuarioHook from "@/hooks/useObterUsuarioGestao";
-
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -17,41 +16,51 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/hooks/useGetUnidades", () => ({
-    useGetUnidades: vi.fn((ativa?: boolean, dre?: string, tipo_unidade?: string) => {
-        if (tipo_unidade === "DRE") {
+    useGetUnidades: vi.fn(
+        (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+            if (tipo_unidade === "DRE") {
+                return {
+                    data: [
+                        {
+                            uuid: "dre-1",
+                            codigo_eol: "000001",
+                            nome: "DRE Butantã",
+                        },
+                        {
+                            uuid: "dre-2",
+                            codigo_eol: "000002",
+                            nome: "DRE Centro",
+                        },
+                    ],
+                    isLoading: false,
+                    error: null,
+                };
+            }
+            if (dre === "dre-1") {
+                return {
+                    data: [
+                        {
+                            uuid: "ue-1",
+                            codigo_eol: "100001",
+                            nome: "EMEF João da Silva",
+                        },
+                        {
+                            uuid: "ue-2",
+                            codigo_eol: "100002",
+                            nome: "EMEF Maria das Dores",
+                        },
+                    ],
+                    isLoading: false,
+                    error: null,
+                };
+            }
             return {
-                data: [
-                    { uuid: "dre-1", codigo_eol: "000001", nome: "DRE Butantã" },
-                    { uuid: "dre-2", codigo_eol: "000002", nome: "DRE Centro" },
-                ],
+                data: [],
                 isLoading: false,
                 error: null,
             };
         }
-        if (dre === "dre-1") {
-            return {
-                data: [
-                    {
-                        uuid: "ue-1",
-                        codigo_eol: "100001",
-                        nome: "EMEF João da Silva",
-                    },
-                    {
-                        uuid: "ue-2",
-                        codigo_eol: "100002",
-                        nome: "EMEF Maria das Dores",
-                    },
-                ],
-                isLoading: false,
-                error: null,
-            };
-        }
-        return {
-            data: [],
-            isLoading: false,
-            error: null
-        };
-    }),
+    ),
 }));
 
 vi.mock("@/hooks/useCadastroGestaoUsuario", () => ({
@@ -89,14 +98,10 @@ vi.mock("@/hooks/useUserPermissions", () => ({
 
 let queryClient: QueryClient;
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-        {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
 
 describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
-
-
     beforeEach(() => {
         vi.clearAllMocks();
         queryClient = new QueryClient({
@@ -184,49 +189,48 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
     });
 
     it("aplica estilos desabilitados no checkbox de administrador quando usuário está inativo", async () => {
-    vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
-        isPontoFocal: true,
-        isGipe: false,
-        isAssistenteOuDiretor: false,
-        isGipeAdmin: true,
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo",
+                name: "Usuário Inativo",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo"
+            />,
+            { wrapper }
+        );
+
+        const checkbox = await screen.findByRole("checkbox");
+        expect(checkbox).toBeInTheDocument();
+
+        expect(checkbox).toHaveClass("bg-white");
+        expect(checkbox).toHaveClass("text-[#B0B0B0]");
+
+        const descricao = screen.getByText(
+            /Opção disponível para usuários que possuem cargo de Ponto Focal ou GIPE/i
+        );
+
+        expect(descricao).toHaveClass("text-[#B0B0B0]");
     });
-
-    vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
-        getMockedQueryResult({
-            uuid: "usuario-inativo",
-            name: "Usuário Inativo",
-            cpf: "12345678900",
-            email: "inativo@email.com",
-            rede: "DIRETA",
-            cargo: 1,
-            is_active: false,
-            is_app_admin: false,
-            codigo_eol_dre_da_unidade: "",
-            codigo_eol_unidade: "",
-        })
-    );
-
-    render(
-        <FormularioCadastroPessoaUsuaria
-            mode="edit"
-            usuarioUuid="usuario-inativo"
-        />,
-        { wrapper }
-    );
-
-    const checkbox = await screen.findByRole("checkbox");
-    expect(checkbox).toBeInTheDocument();
-
-    expect(checkbox).toHaveClass("bg-white");
-    expect(checkbox).toHaveClass("text-[#B0B0B0]");
-
-    const descricao = screen.getByText(
-        /Opção disponível para usuários que possuem cargo de Ponto Focal ou GIPE/i
-    );
-
-    expect(descricao).toHaveClass("text-[#B0B0B0]");
-});
-
 });
 
 function getMockedQueryResult(
@@ -262,7 +266,6 @@ function getMockedQueryResult(
 }
 
 describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
         queryClient = new QueryClient({
