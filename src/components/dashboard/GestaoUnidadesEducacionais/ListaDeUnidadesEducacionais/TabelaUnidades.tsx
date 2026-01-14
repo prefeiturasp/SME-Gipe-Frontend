@@ -48,8 +48,10 @@ export default function TabelaUnidades({
                             <TableHead className={styeTable}>
                                 Unidade Educacional
                             </TableHead>
+                            <TableHead className={styeTable}>
+                                Etapa/modalidade
+                            </TableHead>
                             <TableHead className={styeTable}>Tipo</TableHead>
-                            <TableHead className={styeTable}>Rede</TableHead>
                             <TableHead className={styeTable}>
                                 Código EOL
                             </TableHead>
