@@ -143,11 +143,11 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     "Cadastre as informações da Unidade Educacional."
                 )
             ).toBeInTheDocument();
-            expect(screen.getByText("Tipo*")).toBeInTheDocument();
+            expect(screen.getByText("Etapa/modalidade*")).toBeInTheDocument();
             expect(
                 screen.getByText("Nome da Unidade Educacional*")
             ).toBeInTheDocument();
-            expect(screen.getByText("Rede*")).toBeInTheDocument();
+            expect(screen.getByText("Tipo*")).toBeInTheDocument();
             expect(screen.getByText("Código EOL*")).toBeInTheDocument();
         });
 
@@ -182,10 +182,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     });
 
     describe("Campo Tipo", () => {
-        const openTipoSelect = () => {
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
-            return tipoSelect;
+        const openetapaModalidadeSelect = () => {
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            return etapaModalidadeSelect;
         };
 
         const selectTipoOption = async (optionLabel: string) => {
@@ -198,7 +198,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir todas as opções de tipo vindas do backend ao clicar no select", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            openTipoSelect();
+            openetapaModalidadeSelect();
 
             await waitFor(() => {
                 mockTipoOptions.forEach((opt) => {
@@ -212,11 +212,11 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve permitir selecionar um tipo", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = openTipoSelect();
+            const etapaModalidadeSelect = openetapaModalidadeSelect();
             await selectTipoOption("EMEF");
 
             await waitFor(() => {
-                expect(tipoSelect).toHaveTextContent("EMEF");
+                expect(etapaModalidadeSelect).toHaveTextContent("EMEF");
             });
         });
     });
@@ -258,8 +258,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir as opções Direta e Indireta", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
 
             await waitFor(() => {
                 expect(screen.getAllByText("Direta").length).toBeGreaterThan(0);
@@ -272,8 +272,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve permitir selecionar uma rede", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
 
             await waitFor(() => {
                 const diretaOptions = screen.getAllByText("Direta");
@@ -281,7 +281,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
 
             await waitFor(() => {
-                expect(redeSelect).toHaveTextContent("Direta");
+                expect(tipoSelect).toHaveTextContent("Direta");
             });
         });
     });
@@ -363,15 +363,15 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
     describe("Comportamento ao selecionar tipo DRE", () => {
         const selectTipoAndWait = async (tipo: string) => {
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
             await waitFor(() => {
                 const options = screen.getAllByText(tipo);
                 fireEvent.click(options.at(-1)!);
             });
         };
 
-        it("deve ocultar campos de Diretoria Regional e Sigla da DRE quando tipo for DRE", async () => {
+        it("deve ocultar campos de Diretoria Regional quando tipo for DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             await selectTipoAndWait("DRE");
@@ -379,9 +379,6 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 expect(
                     screen.queryByLabelText(/Diretoria Regional\*/i)
-                ).not.toBeInTheDocument();
-                expect(
-                    screen.queryByLabelText(/Sigla da DRE \(opcional\)/i)
                 ).not.toBeInTheDocument();
             });
         });
@@ -460,8 +457,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             codigo: string;
             dre?: string;
         }) => {
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
             await waitFor(() => {
                 const options = screen.getAllByText(tipo);
                 fireEvent.click(options.at(-1)!);
@@ -472,8 +469,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             );
             fireEvent.change(nomeInput, { target: { value: nome } });
 
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
             await waitFor(() => {
                 const options = screen.getAllByText(rede);
                 fireEvent.click(options.at(-1)!);
@@ -550,8 +547,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             mockCadastrarUnidade.mockResolvedValueOnce({ success: true });
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("EMEF");
                 fireEvent.click(options.at(-1)!);
@@ -562,8 +559,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             );
             fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
 
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("Direta");
                 fireEvent.click(options.at(-1)!);
@@ -612,8 +609,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const tipoSelect = getSelectByLabel("Tipo*");
-            fireEvent.click(tipoSelect);
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("EMEF");
                 fireEvent.click(options.at(-1)!);
@@ -624,8 +621,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             );
             fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
 
-            const redeSelect = getSelectByLabel("Rede*");
-            fireEvent.click(redeSelect);
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
             await waitFor(() => {
                 const options = screen.getAllByText("Direta");
                 fireEvent.click(options.at(-1)!);
@@ -726,11 +723,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 ) as HTMLInputElement;
                 expect(siglaInput.value).toBe("JDS");
 
-                const tipoSelect = getSelectByLabel("Tipo*");
-                expect(tipoSelect).toHaveTextContent("EMEF");
+                const etapaModalidadeSelect =
+                    getSelectByLabel("Etapa/modalidade*");
+                expect(etapaModalidadeSelect).toHaveTextContent("EMEF");
 
-                const redeSelect = getSelectByLabel("Rede*");
-                expect(redeSelect).toHaveTextContent("Direta");
+                const tipoSelect = getSelectByLabel("Tipo*");
+                expect(tipoSelect).toHaveTextContent("Direta");
             });
         });
 
@@ -744,8 +742,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             );
 
             await waitFor(() => {
-                const redeSelect = getSelectByLabel("Rede*");
-                expect(redeSelect).toBeDisabled();
+                const tipoSelect = getSelectByLabel("Tipo*");
+                expect(tipoSelect).toBeDisabled();
 
                 const codigoInput = screen.getByPlaceholderText(
                     /Exemplo: 1234567/i
