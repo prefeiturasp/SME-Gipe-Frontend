@@ -2,27 +2,71 @@
 
 import ArrowLeft from "@/assets/icons/ArrowLeft";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
+import { useInativarUnidadeGestao } from "@/hooks/useInativarUnidadeGestao";
+import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
+import { useQueryClient } from "@tanstack/react-query";
 import { Ban } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import ModalInativacao from "../FormularioCadastroUnidadeEducacional/ModalInativacao";
 
 interface PageHeaderProps {
     title: string;
     edit?: boolean;
     onClickBack?: () => void;
+    unidadeUuid?: string;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
-    edit = true,
+    edit = false,
     onClickBack,
+    unidadeUuid,
 }) => {
+    const [openModal, setOpenModal] = useState(false);
+    const queryClient = useQueryClient();
+    const router = useRouter();
+
+    const { data: unidadeData } = useObterUnidadeGestao({
+        uuid: unidadeUuid || "",
+    });
+
+    const { mutateAsync: inativarUnidade, isPending } =
+        useInativarUnidadeGestao();
+
+    const handleInativarUnidadeEducacional = async () => {
+        if (!unidadeUuid) return;
+
+        const response = await inativarUnidade(unidadeUuid);
+
+        if (response.success) {
+            toast({
+                title: "Tudo certo por aqui!",
+                description: "A unidade educacional foi inativada com sucesso.",
+                variant: "success",
+            });
+            setOpenModal(false);
+            queryClient.invalidateQueries({
+                queryKey: ["unidade-gestao", unidadeUuid],
+            });
+            router.push("/dashboard/gestao-unidades-educacionais?tab=inativas");
+        } else {
+            toast({
+                title: "Não conseguimos concluir a ação!",
+                description: response.error,
+                variant: "error",
+            });
+        }
+    };
+
     return (
         <div className="flex items-center justify-between w-full px-4">
             <h1 className="text-[#42474a] text-[20px] font-bold m-0">
                 {title}
             </h1>
-            {edit ? (
+            {edit && unidadeData?.rede !== "DIRETA" ? (
                 <div className="flex gap-2">
                     <Button asChild variant="customOutline" size="icon">
                         <Link
@@ -32,14 +76,27 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                             <ArrowLeft />
                         </Link>
                     </Button>
-                    <Button
-                        variant="outlineDestructive"
-                        type="button"
-                        className="text-center rounded-md text-[14px] font-[700]"
-                    >
-                        <Ban className="mr-2" width="20" />
-                        Inativar Unidade Educacional
-                    </Button>
+
+                    {unidadeData?.ativa ? (
+                        <Button
+                            variant="outlineDestructive"
+                            type="button"
+                            className="text-center rounded-md text-[14px] font-[700]"
+                            onClick={() => setOpenModal(true)}
+                            disabled={isPending}
+                        >
+                            <Ban className="mr-2" width="20" />
+                            Inativar Unidade Educacional
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="submit"
+                            type="button"
+                            className="text-center rounded-md text-[14px] font-[700]"
+                        >
+                            Reativar Unidade Educacional
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <Button asChild variant="customOutline">
@@ -51,6 +108,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         &nbsp;Voltar
                     </Link>
                 </Button>
+            )}
+
+            {edit && (
+                <ModalInativacao
+                    open={openModal}
+                    onOpenChange={setOpenModal}
+                    onInativar={handleInativarUnidadeEducacional}
+                />
             )}
         </div>
     );
