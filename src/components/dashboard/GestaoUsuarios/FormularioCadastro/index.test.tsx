@@ -227,6 +227,172 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
     expect(descricao).toHaveClass("text-[#B0B0B0]");
 });
 
+    it("exibe mensagem de inativação quando usuário está inativo", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo",
+                name: "Usuário Inativo",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Usuário solicitou inativação",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: false,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText("Motivo da inativação do perfil:")).toBeInTheDocument();
+            expect(screen.getByText("Usuário solicitou inativação")).toBeInTheDocument();
+            expect(screen.getByText(/Inativado por Admin Teste em/i)).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação quando usuário foi inativado via unidade", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-via-ue",
+                name: "Usuário Inativo Via UE",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Unidade foi desativada",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: true,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-via-ue"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText("Perfil inativo devido a inativação da Unidade Educacional.")).toBeInTheDocument();
+            expect(screen.getByText("Motivo da inativação da UE:")).toBeInTheDocument();
+            expect(screen.getByText("Unidade foi desativada")).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação com valores padrão quando dados são undefined", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-sem-dados",
+                name: "Usuário Sem Dados",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Motivo teste",
+                data_inativacao: undefined,
+                responsavel_inativacao_nome: undefined,
+                inativado_via_unidade: undefined,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-sem-dados"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText("Motivo da inativação do perfil:")).toBeInTheDocument();
+            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+        });
+    });
+
+    it("exibe mensagem de inativação com valores padrão quando inativadoViaUnidade é null", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: true,
+            isGipe: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
+
+        vi.spyOn(obterUsuarioHook, "useObterUsuarioGestao").mockReturnValue(
+            getMockedQueryResult({
+                uuid: "usuario-inativo-null",
+                name: "Usuário Null",
+                cpf: "12345678900",
+                email: "inativo@email.com",
+                rede: "DIRETA",
+                cargo: 1,
+                is_active: false,
+                is_app_admin: false,
+                codigo_eol_dre_da_unidade: "",
+                codigo_eol_unidade: "",
+                motivo_inativacao: "Motivo teste",
+                data_inativacao: "2025-12-01T10:30:00Z",
+                responsavel_inativacao_nome: "Admin Teste",
+                inativado_via_unidade: null,
+            })
+        );
+
+        render(
+            <FormularioCadastroPessoaUsuaria
+                mode="edit"
+                usuarioUuid="usuario-inativo-null"
+            />,
+            { wrapper }
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText("Motivo da inativação do perfil:")).toBeInTheDocument();
+            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+        });
+    });
+
 });
 
 function getMockedQueryResult(
