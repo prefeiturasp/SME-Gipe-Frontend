@@ -21,6 +21,7 @@ import { CamposRedeDireta } from "./CamposRedeDireta";
 import { CamposRedeIndireta } from "./CamposRedeIndireta";
 import ModalConfirmacao from "./ModalConfirmacao";
 import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
+import MensagemInativacao from "./MensagemInativacao";
 
 type FormularioCadastroPessoaUsuariaProps = {
     mode?: "create" | "edit";
@@ -56,6 +57,11 @@ export default function FormularioCadastroPessoaUsuaria({
         mode: currentMode,
         hasChanges,
         isFormDisabled,
+        isActive,
+        dataInativacaoFormatada,
+        responsavelInativacaoNome,
+        motivoInativacao,
+        inativadoViaUnidade,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     const labelClass = (disabled: boolean, extra?: string) =>
@@ -82,7 +88,7 @@ export default function FormularioCadastroPessoaUsuaria({
                             return (
                                 <FormItem>
                                     <FormLabel className={labelClass(disabled)}>
-                                        Rede*
+                                        Tipo*
                                     </FormLabel>
                                     <Select
                                         value={field.value}
@@ -238,6 +244,17 @@ export default function FormularioCadastroPessoaUsuaria({
                         />
                     </div>
                 )}
+
+                <div className="mt-4">
+                    {!isActive && motivoInativacao && (
+                        <MensagemInativacao
+                            dataInativacaoFormatada={dataInativacaoFormatada ?? ""}
+                            responsavelInativacaoNome={responsavelInativacaoNome ?? ""}
+                            motivoInativacao={motivoInativacao}
+                            inativadoViaUnidade={inativadoViaUnidade ?? false}
+                        />
+                    )}
+                </div>
 
                 <div className="flex gap-4 mt-8 justify-end">
                     <Button
