@@ -8,6 +8,7 @@ vi.mock("@/actions/inativar-gestao-usuario");
 
 describe("useInativarGestaoUsuario hook", () => {
     const uuid = "user-uuid-123";
+    const motivo_inativacao = "Motivo de inativação de teste";
     let queryClient: QueryClient;
     const createWrapper = () => {
         queryClient = new QueryClient({
@@ -34,9 +35,9 @@ describe("useInativarGestaoUsuario hook", () => {
         });
         let data;
         await act(async () => {
-            data = await result.current.mutateAsync(uuid);
+            data = await result.current.mutateAsync({ uuid, motivo_inativacao });
         });
-        expect(inativarGestaoUsuarioAction).toHaveBeenCalledWith(uuid);
+        expect(inativarGestaoUsuarioAction).toHaveBeenCalledWith(uuid, motivo_inativacao);
         expect(data).toEqual({ success: true });
     });
 
@@ -48,9 +49,9 @@ describe("useInativarGestaoUsuario hook", () => {
         });
         let data;
         await act(async () => {
-            data = await result.current.mutateAsync(uuid);
+            data = await result.current.mutateAsync({ uuid, motivo_inativacao });
         });
-        expect(inativarGestaoUsuarioAction).toHaveBeenCalledWith(uuid);
+        expect(inativarGestaoUsuarioAction).toHaveBeenCalledWith(uuid, motivo_inativacao);
         expect(data).toEqual({ success: false, error: "Erro ao inativar" });
     });
 });
