@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarUnidade } from "@/hooks/useAtualizarUnidade";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
-import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,7 +51,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const { isPontoFocal } = useUserPermissions();
     const user = useUserStore((state) => state.user);
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
-    const {data: dreOptions = []} = useGetUnidades(true, undefined, "DRE");
+    const { data: dreOptions = [] } = useGetUnidades(true, undefined, "DRE");
     const { data: tipoOptions = [] } = useTiposUnidade();
     const queryClient = useQueryClient();
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
@@ -195,13 +195,49 @@ export default function FormularioCadastroUnidadeEducacional({
                 <h2 className="text-[14px] text-[#42474a] mb-6">
                     Cadastre as informações da Unidade Educacional.
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="rede"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel disabled={mode === "edit"}>
+                                    Tipo*
+                                </FormLabel>
+                                <FormControl>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                        disabled={
+                                            mode === "edit" || carregandoDados
+                                        }
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Selecione" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {redeOptions.map((rede) => (
+                                                <SelectItem
+                                                    key={rede.value}
+                                                    value={rede.value}
+                                                >
+                                                    {rede.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control}
                         name="tipo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Tipo*</FormLabel>
+                                <FormLabel>Etapa/modalidade*</FormLabel>
                                 <FormControl>
                                     <Select
                                         value={field.value}
@@ -231,65 +267,6 @@ export default function FormularioCadastroUnidadeEducacional({
                     />
                     <FormField
                         control={form.control}
-                        name="nomeUnidadeEducacional"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    Nome da Unidade Educacional*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="text"
-                                        placeholder="Exemplo: EMEF João da Silva"
-                                        className="font-normal"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="rede"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={mode === "edit"}>
-                                    Rede*
-                                </FormLabel>
-                                <FormControl>
-                                    <Select
-                                        value={field.value}
-                                        onValueChange={field.onChange}
-                                        disabled={
-                                            mode === "edit" || carregandoDados
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Selecione" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {redeOptions.map((rede) => (
-                                                <SelectItem
-                                                    key={rede.value}
-                                                    value={rede.value}
-                                                >
-                                                    {rede.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
                         name="codigoEol"
                         render={({ field }) => (
                             <FormItem>
@@ -311,8 +288,29 @@ export default function FormularioCadastroUnidadeEducacional({
                     />
                 </div>
 
-                {!isDreSelected && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="nomeUnidadeEducacional"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>
+                                    Nome da Unidade Educacional*
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        type="text"
+                                        placeholder="Exemplo: EMEF João da Silva"
+                                        className="font-normal"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {!isDreSelected && (
                         <FormField
                             control={form.control}
                             name="diretoriaRegional"
@@ -349,29 +347,29 @@ export default function FormularioCadastroUnidadeEducacional({
                                 </FormItem>
                             )}
                         />
+                    )}
 
-                        <FormField
-                            control={form.control}
-                            name="siglaDre"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-[#42474a] text-[14px] font-[700]">
-                                        Sigla da DRE (opcional)
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            type="text"
-                                            placeholder="Digite..."
-                                            className="font-normal"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                )}
+                    <FormField
+                        control={form.control}
+                        name="siglaDre"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-[#42474a] text-[14px] font-[700]">
+                                    Sigla da DRE (opcional)
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        type="text"
+                                        placeholder="Digite..."
+                                        className="font-normal"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
 
                 <div className="flex justify-end gap-4 pt-4">
                     <Button

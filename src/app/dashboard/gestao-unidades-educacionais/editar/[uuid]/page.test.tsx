@@ -15,14 +15,14 @@ vi.mock("@/components/dashboard/QuadroBranco/QuadroBranco", () => ({
     ),
 }));
 
-vi.mock("@/components/dashboard/GestaoUnidades/PageHeader", () => ({
+vi.mock("@/components/dashboard/GestaoUnidadesEducacionais/PageHeader", () => ({
     default: ({ title }: { title: string }) => (
         <div data-testid="page-header">{title}</div>
     ),
 }));
 
 vi.mock(
-    "@/components/dashboard/GestaoUnidades/FormularioCadastroUnidadeEducacional",
+    "@/components/dashboard/GestaoUnidadesEducacionais/FormularioCadastroUnidadeEducacional",
     () => ({
         default: ({
             mode,
