@@ -65,10 +65,12 @@ vi.mock("../FormularioCadastroUnidadeEducacional/ModalInativacao", () => ({
     }: {
         open: boolean;
         onOpenChange: (open: boolean) => void;
-        onInativar: () => void;
+        onInativar: (motivo: string) => void;
     }) => (
         <div data-testid="modal-inativacao" data-open={open}>
-            <button onClick={() => onInativar()}>Confirmar Inativação</button>
+            <button onClick={() => onInativar("motivo teste")}>
+                Confirmar Inativação
+            </button>
             <button onClick={() => onOpenChange(false)}>Cancelar</button>
         </div>
     ),
@@ -219,7 +221,10 @@ describe("PageHeader", () => {
         fireEvent.click(confirmarButton);
 
         await waitFor(() => {
-            expect(mockInativarUnidade).toHaveBeenCalledWith("unidade-123");
+            expect(mockInativarUnidade).toHaveBeenCalledWith({
+                uuid: "unidade-123",
+                motivo_inativacao: "motivo teste",
+            });
             expect(toast).toHaveBeenCalledWith(
                 expect.objectContaining({
                     title: "Tudo certo por aqui!",
@@ -266,7 +271,10 @@ describe("PageHeader", () => {
         fireEvent.click(confirmarButton);
 
         await waitFor(() => {
-            expect(mockInativarUnidade).toHaveBeenCalledWith("unidade-123");
+            expect(mockInativarUnidade).toHaveBeenCalledWith({
+                uuid: "unidade-123",
+                motivo_inativacao: "motivo teste",
+            });
             expect(toast).toHaveBeenCalledWith(
                 expect.objectContaining({
                     title: "Não conseguimos concluir a ação!",
