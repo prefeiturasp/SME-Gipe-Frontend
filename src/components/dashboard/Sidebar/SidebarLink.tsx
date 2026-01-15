@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface SidebarLinkProps
     extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -11,6 +11,7 @@ interface SidebarLinkProps
     title: string;
     active?: boolean;
     rightIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    subItem?: boolean;
 }
 
 export const SidebarLink = React.forwardRef<
@@ -25,6 +26,7 @@ export const SidebarLink = React.forwardRef<
             active,
             rightIcon: RightIcon,
             className,
+            subItem,
             ...props
         },
         ref
@@ -34,9 +36,14 @@ export const SidebarLink = React.forwardRef<
         const iconColor = active
             ? "fill-[--sidebar-accent-foreground]"
             : "fill-white";
-        const textColor = active
-            ? "text-[--sidebar-accent-foreground]"
-            : "text-white";
+
+        const getTextColor = () => {
+            if (active) return "text-[--sidebar-accent-foreground]";
+            if (subItem) return "text-[#595959]";
+            return "text-white";
+        };
+
+        const textColor = getTextColor();
 
         return (
             <a

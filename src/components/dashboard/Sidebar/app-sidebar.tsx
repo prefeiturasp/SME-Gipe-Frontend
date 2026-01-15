@@ -246,10 +246,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                         child.title
                                                                     }
                                                                     className={cn(
-                                                                        "w-full",
-                                                                        isChildRouteActive
-                                                                            ? "bg-[--sidebar-accent] text-[--sidebar-foreground]"
-                                                                            : "bg-[--sidebar-accent-foreground] text-[--sidebar-foreground]"
+                                                                        "w-full bg-[--sidebar-accent] border-t border-gray-100 min-h-[48px] flex items-center",
+                                                                        open &&
+                                                                            "px-6"
                                                                     )}
                                                                 >
                                                                     <SidebarMenuButton
@@ -265,6 +264,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                             active={
                                                                                 isChildRouteActive
                                                                             }
+                                                                            subItem
                                                                         />
                                                                     </SidebarMenuButton>
                                                                 </SidebarMenuItem>
