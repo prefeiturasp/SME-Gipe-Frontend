@@ -16,13 +16,17 @@ import Link from "next/link";
 
 type TabelaUnidadesProps = {
     dataUnidades: UnidadeEducacional[];
+    status: "ativa" | "inativa";
 };
 
 export default function TabelaUnidades({
     dataUnidades,
+    status,
 }: Readonly<TabelaUnidadesProps>) {
     const PAGE_SIZE = 10;
-    const styeTable = "px-2 text-[#42474a] text-left last:text-text-left!";
+    const isInativa = status === "inativa";
+    const textColor = isInativa ? "text-[#B0B0B0]" : "text-[#42474a]";
+    const styeTable = `px-2 ${textColor} text-left last:text-text-left!`;
     const [pageIndex, setPageIndex] = useState(0);
 
     useEffect(() => {
@@ -61,7 +65,11 @@ export default function TabelaUnidades({
                             <TableHead className={styeTable}>
                                 Sigla DRE
                             </TableHead>
-                            <TableHead className="text-center">Ação</TableHead>
+                            <TableHead
+                                className={`text-center w-[49px] ${textColor}`}
+                            >
+                                Ação
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -69,7 +77,9 @@ export default function TabelaUnidades({
                             paginatedUnidades.map((unidade) => {
                                 return (
                                     <TableRow key={unidade.uuid}>
-                                        <TableCell>{unidade.nome}</TableCell>
+                                        <TableCell className={styeTable}>
+                                            {unidade.nome}
+                                        </TableCell>
                                         <TableCell className={styeTable}>
                                             {unidade.tipo_unidade}
                                         </TableCell>
