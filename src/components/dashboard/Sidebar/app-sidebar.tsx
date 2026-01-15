@@ -127,8 +127,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 );
 
                                 const parentItemClasses = cn(
-                                    isActive || isChildActive
-                                        ? "bg-[--sidebar-accent]"
+                                    isActive || isChildActive || openCollapsible
+                                        ? "bg-[--sidebar-accent] text[#000]"
                                         : "bg-[--sidebar-accent-foreground] mb-1",
                                     open
                                         ? "w-[--sidebar-item-width] flex flex-col items-stretch"
@@ -137,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                                 // CARD DO CABEÇALHO "Gestão"
                                 const parentHeaderClasses = cn(
-                                    isActive || isChildActive
+                                    isActive || isChildActive || openCollapsible
                                         ? "bg-[--sidebar-accent]"
                                         : "bg-[--sidebar-accent-foreground]"
                                 );
@@ -194,7 +194,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                 }
                                                                 active={
                                                                     isActive ||
-                                                                    isChildActive
+                                                                    isChildActive ||
+                                                                    openCollapsible
                                                                 }
                                                                 rightIcon={Bars}
                                                             />
@@ -205,7 +206,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     <ChevronUp
                                                                         data-testid="chevron-up"
                                                                         className={cn(
-                                                                            isChildActive &&
+                                                                            (isChildActive ||
+                                                                                openCollapsible) &&
                                                                                 "stroke-[--sidebar-accent-foreground]"
                                                                         )}
                                                                     />
@@ -213,7 +215,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     <ChevronDown
                                                                         data-testid="chevron-down"
                                                                         className={cn(
-                                                                            isChildActive &&
+                                                                            (isChildActive ||
+                                                                                openCollapsible) &&
                                                                                 "stroke-[--sidebar-accent-foreground]"
                                                                         )}
                                                                     />

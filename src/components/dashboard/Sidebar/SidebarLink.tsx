@@ -70,7 +70,7 @@ export const SidebarLink = React.forwardRef<
                         textColor,
                         open
                             ? " text-[14px]"
-                            : "items-center mt-1  text-[10px] text-center break-words whitespace-normal w-[80px] leading-[1.1]"
+                            : "items-center mt-1 text-[10px] text-center break-words whitespace-normal w-[80px] leading-[1.1]"
                     )}
                 >
                     <span>{title}</span>
