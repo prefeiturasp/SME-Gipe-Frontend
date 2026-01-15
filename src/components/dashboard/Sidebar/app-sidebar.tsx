@@ -1,26 +1,26 @@
 // src/components/dashboard/Sidebar/app-sidebar.tsx
 "use client";
 
-import * as React from "react";
 import Alert from "@/assets/icons/Alert";
-import User from "@/assets/icons/User";
 import Bars from "@/assets/icons/Bars";
 import Gestao from "@/assets/icons/Gestao";
-import { cn } from "@/lib/utils";
-import { SidebarLink } from "./SidebarLink";
-import { usePathname } from "next/navigation";
+import User from "@/assets/icons/User";
 import LogoGipeNome from "@/assets/images/logo-gipe-nome.webp";
+import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import * as React from "react";
+import { SidebarLink } from "./SidebarLink";
 
 import {
     Sidebar,
     SidebarContent,
-    SidebarHeader,
-    SidebarRail,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarRail,
     SidebarTrigger,
     useSidebar,
 } from "@/components/ui/sidebar";
@@ -61,7 +61,7 @@ const items: NavItem[] = [
         icon: Gestao,
         children: [
             {
-                title: "Gestão de pessoa usuária",
+                title: "Gestão de perfis",
                 url: "/dashboard/gestao-usuarios",
                 icon: Gestao,
             },

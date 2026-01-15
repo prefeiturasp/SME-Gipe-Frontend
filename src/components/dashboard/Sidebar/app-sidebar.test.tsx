@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { AppSidebar } from "./app-sidebar";
-import { usePathname } from "next/navigation";
 import * as sidebarUi from "@/components/ui/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import userEvent from "@testing-library/user-event";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { usePathname } from "next/navigation";
+import { AppSidebar } from "./app-sidebar";
 
 vi.mock("@/assets/images/logo-gipe-nome.webp", () => ({
     default: {
@@ -159,8 +159,10 @@ describe("AppSidebar", () => {
         expect(chevronUp).toBeInTheDocument();
 
         // Verifica se os subitens estão visíveis
-        expect(screen.getByText("Gestão de pessoa usuária")).toBeInTheDocument();
-        expect(screen.getByText("Gestão de Unidades Educacionais")).toBeInTheDocument();
+        expect(screen.getByText("Gestão de perfis")).toBeInTheDocument();
+        expect(
+            screen.getByText("Gestão de Unidades Educacionais")
+        ).toBeInTheDocument();
     });
 
     it("aplica a classe correta no ChevronUp quando isChildActive é true", async () => {
@@ -205,7 +207,9 @@ describe("AppSidebar", () => {
 
         const chevronDown = screen.getByTestId("chevron-down");
         expect(chevronDown).toBeInTheDocument();
-        expect(chevronDown).not.toHaveClass("stroke-[--sidebar-accent-foreground]");
+        expect(chevronDown).not.toHaveClass(
+            "stroke-[--sidebar-accent-foreground]"
+        );
     });
 
     it("renderiza os subitens de Gestão quando o collapsible é aberto", async () => {
@@ -228,8 +232,10 @@ describe("AppSidebar", () => {
         await user.click(gestaoButton);
 
         await waitFor(() => {
-            expect(screen.getByText("Gestão de pessoa usuária")).toBeInTheDocument();
-            expect(screen.getByText("Gestão de Unidades Educacionais")).toBeInTheDocument();
+            expect(screen.getByText("Gestão de perfis")).toBeInTheDocument();
+            expect(
+                screen.getByText("Gestão de Unidades Educacionais")
+            ).toBeInTheDocument();
         });
     });
 });

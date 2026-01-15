@@ -340,8 +340,7 @@ export function useCadastroUsuarioForm({
 
                     toast({
                         title: "Tudo certo por aqui!",
-                        description:
-                            "A pessoa usuária foi cadastrada com sucesso!",
+                        description: "O perfil foi cadastrado com sucesso!",
                         variant: "success",
                     });
                     setModalOpen(false);

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import formSchema from "./schema";
 
-describe("Schema de cadastro de pessoa usuária", () => {
+describe("Schema de cadastro de perfil de usuário", () => {
     describe("Validações básicas de campos obrigatórios", () => {
         it("valida formulário completo para rede direta com RF e CPF", () => {
             const validData = {
