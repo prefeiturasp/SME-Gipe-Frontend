@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
-import TabelaUsuarios from "./TabelaUsuarios";
 import type { Usuario } from "@/types/usuarios";
+import TabelaUsuarios from "./TabelaUsuarios";
 
 function createUsuarios(count: number): Usuario[] {
     return Array.from({ length: count }, (_, index) => ({
@@ -20,7 +20,7 @@ function createUsuarios(count: number): Usuario[] {
 
 describe("TabelaUsuarios", () => {
     it("renderiza mensagem quando não há usuários", () => {
-        render(<TabelaUsuarios dataUsuarios={[]} />);
+        render(<TabelaUsuarios dataUsuarios={[]} status="ativos" />);
 
         expect(
             screen.getByText("Nenhum usuário encontrado.")
@@ -29,7 +29,7 @@ describe("TabelaUsuarios", () => {
 
     it("renderiza as colunas e os dados da página atual", () => {
         const usuarios = createUsuarios(5);
-        render(<TabelaUsuarios dataUsuarios={usuarios} />);
+        render(<TabelaUsuarios dataUsuarios={usuarios} status="ativos" />);
 
         expect(screen.getByText("Perfil")).toBeInTheDocument();
         expect(screen.getByText("Nome")).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("TabelaUsuarios", () => {
         const usuarios = createUsuarios(25);
         const user = userEvent.setup();
 
-        render(<TabelaUsuarios dataUsuarios={usuarios} />);
+        render(<TabelaUsuarios dataUsuarios={usuarios} status="ativos" />);
 
         expect(screen.getByText("Usuário 1")).toBeInTheDocument();
         expect(screen.queryByText("Usuário 11")).not.toBeInTheDocument();
@@ -68,7 +68,7 @@ describe("TabelaUsuarios", () => {
     it("desativa botões de navegação quando não há páginas anteriores ou seguintes", () => {
         const usuarios = createUsuarios(10);
 
-        render(<TabelaUsuarios dataUsuarios={usuarios} />);
+        render(<TabelaUsuarios dataUsuarios={usuarios} status="ativos" />);
 
         const prevButton = screen.getByTestId("prev-page-button");
         const nextButton = screen.getByTestId("next-page-button");
@@ -80,13 +80,20 @@ describe("TabelaUsuarios", () => {
     it("reinicia para a primeira página quando os dados mudam", async () => {
         const usuarios = createUsuarios(20);
         const user = userEvent.setup();
-        const { rerender } = render(<TabelaUsuarios dataUsuarios={usuarios} />);
+        const { rerender } = render(
+            <TabelaUsuarios dataUsuarios={usuarios} status="ativos" />
+        );
 
         const nextButton = screen.getByTestId("next-page-button");
         await user.click(nextButton);
         expect(screen.getByText("Usuário 11")).toBeInTheDocument();
 
-        rerender(<TabelaUsuarios dataUsuarios={usuarios.slice(0, 5)} />);
+        rerender(
+            <TabelaUsuarios
+                dataUsuarios={usuarios.slice(0, 5)}
+                status="ativos"
+            />
+        );
         expect(screen.getByText("Usuário 1")).toBeInTheDocument();
         expect(screen.queryByText("Usuário 11")).not.toBeInTheDocument();
     });
@@ -99,7 +106,9 @@ describe("TabelaUsuarios", () => {
             id: 123,
         } as unknown as Usuario;
 
-        render(<TabelaUsuarios dataUsuarios={[usuarioSemUuid]} />);
+        render(
+            <TabelaUsuarios dataUsuarios={[usuarioSemUuid]} status="ativos" />
+        );
 
         expect(screen.getByText("Usuário 1")).toBeInTheDocument();
     });
@@ -112,9 +121,45 @@ describe("TabelaUsuarios", () => {
             id: undefined,
         })) as unknown as Usuario[];
 
-        render(<TabelaUsuarios dataUsuarios={usuariosSemUuidEId} />);
+        render(
+            <TabelaUsuarios dataUsuarios={usuariosSemUuidEId} status="ativos" />
+        );
 
         expect(screen.getByText("Usuário 1")).toBeInTheDocument();
         expect(screen.getByText("Usuário 2")).toBeInTheDocument();
+    });
+
+    it("aplica cor cinza nos headers e cells quando status é inativos", () => {
+        const usuarios = createUsuarios(3);
+        const { container } = render(
+            <TabelaUsuarios dataUsuarios={usuarios} status="inativos" />
+        );
+
+        const headers = container.querySelectorAll("thead th");
+        headers.forEach((header) => {
+            expect(header).toHaveClass("text-[#B0B0B0]");
+        });
+
+        const cells = container.querySelectorAll("tbody td");
+        cells.forEach((cell) => {
+            expect(cell).toHaveClass("text-[#B0B0B0]");
+        });
+    });
+
+    it("aplica cor normal nos headers e cells quando status é ativos", () => {
+        const usuarios = createUsuarios(3);
+        const { container } = render(
+            <TabelaUsuarios dataUsuarios={usuarios} status="ativos" />
+        );
+
+        const headers = container.querySelectorAll("thead th");
+        headers.forEach((header) => {
+            expect(header).toHaveClass("text-[#42474a]");
+        });
+
+        const cells = container.querySelectorAll("tbody td");
+        cells.forEach((cell) => {
+            expect(cell).toHaveClass("text-[#42474a]");
+        });
     });
 });
