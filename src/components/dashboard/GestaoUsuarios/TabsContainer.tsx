@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ListaDeUsuarios from "./ListaDeUsuarios";
 import ListaDeUsuariosPendenciasAprovacao from "./ListaDeUsuariosPendenciasAprovacao";
 
@@ -50,13 +50,13 @@ export default function TabsContainer() {
                     className="flex items-center justify-between data-[state=active]:text-[--sidebar-accent-foreground] data-[state=active]:font-semibold"
                     value="ativos"
                 >
-                    Usuários ativos
+                    Perfis ativos
                 </TabsTrigger>
                 <TabsTrigger
                     className="flex items-center justify-between data-[state=active]:text-[--sidebar-accent-foreground] data-[state=active]:font-semibold"
                     value="inativos"
                 >
-                    Usuários inativos
+                    Perfis inativos
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="pendencias">

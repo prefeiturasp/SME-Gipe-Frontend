@@ -54,6 +54,14 @@ export default function FormularioCadastroUnidadeEducacional({
     const userDreUuid = user?.unidades?.[0]?.dre?.dre_uuid;
     const { data: dreOptions = [] } = useGetUnidades(true, undefined, "DRE");
     const { data: tipoOptions = [] } = useTiposUnidade();
+
+    const filteredTipoOptions = useMemo(() => {
+        if (isPontoFocal) {
+            return tipoOptions.filter((tipo) => tipo.id !== "DRE");
+        }
+        return tipoOptions;
+    }, [tipoOptions, isPontoFocal]);
+
     const queryClient = useQueryClient();
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
@@ -110,7 +118,7 @@ export default function FormularioCadastroUnidadeEducacional({
             mode === "edit" &&
             unidadeData &&
             dreOptions.length > 0 &&
-            tipoOptions.length > 0 &&
+            filteredTipoOptions.length > 0 &&
             !dadosIniciaisCarregados
         ) {
             setCarregandoDados(true);
@@ -138,6 +146,7 @@ export default function FormularioCadastroUnidadeEducacional({
         form,
         dadosIniciaisCarregados,
         unidadeData?.uuid,
+        filteredTipoOptions,
     ]);
 
     const tipoSelecionado = form.watch("tipo");
@@ -243,20 +252,24 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="tipo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Etapa/modalidade*</FormLabel>
+                                <FormLabel disabled={mode === "edit"}>
+                                    Etapa/modalidade*
+                                </FormLabel>
                                 <FormControl>
                                     <Select
                                         value={field.value}
                                         onValueChange={field.onChange}
                                         disabled={
-                                            field.disabled || carregandoDados
+                                            field.disabled ||
+                                            carregandoDados ||
+                                            mode === "edit"
                                         }
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Selecione" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {tipoOptions.map((tipo) => (
+                                            {filteredTipoOptions.map((tipo) => (
                                                 <SelectItem
                                                     key={tipo.id}
                                                     value={tipo.id}
@@ -316,7 +329,7 @@ export default function FormularioCadastroUnidadeEducacional({
                         )}
                     />
 
-                    {!isDreSelected && (
+                    {!isDreSelected ? (
                         <FormField
                             control={form.control}
                             name="diretoriaRegional"
@@ -353,28 +366,28 @@ export default function FormularioCadastroUnidadeEducacional({
                                 </FormItem>
                             )}
                         />
+                    ) : (
+                        <FormField
+                            control={form.control}
+                            name="siglaDre"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#42474a] text-[14px] font-[700]">
+                                        Sigla da DRE (opcional)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            type="text"
+                                            placeholder="Digite..."
+                                            className="font-normal"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     )}
-
-                    <FormField
-                        control={form.control}
-                        name="siglaDre"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-[#42474a] text-[14px] font-[700]">
-                                    Sigla da DRE (opcional)
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="text"
-                                        placeholder="Digite..."
-                                        className="font-normal"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                 </div>
 
                 <div className="mt-4">

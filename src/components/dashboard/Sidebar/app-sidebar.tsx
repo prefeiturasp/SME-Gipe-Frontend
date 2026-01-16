@@ -1,26 +1,26 @@
 // src/components/dashboard/Sidebar/app-sidebar.tsx
 "use client";
 
-import * as React from "react";
 import Alert from "@/assets/icons/Alert";
-import User from "@/assets/icons/User";
 import Bars from "@/assets/icons/Bars";
 import Gestao from "@/assets/icons/Gestao";
-import { cn } from "@/lib/utils";
-import { SidebarLink } from "./SidebarLink";
-import { usePathname } from "next/navigation";
+import User from "@/assets/icons/User";
 import LogoGipeNome from "@/assets/images/logo-gipe-nome.webp";
+import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import * as React from "react";
+import { SidebarLink } from "./SidebarLink";
 
 import {
     Sidebar,
     SidebarContent,
-    SidebarHeader,
-    SidebarRail,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarRail,
     SidebarTrigger,
     useSidebar,
 } from "@/components/ui/sidebar";
@@ -61,7 +61,7 @@ const items: NavItem[] = [
         icon: Gestao,
         children: [
             {
-                title: "Gestão de pessoa usuária",
+                title: "Gestão de perfis",
                 url: "/dashboard/gestao-usuarios",
                 icon: Gestao,
             },
@@ -127,8 +127,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 );
 
                                 const parentItemClasses = cn(
-                                    isActive || isChildActive
-                                        ? "bg-[--sidebar-accent]"
+                                    isActive || isChildActive || openCollapsible
+                                        ? "bg-[--sidebar-accent] text[#000]"
                                         : "bg-[--sidebar-accent-foreground] mb-1",
                                     open
                                         ? "w-[--sidebar-item-width] flex flex-col items-stretch"
@@ -137,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                                 // CARD DO CABEÇALHO "Gestão"
                                 const parentHeaderClasses = cn(
-                                    isActive || isChildActive
+                                    isActive || isChildActive || openCollapsible
                                         ? "bg-[--sidebar-accent]"
                                         : "bg-[--sidebar-accent-foreground]"
                                 );
@@ -194,7 +194,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                 }
                                                                 active={
                                                                     isActive ||
-                                                                    isChildActive
+                                                                    isChildActive ||
+                                                                    openCollapsible
                                                                 }
                                                                 rightIcon={Bars}
                                                             />
@@ -205,7 +206,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     <ChevronUp
                                                                         data-testid="chevron-up"
                                                                         className={cn(
-                                                                            isChildActive &&
+                                                                            (isChildActive ||
+                                                                                openCollapsible) &&
                                                                                 "stroke-[--sidebar-accent-foreground]"
                                                                         )}
                                                                     />
@@ -213,7 +215,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     <ChevronDown
                                                                         data-testid="chevron-down"
                                                                         className={cn(
-                                                                            isChildActive &&
+                                                                            (isChildActive ||
+                                                                                openCollapsible) &&
                                                                                 "stroke-[--sidebar-accent-foreground]"
                                                                         )}
                                                                     />
@@ -246,10 +249,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                         child.title
                                                                     }
                                                                     className={cn(
-                                                                        "w-full",
-                                                                        isChildRouteActive
-                                                                            ? "bg-[--sidebar-accent] text-[--sidebar-foreground]"
-                                                                            : "bg-[--sidebar-accent-foreground] text-[--sidebar-foreground]"
+                                                                        "w-full bg-[--sidebar-accent] border-t border-gray-100 min-h-[48px] flex items-center",
+                                                                        open &&
+                                                                            "px-6"
                                                                     )}
                                                                 >
                                                                     <SidebarMenuButton
@@ -265,6 +267,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                             active={
                                                                                 isChildRouteActive
                                                                             }
+                                                                            subItem
                                                                         />
                                                                     </SidebarMenuButton>
                                                                 </SidebarMenuItem>
