@@ -134,87 +134,81 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         ) as HTMLElement;
     };
 
-    describe("Renderização inicial", () => {
-        it("deve renderizar o formulário com todos os campos iniciais", () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+    it("deve renderizar o formulário com todos os campos iniciais", () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            expect(
-                screen.getByText(
-                    "Cadastre as informações da Unidade Educacional."
-                )
-            ).toBeInTheDocument();
-            expect(screen.getByText("Etapa/modalidade*")).toBeInTheDocument();
-            expect(
-                screen.getByText("Nome da Unidade Educacional*")
-            ).toBeInTheDocument();
-            expect(screen.getByText("Tipo*")).toBeInTheDocument();
-            expect(screen.getByText("Código EOL*")).toBeInTheDocument();
+        expect(
+            screen.getByText("Cadastre as informações da Unidade Educacional.")
+        ).toBeInTheDocument();
+        expect(screen.getByText("Etapa/modalidade*")).toBeInTheDocument();
+        expect(
+            screen.getByText("Nome da Unidade Educacional*")
+        ).toBeInTheDocument();
+        expect(screen.getByText("Tipo*")).toBeInTheDocument();
+        expect(screen.getByText("Código EOL*")).toBeInTheDocument();
+    });
+
+    it("deve renderizar o campo de DRE por padrão", () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+        expect(screen.getByText("Diretoria Regional*")).toBeInTheDocument();
+    });
+
+    it("deve renderizar os botões Cancelar e Cadastrar UE", () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+        expect(
+            screen.getByRole("button", { name: /Cancelar/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: /Cadastrar UE/i })
+        ).toBeInTheDocument();
+    });
+
+    it("deve desabilitar o botão de cadastrar inicialmente", () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+        const cadastrarButton = screen.getByRole("button", {
+            name: /Cadastrar UE/i,
         });
+        expect(cadastrarButton).toBeDisabled();
+    });
 
-        it("deve renderizar o campo de DRE por padrão", () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+    const openetapaModalidadeSelect = () => {
+        const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+        fireEvent.click(etapaModalidadeSelect);
+        return etapaModalidadeSelect;
+    };
 
-            expect(screen.getByText("Diretoria Regional*")).toBeInTheDocument();
+    const selectTipoOption = async (optionLabel: string) => {
+        await waitFor(() => {
+            const options = screen.getAllByText(optionLabel);
+            fireEvent.click(options.at(-1)!);
         });
+    };
 
-        it("deve renderizar os botões Cancelar e Cadastrar UE", () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+    it("deve exibir todas as opções de tipo vindas do backend ao clicar no select", async () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            expect(
-                screen.getByRole("button", { name: /Cancelar/i })
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole("button", { name: /Cadastrar UE/i })
-            ).toBeInTheDocument();
-        });
+        openetapaModalidadeSelect();
 
-        it("deve desabilitar o botão de cadastrar inicialmente", () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
-
-            const cadastrarButton = screen.getByRole("button", {
-                name: /Cadastrar UE/i,
+        await waitFor(() => {
+            mockTipoOptions.forEach((opt) => {
+                expect(screen.getAllByText(opt.label).length).toBeGreaterThan(
+                    0
+                );
             });
-            expect(cadastrarButton).toBeDisabled();
         });
     });
 
-    describe("Campo Tipo", () => {
-        const openetapaModalidadeSelect = () => {
-            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
-            fireEvent.click(etapaModalidadeSelect);
-            return etapaModalidadeSelect;
-        };
+    it("deve permitir selecionar um tipo", async () => {
+        render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-        const selectTipoOption = async (optionLabel: string) => {
-            await waitFor(() => {
-                const options = screen.getAllByText(optionLabel);
-                fireEvent.click(options.at(-1)!);
-            });
-        };
+        const etapaModalidadeSelect = openetapaModalidadeSelect();
+        await selectTipoOption("EMEF");
 
-        it("deve exibir todas as opções de tipo vindas do backend ao clicar no select", async () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
-
-            openetapaModalidadeSelect();
-
-            await waitFor(() => {
-                mockTipoOptions.forEach((opt) => {
-                    expect(
-                        screen.getAllByText(opt.label).length
-                    ).toBeGreaterThan(0);
-                });
-            });
-        });
-
-        it("deve permitir selecionar um tipo", async () => {
-            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
-
-            const etapaModalidadeSelect = openetapaModalidadeSelect();
-            await selectTipoOption("EMEF");
-
-            await waitFor(() => {
-                expect(etapaModalidadeSelect).toHaveTextContent("EMEF");
-            });
+        await waitFor(() => {
+            expect(etapaModalidadeSelect).toHaveTextContent("EMEF");
         });
     });
 
@@ -698,8 +692,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
                     /Exemplo: EMEF João da Silva/i
-                ) as HTMLInputElement;
-                expect(nomeInput.value).toBe("EMEF João da Silva");
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
         });
 
@@ -715,13 +709,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
                     /Exemplo: EMEF João da Silva/i
-                ) as HTMLInputElement;
-                expect(nomeInput.value).toBe("EMEF João da Silva");
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
 
-                const codigoInput = screen.getByPlaceholderText(
-                    /Exemplo: 1234567/i
-                ) as HTMLInputElement;
-                expect(codigoInput.value).toBe("123456");
+                const codigoInput =
+                    screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                expect(codigoInput).toHaveValue(123456);
 
                 const etapaModalidadeSelect =
                     getSelectByLabel("Etapa/modalidade*");
@@ -745,9 +738,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 const tipoSelect = getSelectByLabel("Tipo*");
                 expect(tipoSelect).toBeDisabled();
 
-                const codigoInput = screen.getByPlaceholderText(
-                    /Exemplo: 1234567/i
-                ) as HTMLInputElement;
+                const codigoInput =
+                    screen.getByPlaceholderText(/Exemplo: 1234567/i);
                 expect(codigoInput).toBeDisabled();
             });
         });
@@ -937,6 +929,81 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 expect(mockAtualizarUnidade).toHaveBeenCalled();
                 expect(mockCadastrarUnidade).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("Mensagem de inativação", () => {
+        it("deve exibir motivo e dados de inativação quando a unidade estiver inativa", async () => {
+            mockObterUnidade.mockReturnValue({
+                data: {
+                    uuid: "unidade-123",
+                    nome: "EMEF João da Silva",
+                    codigo_eol: "123456",
+                    tipo_unidade: "EMEF",
+                    rede: "DIRETA",
+                    dre_uuid: "dre-1",
+                    sigla: "JDS",
+                    ativa: false,
+                    motivo_inativacao: "Motivo de teste",
+                    data_inativacao_formatada: "01/01/2024",
+                    responsavel_inativacao_nome: "Maria Teste",
+                },
+                isLoading: false,
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Motivo da inativação UE:")
+                ).toBeInTheDocument();
+                expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
+                expect(
+                    screen.getByText(
+                        /Inativado por Maria Teste em 01\/01\/2024/i
+                    )
+                ).toBeInTheDocument();
+            });
+        });
+
+        it("deve renderizar mensagem mesmo sem data e responsável informados", async () => {
+            mockObterUnidade.mockReturnValue({
+                data: {
+                    uuid: "unidade-123",
+                    nome: "EMEF João da Silva",
+                    codigo_eol: "123456",
+                    tipo_unidade: "EMEF",
+                    rede: "DIRETA",
+                    dre_uuid: "dre-1",
+                    sigla: "JDS",
+                    ativa: false,
+                    motivo_inativacao: "Motivo de teste",
+                    data_inativacao_formatada: undefined,
+                    responsavel_inativacao_nome: undefined,
+                },
+                isLoading: false,
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
+                expect(
+                    screen.getByText("Inativado por em")
+                ).toBeInTheDocument();
             });
         });
     });

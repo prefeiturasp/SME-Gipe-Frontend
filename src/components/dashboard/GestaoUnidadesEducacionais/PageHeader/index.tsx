@@ -36,10 +36,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     const { mutateAsync: inativarUnidade, isPending } =
         useInativarUnidadeGestao();
 
-    const handleInativarUnidadeEducacional = async () => {
+    const handleInativarUnidadeEducacional = async (motivoInativacao: string) => {
+
+
         if (!unidadeUuid) return;
 
-        const response = await inativarUnidade(unidadeUuid);
+        const response = await inativarUnidade({ uuid: unidadeUuid, motivo_inativacao: motivoInativacao });
 
         if (response.success) {
             toast({

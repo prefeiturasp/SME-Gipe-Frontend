@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormData, formSchema } from "./schema";
+import MensagemInativacao from "./MensagemInativacao";
 
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
@@ -71,6 +72,11 @@ export default function FormularioCadastroUnidadeEducacional({
         uuid: unidadeUuid || "",
         enabled: mode === "edit" && !!unidadeUuid,
     });
+
+    const isActive = unidadeData?.ativa ?? true;
+    const dataInativacaoFormatada = unidadeData?.data_inativacao_formatada;
+    const responsavelInativacaoNome = unidadeData?.responsavel_inativacao_nome;
+    const motivoInativacao = unidadeData?.motivo_inativacao;
 
     const defaultValues = useMemo(() => {
         if (mode === "edit" && unidadeData) {
@@ -380,6 +386,16 @@ export default function FormularioCadastroUnidadeEducacional({
                                     <FormMessage />
                                 </FormItem>
                             )}
+                        />
+                    )}
+                </div>
+
+                <div className="mt-4">
+                    {!isActive && motivoInativacao && (
+                        <MensagemInativacao
+                            dataInativacaoFormatada={dataInativacaoFormatada ?? ""}
+                            responsavelInativacaoNome={responsavelInativacaoNome ?? ""}
+                            motivoInativacao={motivoInativacao}
                         />
                     )}
                 </div>

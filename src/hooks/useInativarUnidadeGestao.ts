@@ -3,8 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 
 export function useInativarUnidadeGestao() {
     return useMutation({
-        mutationFn: async (uuid: string) => {
-            return inativarUnidadeGestaoAction(uuid);
+        mutationFn: async ({ uuid, motivo_inativacao }: { uuid: string; motivo_inativacao: string }) => {
+            return inativarUnidadeGestaoAction(uuid, motivo_inativacao);
         },
     });
 }
