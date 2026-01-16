@@ -15,6 +15,9 @@ export type ObterUnidadeGestaoResponse = {
     dre_nome: string;
     sigla: string;
     ativa: boolean;
+    data_inativacao_formatada: string | null;
+    responsavel_inativacao_nome: string | null;
+    motivo_inativacao: string | null;
 };
 
 export type ObterUnidadeGestaoResult =

@@ -9,6 +9,7 @@ vi.mock("@/actions/inativar-unidade-gestao");
 describe("useInativarUnidadeGestao hook", () => {
     const uuid = "unidade-uuid-123";
     let queryClient: QueryClient;
+    const motivo_inativacao = "Motivo de inativação de teste";
     const createWrapper = () => {
         queryClient = new QueryClient({
             defaultOptions: { queries: { retry: false } },
@@ -34,9 +35,9 @@ describe("useInativarUnidadeGestao hook", () => {
         });
         let data;
         await act(async () => {
-            data = await result.current.mutateAsync(uuid);
+            data = await result.current.mutateAsync({ uuid, motivo_inativacao });
         });
-        expect(inativarUnidadeGestaoAction).toHaveBeenCalledWith(uuid);
+        expect(inativarUnidadeGestaoAction).toHaveBeenCalledWith(uuid, motivo_inativacao);
         expect(data).toEqual({ success: true });
     });
 
@@ -48,9 +49,9 @@ describe("useInativarUnidadeGestao hook", () => {
         });
         let data;
         await act(async () => {
-            data = await result.current.mutateAsync(uuid);
+            data = await result.current.mutateAsync({ uuid, motivo_inativacao });
         });
-        expect(inativarUnidadeGestaoAction).toHaveBeenCalledWith(uuid);
+        expect(inativarUnidadeGestaoAction).toHaveBeenCalledWith(uuid, motivo_inativacao);
         expect(data).toEqual({ success: false, error: "Erro ao inativar" });
     });
 });

@@ -134,7 +134,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         ) as HTMLElement;
     };
 
-    describe("Renderização inicial", () => {
+
         it("deve renderizar o formulário com todos os campos iniciais", () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
@@ -179,9 +179,9 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
             expect(cadastrarButton).toBeDisabled();
         });
-    });
 
-    describe("Campo Tipo", () => {
+
+
         const openetapaModalidadeSelect = () => {
             const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
             fireEvent.click(etapaModalidadeSelect);
@@ -219,7 +219,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 expect(etapaModalidadeSelect).toHaveTextContent("EMEF");
             });
         });
-    });
+
 
     describe("Campo Nome da Unidade Educacional", () => {
         it("deve permitir digitar o nome da UE", async () => {
@@ -693,8 +693,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
                     /Exemplo: EMEF João da Silva/i
-                ) as HTMLInputElement;
-                expect(nomeInput.value).toBe("EMEF João da Silva");
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
         });
 
@@ -710,18 +710,18 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
                     /Exemplo: EMEF João da Silva/i
-                ) as HTMLInputElement;
-                expect(nomeInput.value).toBe("EMEF João da Silva");
+                );
+                expect(nomeInput).toHaveValue("EMEF João da Silva");
 
                 const codigoInput = screen.getByPlaceholderText(
                     /Exemplo: 1234567/i
-                ) as HTMLInputElement;
-                expect(codigoInput.value).toBe("123456");
+                );
+                expect(codigoInput).toHaveValue(123456);
 
                 const siglaInput = screen.getByPlaceholderText(
                     /Digite\.\.\./i
-                ) as HTMLInputElement;
-                expect(siglaInput.value).toBe("JDS");
+                );
+                expect(siglaInput).toHaveValue("JDS");
 
                 const etapaModalidadeSelect =
                     getSelectByLabel("Etapa/modalidade*");
@@ -747,7 +747,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
                 const codigoInput = screen.getByPlaceholderText(
                     /Exemplo: 1234567/i
-                ) as HTMLInputElement;
+                );
                 expect(codigoInput).toBeDisabled();
             });
         });
@@ -937,6 +937,79 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 expect(mockAtualizarUnidade).toHaveBeenCalled();
                 expect(mockCadastrarUnidade).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("Mensagem de inativação", () => {
+        it("deve exibir motivo e dados de inativação quando a unidade estiver inativa", async () => {
+            mockObterUnidade.mockReturnValue({
+                data: {
+                    uuid: "unidade-123",
+                    nome: "EMEF João da Silva",
+                    codigo_eol: "123456",
+                    tipo_unidade: "EMEF",
+                    rede: "DIRETA",
+                    dre_uuid: "dre-1",
+                    sigla: "JDS",
+                    ativa: false,
+                    motivo_inativacao: "Motivo de teste",
+                    data_inativacao_formatada: "01/01/2024",
+                    responsavel_inativacao_nome: "Maria Teste",
+                },
+                isLoading: false,
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Motivo da inativação UE:")
+                ).toBeInTheDocument();
+                expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
+                expect(
+                    screen.getByText(/Inativado por Maria Teste em 01\/01\/2024/i)
+                ).toBeInTheDocument();
+            });
+        });
+
+        it("deve renderizar mensagem mesmo sem data e responsável informados", async () => {
+            mockObterUnidade.mockReturnValue({
+                data: {
+                    uuid: "unidade-123",
+                    nome: "EMEF João da Silva",
+                    codigo_eol: "123456",
+                    tipo_unidade: "EMEF",
+                    rede: "DIRETA",
+                    dre_uuid: "dre-1",
+                    sigla: "JDS",
+                    ativa: false,
+                    motivo_inativacao: "Motivo de teste",
+                    data_inativacao_formatada: undefined,
+                    responsavel_inativacao_nome: undefined,
+                },
+                isLoading: false,
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper }
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
+                expect(
+                    screen.getByText("Inativado por em")
+                ).toBeInTheDocument();
             });
         });
     });
