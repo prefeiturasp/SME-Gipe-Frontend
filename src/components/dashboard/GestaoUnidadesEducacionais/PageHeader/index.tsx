@@ -115,6 +115,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     open={openModal}
                     onOpenChange={setOpenModal}
                     onInativar={handleInativarUnidadeEducacional}
+                    isLoading={isPending}
                 />
             )}
         </div>
