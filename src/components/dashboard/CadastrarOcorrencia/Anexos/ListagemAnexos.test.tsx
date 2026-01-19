@@ -4,20 +4,24 @@ import { ListagemAnexos } from "./ListagemAnexos";
 import { AnexoAPI } from "@/types/anexo";
 import { ModalExcluir } from "./ModalExcluir/ModalExcluir";
 
-
-vi.mock("@/components/dashboard/CadastrarOcorrencia/Anexos/ModalExcluir/ModalExcluir", () => ({
-    ModalExcluir: vi.fn(({ open, onOpenChange, uuid }) => (
-        <div data-testid="modal-excluir">
-            {open && (
-                <>
-                    <p>Modal Aberto</p>
-                    <p>UUID: {uuid}</p>
-                    <button onClick={() => onOpenChange(false)}>Fechar Modal</button>
-                </>
-            )}
-        </div>
-    )),
-}));
+vi.mock(
+    "@/components/dashboard/CadastrarOcorrencia/Anexos/ModalExcluir/ModalExcluir",
+    () => ({
+        ModalExcluir: vi.fn(({ open, onOpenChange, uuid }) => (
+            <div data-testid="modal-excluir">
+                {open && (
+                    <>
+                        <p>Modal Aberto</p>
+                        <p>UUID: {uuid}</p>
+                        <button onClick={() => onOpenChange(false)}>
+                            Fechar Modal
+                        </button>
+                    </>
+                )}
+            </div>
+        )),
+    })
+);
 
 const mutateAsyncMock = vi.fn();
 vi.mock("@/hooks/useExcluirAnexo", () => ({
@@ -45,7 +49,6 @@ vi.mock("@/components/ui/headless-toast", () => ({
     toast: (params: unknown) => mockToast(params),
 }));
 
-
 describe("ListagemAnexos", () => {
     const anexoAPIMock: AnexoAPI = {
         uuid: "api-uuid-1",
@@ -59,6 +62,7 @@ describe("ListagemAnexos", () => {
         arquivo_url: "https://example.com/anexo.pdf",
         criado_em: "2025-11-17T14:30:00Z",
         usuario_username: "maria.silva",
+        usuario_nome: "Maria Silva",
     };
 
     beforeEach(() => {
@@ -87,7 +91,7 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
         expect(screen.getByText("Relatório do NAAPA")).toBeInTheDocument();
         expect(
-            screen.getByText("Anexado por: maria.silva")
+            screen.getByText("Anexado por: Maria Silva")
         ).toBeInTheDocument();
         expect(screen.getByText(/17\/11\/2025/)).toBeInTheDocument();
     });
@@ -117,11 +121,11 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
         expect(screen.getByText("Relatório do NAAPA")).toBeInTheDocument();
         expect(screen.getByText("Boletim de ocorrência")).toBeInTheDocument();
-        
+
         expect(
             screen.getAllByRole("button", { name: /Excluir arquivo/i })
         ).toHaveLength(2);
-        
+
         expect(
             screen.queryByRole("button", { name: /Baixar arquivo/i })
         ).not.toBeInTheDocument();
@@ -155,7 +159,7 @@ describe("ListagemAnexos", () => {
         });
 
         expect(excluirButtons).toHaveLength(1);
-        
+
         expect(excluirButtons[0]).toHaveTextContent("Excluir arquivo");
     });
 
@@ -220,7 +224,7 @@ describe("ListagemAnexos", () => {
         expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
         expect(screen.getByText("Relatório do NAAPA")).toBeInTheDocument();
         expect(
-            screen.getByText("Anexado por: maria.silva")
+            screen.getByText("Anexado por: Maria Silva")
         ).toBeInTheDocument();
         expect(screen.getByText(/17\/11\/2025/)).toBeInTheDocument();
         expect(
@@ -246,12 +250,17 @@ describe("ListagemAnexos", () => {
     });
 
     it("deve exibir nome de usuário correto para cada anexo", () => {
-        const anexo1: AnexoAPI = { ...anexoAPIMock, usuario_username: "user1" };
+        const anexo1: AnexoAPI = {
+            ...anexoAPIMock,
+            usuario_username: "user1",
+            usuario_nome: "user1",
+        };
         const anexo2: AnexoAPI = {
             ...anexoAPIMock,
             uuid: "api-uuid-2",
             nome_original: "doc2.pdf",
             usuario_username: "user2",
+            usuario_nome: "user2",
         };
 
         render(<ListagemAnexos anexosAPI={[anexo1, anexo2]} />);
@@ -294,8 +303,8 @@ describe("ListagemAnexos", () => {
 
         expect(screen.getByText("relatorio.pdf")).toBeInTheDocument();
         expect(screen.getByText("documento2.pdf")).toBeInTheDocument();
-        
-        excluirButtons.forEach(button => {
+
+        excluirButtons.forEach((button) => {
             expect(button).toHaveTextContent(/Excluir arquivo/);
         });
     });
@@ -341,105 +350,179 @@ describe("ListagemAnexos", () => {
         expect(screen.queryByText("Modal Aberto")).not.toBeInTheDocument();
     });
 
-describe("ListagemAnexos - modoVisualizacao", () => {
-    const anexoAPIMock: AnexoAPI = {
-        uuid: "api-uuid-1",
-        nome_original: "relatorio.pdf",
-        categoria: "relatorio_naapa",
-        categoria_display: "Relatório do NAAPA",
-        perfil: "diretor",
-        perfil_display: "Diretor de Escola",
-        tamanho_formatado: "1.2 MB",
-        extensao: "pdf",
-        arquivo_url: "https://example.com/anexo.pdf",
-        criado_em: "2025-11-17T14:30:00Z",
-        usuario_username: "maria.silva",
-    };
-
-  it("deve renderizar botão de baixar e excluir quando modoVisualizacao=true", () => {
-        const { container } = render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
-
-        expect(screen.getByRole("button", { name: /Baixar arquivo/i })).toBeInTheDocument();
-        
-        const excluirButtons = container.querySelectorAll('button.border-\\[\\#B40C02\\].w-10');
-        expect(excluirButtons.length).toBeGreaterThan(0);
-    });
-    it("deve renderizar apenas botão de excluir quando modoVisualizacao=false", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={false} />);
-
-        expect(screen.queryByRole("button", { name: /Baixar arquivo/i })).not.toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Excluir arquivo/i })).toBeInTheDocument();
-    });
-
-    it("deve renderizar apenas botão de excluir quando modoVisualizacao=undefined (padrão)", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
-
-        expect(screen.queryByRole("button", { name: /Baixar arquivo/i })).not.toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Excluir arquivo/i })).toBeInTheDocument();
-    });
-
-    it("deve aplicar estilos corretos no botão de excluir no modo visualização", () => {
-        const { container } = render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
-
-        const excluirButton = container.querySelector('button.border-\\[\\#B40C02\\].w-10') as HTMLButtonElement;
-        expect(excluirButton).toBeInTheDocument();
-        expect(excluirButton).toHaveClass("border-[#B40C02]", "text-[#B40C02]");
-    });
-
-    it("deve aplicar estilos corretos no botão de excluir quando não está no modo visualização", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={false} />);
-
-        const excluirButton = screen.getByRole("button", { name: /Excluir arquivo/i });
-        expect(excluirButton).toHaveClass("border-[#B40C02]", "text-[#B40C02]");
-    });
-
-    it("deve manter funcionalidade de abrir modal no modo visualização", () => {
-        const { container } = render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
-
-        const excluirButton = container.querySelector('button.border-\\[\\#B40C02\\].w-10') as HTMLButtonElement;
-        expect(excluirButton).toBeInTheDocument();
-        
-        fireEvent.click(excluirButton);
-
-        expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
-        expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
-    });
-
-    it("deve manter funcionalidade de abrir modal quando não está no modo visualização", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={false} />);
-
-        const excluirButton = screen.getByRole("button", { name: /Excluir arquivo/i });
-        fireEvent.click(excluirButton);
-
-        expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
-        expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
-    });
-
-    it("deve renderizar múltiplos anexos corretamente no modo visualização", () => {
-        const anexo2: AnexoAPI = {
-            ...anexoAPIMock,
-            uuid: "api-uuid-2",
-            nome_original: "documento2.pdf",
+    describe("ListagemAnexos - modoVisualizacao", () => {
+        const anexoAPIMock: AnexoAPI = {
+            uuid: "api-uuid-1",
+            nome_original: "relatorio.pdf",
+            categoria: "relatorio_naapa",
+            categoria_display: "Relatório do NAAPA",
+            perfil: "diretor",
+            perfil_display: "Diretor de Escola",
+            tamanho_formatado: "1.2 MB",
+            extensao: "pdf",
+            arquivo_url: "https://example.com/anexo.pdf",
+            criado_em: "2025-11-17T14:30:00Z",
+            usuario_username: "maria.silva",
+            usuario_nome: "Maria Silva",
         };
 
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock, anexo2]} modoVisualizacao={true} />);
+        it("deve renderizar botão de baixar e excluir quando modoVisualizacao=true", () => {
+            const { container } = render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={true}
+                />
+            );
 
-        const baixarButtons = screen.getAllByRole("button", { name: /Baixar arquivo/i });
-        
-        const excluirButtons = screen.getAllByRole("button").filter(button => 
-            button.innerHTML.includes('Trash2') || 
-            button.className.includes('border-[#B40C02]')
+            expect(
+                screen.getByRole("button", { name: /Baixar arquivo/i })
+            ).toBeInTheDocument();
+
+            const excluirButtons = container.querySelectorAll(
+                "button.border-\\[\\#B40C02\\].w-10"
+            );
+            expect(excluirButtons.length).toBeGreaterThan(0);
+        });
+        it("deve renderizar apenas botão de excluir quando modoVisualizacao=false", () => {
+            render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={false}
+                />
+            );
+
+            expect(
+                screen.queryByRole("button", { name: /Baixar arquivo/i })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /Excluir arquivo/i })
+            ).toBeInTheDocument();
+        });
+
+        it("deve renderizar apenas botão de excluir quando modoVisualizacao=undefined (padrão)", () => {
+            render(<ListagemAnexos anexosAPI={[anexoAPIMock]} />);
+
+            expect(
+                screen.queryByRole("button", { name: /Baixar arquivo/i })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /Excluir arquivo/i })
+            ).toBeInTheDocument();
+        });
+
+        it("deve aplicar estilos corretos no botão de excluir no modo visualização", () => {
+            const { container } = render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={true}
+                />
+            );
+
+            const excluirButton = container.querySelector(
+                "button.border-\\[\\#B40C02\\].w-10"
+            ) as HTMLButtonElement;
+            expect(excluirButton).toBeInTheDocument();
+            expect(excluirButton).toHaveClass(
+                "border-[#B40C02]",
+                "text-[#B40C02]"
+            );
+        });
+
+        it("deve aplicar estilos corretos no botão de excluir quando não está no modo visualização", () => {
+            render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={false}
+                />
+            );
+
+            const excluirButton = screen.getByRole("button", {
+                name: /Excluir arquivo/i,
+            });
+            expect(excluirButton).toHaveClass(
+                "border-[#B40C02]",
+                "text-[#B40C02]"
+            );
+        });
+
+        it("deve manter funcionalidade de abrir modal no modo visualização", () => {
+            const { container } = render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={true}
+                />
+            );
+
+            const excluirButton = container.querySelector(
+                "button.border-\\[\\#B40C02\\].w-10"
+            ) as HTMLButtonElement;
+            expect(excluirButton).toBeInTheDocument();
+
+            fireEvent.click(excluirButton);
+
+            expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
+            expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
+        });
+
+        it("deve manter funcionalidade de abrir modal quando não está no modo visualização", () => {
+            render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock]}
+                    modoVisualizacao={false}
+                />
+            );
+
+            const excluirButton = screen.getByRole("button", {
+                name: /Excluir arquivo/i,
+            });
+            fireEvent.click(excluirButton);
+
+            expect(screen.getByText("Modal Aberto")).toBeInTheDocument();
+            expect(screen.getByText("UUID: api-uuid-1")).toBeInTheDocument();
+        });
+
+        it("deve renderizar múltiplos anexos corretamente no modo visualização", () => {
+            const anexo2: AnexoAPI = {
+                ...anexoAPIMock,
+                uuid: "api-uuid-2",
+                nome_original: "documento2.pdf",
+            };
+
+            render(
+                <ListagemAnexos
+                    anexosAPI={[anexoAPIMock, anexo2]}
+                    modoVisualizacao={true}
+                />
+            );
+
+            const baixarButtons = screen.getAllByRole("button", {
+                name: /Baixar arquivo/i,
+            });
+
+            const excluirButtons = screen
+                .getAllByRole("button")
+                .filter(
+                    (button) =>
+                        button.innerHTML.includes("Trash2") ||
+                        button.className.includes("border-[#B40C02]")
+                );
+
+            expect(baixarButtons).toHaveLength(2);
+            expect(excluirButtons).toHaveLength(2);
+        });
+    });
+
+    it("deve chamar a função de baixar arquivo quando o botão é clicado", () => {
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock]}
+                modoVisualizacao={true}
+            />
         );
 
-        expect(baixarButtons).toHaveLength(2);
-        expect(excluirButtons).toHaveLength(2);
-    });
-});
-
- it("deve chamar a função de baixar arquivo quando o botão é clicado", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
-
-        const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
+        const baixarButton = screen.getByRole("button", {
+            name: /Baixar arquivo/i,
+        });
         fireEvent.click(baixarButton);
 
         expect(baixarMock).toHaveBeenCalledTimes(1);
@@ -449,15 +532,22 @@ describe("ListagemAnexos - modoVisualizacao", () => {
                 nomeArquivo: "relatorio.pdf",
             },
             {
-                onError: expect.any(Function)
+                onError: expect.any(Function),
             }
         );
     });
 
     it("deve passar os parâmetros corretos para o hook de download", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock]}
+                modoVisualizacao={true}
+            />
+        );
 
-        const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
+        const baixarButton = screen.getByRole("button", {
+            name: /Baixar arquivo/i,
+        });
         fireEvent.click(baixarButton);
 
         expect(baixarMock).toHaveBeenCalledWith(
@@ -466,17 +556,24 @@ describe("ListagemAnexos - modoVisualizacao", () => {
                 nomeArquivo: anexoAPIMock.nome_original,
             }),
             expect.objectContaining({
-                onError: expect.any(Function)
+                onError: expect.any(Function),
             })
         );
     });
 
     it("deve mostrar toast de erro quando o download falhar", () => {
         const toastMock = vi.mocked(mockToast);
-        
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
 
-        const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock]}
+                modoVisualizacao={true}
+            />
+        );
+
+        const baixarButton = screen.getByRole("button", {
+            name: /Baixar arquivo/i,
+        });
         fireEvent.click(baixarButton);
 
         const onErrorCallback = baixarMock.mock.calls[0][1].onError;
@@ -490,9 +587,16 @@ describe("ListagemAnexos - modoVisualizacao", () => {
     });
 
     it("não deve desabilitar o botão de baixar quando isPending é false", () => {
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock]} modoVisualizacao={true} />);
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock]}
+                modoVisualizacao={true}
+            />
+        );
 
-        const baixarButton = screen.getByRole("button", { name: /Baixar arquivo/i });
+        const baixarButton = screen.getByRole("button", {
+            name: /Baixar arquivo/i,
+        });
         expect(baixarButton).not.toBeDisabled();
     });
 
@@ -503,10 +607,17 @@ describe("ListagemAnexos - modoVisualizacao", () => {
             nome_original: "documento2.pdf",
         };
 
-        render(<ListagemAnexos anexosAPI={[anexoAPIMock, anexo2]} modoVisualizacao={true} />);
+        render(
+            <ListagemAnexos
+                anexosAPI={[anexoAPIMock, anexo2]}
+                modoVisualizacao={true}
+            />
+        );
 
-        const baixarButtons = screen.getAllByRole("button", { name: /Baixar arquivo/i });
-        
+        const baixarButtons = screen.getAllByRole("button", {
+            name: /Baixar arquivo/i,
+        });
+
         fireEvent.click(baixarButtons[0]);
         expect(baixarMock).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -527,6 +638,4 @@ describe("ListagemAnexos - modoVisualizacao", () => {
 
         expect(baixarMock).toHaveBeenCalledTimes(2);
     });
-
-
 });

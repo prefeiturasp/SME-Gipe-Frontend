@@ -1,20 +1,36 @@
 # language: pt
 
-Funcionalidade: Login
+@login @autenticacao @smoke
+Funcionalidade: Autenticação no Sistema GIPE
+  Como um usuário do sistema GIPE
+  Eu quero realizar login com minhas credenciais
+  Para que eu possa acessar as funcionalidades do sistema
 
   Contexto:
     Dado que eu acesso o sistema
 
-  Esquema do Cenário: Acesso ao sistema "<cenario>"
-    Quando eu insiro o RF "<rf>" e senha "<senha>" válidos
+  @login-sucesso @critico
+  Cenário: Login com credenciais válidas
+    Quando eu insiro credenciais válidas
     E clico no botão de acessar
-    Então o resultado esperado para "<cenario>" deve ser exibido
+    Então devo ser redirecionado para o dashboard
+    E devo visualizar a página principal do sistema
 
-    Exemplos:
-      | cenario              | rf           | senha          |
-      | Login válido padrão  | 05481179342  | Sgp9342        |
-      | Login inválido       | 6913261      | Sgp326         |
-      | Senha em branco      | 6913261      |                |
-      | RF em branco         |              | Sgp3261        |
-      
+  @login-falha @validacao
+  Cenário: Tentativa de login com credenciais inválidas
+    Quando eu insiro credenciais inválidas
+    E clico no botão de acessar
+    Então devo visualizar mensagem de erro de autenticação
 
+  @validacao-campo @obrigatoriedade
+  Cenário: Validação de campo senha obrigatório
+    Quando eu insiro apenas o RF sem senha
+    E clico no botão de acessar
+    Então devo visualizar validação de senha obrigatória
+
+  @validacao-campo @obrigatoriedade
+  Cenário: Validação de campo RF obrigatório
+    Quando eu insiro apenas a senha sem RF
+    E clico no botão de acessar
+    Então devo visualizar validação de RF obrigatório
+    

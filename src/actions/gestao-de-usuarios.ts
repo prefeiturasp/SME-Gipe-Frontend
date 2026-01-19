@@ -18,7 +18,7 @@ export async function getUsuarios(ativo?: boolean, dre?: string, unidade?: strin
             };
         }
 
-        const { data } = await axios.get(`${API_URL}/users/gestao-usuarios`, {
+        const { data } = await axios.get(`${API_URL}/users/gestao-usuarios/`, {
             params: {ativo, dre, unidade, pendente_aprovacao},
             headers: {
                 Authorization: `Bearer ${token}`,

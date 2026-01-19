@@ -1,17 +1,24 @@
 # language: pt
 
 Funcionalidade: Fluxo esqueci a senha no sistema GIPE
-  Contexto: Acesso à tela de esqueci a senha
-    Dado que eu acesso o sistema
-
+  
   Cenário: Fluxo esqueci a senha com RF válido
-    Quando o usuário clica no link "Esqueci minha senha"
-    E o usuário preenche o campo RF com "7210418"
-    E clica no botão continuar
-    Então o sistema deve mostrar a mensagem "Seu link de recuperação de senha foi enviado para wil**********@spassu.com.br."
+    Dado que eu acesso o sistema GIPE
+    E valido a existência do link "Esqueci minha senha"
+    Quando clico no link "Esqueci minha senha"
+    E valido que estou na página de recuperação de senha
+    E valido a existência do campo RF ou CPF
+    E preencho o campo RF com "7311559"
+    E clico no botão continuar
+    Então o sistema deve exibir a mensagem de confirmação
+    E clico no botão continuar para voltar
 
-  Cenário: Fluxo esqueci a senha com RF incorreto
-    Quando o usuário clica no link "Esqueci minha senha"
-    E o usuário preenche o campo RF com "0000000"
-    E clica no botão continuar
-    Então o sistema deve mostrar a mensagem "Usuário ou RF não encontrado"
+  Cenário: Fluxo esqueci a senha com RF inválido
+    Dado que eu acesso o sistema GIPE
+    E valido a existência do link "Esqueci minha senha"
+    Quando clico no link "Esqueci minha senha"
+    E valido que estou na página de recuperação de senha
+    E valido a existência do campo RF ou CPF
+    E preencho o campo RF com "0000000"
+    E clico no botão continuar
+    Então o sistema deve exibir mensagem de erro "Usuário ou RF não encontrado"

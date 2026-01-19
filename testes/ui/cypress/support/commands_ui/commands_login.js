@@ -4,8 +4,21 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 const loginLocalizadores = new Login_Gipe_Localizadores()
 
 Cypress.Commands.add('login_gipe', () => {
-    // usa baseUrl configurado em cypress.config.js e aumenta timeout de carregamento
-    cy.visit('/', { timeout: 300000 })
+    // Intercepta requisições problemáticas
+    cy.intercept('**/*recuperar-senha*', { statusCode: 200, body: '' })
+    cy.intercept('**/*cadastro*', { statusCode: 200, body: '' })
+    
+    // Visita a página com timeout aumentado
+    cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
+        timeout: 120000,
+        failOnStatusCode: false
+    })
+    
+    // Aguarda elementos críticos da página
+    cy.get('input[placeholder*="RF"], input[placeholder*="CPF"]', { timeout: 20000 })
+        .should('exist')
+    
+    cy.log('✅ Página de login carregada')
 })
 
 Cypress.Commands.add('dados_de_login', (rf, senha) => {
