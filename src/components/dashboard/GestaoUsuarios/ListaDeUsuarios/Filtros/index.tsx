@@ -1,6 +1,7 @@
 "use client";
 
-import React, {useEffect, useState} from "react";
+import { Combobox } from "@/components/ui/Combobox";
+import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -8,19 +9,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useUserStore } from "@/stores/useUserStore";
-import { Combobox } from "@/components/ui/Combobox";
-
+import { useEffect, useState } from "react";
 
 type FiltrosUsuariosProps = {
-    readonly onFilterChange?: (filters: { dreUuid?: string; ueUuid?: string }) => void;
+    readonly onFilterChange?: (filters: {
+        dreUuid?: string;
+        ueUuid?: string;
+    }) => void;
 };
 
 export default function FiltrosUsuarios({
     onFilterChange,
 }: Readonly<FiltrosUsuariosProps>) {
-
     const user = useUserStore((state) => state.user);
 
     const [dreUuid, setDreUuid] = useState<string>("");
@@ -40,10 +42,18 @@ export default function FiltrosUsuarios({
     }, [user, dreUuid]);
 
     // Busca DREs
-    const {data: dresData, isLoading: isLoadingDres, isError: isErrorDres,} = useFetchDREs();
+    const {
+        data: dresData,
+        isLoading: isLoadingDres,
+        isError: isErrorDres,
+    } = useGetUnidades(true, undefined, "DRE");
 
     // Busca UEs da DRE selecionada
-    const {data: uesData, isLoading: isLoadingUes, isError: isErrorUes,} = useFetchUEs(dreUuid, "TODAS");
+    const {
+        data: uesData,
+        isLoading: isLoadingUes,
+        isError: isErrorUes,
+    } = useGetUnidades(true, dreUuid);
 
     // Sempre que mudar algum filtro, avisa o componente pai
     useEffect(() => {
@@ -54,13 +64,13 @@ export default function FiltrosUsuarios({
     }, [dreUuid, ueUuid, onFilterChange]);
 
     const dresOptions =
-        dresData?.map((dre: {uuid: string; nome: string;}) => ({
+        dresData?.map((dre: { uuid: string; nome: string }) => ({
             value: dre.uuid,
             label: dre.nome,
         })) ?? [];
 
     const uesOptions =
-        uesData?.map((ue: {uuid: string; nome: string;}) => ({
+        uesData?.map((ue: { uuid: string; nome: string }) => ({
             value: ue.uuid,
             label: ue.nome,
         })) ?? [];
@@ -73,6 +83,17 @@ export default function FiltrosUsuarios({
     const handleChangeUe = (value: string) => {
         setUeUuid(value);
     };
+
+    const handleLimparFiltros = () => {
+        if (!isPontoFocalDre) {
+            setDreUuid("");
+        }
+        setUeUuid("");
+    };
+
+    const temFiltrosAplicados = isPontoFocalDre
+        ? !!ueUuid
+        : !!dreUuid || !!ueUuid;
 
     const getDrePlaceholder = () => {
         if (isLoadingDres) return "Carregando...";
@@ -95,68 +116,90 @@ export default function FiltrosUsuarios({
                 Diretorias Regionais (DREs) e Unidades Educacionais (UEs)
             </p>
 
-            {/* Linha com os dois selects */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Diretoria Regional */}
-                <div className="space-y-2">
-                    <p className="text-sm text-[#42474A] font-bold">
-                        Diretoria Regional
-                    </p>
+            {/* Linha com os dois selects e botão */}
+            <div className="flex flex-col md:flex-row gap-6 items-end">
+                {/* Container dos selects */}
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Diretoria Regional */}
+                    <div className="space-y-2">
+                        <p className="text-sm text-[#42474A] font-bold">
+                            Diretoria Regional
+                        </p>
 
-                    <Select value={dreUuid} onValueChange={handleChangeDre} disabled={isPontoFocalDre}>
-                        <SelectTrigger className="w-full h-10 rounded-lg text-base justify-between">
-                            <SelectValue
-                                placeholder={getDrePlaceholder()}
-                            />
-                        </SelectTrigger>
+                        <Select
+                            value={dreUuid}
+                            onValueChange={handleChangeDre}
+                            disabled={isPontoFocalDre}
+                        >
+                            <SelectTrigger className="w-full h-10 rounded-lg text-base justify-between">
+                                <SelectValue
+                                    placeholder={getDrePlaceholder()}
+                                />
+                            </SelectTrigger>
 
-                        <SelectContent>
-                            {isLoadingDres && (
-                                <SelectItem value="loading" disabled>
-                                    Carregando...
-                                </SelectItem>
-                            )}
-
-                            {isErrorDres && (
-                                <SelectItem value="error" disabled>
-                                    Erro ao carregar DREs
-                                </SelectItem>
-                            )}
-
-                            {!isLoadingDres &&
-                                !isErrorDres &&
-                                dresOptions.map((dre: { value: string; label: string }) => (
-                                    <SelectItem
-                                        key={dre.value}
-                                        value={dre.value}
-                                    >
-                                        {dre.label}
+                            <SelectContent>
+                                {isLoadingDres && (
+                                    <SelectItem value="loading" disabled>
+                                        Carregando...
                                     </SelectItem>
-                                ))}
-                        </SelectContent>
-                    </Select>
+                                )}
+
+                                {isErrorDres && (
+                                    <SelectItem value="error" disabled>
+                                        Erro ao carregar DREs
+                                    </SelectItem>
+                                )}
+
+                                {!isLoadingDres &&
+                                    !isErrorDres &&
+                                    dresOptions.map(
+                                        (dre: {
+                                            value: string;
+                                            label: string;
+                                        }) => (
+                                            <SelectItem
+                                                key={dre.value}
+                                                value={dre.value}
+                                            >
+                                                {dre.label}
+                                            </SelectItem>
+                                        )
+                                    )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Unidade Educacional */}
+                    <div className="space-y-2">
+                        <p className="text-sm text-[#42474A] font-bold">
+                            Unidade Educacional
+                        </p>
+
+                        <Combobox
+                            data-testid="select-ue"
+                            className="w-full h-10 rounded-lg text-base justify-between border border-gray-300"
+                            options={uesOptions.map(
+                                (ue: { value: string; label: string }) => ({
+                                    label: ue.label,
+                                    value: ue.value,
+                                })
+                            )}
+                            value={ueUuid}
+                            onChange={handleChangeUe}
+                            placeholder={getUePlaceholder()}
+                            disabled={!dreUuid}
+                        />
+                    </div>
                 </div>
 
-                {/* Unidade Educacional */}
-                <div className="space-y-2">
-                    <p className="text-sm text-[#42474A] font-bold">
-                        Unidade Educacional
-                    </p>
-
-                    <Combobox
-                        data-testid="select-ue"
-                        className="w-full h-10 rounded-lg text-base justify-between border border-gray-300"
-                        options={uesOptions.map((ue: { value: string; label: string }) => ({
-                                label: ue.label,
-                                value: ue.value,
-                            })
-                        )}
-                        value={ueUuid}
-                        onChange={handleChangeUe}
-                        placeholder={getUePlaceholder()}
-                        disabled={!dreUuid}
-                    />
-                </div>
+                <Button
+                    variant="customOutline"
+                    onClick={handleLimparFiltros}
+                    disabled={!temFiltrosAplicados}
+                    className="w-full md:w-[117px] h-10"
+                >
+                    Limpar filtros
+                </Button>
             </div>
         </section>
     );

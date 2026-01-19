@@ -1,12 +1,12 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
-import * as useUnidadesModule from "@/hooks/useUnidades";
-import * as useCadastroGestaoUsuarioModule from "@/hooks/useCadastroGestaoUsuario";
-import * as useAtualizarGestaoUsuarioModule from "@/hooks/useAtualizarGestaoUsuario";
-import * as useObterUsuarioGestaoModule from "@/hooks/useObterUsuarioGestao";
 import { toast } from "@/components/ui/headless-toast";
+import * as useAtualizarGestaoUsuarioModule from "@/hooks/useAtualizarGestaoUsuario";
+import * as useCadastroGestaoUsuarioModule from "@/hooks/useCadastroGestaoUsuario";
+import * as useGetUnidadesModule from "@/hooks/useGetUnidades";
+import * as useObterUsuarioGestaoModule from "@/hooks/useObterUsuarioGestao";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
 
 const mockPush = vi.fn();
 
@@ -53,23 +53,53 @@ describe("useCadastroUsuarioForm", () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        vi.spyOn(useUnidadesModule, "useFetchDREs").mockReturnValue({
-            data: [
-                { uuid: "dre-1", codigo_eol: "000001", nome: "DRE Centro" },
-                { uuid: "dre-2", codigo_eol: "000002", nome: "DRE Sul" },
-            ],
-            isLoading: false,
-            error: null,
-        } as never);
-
-        vi.spyOn(useUnidadesModule, "useFetchUEs").mockReturnValue({
-            data: [
-                { uuid: "ue-1", codigo_eol: "100001", nome: "EMEF Test 1" },
-                { uuid: "ue-2", codigo_eol: "100002", nome: "EMEF Test 2" },
-            ],
-            isLoading: false,
-            error: null,
-        } as never);
+        vi.spyOn(useGetUnidadesModule, "useGetUnidades").mockImplementation(
+            (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                if (tipo_unidade === "DRE") {
+                    return {
+                        data: [
+                            {
+                                uuid: "dre-1",
+                                codigo_eol: "000001",
+                                nome: "DRE Centro",
+                            },
+                            {
+                                uuid: "dre-2",
+                                codigo_eol: "000002",
+                                nome: "DRE Sul",
+                            },
+                        ],
+                        isLoading: false,
+                        error: null,
+                    } as never;
+                }
+                // Retorna UEs apenas se tiver uma DRE válida
+                if (dre && (dre === "dre-1" || dre === "dre-2")) {
+                    return {
+                        data: [
+                            {
+                                uuid: "ue-1",
+                                codigo_eol: "100001",
+                                nome: "EMEF Test 1",
+                            },
+                            {
+                                uuid: "ue-2",
+                                codigo_eol: "100002",
+                                nome: "EMEF Test 2",
+                            },
+                        ],
+                        isLoading: false,
+                        error: null,
+                    } as never;
+                }
+                // Retorna vazio se não houver DRE ou não for busca de DRE
+                return {
+                    data: [],
+                    isLoading: false,
+                    error: null,
+                } as never;
+            }
+        );
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
@@ -123,13 +153,24 @@ describe("useCadastroUsuarioForm", () => {
 
         await waitFor(() => {
             expect(result.current.dreOptions).toHaveLength(2);
-            expect(result.current.ueOptions).toHaveLength(2);
         });
 
         expect(result.current.dreOptions[0]).toEqual({
             uuid: "dre-1",
             codigo_eol: "000001",
             nome: "DRE Centro",
+        });
+
+        // UEs devem estar vazias inicialmente pois não há DRE selecionada
+        expect(result.current.ueOptions).toHaveLength(0);
+
+        // Quando selecionamos uma DRE, as UEs devem carregar
+        act(() => {
+            result.current.form.setValue("dre", "dre-1");
+        });
+
+        await waitFor(() => {
+            expect(result.current.ueOptions).toHaveLength(2);
         });
     });
 
@@ -564,7 +605,7 @@ describe("useCadastroUsuarioForm", () => {
             expect(mockMutate).toHaveBeenCalled();
             expect(toast).toHaveBeenCalledWith({
                 title: "Tudo certo por aqui!",
-                description: "A pessoa usuária foi cadastrada com sucesso!",
+                description: "O perfil foi cadastrado com sucesso!",
                 variant: "success",
             });
             expect(result.current.modalOpen).toBe(false);
@@ -1536,10 +1577,18 @@ describe("useCadastroUsuarioForm", () => {
                 result.current.handleDreChange("dre-2");
             });
 
+            // Aguardar a DRE ser alterada
             await waitFor(() => {
                 expect(result.current.form.getValues("dre")).toBe("dre-2");
-                expect(result.current.form.getValues("ue")).toBe("");
             });
+
+            // Campo UE deve ser limpo via handleDreChange
+            await waitFor(
+                () => {
+                    expect(result.current.form.getValues("ue")).toBe("");
+                },
+                { timeout: 2000 }
+            );
         });
 
         it("altera cargo após carregamento completo no modo edit", async () => {
@@ -1592,12 +1641,20 @@ describe("useCadastroUsuarioForm", () => {
                 result.current.handleCargoChange("ponto_focal");
             });
 
+            // Aguardar o cargo ser alterado
             await waitFor(() => {
                 expect(result.current.form.getValues("cargo")).toBe(
                     "ponto_focal"
                 );
-                expect(result.current.form.getValues("ue")).toBe("");
             });
+
+            // Campo UE deve ser limpo via handleCargoChange quando cargo é ponto_focal
+            await waitFor(
+                () => {
+                    expect(result.current.form.getValues("ue")).toBe("");
+                },
+                { timeout: 2000 }
+            );
         });
 
         it("carrega usuário INDIRETA e deixa rf vazio", async () => {

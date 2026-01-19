@@ -1,14 +1,14 @@
+import { toast } from "@/components/ui/headless-toast";
+import * as useAtualizarInfoAgressorHook from "@/hooks/useAtualizarInfoAgressor";
+import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
+import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import InformacoesAdicionais, { InformacoesAdicionaisRef } from "./index";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
-import * as useAtualizarInfoAgressorHook from "@/hooks/useAtualizarInfoAgressor";
-import { toast } from "@/components/ui/headless-toast";
-import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
 import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import InformacoesAdicionais, { InformacoesAdicionaisRef } from "./index";
 
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/hooks/useCategoriasDisponiveis");
@@ -1000,5 +1000,48 @@ describe("InformacoesAdicionais", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        const user = userEvent.setup();
+        const renderComponent = () =>
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        disabled={true}
+                    />
+                </QueryClientProvider>
+            );
+
+        renderComponent();
+
+        const nomeInput = screen.getByLabelText(
+            /Qual o nome da pessoa agressora\?/i
+        );
+        const idadeInput = screen.getByLabelText(
+            /Qual a idade da pessoa agressora\?/i
+        );
+        expect(nomeInput).toBeDisabled();
+        expect(idadeInput).toBeDisabled();
+
+        const logradouroInput = screen.getByLabelText(/Logradouro/i);
+        const numeroInput = screen.getByLabelText(/Número da residência/i);
+        expect(logradouroInput).toBeDisabled();
+        expect(numeroInput).toBeDisabled();
+
+        const selects = screen.getAllByRole("combobox");
+        selects.forEach((select) => {
+            expect(select).toBeDisabled();
+        });
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
+        });
+
+        await user.type(nomeInput, "Teste");
+        expect(nomeInput).toHaveValue("");
     });
 });

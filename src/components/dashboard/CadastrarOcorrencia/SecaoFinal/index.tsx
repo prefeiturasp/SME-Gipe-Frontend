@@ -1,8 +1,5 @@
 "use client";
 
-import { forwardRef, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -12,6 +9,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
 import {
     Select,
     SelectContent,
@@ -19,16 +17,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { formSchema, SecaoFinalData } from "./schema";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useDeclarantes } from "@/hooks/useDeclarantes";
 import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
-import { toast } from "@/components/ui/headless-toast";
+import { useDeclarantes } from "@/hooks/useDeclarantes";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { forwardRef, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { formSchema, SecaoFinalData } from "./schema";
 
 export type SecaoFinalProps = {
     onNext?: () => void;
     onPrevious?: () => void;
     showButtons?: boolean;
+    disabled?: boolean;
 };
 
 export type SecaoFinalRef = {
@@ -38,7 +39,7 @@ export type SecaoFinalRef = {
 };
 
 const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
-    ({ onNext, onPrevious, showButtons = true }, ref) => {
+    ({ onNext, onPrevious, showButtons = true, disabled = false }, ref) => {
         const {
             formData,
             setFormData,
@@ -163,13 +164,15 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 name="declarante"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel disabled={disabled}>
                                             Quem é o declarante?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
-                                            disabled={isLoadingDeclarantes}
+                                            disabled={
+                                                isLoadingDeclarantes || disabled
+                                            }
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
@@ -204,13 +207,14 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 name="comunicacaoSeguranca"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel disabled={disabled}>
                                             Houve comunicação com a segurança
                                             pública?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
+                                            disabled={disabled}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
@@ -238,12 +242,13 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 name="protocoloAcionado"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel disabled={disabled}>
                                             Qual protocolo acionado?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
                                             value={field.value}
+                                            disabled={disabled}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>

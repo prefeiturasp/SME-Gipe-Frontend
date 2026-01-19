@@ -1,8 +1,8 @@
 import {
-    PERFIL_GIPE,
-    PERFIL_PONTO_FOCAL,
     PERFIL_ASSISTENTE_DIRETOR,
     PERFIL_DIRETOR,
+    PERFIL_GIPE,
+    PERFIL_PONTO_FOCAL,
 } from "@/const";
 import type { FormDataCadastroUsuario } from "./schema";
 
@@ -82,6 +82,11 @@ export function buildCadastroPayload(
 
     const cpf = removeMask(formValues.cpf);
 
+    const isAppAdmin =
+        formValues.cargo === "diretor" || formValues.cargo === "assistente"
+            ? false
+            : formValues.isAdmin;
+
     return {
         username,
         name: formValues.fullName,
@@ -90,7 +95,7 @@ export function buildCadastroPayload(
         cargo: CARGO_MAP[formValues.cargo],
         rede: formValues.rede as "DIRETA" | "INDIRETA",
         unidades,
-        is_app_admin: formValues.isAdmin,
+        is_app_admin: isAppAdmin,
     };
 }
 

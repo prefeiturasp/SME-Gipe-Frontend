@@ -1,12 +1,12 @@
-import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
-import TabsContainer from "@/components/dashboard/GestaoUsuarios/TabsContainer";
 import Header from "@/components/dashboard/GestaoUsuarios/Header";
+import TabsContainer from "@/components/dashboard/GestaoUsuarios/TabsContainer";
 import PageHeader from "@/components/dashboard/PageHeader/PageHeader";
+import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
 
 export default function GestaoUsuarios() {
     return (
         <>
-            <PageHeader title="Gestão de usuários" showBackButton={false} />
+            <PageHeader title="Gestão de perfis" showBackButton={false} />
             <QuadroBranco>
                 <Header />
             </QuadroBranco>

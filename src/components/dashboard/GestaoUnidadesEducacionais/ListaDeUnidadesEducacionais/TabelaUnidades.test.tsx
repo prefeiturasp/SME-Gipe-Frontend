@@ -1,13 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
-import TabelaUnidades from "./TabelaUnidades";
 import { mockUnidades } from "@/components/mocks/unidades-mock";
-
+import TabelaUnidades from "./TabelaUnidades";
 
 describe("TabelaUnidades", () => {
     it("deve renderizar a tabela com os dados fornecidos", () => {
-        render(<TabelaUnidades dataUnidades={mockUnidades} />);
+        render(<TabelaUnidades dataUnidades={mockUnidades} status="ativa" />);
 
         expect(screen.getByTestId("tabela-unidades")).toBeInTheDocument();
         expect(screen.getByText("Unidade 1")).toBeInTheDocument();
@@ -15,7 +14,7 @@ describe("TabelaUnidades", () => {
     });
 
     it("deve exibir mensagem quando não houver unidades", () => {
-        render(<TabelaUnidades dataUnidades={[]} />);
+        render(<TabelaUnidades dataUnidades={[]} status="ativa" />);
 
         expect(
             screen.getByText("Nenhuma Unidade Educacional encontrada.")
@@ -32,30 +31,27 @@ describe("TabelaUnidades", () => {
             dre_nome: `DR ${i + 1}`,
             sigla: `DRE${i + 1}`,
             uuid: `uuid-${i + 1}`,
-            status: 'Ativa',
+            status: "Ativa",
         }));
 
-        render(<TabelaUnidades dataUnidades={manyUnidades} />);
+        render(<TabelaUnidades dataUnidades={manyUnidades} status="ativa" />);
 
-        // Verifica se a primeira página está correta
         expect(screen.getByText("Unidade 1")).toBeInTheDocument();
         expect(screen.getByText("Unidade 10")).toBeInTheDocument();
         expect(screen.queryByText("Unidade 11")).not.toBeInTheDocument();
 
         const user = userEvent.setup();
 
-        // Navega para a próxima página
         const nextButton = screen.getByTestId("next-page-button");
         await user.click(nextButton);
 
-        // Verifica se a segunda página está correta
         expect(screen.getByText("Unidade 11")).toBeInTheDocument();
         expect(screen.getByText("Unidade 20")).toBeInTheDocument();
         expect(screen.queryByText("Unidade 21")).not.toBeInTheDocument();
     });
 
     it("deve desabilitar o botão de página anterior na primeira página", () => {
-        render(<TabelaUnidades dataUnidades={mockUnidades} />);
+        render(<TabelaUnidades dataUnidades={mockUnidades} status="ativa" />);
 
         const prevButton = screen.getByTestId("prev-page-button");
         expect(prevButton).toBeDisabled();
@@ -71,10 +67,10 @@ describe("TabelaUnidades", () => {
             dre_nome: `DR ${i + 1}`,
             sigla: `DRE${i + 1}`,
             uuid: `uuid-${i + 1}`,
-            status: 'Ativa',
+            status: "Ativa",
         }));
 
-        render(<TabelaUnidades dataUnidades={unidades} />);
+        render(<TabelaUnidades dataUnidades={unidades} status="ativa" />);
 
         const nextButton = screen.getByTestId("next-page-button");
         expect(nextButton).toBeDisabled();
@@ -84,18 +80,20 @@ describe("TabelaUnidades", () => {
         const unidadesSemUuid = [
             {
                 id: 999,
-                uuid: '',
+                uuid: "",
                 nome: "Unidade Sem UUID",
                 tipo_unidade: "Tipo A",
                 rede_label: "Rede Pública",
                 codigo_eol: "EOL001",
                 dre_nome: "DR 1",
                 sigla: "DRE1",
-                status: 'Ativa',
+                status: "Ativa",
             },
         ];
 
-        render(<TabelaUnidades dataUnidades={unidadesSemUuid} />);
+        render(
+            <TabelaUnidades dataUnidades={unidadesSemUuid} status="ativa" />
+        );
 
         expect(screen.getByText("Unidade Sem UUID")).toBeInTheDocument();
     });
@@ -104,32 +102,34 @@ describe("TabelaUnidades", () => {
         const unidadesSemIds = [
             {
                 id: 0,
-                uuid: '',
+                uuid: "",
                 nome: "Unidade Com ID 0",
                 tipo_unidade: "Tipo A",
                 rede_label: "Rede Pública",
                 codigo_eol: "EOL001",
                 dre_nome: "DR 1",
                 sigla: "DRE1",
-                status: 'Ativa',
+                status: "Ativa",
             },
             {
                 id: 0,
-                uuid: '',
+                uuid: "",
                 nome: "Unidade Com ID 0 - Segunda",
                 tipo_unidade: "Tipo B",
                 rede_label: "Rede Particular",
                 codigo_eol: "EOL002",
                 dre_nome: "DR 2",
                 sigla: "DRE2",
-                status: 'Ativa',
+                status: "Ativa",
             },
         ];
 
-        render(<TabelaUnidades dataUnidades={unidadesSemIds} />);
+        render(<TabelaUnidades dataUnidades={unidadesSemIds} status="ativa" />);
 
         expect(screen.getByText("Unidade Com ID 0")).toBeInTheDocument();
-        expect(screen.getByText("Unidade Com ID 0 - Segunda")).toBeInTheDocument();
+        expect(
+            screen.getByText("Unidade Com ID 0 - Segunda")
+        ).toBeInTheDocument();
     });
 
     it("deve navegar para a página anterior", async () => {
@@ -142,20 +142,18 @@ describe("TabelaUnidades", () => {
             dre_nome: `DR ${i + 1}`,
             sigla: `DRE${i + 1}`,
             uuid: `uuid-${i + 1}`,
-            status: 'Ativa',
+            status: "Ativa",
         }));
 
-        render(<TabelaUnidades dataUnidades={manyUnidades} />);
+        render(<TabelaUnidades dataUnidades={manyUnidades} status="ativa" />);
 
         const user = userEvent.setup();
 
-        // Navega para a próxima página
         const nextButton = screen.getByTestId("next-page-button");
         await user.click(nextButton);
 
         expect(screen.getByText("Unidade 11")).toBeInTheDocument();
 
-        // Volta para a página anterior
         const prevButton = screen.getByTestId("prev-page-button");
         await user.click(prevButton);
 
@@ -172,18 +170,48 @@ describe("TabelaUnidades", () => {
             dre_nome: `DR ${i + 1}`,
             sigla: `DRE${i + 1}`,
             uuid: `uuid-${i + 1}`,
-            status: 'Ativa',
+            status: "Ativa",
         }));
 
-        render(<TabelaUnidades dataUnidades={manyUnidades} />);
+        render(<TabelaUnidades dataUnidades={manyUnidades} status="ativa" />);
 
         const user = userEvent.setup();
 
-        // Clica no botão da página 2
         const page2Button = screen.getByText("2");
         await user.click(page2Button);
 
-        // Verifica se a segunda página está sendo exibida
         expect(screen.getByText("Unidade 11")).toBeInTheDocument();
+    });
+
+    it("aplica cor cinza nos headers e cells quando status é inativa", () => {
+        const { container } = render(
+            <TabelaUnidades dataUnidades={mockUnidades} status="inativa" />
+        );
+
+        const headers = container.querySelectorAll("thead th");
+        headers.forEach((header) => {
+            expect(header).toHaveClass("text-[#B0B0B0]");
+        });
+
+        const cells = container.querySelectorAll("tbody td");
+        cells.forEach((cell) => {
+            expect(cell).toHaveClass("text-[#B0B0B0]");
+        });
+    });
+
+    it("aplica cor normal nos headers e cells quando status é ativa", () => {
+        const { container } = render(
+            <TabelaUnidades dataUnidades={mockUnidades} status="ativa" />
+        );
+
+        const headers = container.querySelectorAll("thead th");
+        headers.forEach((header) => {
+            expect(header).toHaveClass("text-[#42474a]");
+        });
+
+        const cells = container.querySelectorAll("tbody td");
+        cells.forEach((cell) => {
+            expect(cell).toHaveClass("text-[#42474a]");
+        });
     });
 });

@@ -1,4 +1,3 @@
-import { Control, FieldPath } from "react-hook-form";
 import {
     FormControl,
     FormField,
@@ -7,6 +6,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Control, FieldPath } from "react-hook-form";
 import { FormularioDreData } from "./schema";
 
 type RadioFormProps = {
@@ -30,13 +30,13 @@ export function RadioForm({ control, name, label }: Readonly<RadioFormProps>) {
                                 value={field.value ?? ""}
                                 className="flex flex-col space-y-2"
                             >
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                     <RadioGroupItem value="Sim" />
                                     <span className="text-sm text-[#42474a]">
                                         Sim
                                     </span>
                                 </label>
-                                <label className="flex items-center space-x-2">
+                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                     <RadioGroupItem value="Não" />
                                     <span className="text-sm text-[#42474a]">
                                         Não
