@@ -10,19 +10,21 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 
-interface ModalInativacaoProps {
+interface ModalConfirmacaoProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onInativar: (motivo: string) => void;
+    onConfirm: (motivo: string) => void;
     isLoading?: boolean;
+    mode?: "inativar" | "reativar";
 }
 
-export default function ModalInativacao({
+export default function ModalConfirmacao({
     open,
     onOpenChange,
-    onInativar,
+    onConfirm,
     isLoading = false,
-}: Readonly<ModalInativacaoProps>) {
+    mode = "inativar",
+}: Readonly<ModalConfirmacaoProps>) {
     const [motivo, setMotivo] = useState("");
 
     return (
@@ -30,14 +32,15 @@ export default function ModalInativacao({
             <DialogContent className="p-6 rounded-[4px] w-full max-w-[640px]">
                 <DialogHeader>
                     <DialogTitle className="text-[#42474A] text-[20px] font-[700]">
-                        Inativação de Unidade Educacional
+                        {mode === "inativar"
+                            ? "Inativação de Unidade Educacional"
+                            : "Reativação de Unidade Educacional"}
                     </DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="mb-2 text-[#42474A] text-[14px]">
-                    Ao inativar o perfil da unidade educacional, não será mais
-                    possível vincular novas intercorrências a ela e as pessoas
-                    dessa UE deixarão de ter acesso ao GIPE. Tem certeza de que
-                    deseja continuar?
+                    {mode === "inativar"
+                        ? "Ao inativar o perfil da unidade educacional, não será mais possível vincular novas intercorrências a ela e as pessoas dessa UE deixarão de ter acesso ao GIPE. Tem certeza de que deseja continuar?"
+                        : "Ao reativar o perfil da unidade educacional, novas intercorrências poderão ser vinculadas a ela. Além disso, as pessoas dessa UE terão acesso ao GIPE novamente. Tem certeza de que deseja continuar?"}
                 </DialogDescription>
 
                 <div className="mb-4">
@@ -45,7 +48,9 @@ export default function ModalInativacao({
                         htmlFor="motivo"
                         className="text-[#42474A] text-[14px] font-[700] mb-2 block"
                     >
-                        Motivo da inativação da UE*
+                        {mode === "inativar"
+                            ? "Motivo da inativação da UE*"
+                            : "Motivo da reativação da UE*"}
                     </label>
                     <textarea
                         id="motivo"
@@ -69,11 +74,13 @@ export default function ModalInativacao({
                     <Button
                         type="button"
                         variant="submit"
-                        onClick={() => onInativar(motivo)}
+                        onClick={() => onConfirm(motivo)}
                         disabled={isLoading || motivo.trim() === ""}
                         loading={isLoading}
                     >
-                        Inativar Unidade Educacional
+                        {mode === "inativar"
+                            ? "Inativar Unidade Educacional"
+                            : "Reativar Unidade Educacional"}
                     </Button>
                 </div>
             </DialogContent>

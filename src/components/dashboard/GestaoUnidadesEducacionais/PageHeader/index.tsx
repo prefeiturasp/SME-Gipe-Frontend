@@ -10,7 +10,7 @@ import { Ban } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import ModalInativacao from "../FormularioCadastroUnidadeEducacional/ModalInativacao";
+import ModalConfirmacao from "../FormularioCadastroUnidadeEducacional/ModalConfirmacao";
 
 interface PageHeaderProps {
     title: string;
@@ -26,6 +26,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     unidadeUuid,
 }) => {
     const [openModal, setOpenModal] = useState(false);
+    const [modalMode, setModalMode] = useState<"inativar" | "reativar">(
+        "inativar",
+    );
     const queryClient = useQueryClient();
     const router = useRouter();
 
@@ -33,15 +36,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         uuid: unidadeUuid || "",
     });
 
-    const { mutateAsync: inativarUnidade, isPending } =
+    const { mutateAsync: inativarUnidade, isPending: isInativando } =
         useInativarUnidadeGestao();
 
-    const handleInativarUnidadeEducacional = async (motivoInativacao: string) => {
-
-
+    const handleInativarUnidadeEducacional = async (
+        motivoInativacao: string,
+    ) => {
         if (!unidadeUuid) return;
 
-        const response = await inativarUnidade({ uuid: unidadeUuid, motivo_inativacao: motivoInativacao });
+        const response = await inativarUnidade({
+            uuid: unidadeUuid,
+            motivo_inativacao: motivoInativacao,
+        });
 
         if (response.success) {
             toast({
@@ -61,6 +67,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 variant: "error",
             });
         }
+    };
+
+    const handleReativarUnidadeEducacional = (motivoReativacao: string) => {
+        setOpenModal(false);
+        console.log("Motivo de reativação:", motivoReativacao);
     };
 
     return (
@@ -84,8 +95,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                             variant="outlineDestructive"
                             type="button"
                             className="text-center rounded-md text-[14px] font-[700]"
-                            onClick={() => setOpenModal(true)}
-                            disabled={isPending}
+                            onClick={() => {
+                                setModalMode("inativar");
+                                setOpenModal(true);
+                            }}
+                            disabled={isInativando}
                         >
                             <Ban className="mr-2" width="20" />
                             Inativar Unidade Educacional
@@ -95,6 +109,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                             variant="submit"
                             type="button"
                             className="text-center rounded-md text-[14px] font-[700]"
+                            onClick={() => {
+                                setModalMode("reativar");
+                                setOpenModal(true);
+                            }}
                         >
                             Reativar Unidade Educacional
                         </Button>
@@ -113,11 +131,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             )}
 
             {edit && (
-                <ModalInativacao
+                <ModalConfirmacao
                     open={openModal}
                     onOpenChange={setOpenModal}
-                    onInativar={handleInativarUnidadeEducacional}
-                    isLoading={isPending}
+                    onConfirm={
+                        modalMode === "inativar"
+                            ? handleInativarUnidadeEducacional
+                            : handleReativarUnidadeEducacional
+                    }
+                    isLoading={isInativando}
+                    mode={modalMode}
                 />
             )}
         </div>

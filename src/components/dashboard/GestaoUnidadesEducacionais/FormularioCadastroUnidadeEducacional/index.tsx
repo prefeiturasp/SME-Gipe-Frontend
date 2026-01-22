@@ -31,8 +31,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FormData, formSchema } from "./schema";
 import MensagemInativacao from "./MensagemInativacao";
+import { FormData, formSchema } from "./schema";
 
 const redeOptions = [
     { label: "Direta", value: "DIRETA" },
@@ -77,6 +77,8 @@ export default function FormularioCadastroUnidadeEducacional({
     const dataInativacaoFormatada = unidadeData?.data_inativacao_formatada;
     const responsavelInativacaoNome = unidadeData?.responsavel_inativacao_nome;
     const motivoInativacao = unidadeData?.motivo_inativacao;
+
+    const disabledFields = mode === "edit" || !isActive;
 
     const defaultValues = useMemo(() => {
         if (mode === "edit" && unidadeData) {
@@ -217,7 +219,7 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="rede"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel disabled={mode === "edit"}>
+                                <FormLabel disabled={disabledFields}>
                                     Tipo*
                                 </FormLabel>
                                 <FormControl>
@@ -225,7 +227,7 @@ export default function FormularioCadastroUnidadeEducacional({
                                         value={field.value}
                                         onValueChange={field.onChange}
                                         disabled={
-                                            mode === "edit" || carregandoDados
+                                            disabledFields || carregandoDados
                                         }
                                     >
                                         <SelectTrigger className="w-full">
@@ -252,7 +254,7 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="tipo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel disabled={mode === "edit"}>
+                                <FormLabel disabled={disabledFields}>
                                     Etapa/modalidade*
                                 </FormLabel>
                                 <FormControl>
@@ -262,7 +264,7 @@ export default function FormularioCadastroUnidadeEducacional({
                                         disabled={
                                             field.disabled ||
                                             carregandoDados ||
-                                            mode === "edit"
+                                            disabledFields
                                         }
                                     >
                                         <SelectTrigger className="w-full">
@@ -289,12 +291,12 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="codigoEol"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel disabled={mode === "edit"}>
+                                <FormLabel disabled={disabledFields}>
                                     Código EOL*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
-                                        disabled={mode === "edit"}
+                                        disabled={disabledFields}
                                         {...field}
                                         type="number"
                                         placeholder="Exemplo: 1234567"
@@ -313,11 +315,12 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="nomeUnidadeEducacional"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>
+                                <FormLabel disabled={!isActive}>
                                     Nome da Unidade Educacional*
                                 </FormLabel>
                                 <FormControl>
                                     <Input
+                                        disabled={!isActive}
                                         {...field}
                                         type="text"
                                         placeholder="Exemplo: EMEF João da Silva"
@@ -335,12 +338,14 @@ export default function FormularioCadastroUnidadeEducacional({
                             name="diretoriaRegional"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Diretoria Regional*</FormLabel>
+                                    <FormLabel disabled={!isActive}>
+                                        Diretoria Regional*
+                                    </FormLabel>
                                     <FormControl>
                                         <Select
                                             value={field.value}
                                             onValueChange={field.onChange}
-                                            disabled={isPontoFocal}
+                                            disabled={!isActive || isPontoFocal}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Selecione" />
@@ -357,7 +362,7 @@ export default function FormularioCadastroUnidadeEducacional({
                                                         >
                                                             {dre.nome}
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -372,11 +377,12 @@ export default function FormularioCadastroUnidadeEducacional({
                             name="siglaDre"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-[#42474a] text-[14px] font-[700]">
+                                    <FormLabel disabled={!isActive}>
                                         Sigla da DRE (opcional)
                                     </FormLabel>
                                     <FormControl>
                                         <Input
+                                            disabled={!isActive}
                                             {...field}
                                             type="text"
                                             placeholder="Digite..."
@@ -393,8 +399,12 @@ export default function FormularioCadastroUnidadeEducacional({
                 <div className="mt-4">
                     {!isActive && motivoInativacao && (
                         <MensagemInativacao
-                            dataInativacaoFormatada={dataInativacaoFormatada ?? ""}
-                            responsavelInativacaoNome={responsavelInativacaoNome ?? ""}
+                            dataInativacaoFormatada={
+                                dataInativacaoFormatada ?? ""
+                            }
+                            responsavelInativacaoNome={
+                                responsavelInativacaoNome ?? ""
+                            }
                             motivoInativacao={motivoInativacao}
                         />
                     )}
@@ -406,7 +416,7 @@ export default function FormularioCadastroUnidadeEducacional({
                         variant="customOutline"
                         onClick={() =>
                             router.push(
-                                "/dashboard/gestao-unidades-educacionais"
+                                "/dashboard/gestao-unidades-educacionais",
                             )
                         }
                     >
@@ -415,7 +425,7 @@ export default function FormularioCadastroUnidadeEducacional({
                     <Button
                         type="submit"
                         variant="submit"
-                        disabled={!isFormValid || isPending}
+                        disabled={!isFormValid || isPending || !isActive}
                         loading={isPending}
                     >
                         {mode === "edit" ? "Salvar alterações" : "Cadastrar UE"}
