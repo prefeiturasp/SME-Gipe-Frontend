@@ -53,6 +53,14 @@ vi.mock("@/hooks/useInativarUnidadeGestao", () => ({
     }),
 }));
 
+const mockReativarUnidade = vi.fn();
+vi.mock("@/hooks/useReativarUnidadeGestao", () => ({
+    useReativarUnidadeGestao: () => ({
+        mutateAsync: mockReativarUnidade,
+        isPending: false,
+    }),
+}));
+
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: vi.fn(),
 }));
@@ -318,10 +326,9 @@ describe("PageHeader", () => {
         });
     });
 
-    it("deve chamar handleReativarUnidadeEducacional ao confirmar reativação", async () => {
-        const consoleLogSpy = vi
-            .spyOn(console, "log")
-            .mockImplementation(() => {});
+    it("deve chamar a action de reativar e redirecionar ao confirmar", async () => {
+        const { toast } = await import("@/components/ui/headless-toast");
+        mockReativarUnidade.mockResolvedValueOnce({ success: true });
         mockObterUnidade.mockReturnValue({
             data: mockUnidadeInativa,
             isLoading: false,
@@ -350,13 +357,73 @@ describe("PageHeader", () => {
         fireEvent.click(confirmarButton);
 
         await waitFor(() => {
-            expect(consoleLogSpy).toHaveBeenCalledWith(
-                "Motivo de reativação:",
-                "motivo teste",
+            expect(mockReativarUnidade).toHaveBeenCalledWith({
+                uuid: "unidade-123",
+                motivo_reativacao: "motivo teste",
+            });
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Tudo certo por aqui!",
+                    description:
+                        "A Unidade Educacional foi reativada com sucesso.",
+                    variant: "success",
+                }),
+            );
+            expect(mockInvalidateQueries).toHaveBeenCalledWith({
+                queryKey: ["unidade-gestao", "unidade-123"],
+            });
+            expect(mockPush).toHaveBeenCalledWith(
+                "/dashboard/gestao-unidades-educacionais?tab=ativas",
             );
         });
+    });
 
-        consoleLogSpy.mockRestore();
+    it("deve exibir toast de erro ao falhar a reativação", async () => {
+        const { toast } = await import("@/components/ui/headless-toast");
+        mockReativarUnidade.mockResolvedValueOnce({
+            success: false,
+            error: "Erro ao reativar unidade",
+        });
+        mockObterUnidade.mockReturnValue({
+            data: mockUnidadeInativa,
+            isLoading: false,
+        });
+
+        render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar unidade educacional/i,
+        });
+        fireEvent.click(reativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-confirmacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+
+        const confirmarButton = screen.getByText("Confirmar Reativação");
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(mockReativarUnidade).toHaveBeenCalledWith({
+                uuid: "unidade-123",
+                motivo_reativacao: "motivo teste",
+            });
+            expect(toast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Não conseguimos concluir a ação!",
+                    description: "Erro ao reativar unidade",
+                    variant: "error",
+                }),
+            );
+            expect(mockPush).not.toHaveBeenCalled();
+        });
     });
 
     it("não deve chamar a action de inativar quando unidadeUuid não é fornecido", async () => {
@@ -390,6 +457,40 @@ describe("PageHeader", () => {
 
         await waitFor(() => {
             expect(mockInativarUnidade).not.toHaveBeenCalled();
+        });
+    });
+
+    it("não deve chamar a action de reativar quando unidadeUuid não é fornecido", async () => {
+        mockObterUnidade.mockReturnValue({
+            data: { ...mockUnidadeInativa, rede: "INDIRETA" },
+            isLoading: false,
+        });
+
+        const { rerender } = render(
+            <PageHeader
+                title="Editar Unidade Educacional"
+                edit={true}
+                unidadeUuid="unidade-123"
+            />,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar unidade educacional/i,
+        });
+        fireEvent.click(reativarButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-confirmacao");
+            expect(modal).toHaveAttribute("data-open", "true");
+        });
+
+        rerender(<PageHeader title="Editar Unidade Educacional" edit={true} />);
+
+        const confirmarButton = screen.getByText("Confirmar Reativação");
+        fireEvent.click(confirmarButton);
+
+        await waitFor(() => {
+            expect(mockReativarUnidade).not.toHaveBeenCalled();
         });
     });
 
