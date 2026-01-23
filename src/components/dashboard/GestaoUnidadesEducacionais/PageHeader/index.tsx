@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useInativarUnidadeGestao } from "@/hooks/useInativarUnidadeGestao";
 import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
+import { useReativarUnidadeGestao } from "@/hooks/useReativarUnidadeGestao";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ban } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +40,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     const { mutateAsync: inativarUnidade, isPending: isInativando } =
         useInativarUnidadeGestao();
 
+    const { mutateAsync: reativarUnidade, isPending: isReativando } =
+        useReativarUnidadeGestao();
+
     const handleInativarUnidadeEducacional = async (
         motivoInativacao: string,
     ) => {
@@ -69,9 +73,34 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         }
     };
 
-    const handleReativarUnidadeEducacional = (motivoReativacao: string) => {
-        setOpenModal(false);
-        console.log("Motivo de reativação:", motivoReativacao);
+    const handleReativarUnidadeEducacional = async (
+        motivoReativacao: string,
+    ) => {
+        if (!unidadeUuid) return;
+
+        const response = await reativarUnidade({
+            uuid: unidadeUuid,
+            motivo_reativacao: motivoReativacao,
+        });
+
+        if (response.success) {
+            toast({
+                title: "Tudo certo por aqui!",
+                description: "A Unidade Educacional foi reativada com sucesso.",
+                variant: "success",
+            });
+            setOpenModal(false);
+            queryClient.invalidateQueries({
+                queryKey: ["unidade-gestao", unidadeUuid],
+            });
+            router.push("/dashboard/gestao-unidades-educacionais?tab=ativas");
+        } else {
+            toast({
+                title: "Não conseguimos concluir a ação!",
+                description: response.error,
+                variant: "error",
+            });
+        }
     };
 
     return (
@@ -113,6 +142,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 setModalMode("reativar");
                                 setOpenModal(true);
                             }}
+                            disabled={isReativando}
                         >
                             Reativar Unidade Educacional
                         </Button>
@@ -139,7 +169,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                             ? handleInativarUnidadeEducacional
                             : handleReativarUnidadeEducacional
                     }
-                    isLoading={isInativando}
+                    isLoading={isInativando || isReativando}
                     mode={modalMode}
                 />
             )}
