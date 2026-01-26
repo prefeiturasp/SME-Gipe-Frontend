@@ -121,12 +121,17 @@ export default function FormularioCadastroUnidadeEducacional({
             setDadosIniciaisCarregados(false);
             setCarregandoDados(false);
             montagemInicialRef.current = true;
+        } else if (mode === "create" && montagemInicialRef.current) {
+            montagemInicialRef.current = false;
         }
     }, [mode, unidadeUuid]);
 
-    // Limpar campos ao mudar o tipo (rede)
     useEffect(() => {
-        if (mode === "create" && !montagemInicialRef.current) {
+        if (
+            mode === "create" &&
+            redeSelecionada &&
+            !montagemInicialRef.current
+        ) {
             form.setValue("tipo", "");
             form.setValue("codigoEol", "");
             form.setValue("nomeUnidadeEducacional", "");
@@ -176,6 +181,10 @@ export default function FormularioCadastroUnidadeEducacional({
 
     const isDreSelected = tipoSelecionado === "DRE";
     const mostrarCamposAdicionais = redeSelecionada && tipoSelecionado;
+    const gridColsFirstRow =
+        !isPontoFocal && mostrarCamposAdicionais
+            ? "md:grid-cols-3"
+            : "md:grid-cols-2";
 
     const isFormValid = form.formState.isValid;
 
@@ -236,7 +245,7 @@ export default function FormularioCadastroUnidadeEducacional({
                     Cadastre as informações da Unidade Educacional.
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${gridColsFirstRow}`}>
                     <FormField
                         control={form.control}
                         name="rede"
@@ -314,10 +323,7 @@ export default function FormularioCadastroUnidadeEducacional({
                             </FormItem>
                         )}
                     />
-                </div>
-
-                {mostrarCamposAdicionais && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {!isPontoFocal && mostrarCamposAdicionais && (
                         <FormField
                             control={form.control}
                             name="codigoEol"
@@ -326,28 +332,97 @@ export default function FormularioCadastroUnidadeEducacional({
                                     <FormLabel disabled={disabledFields}>
                                         Código EOL*
                                     </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            disabled={disabledFields}
-                                            {...field}
-                                            type="text"
-                                            placeholder="Exemplo: 123456"
-                                            className="font-normal"
-                                            maxLength={6}
-                                            onChange={(e) => {
-                                                const value =
-                                                    e.target.value.replace(
-                                                        /\D/g,
-                                                        "",
-                                                    );
-                                                field.onChange(value);
-                                            }}
-                                        />
-                                    </FormControl>
+                                    <div className="flex items-start">
+                                        <FormControl>
+                                            <Input
+                                                disabled={disabledFields}
+                                                {...field}
+                                                type="text"
+                                                placeholder="Exemplo: 123456"
+                                                className="font-normal rounded-r-none"
+                                                maxLength={6}
+                                                onChange={(e) => {
+                                                    const value =
+                                                        e.target.value.replace(
+                                                            /\D/g,
+                                                            "",
+                                                        );
+                                                    field.onChange(value);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        {redeSelecionada === "DIRETA" && (
+                                            <Button
+                                                type="button"
+                                                variant="submit"
+                                                size="sm"
+                                                className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                disabled={
+                                                    disabledFields ||
+                                                    field.value.length !== 6
+                                                }
+                                            >
+                                                Consultar
+                                            </Button>
+                                        )}
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                    )}
+                </div>
+
+                {mostrarCamposAdicionais && (
+                    <div className={`grid grid-cols-1 gap-4 md:grid-cols-2`}>
+                        {isPontoFocal && (
+                            <FormField
+                                control={form.control}
+                                name="codigoEol"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel disabled={disabledFields}>
+                                            Código EOL*
+                                        </FormLabel>
+                                        <div className="flex items-start">
+                                            <FormControl>
+                                                <Input
+                                                    disabled={disabledFields}
+                                                    {...field}
+                                                    type="text"
+                                                    placeholder="Exemplo: 123456"
+                                                    className="font-normal rounded-r-none"
+                                                    maxLength={6}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value.replace(
+                                                                /\D/g,
+                                                                "",
+                                                            );
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            {redeSelecionada === "DIRETA" && (
+                                                <Button
+                                                    type="button"
+                                                    variant="submit"
+                                                    size="sm"
+                                                    className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                    disabled={
+                                                        disabledFields ||
+                                                        field.value.length !== 6
+                                                    }
+                                                >
+                                                    Consultar
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
                             name="nomeUnidadeEducacional"
@@ -370,7 +445,7 @@ export default function FormularioCadastroUnidadeEducacional({
                             )}
                         />
 
-                        {!isDreSelected ? (
+                        {!isDreSelected && !isPontoFocal && (
                             <FormField
                                 control={form.control}
                                 name="diretoriaRegional"
@@ -383,9 +458,7 @@ export default function FormularioCadastroUnidadeEducacional({
                                             <Select
                                                 value={field.value}
                                                 onValueChange={field.onChange}
-                                                disabled={
-                                                    !isActive || isPontoFocal
-                                                }
+                                                disabled={!isActive}
                                             >
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Selecione" />
@@ -411,7 +484,9 @@ export default function FormularioCadastroUnidadeEducacional({
                                     </FormItem>
                                 )}
                             />
-                        ) : (
+                        )}
+
+                        {isDreSelected && (
                             <FormField
                                 control={form.control}
                                 name="siglaDre"
