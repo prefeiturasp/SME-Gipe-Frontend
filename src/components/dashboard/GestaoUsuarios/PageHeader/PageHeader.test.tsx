@@ -9,6 +9,8 @@ import PageHeader from "./PageHeader";
 const mockRouterPush = vi.fn();
 const mockMutateAsyncInativar = vi.fn();
 const mockMutateAsyncReativar = vi.fn();
+let mockIsPendingInativar = false;
+let mockIsPendingReativar = false;
 
 vi.mock("@/hooks/useObterUsuarioGestao", () => ({
     useObterUsuarioGestao: vi.fn(),
@@ -23,14 +25,18 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/hooks/useInativarGestaoUsuario", () => ({
     useInativarGestaoUsuario: () => ({
         mutateAsync: mockMutateAsyncInativar,
-        isPending: false,
+        get isPending() {
+            return mockIsPendingInativar;
+        },
     }),
 }));
 
 vi.mock("@/hooks/useReativarGestaoUsuario", () => ({
     useReativarGestaoUsuario: () => ({
         mutateAsync: mockMutateAsyncReativar,
-        isPending: false,
+        get isPending() {
+            return mockIsPendingReativar;
+        },
     }),
 }));
 
@@ -56,10 +62,12 @@ const createWrapper = () => {
 describe("PageHeader", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockIsPendingInativar = false;
+        mockIsPendingReativar = false;
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: true },
             isLoading: false,
@@ -72,10 +80,10 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" />
-            </Wrapper>
+            </Wrapper>,
         );
         expect(
-            screen.getByRole("heading", { name: /test title/i })
+            screen.getByRole("heading", { name: /test title/i }),
         ).toBeInTheDocument();
     });
 
@@ -84,13 +92,13 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const backButton = screen.getByRole("link");
         expect(backButton).toHaveAttribute(
             "href",
-            "/dashboard/gestao-usuarios"
+            "/dashboard/gestao-usuarios",
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -104,13 +112,13 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={false} />
-            </Wrapper>
+            </Wrapper>,
         );
         const backButton = screen.getByRole("link", { name: /voltar/i });
         expect(backButton).toBeInTheDocument();
         expect(backButton).toHaveAttribute(
             "href",
-            "/dashboard/gestao-usuarios"
+            "/dashboard/gestao-usuarios",
         );
     });
 
@@ -125,7 +133,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -148,7 +156,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -158,19 +166,27 @@ describe("PageHeader", () => {
 
         expect(screen.getByText("Inativação de perfil")).toBeInTheDocument();
 
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
+        await user.type(textarea, "Este é um motivo de inativação de teste.");
+
         const confirmarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith({
+            uuid: "test-uuid",
+            motivo_inativacao: "Este é um motivo de inativação de teste.",
+        });
         expect(mockToast).toHaveBeenCalledWith({
             title: "Tudo certo por aqui!",
             description: "O perfil foi inativado com sucesso.",
             variant: "success",
         });
         expect(mockRouterPush).toHaveBeenCalledWith(
-            "/dashboard/gestao-usuarios?tab=inativos"
+            "/dashboard/gestao-usuarios?tab=inativos",
         );
     });
 
@@ -189,7 +205,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -197,12 +213,20 @@ describe("PageHeader", () => {
         });
         await user.click(inativarButton);
 
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
+        await user.type(textarea, "Este é um motivo de inativação de teste.");
+
         const confirmarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith({
+            uuid: "test-uuid",
+            motivo_inativacao: "Este é um motivo de inativação de teste.",
+        });
         expect(mockToast).toHaveBeenCalledWith({
             title: "Não conseguimos concluir a ação!",
             description: "Erro de teste",
@@ -225,7 +249,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -233,12 +257,20 @@ describe("PageHeader", () => {
         });
         await user.click(inativarButton);
 
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
+        await user.type(textarea, "Motivo de teste");
+
         const confirmarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
         });
         await user.click(confirmarButton);
 
-        expect(mockMutateAsyncInativar).toHaveBeenCalledWith("test-uuid");
+        expect(mockMutateAsyncInativar).toHaveBeenCalledWith({
+            uuid: "test-uuid",
+            motivo_inativacao: "Motivo de teste",
+        });
         expect(mockToast).toHaveBeenCalledWith({
             title: "Não conseguimos concluir a ação!",
             description: "Erro ao inativar usuário.",
@@ -255,13 +287,18 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
         });
         await user.click(inativarButton);
+
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
+        await user.type(textarea, "Motivo de teste");
 
         const confirmarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
@@ -276,7 +313,7 @@ describe("PageHeader", () => {
     it("deve renderizar o botão de Reativar perfil quando usuário inativo", () => {
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -287,7 +324,7 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -301,7 +338,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -316,7 +353,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -327,8 +364,8 @@ describe("PageHeader", () => {
         expect(screen.getByText("Reativação de perfil")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Ao reativar o perfil, a pessoa terá acesso ao GIPE novamente. Tem certeza que deseja continuar?"
-            )
+                "Ao reativar o perfil, a pessoa terá acesso ao GIPE novamente. Tem certeza que deseja continuar?",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -338,7 +375,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -353,7 +390,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -375,7 +412,7 @@ describe("PageHeader", () => {
             variant: "success",
         });
         expect(mockRouterPush).toHaveBeenCalledWith(
-            "/dashboard/gestao-usuarios?tab=ativos"
+            "/dashboard/gestao-usuarios?tab=ativos",
         );
     });
 
@@ -388,7 +425,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -403,7 +440,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -431,7 +468,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -442,7 +479,7 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -468,7 +505,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -483,7 +520,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -503,5 +540,237 @@ describe("PageHeader", () => {
             variant: "error",
         });
         expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("deve chamar onClickBack quando o botão de voltar é clicado no modo edit", async () => {
+        const user = userEvent.setup();
+        const mockOnClickBack = vi.fn();
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    onClickBack={mockOnClickBack}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const backButton = screen.getByRole("link");
+        await user.click(backButton);
+
+        expect(mockOnClickBack).toHaveBeenCalledTimes(1);
+    });
+
+    it("deve chamar onClickBack quando o botão de voltar é clicado no modo não edit", async () => {
+        const user = userEvent.setup();
+        const mockOnClickBack = vi.fn();
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={false}
+                    onClickBack={mockOnClickBack}
+                />
+            </Wrapper>,
+        );
+
+        const backButton = screen.getByRole("link", { name: /voltar/i });
+        await user.click(backButton);
+
+        expect(mockOnClickBack).toHaveBeenCalledTimes(1);
+    });
+
+    it("não deve renderizar botões quando usuarioData é undefined", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        // Quando usuarioData?.is_active é undefined, o código renderiza o botão "Reativar perfil"
+        expect(
+            screen.queryByRole("button", { name: /inativar perfil/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: /reativar perfil/i }),
+        ).toBeInTheDocument();
+    });
+
+    it("deve lidar com usuarioData null", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: null,
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        // Quando usuarioData?.is_active é null/undefined, o código renderiza o botão "Reativar perfil"
+        expect(
+            screen.queryByRole("button", { name: /inativar perfil/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: /reativar perfil/i }),
+        ).toBeInTheDocument();
+    });
+
+    it("deve renderizar com is_active falso explícito", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).toBeInTheDocument();
+        expect(reativarButton).not.toBeDisabled();
+    });
+
+    it("deve desabilitar botão de inativar quando isPendingInativar é true", () => {
+        mockIsPendingInativar = true;
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const inativarButton = screen.getByRole("button", {
+            name: /inativar perfil/i,
+        });
+        expect(inativarButton).toBeDisabled();
+    });
+
+    it("deve desabilitar botão de reativar quando usuário foi inativado via unidade", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false, inativado_via_unidade: true },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).toBeDisabled();
+    });
+
+    it("deve habilitar botão de reativar quando usuário não foi inativado via unidade", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false, inativado_via_unidade: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).not.toBeDisabled();
+    });
+
+    it("deve habilitar botão de reativar quando inativado_via_unidade é undefined", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).not.toBeDisabled();
     });
 });

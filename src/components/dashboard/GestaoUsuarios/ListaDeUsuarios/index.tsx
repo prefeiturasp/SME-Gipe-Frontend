@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import FiltrosUsuarios from "./Filtros";
 import TabelaUsuarios from "./TabelaUsuarios";
@@ -54,7 +54,7 @@ export default function ListaDeUsuarios({
             />
 
             {usuarios && usuarios.length > 0 && (
-                <TabelaUsuarios dataUsuarios={usuarios} />
+                <TabelaUsuarios dataUsuarios={usuarios} status={status} />
             )}
         </>
     );

@@ -1,14 +1,14 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
-    DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 type ModalConfirmacaoProps = {
     open: boolean;
@@ -32,16 +32,16 @@ export default function ModalConfirmacao({
             <DialogContent className="p-6 rounded-[4px]">
                 <DialogHeader>
                     <DialogTitle className="text-[20px] text-[#42474a]">
-                        Cadastro de pessoa usuária
+                        Cadastro de perfil
                     </DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="sr-only">
-                    Confirmação de cadastro de pessoa usuária no CoreSSO
+                    Confirmação de cadastro de perfil no CoreSSO
                 </DialogDescription>
 
                 <span className="text-[14px] text-[#42474a]">
-                    Ao cadastrar a pessoa usuária, o perfil será registrado no
-                    CoreSSO. Tem certeza que deseja continuar?
+                    Ao finalizar o perfil será registrado no CoreSSO. Tem
+                    certeza que deseja continuar?
                 </span>
 
                 <DialogFooter className="mt-6">
@@ -61,7 +61,7 @@ export default function ModalConfirmacao({
                         disabled={isLoading}
                         loading={isLoading}
                     >
-                        Cadastrar pessoa usuária
+                        Cadastrar perfil
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import ModalConfirmacao from "./index";
 
 describe("ModalConfirmacao", () => {
@@ -19,12 +19,10 @@ describe("ModalConfirmacao", () => {
             />
         );
 
-        expect(
-            screen.getByText("Cadastro de pessoa usuária")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Cadastro de perfil")).toBeInTheDocument();
         expect(
             screen.getByText(
-                /Ao cadastrar a pessoa usuária, o perfil será registrado no CoreSSO/i
+                /Ao finalizar o perfil será registrado no CoreSSO./i
             )
         ).toBeInTheDocument();
     });
@@ -39,11 +37,11 @@ describe("ModalConfirmacao", () => {
         );
 
         expect(
-            screen.queryByText("Cadastro de pessoa usuária")
+            screen.queryByText("Cadastro de perfil")
         ).not.toBeInTheDocument();
     });
 
-    it("deve renderizar os botões Cancelar e Cadastrar pessoa usuária", () => {
+    it("deve renderizar os botões Cancelar e Cadastrar perfil", () => {
         render(
             <ModalConfirmacao
                 open={true}
@@ -56,7 +54,7 @@ describe("ModalConfirmacao", () => {
             screen.getByRole("button", { name: "Cancelar" })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: "Cadastrar pessoa usuária" })
+            screen.getByRole("button", { name: "Cadastrar perfil" })
         ).toBeInTheDocument();
     });
 
@@ -76,7 +74,7 @@ describe("ModalConfirmacao", () => {
         expect(mockOnOpenChange).toHaveBeenCalledTimes(1);
     });
 
-    it("deve chamar onConfirm ao clicar em Cadastrar pessoa usuária", () => {
+    it("deve chamar onConfirm ao clicar em Cadastrar perfil", () => {
         render(
             <ModalConfirmacao
                 open={true}
@@ -86,7 +84,7 @@ describe("ModalConfirmacao", () => {
         );
 
         const cadastrarButton = screen.getByRole("button", {
-            name: "Cadastrar pessoa usuária",
+            name: "Cadastrar perfil",
         });
         fireEvent.click(cadastrarButton);
 
@@ -123,7 +121,7 @@ describe("ModalConfirmacao", () => {
 
         const cancelarButton = screen.getByRole("button", { name: "Cancelar" });
         const cadastrarButton = screen.getByRole("button", {
-            name: "Cadastrar pessoa usuária",
+            name: "Cadastrar perfil",
         });
 
         expect(cancelarButton).toBeEnabled();
@@ -158,7 +156,7 @@ describe("ModalConfirmacao", () => {
         );
 
         const description = screen.getByText(
-            "Confirmação de cadastro de pessoa usuária no CoreSSO"
+            "Confirmação de cadastro de perfil no CoreSSO"
         );
         expect(description).toHaveClass("sr-only");
     });

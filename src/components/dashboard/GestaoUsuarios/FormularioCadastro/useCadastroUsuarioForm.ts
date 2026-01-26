@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/headless-toast";
+import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
+import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
+import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useUserStore } from "@/stores/useUserStore";
+import type { UnidadeEducacional } from "@/types/unidades";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/components/ui/headless-toast";
-import { useGetUnidades } from "@/hooks/useGetUnidades";
-import type { UnidadeEducacional } from "@/types/unidades";
-import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
-import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
-import { useUserStore } from "@/stores/useUserStore";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
-import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import formSchema, { FormDataCadastroUsuario } from "./schema";
 import { buildCadastroPayload, mapCargoNumericoParaString } from "./utils";
 
@@ -85,14 +85,25 @@ export function useCadastroUsuarioForm({
     const watchedCargo = useWatch({ control, name: "cargo" });
     const watchedDre = useWatch({ control, name: "dre" });
 
-    const {data: dreOptions = []} = useGetUnidades(true, undefined, "DRE");
-    const {data: ueOptions = []} = useGetUnidades(true, watchedDre, undefined, watchedRede);
+    const { data: dreOptions = [] } = useGetUnidades(true, undefined, "DRE");
+    const { data: ueOptions = [] } = useGetUnidades(
+        true,
+        watchedDre,
+        undefined,
+        watchedRede
+    );
 
     const { data: usuarioData } = useObterUsuarioGestao({
         uuid: usuarioUuid || "",
         enabled: mode === "edit" && !!usuarioUuid,
     });
+
     const isFormDisabled = mode === "edit" && usuarioData?.is_active === false;
+    const isActive = usuarioData?.is_active ?? true;
+    const dataInativacaoFormatada = usuarioData?.data_inativacao_formatada;
+    const responsavelInativacaoNome = usuarioData?.responsavel_inativacao_nome;
+    const motivoInativacao = usuarioData?.motivo_inativacao;
+    const inativadoViaUnidade = usuarioData?.inativado_via_unidade;
 
     useEffect(() => {
         if (mode === "edit" && usuarioUuid) {
@@ -120,9 +131,11 @@ export function useCadastroUsuarioForm({
             dre: base && !isSpecialCargo,
             ue: base && !isSpecialCargo && watchedCargo !== "ponto_focal",
             adminCheckbox:
-                base && ["ponto_focal", "gipe"].includes(watchedCargo),
+                base &&
+                ["ponto_focal", "gipe"].includes(watchedCargo) &&
+                !isPontoFocal,
         };
-    }, [watchedRede, watchedCargo]);
+    }, [watchedRede, watchedCargo, isPontoFocal]);
 
     useEffect(() => {
         if (
@@ -327,8 +340,7 @@ export function useCadastroUsuarioForm({
 
                     toast({
                         title: "Tudo certo por aqui!",
-                        description:
-                            "A pessoa usuária foi cadastrada com sucesso!",
+                        description: "O perfil foi cadastrado com sucesso!",
                         variant: "success",
                     });
                     setModalOpen(false);
@@ -382,6 +394,11 @@ export function useCadastroUsuarioForm({
         router,
         mode,
         hasChanges: isDirty || cargoAlterado,
-        isFormDisabled
+        isFormDisabled,
+        isActive,
+        dataInativacaoFormatada,
+        responsavelInativacaoNome,
+        motivoInativacao,
+        inativadoViaUnidade,
     };
 }

@@ -16,6 +16,8 @@ type ModalInativacaoProps = {
     onConfirm: () => void;
     isLoading?: boolean;
     isReativacao?: boolean;
+    motivoInativacao: string;
+    setMotivoInativacao: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export default function ModalInativacao({
@@ -24,6 +26,8 @@ export default function ModalInativacao({
     onConfirm,
     isLoading = false,
     isReativacao = false,
+    motivoInativacao,
+    setMotivoInativacao
 }: Readonly<ModalInativacaoProps>) {
     function handleConfirm() {
         onConfirm();
@@ -37,7 +41,7 @@ export default function ModalInativacao({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-6 rounded-[4px]">
+            <DialogContent className="p-6 rounded-[4px] max-w-[700px]">
                 <DialogHeader>
                     <DialogTitle className="text-[20px] text-[#42474a]">
                         {title}
@@ -50,6 +54,19 @@ export default function ModalInativacao({
                 <span className="text-[14px] text-[#42474a]">
                     {description}
                 </span>
+
+                {!isReativacao && (
+                    <>
+                        <p className="mt-4 text-[14px] text-[#42474a] font-bold">Motivo da inativação do perfil*</p>
+                        <textarea
+                            placeholder="Informe o motivo da inativação"
+                            className="w-full p-2 pt-0 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[14px]"
+                            rows={4}
+                            value={motivoInativacao}
+                            onChange={(e) => setMotivoInativacao(e.target.value)}
+                        ></textarea>
+                    </>
+                )}
 
                 <DialogFooter className="mt-6">
                     <Button
@@ -66,7 +83,7 @@ export default function ModalInativacao({
                         variant="submit"
                         className="min-w-[86px] text-center rounded-md text-[14px] font-[700]"
                         onClick={handleConfirm}
-                        disabled={isLoading}
+                        disabled={isLoading || (!isReativacao && motivoInativacao.trim() === "")}
                         loading={isLoading}
                     >
                         {confirmButtonText}

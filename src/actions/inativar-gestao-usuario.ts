@@ -3,9 +3,7 @@
 import axios, { AxiosError } from "axios";
 import { cookies } from "next/headers";
 
-export const inativarGestaoUsuarioAction = async (
-    uuid: string
-): Promise<{ success: true } | { success: false; error: string }> => {
+export const inativarGestaoUsuarioAction = async (uuid: string, motivo_inativacao: string): Promise<{ success: true } | { success: false; error: string }> => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL!;
     try {
         const cookieStore = cookies();
@@ -18,7 +16,7 @@ export const inativarGestaoUsuarioAction = async (
         }
         await axios.post(
             `${API_URL}/users/gestao-usuarios/${uuid}/inativar/`,
-            {},
+            { motivo_inativacao },
             {
                 headers: {
                     Authorization: `Bearer ${authToken}`,

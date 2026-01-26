@@ -1,12 +1,19 @@
+"use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 import ListaDeUnidadesEducacionais from "./ListaDeUnidadesEducacionais";
 
 export default function TabsContainer() {
-    return (
-        <Tabs defaultValue="ativas" className="w-full">
-            <TabsList className="justify-between w-full h-12 ">
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
 
+    const defaultTab =
+        tabParam === "ativas" || tabParam === "inativas" ? tabParam : "ativas";
+
+    return (
+        <Tabs defaultValue={defaultTab} className="w-full">
+            <TabsList className="justify-between w-full h-12 ">
                 <TabsTrigger
                     className="flex items-center justify-between data-[state=active]:text-[--sidebar-accent-foreground] data-[state=active]:font-semibold"
                     value="ativas"
@@ -27,5 +34,5 @@ export default function TabsContainer() {
                 <ListaDeUnidadesEducacionais status="inativa" />
             </TabsContent>
         </Tabs>
-    )
+    );
 }
