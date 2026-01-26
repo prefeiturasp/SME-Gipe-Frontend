@@ -39,7 +39,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     const handleInactivateInternal = async () => {
         if (!usuarioUuid) return;
 
-        const result = await inativarUsuario({ uuid: usuarioUuid, motivo_inativacao: motivoInativacao });
+        const result = await inativarUsuario({
+            uuid: usuarioUuid,
+            motivo_inativacao: motivoInativacao,
+        });
 
         if (result.success) {
             toast({
@@ -128,7 +131,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                     setIsReativacao(true);
                                     setOpenModal(true);
                                 }}
-                                disabled={loading}
+                                disabled={
+                                    loading ||
+                                    (usuarioData?.inativado_via_unidade ??
+                                        false)
+                                }
                             >
                                 Reativar perfil
                             </Button>
