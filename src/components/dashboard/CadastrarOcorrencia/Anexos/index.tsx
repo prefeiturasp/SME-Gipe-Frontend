@@ -1,7 +1,5 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -11,6 +9,8 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/headless-toast";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -18,26 +18,27 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { useEnviarAnexo } from "@/hooks/useEnviarAnexo";
+import { useObterAnexos } from "@/hooks/useObterAnexos";
+import { useTiposDocumentos } from "@/hooks/useTiposDocumentos";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { formSchema, AnexosData } from "./schema";
+import { useUserStore } from "@/stores/useUserStore";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
 import { useState } from "react";
-import { useUserStore } from "@/stores/useUserStore";
-import { useEnviarAnexo } from "@/hooks/useEnviarAnexo";
-import { toast } from "@/components/ui/headless-toast";
-import { useTiposDocumentos } from "@/hooks/useTiposDocumentos";
-import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
-import { useObterAnexos } from "@/hooks/useObterAnexos";
+import { useForm } from "react-hook-form";
 import { ListagemAnexos } from "./ListagemAnexos";
 import ModalFinalizarEtapa from "./ModalFinalizar/ModalFinalizar";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import ModalTipoArquivos from "./ModalTipoArquivos/ModalTipoArquivos";
+import { AnexosData, formSchema } from "./schema";
 
 export type AnexosProps = {
     onPrevious?: () => void;
     onNext?: () => void;
     showButtons?: boolean;
     modoVisualizacao?: boolean;
+    disabled?: boolean;
 };
 
 export default function Anexos({
@@ -45,6 +46,7 @@ export default function Anexos({
     onNext,
     showButtons = true,
     modoVisualizacao,
+    disabled,
 }: Readonly<AnexosProps>) {
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
@@ -185,6 +187,7 @@ export default function Anexos({
             <ListagemAnexos
                 anexosAPI={anexosData?.results}
                 modoVisualizacao={modoVisualizacao}
+                disabled={disabled}
             />
 
             <Form {...form}>
@@ -211,7 +214,7 @@ export default function Anexos({
                                     name="arquivo"
                                     render={() => (
                                         <FormItem>
-                                            <FormLabel>
+                                            <FormLabel disabled={disabled}>
                                                 Selecione o arquivo*
                                             </FormLabel>
                                             <div className="flex">
@@ -246,16 +249,12 @@ export default function Anexos({
                                                             )
                                                             ?.click()
                                                     }
+                                                    disabled={disabled}
                                                 >
                                                     <Upload className="w-3 h-3 mr-2" />
                                                     Escolher arquivo
                                                 </Button>
                                             </div>
-                                            <p className="text-[12px] text-[#42474a] mt-1">
-                                                Formatos aceitos: PDF, JPG, PNG,
-                                                MP4, XLSX, DOC, DOCX e TXT (máx.
-                                                2MB cada)
-                                            </p>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -268,12 +267,13 @@ export default function Anexos({
                                     name="tipoDocumento"
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
-                                            <FormLabel>
+                                            <FormLabel disabled={disabled}>
                                                 Tipo do documento*
                                             </FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 value={field.value}
+                                                disabled={disabled}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -313,7 +313,8 @@ export default function Anexos({
                                         className="w-[151px] h-10"
                                         disabled={
                                             !selectedFile ||
-                                            !form.getValues("tipoDocumento")
+                                            !form.getValues("tipoDocumento") ||
+                                            disabled
                                         }
                                         onClick={handleAnexarDocumento}
                                     >

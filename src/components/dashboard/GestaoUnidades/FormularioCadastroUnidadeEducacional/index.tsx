@@ -26,7 +26,7 @@ import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FormData, formSchema } from "./schema";
 
@@ -43,27 +43,27 @@ export default function FormularioCadastroUnidadeEducacional() {
     const { data: dreOptions = [] } = useFetchDREs();
     const { data: tipoOptions = [] } = useTiposUnidade();
 
-    const form = useForm<FormData>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
+    const defaultValues = useMemo(
+        () => ({
             tipo: "",
             nomeUnidadeEducacional: "",
             rede: "",
             codigoEol: "",
-            diretoriaRegional: "",
+            diretoriaRegional: isPontoFocal && userDreUuid ? userDreUuid : "",
             siglaDre: "",
-        },
+        }),
+        [isPontoFocal, userDreUuid]
+    );
+
+    const form = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues,
         mode: "onChange",
     });
 
     const tipoSelecionado = form.watch("tipo");
     const isDreSelected = tipoSelecionado === "DRE";
 
-    useEffect(() => {
-        if (isPontoFocal && userDreUuid && dreOptions.length > 0) {
-            form.setValue("diretoriaRegional", userDreUuid);
-        }
-    }, [isPontoFocal, userDreUuid, dreOptions, form]);
     const isFormValid = form.formState.isValid;
 
     const { mutateAsync: cadastrarUnidade, isPending } = useCadastrarUnidade();

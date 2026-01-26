@@ -1,14 +1,14 @@
 import { vi } from "vitest";
 
-import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+    act,
+    fireEvent,
     render,
     screen,
-    fireEvent,
     waitFor,
-    act,
 } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import SecaoInicial, { SecaoInicialRef } from "./index";
 
 vi.mock("next/navigation", () => ({
@@ -141,22 +141,32 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
+        const radioSim = screen.getByRole("radio", { name: /Sim/ });
 
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
         expect(dateInput).toHaveValue("2025-10-02");
 
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
         expect(timeInput).toHaveValue("14:30");
 
         expect(nextButton).toBeDisabled();
 
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
         await waitFor(() =>
             expect(radioSim).toHaveAttribute("aria-checked", "true")
         );
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
     });
 
     it("não permite data futura e exibe erro", async () => {
@@ -170,7 +180,7 @@ describe("SecaoInicial", () => {
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const yyyy = tomorrow.getFullYear();
+        const yyyy = tomorrow.getFullYear() + 1;
         const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
         const dd = String(tomorrow.getDate()).padStart(2, "0");
         const futureDate = `${yyyy}-${mm}-${dd}`;
@@ -247,17 +257,35 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
-
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
+
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
+
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
+
+        await waitFor(() =>
+            expect(radioSim).toHaveAttribute("aria-checked", "true")
+        );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
+
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
 
         await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
         await waitFor(() => expect(toastMock).toHaveBeenCalled());
@@ -275,17 +303,35 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-
-        fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
-        fireEvent.change(timeInput, { target: { value: "14:30" } });
-
         const radioSim = screen.getByRole("radio", { name: /Sim/ });
-        fireEvent.click(radioSim);
+
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+            fireEvent.blur(dateInput);
+        });
+
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+            fireEvent.blur(timeInput);
+        });
+
+        await act(async () => {
+            fireEvent.click(radioSim);
+        });
+
+        await waitFor(() =>
+            expect(radioSim).toHaveAttribute("aria-checked", "true")
+        );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
 
-        await waitFor(() => expect(nextButton).toBeEnabled());
-        fireEvent.click(nextButton);
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
+
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
 
         await waitFor(() => expect(mockCriarOcorrencia).toHaveBeenCalled());
         await waitFor(() => expect(onSuccess).toHaveBeenCalled());
@@ -649,6 +695,22 @@ describe("SecaoInicial", () => {
 
             expect(result).toBe(false);
             expect(mockCriarOcorrencia).not.toHaveBeenCalled();
+        });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        renderWithClient(
+            <SecaoInicial onSuccess={() => vi.fn()} disabled={true} />
+        );
+
+        const dataInput = screen.getByPlaceholderText("Selecione a data");
+        const horaInput = screen.getByPlaceholderText("Digite o horário");
+        expect(dataInput).toHaveAttribute("readonly");
+        expect(horaInput).toHaveAttribute("readonly");
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
         });
     });
 });

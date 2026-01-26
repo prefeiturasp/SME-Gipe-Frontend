@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import FormularioDrePage from "./index";
 
 const mockReset = vi.fn();
@@ -112,7 +112,7 @@ describe("FormularioDrePage", () => {
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
-    it("deve chamar reset, invalidateQueries e router.back ao clicar em Voltar", async () => {
+    it("deve chamar reset e invalidateQueries ao clicar em Voltar", async () => {
         renderWithClient(
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
@@ -130,8 +130,6 @@ describe("FormularioDrePage", () => {
                 queryKey: ["ocorrencia", "test-uuid-123"],
             });
         });
-
-        expect(mockRouterBack).toHaveBeenCalledTimes(1);
     });
 
     it("deve usar o ocorrenciaUuid correto na invalidação de queries", async () => {

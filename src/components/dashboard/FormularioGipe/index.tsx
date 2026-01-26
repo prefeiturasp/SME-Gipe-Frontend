@@ -2,7 +2,6 @@
 
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import PageHeader from "../PageHeader/PageHeader";
 import { DetalhamentoGipe } from "./DetalhamentoGipe/index";
 
@@ -16,7 +15,6 @@ export default function FormularioGipePage({
         (state) => state.ocorrenciaUuid
     );
     const queryClient = useQueryClient();
-    const router = useRouter();
 
     const handleClickBack = async () => {
         reset();
@@ -24,8 +22,6 @@ export default function FormularioGipePage({
         await queryClient.invalidateQueries({
             queryKey: ["ocorrencia", ocorrenciaUuid],
         });
-
-        router.back();
     };
 
     return (

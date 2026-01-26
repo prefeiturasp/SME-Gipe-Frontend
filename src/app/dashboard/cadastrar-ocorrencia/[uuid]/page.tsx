@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
+import VisualizarOcorrencia from "@/components/dashboard/VisualizarOcorrencia";
 import { useGetOcorrencia } from "@/hooks/useGetOcorrencia";
 import { useGetOcorrenciaDre } from "@/hooks/useGetOcorrenciaDre";
 import { useGetOcorrenciaGipe } from "@/hooks/useGetOcorrenciaGipe";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import CadastrarOcorrencia from "@/components/dashboard/CadastrarOcorrencia";
-import VisualizarOcorrencia from "@/components/dashboard/VisualizarOcorrencia";
-import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
 import { transformOcorrenciaDreToFormData } from "@/lib/transformOcorrenciaDreToFormData";
 import { transformOcorrenciaGipeToFormData } from "@/lib/transformOcorrenciaGipeToFormData";
+import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormData";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
@@ -23,6 +24,7 @@ export default function EditarOcorrenciaPage() {
     const params = useParams();
     const ocorrenciaId = String(params.uuid);
     const [isStoreReady, setIsStoreReady] = useState(false);
+    const queryClient = useQueryClient();
 
     const {
         data: ocorrencia,
@@ -51,8 +53,17 @@ export default function EditarOcorrenciaPage() {
         return () => {
             reset();
             setIsStoreReady(false);
+            queryClient.invalidateQueries({
+                queryKey: ["ocorrencia", ocorrenciaId],
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["ocorrencia-dre", ocorrenciaId],
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["ocorrencia-gipe", ocorrenciaId],
+            });
         };
-    }, [reset]);
+    }, [reset, queryClient, ocorrenciaId]);
 
     useEffect(() => {
         if (!ocorrencia) return;

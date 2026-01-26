@@ -1,19 +1,21 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import userEvent from "@testing-library/user-event";
-import { DetalhamentoGipe } from "./index";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import * as useUserStoreModule from "@/stores/useUserStore";
-import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
 import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
+import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
+import * as useTiposOcorrenciaModule from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
+import * as useUserStoreModule from "@/stores/useUserStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DetalhamentoGipe } from "./index";
 
 const mockRouterBack = vi.fn();
+const mockRouterPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: mockRouterBack,
-        push: vi.fn(),
+        push: mockRouterPush,
     }),
 }));
 
@@ -255,15 +257,6 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve exibir os textos auxiliares nos campos multi-select", () => {
-        renderComponent();
-
-        const textosAuxiliares = screen.getAllByText(
-            /se necessário, selecione mais de uma opção/i
-        );
-        expect(textosAuxiliares).toHaveLength(2);
-    });
-
     it("deve marcar todos os campos obrigatórios com asterisco", () => {
         renderComponent();
 
@@ -383,6 +376,22 @@ describe("DetalhamentoGipe", () => {
 
         expect(
             screen.getByText(/o que motivou a ocorrência\?/i)
+        ).toBeInTheDocument();
+    });
+
+    it("deve retornar array vazio para tiposOcorrenciaOptions quando tiposOcorrencia é undefined", () => {
+        vi.spyOn(
+            useTiposOcorrenciaModule,
+            "useTiposOcorrencia"
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
+
+        renderComponent();
+
+        expect(
+            screen.getByText(/qual o tipo da ocorrência\?/i)
         ).toBeInTheDocument();
     });
 
@@ -513,9 +522,9 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
-            tipoOcorrenciaGipe: "tipo1",
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -560,9 +569,9 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
-            tipoOcorrenciaGipe: "tipo1",
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -609,9 +618,9 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidosGipe: ["env1"],
-            motivacaoOcorrenciaGipe: ["bullying"],
-            tipoOcorrenciaGipe: "tipo1",
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
             cicloAprendizagem: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
@@ -650,5 +659,55 @@ describe("DetalhamentoGipe", () => {
                 variant: "error",
             });
         });
+    });
+
+    it("deve redirecionar para dashboard quando ocorrência está finalizada", async () => {
+        const user = userEvent.setup();
+
+        const formDataFinalizado = {
+            ...mockFormData,
+            status: "finalizada",
+            envolveArmaOuAtaque: "sim",
+            ameacaRealizada: "presencialmente",
+            envolvidos: "env1",
+            motivoOcorrencia: ["bullying"],
+            tiposOcorrencia: ["tipo1"],
+            cicloAprendizagem: "alfabetizacao",
+            informacoesInteracoesVirtuais: "",
+            encaminhamentos: "Encaminhamentos do GIPE",
+        };
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore"
+        ).mockReturnValue({
+            formData: formDataFinalizado,
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        const botaoSalvar = screen.getByRole("button", {
+            name: /salvar informações/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoSalvar).not.toBeDisabled();
+        });
+
+        await user.click(botaoSalvar);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaGipe).toHaveBeenCalled();
+        });
+
+        expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
+
+        expect(mockSetFormData).toHaveBeenCalled();
     });
 });

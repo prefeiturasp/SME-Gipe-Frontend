@@ -1,18 +1,18 @@
-import * as React from "react";
+import {
+    Command,
+    CommandEmpty,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-    Command,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandEmpty,
-} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown } from "lucide-react";
+import * as React from "react";
 
 interface Option {
     label: string;
@@ -67,23 +67,36 @@ export function MultiSelect({
                     aria-haspopup="listbox"
                     disabled={disabled}
                     className={cn(
-                        "flex w-full min-h-[40px] items-start justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+                        "flex w-full min-h-[40px] items-start justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        disabled && "cursor-not-allowed opacity-50",
-                        !disabled && "cursor-pointer",
+                        disabled
+                            ? "cursor-not-allowed border-[#B0B0B0] text-[#B0B0B0]"
+                            : "border-input cursor-pointer",
                         className
                     )}
                 >
                     <div className="flex flex-wrap gap-1 w-full pointer-events-none">
                         {value.length === 0 ? (
-                            <span className="text-muted-foreground text-[14px] text-[#42474A] font-[400]">
+                            <span
+                                className={cn(
+                                    "text-[14px] font-[400]",
+                                    disabled
+                                        ? "text-[#B0B0B0]"
+                                        : "text-muted-foreground text-[#42474A]"
+                                )}
+                            >
                                 {placeholder}
                             </span>
                         ) : (
                             selectedOptions.map((opt) => (
                                 <span
                                     key={opt.value}
-                                    className="inline-flex items-center gap-1 bg-[#FFFFFF] border border-[#DADADA] text-[#42474A] rounded px-2 py-1 text-xs"
+                                    className={cn(
+                                        "inline-flex items-center gap-1 bg-[#FFFFFF] rounded px-2 py-1 text-xs",
+                                        disabled
+                                            ? "border border-[#B0B0B0] text-[#B0B0B0]"
+                                            : "border border-[#DADADA] text-[#42474A]"
+                                    )}
                                 >
                                     {opt.label}
                                     <input
@@ -103,7 +116,14 @@ export function MultiSelect({
                             ))
                         )}
                     </div>
-                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2 self-center" />
+                    <ChevronDown
+                        className={cn(
+                            "h-4 w-4 shrink-0 ml-2 self-center",
+                            disabled
+                                ? "opacity-50 text-[#B0B0B0]"
+                                : "opacity-50"
+                        )}
+                    />
                 </button>
             </PopoverTrigger>
             <PopoverContent
