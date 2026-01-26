@@ -3,8 +3,8 @@ import ConsultaFiltroLocalizadores from '../locators/consulta_filtro_locators'
 
 const locators = new ConsultaFiltroLocalizadores()
 
-const RF_PADRAO = '29379960000'
-const SENHA_PADRAO = 'Sgp0000'
+const RF_PADRAO = '40450525856'
+const SENHA_PADRAO = 'Sgp5856'
 
 Given('eu efetuo login com RF', () => {
   cy.log(`Efetuando login com RF: ${RF_PADRAO}`)

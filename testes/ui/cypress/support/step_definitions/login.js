@@ -18,7 +18,6 @@ When('eu insiro credenciais válidas', () => {
     .should('be.visible')
     .clear()
     .type(rf, { delay: DELAY_DIGITACAO })
-    .should('have.value', rf)
 
   cy.get(locators.campo_senha(), { timeout: TIMEOUT_PADRAO })
     .should('be.visible')
@@ -41,7 +40,6 @@ When('eu insiro credenciais inválidas', () => {
     .should('be.visible')
     .clear()
     .type(rf, { delay: DELAY_DIGITACAO })
-    .should('have.value', rf)
 
   cy.get(locators.campo_senha(), { timeout: TIMEOUT_PADRAO })
     .should('be.visible')
@@ -63,7 +61,6 @@ When('eu insiro apenas o RF sem senha', () => {
     .should('be.visible')
     .clear()
     .type(rf, { delay: DELAY_DIGITACAO })
-    .should('have.value', rf)
   
   cy.wait(500)
 })

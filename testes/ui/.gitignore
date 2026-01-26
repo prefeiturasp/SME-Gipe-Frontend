@@ -45,3 +45,6 @@ azure-pipelines.yml
 remove_emojis.py
 remove-emojis.ps1
 RELATORIO_LIMPEZA.md
+
+# Documentação de testes específicos
+GESTAO_PESSOAS_README.md
