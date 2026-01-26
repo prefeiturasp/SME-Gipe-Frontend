@@ -67,7 +67,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: true },
             isLoading: false,
@@ -80,10 +80,10 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" />
-            </Wrapper>
+            </Wrapper>,
         );
         expect(
-            screen.getByRole("heading", { name: /test title/i })
+            screen.getByRole("heading", { name: /test title/i }),
         ).toBeInTheDocument();
     });
 
@@ -92,13 +92,13 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const backButton = screen.getByRole("link");
         expect(backButton).toHaveAttribute(
             "href",
-            "/dashboard/gestao-usuarios"
+            "/dashboard/gestao-usuarios",
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -112,13 +112,13 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={false} />
-            </Wrapper>
+            </Wrapper>,
         );
         const backButton = screen.getByRole("link", { name: /voltar/i });
         expect(backButton).toBeInTheDocument();
         expect(backButton).toHaveAttribute(
             "href",
-            "/dashboard/gestao-usuarios"
+            "/dashboard/gestao-usuarios",
         );
     });
 
@@ -133,7 +133,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -156,7 +156,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -166,7 +166,9 @@ describe("PageHeader", () => {
 
         expect(screen.getByText("Inativação de perfil")).toBeInTheDocument();
 
-        const textarea = screen.getByPlaceholderText(/informe o motivo da inativação/i);
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
         await user.type(textarea, "Este é um motivo de inativação de teste.");
 
         const confirmarButton = screen.getByRole("button", {
@@ -184,7 +186,7 @@ describe("PageHeader", () => {
             variant: "success",
         });
         expect(mockRouterPush).toHaveBeenCalledWith(
-            "/dashboard/gestao-usuarios?tab=inativos"
+            "/dashboard/gestao-usuarios?tab=inativos",
         );
     });
 
@@ -203,7 +205,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -211,7 +213,9 @@ describe("PageHeader", () => {
         });
         await user.click(inativarButton);
 
-        const textarea = screen.getByPlaceholderText(/informe o motivo da inativação/i);
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
         await user.type(textarea, "Este é um motivo de inativação de teste.");
 
         const confirmarButton = screen.getByRole("button", {
@@ -245,7 +249,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -253,7 +257,9 @@ describe("PageHeader", () => {
         });
         await user.click(inativarButton);
 
-        const textarea = screen.getByPlaceholderText(/informe o motivo da inativação/i);
+        const textarea = screen.getByPlaceholderText(
+            /informe o motivo da inativação/i,
+        );
         await user.type(textarea, "Motivo de teste");
 
         const confirmarButton = screen.getByRole("button", {
@@ -281,7 +287,7 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
@@ -290,7 +296,7 @@ describe("PageHeader", () => {
         await user.click(inativarButton);
 
         const textarea = screen.getByPlaceholderText(
-            /informe o motivo da inativação/i
+            /informe o motivo da inativação/i,
         );
         await user.type(textarea, "Motivo de teste");
 
@@ -307,7 +313,7 @@ describe("PageHeader", () => {
     it("deve renderizar o botão de Reativar perfil quando usuário inativo", () => {
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -318,7 +324,7 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -332,7 +338,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -347,7 +353,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -358,8 +364,8 @@ describe("PageHeader", () => {
         expect(screen.getByText("Reativação de perfil")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Ao reativar o perfil, a pessoa terá acesso ao GIPE novamente. Tem certeza que deseja continuar?"
-            )
+                "Ao reativar o perfil, a pessoa terá acesso ao GIPE novamente. Tem certeza que deseja continuar?",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -369,7 +375,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -384,7 +390,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -406,7 +412,7 @@ describe("PageHeader", () => {
             variant: "success",
         });
         expect(mockRouterPush).toHaveBeenCalledWith(
-            "/dashboard/gestao-usuarios?tab=ativos"
+            "/dashboard/gestao-usuarios?tab=ativos",
         );
     });
 
@@ -419,7 +425,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -434,7 +440,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -462,7 +468,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -473,7 +479,7 @@ describe("PageHeader", () => {
         render(
             <Wrapper>
                 <PageHeader title="Test Title" edit={true} />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -499,7 +505,7 @@ describe("PageHeader", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -514,7 +520,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -549,7 +555,7 @@ describe("PageHeader", () => {
                     onClickBack={mockOnClickBack}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const backButton = screen.getByRole("link");
@@ -570,7 +576,7 @@ describe("PageHeader", () => {
                     edit={false}
                     onClickBack={mockOnClickBack}
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const backButton = screen.getByRole("link", { name: /voltar/i });
@@ -582,7 +588,7 @@ describe("PageHeader", () => {
     it("não deve renderizar botões quando usuarioData é undefined", () => {
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -597,22 +603,22 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         // Quando usuarioData?.is_active é undefined, o código renderiza o botão "Reativar perfil"
         expect(
-            screen.queryByRole("button", { name: /inativar perfil/i })
+            screen.queryByRole("button", { name: /inativar perfil/i }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /reativar perfil/i })
+            screen.getByRole("button", { name: /reativar perfil/i }),
         ).toBeInTheDocument();
     });
 
     it("deve lidar com usuarioData null", () => {
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: null,
             isLoading: false,
@@ -627,22 +633,22 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         // Quando usuarioData?.is_active é null/undefined, o código renderiza o botão "Reativar perfil"
         expect(
-            screen.queryByRole("button", { name: /inativar perfil/i })
+            screen.queryByRole("button", { name: /inativar perfil/i }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /reativar perfil/i })
+            screen.getByRole("button", { name: /reativar perfil/i }),
         ).toBeInTheDocument();
     });
 
     it("deve renderizar com is_active falso explícito", () => {
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: { is_active: false },
             isLoading: false,
@@ -657,7 +663,7 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const reativarButton = screen.getByRole("button", {
@@ -678,12 +684,93 @@ describe("PageHeader", () => {
                     edit={true}
                     usuarioUuid="test-uuid"
                 />
-            </Wrapper>
+            </Wrapper>,
         );
 
         const inativarButton = screen.getByRole("button", {
             name: /inativar perfil/i,
         });
         expect(inativarButton).toBeDisabled();
+    });
+
+    it("deve desabilitar botão de reativar quando usuário foi inativado via unidade", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false, inativado_via_unidade: true },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).toBeDisabled();
+    });
+
+    it("deve habilitar botão de reativar quando usuário não foi inativado via unidade", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false, inativado_via_unidade: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).not.toBeDisabled();
+    });
+
+    it("deve habilitar botão de reativar quando inativado_via_unidade é undefined", () => {
+        vi.spyOn(
+            useObterUsuarioGestaoModule,
+            "useObterUsuarioGestao",
+        ).mockReturnValue({
+            data: { is_active: false },
+            isLoading: false,
+            error: null,
+        } as never);
+
+        const Wrapper = createWrapper();
+        render(
+            <Wrapper>
+                <PageHeader
+                    title="Test Title"
+                    edit={true}
+                    usuarioUuid="test-uuid"
+                />
+            </Wrapper>,
+        );
+
+        const reativarButton = screen.getByRole("button", {
+            name: /reativar perfil/i,
+        });
+        expect(reativarButton).not.toBeDisabled();
     });
 });

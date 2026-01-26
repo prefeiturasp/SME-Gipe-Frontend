@@ -10,7 +10,7 @@ import {
     vi,
     type Mock,
 } from "vitest";
-import { inativarUnidadeGestaoAction } from "./inativar-unidade-gestao";
+import { reativarUnidadeGestaoAction } from "./reativar-unidade-gestao";
 
 vi.mock("axios");
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
@@ -18,7 +18,7 @@ vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 const axiosPostMock = axios.post as Mock;
 const cookiesMock = cookies as Mock;
 
-describe("inativarUnidadeGestaoAction", () => {
+describe("reativarUnidadeGestaoAction", () => {
     const originalEnv = process.env;
     const uuid = "unidade-uuid-123";
     const mockToken = "token-abc";
@@ -33,20 +33,20 @@ describe("inativarUnidadeGestaoAction", () => {
         process.env = originalEnv;
     });
 
-    it("deve inativar a unidade com sucesso", async () => {
+    it("deve reativar a unidade com sucesso", async () => {
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockToken }),
         });
         axiosPostMock.mockResolvedValueOnce({});
 
-        const result = await inativarUnidadeGestaoAction(
+        const result = await reativarUnidadeGestaoAction(
             uuid,
-            "Motivo de inativação de teste",
+            "Motivo de reativação de teste",
         );
 
         expect(axiosPostMock).toHaveBeenCalledWith(
-            `${API_URL}/unidades/gestao-unidades/${uuid}/inativar/`,
-            { motivo_inativacao: "Motivo de inativação de teste" },
+            `${API_URL}/unidades/gestao-unidades/${uuid}/reativar/`,
+            { motivo_reativacao: "Motivo de reativação de teste" },
             {
                 headers: {
                     Authorization: `Bearer ${mockToken}`,
@@ -60,9 +60,9 @@ describe("inativarUnidadeGestaoAction", () => {
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue(undefined),
         });
-        const result = await inativarUnidadeGestaoAction(
+        const result = await reativarUnidadeGestaoAction(
             uuid,
-            "Motivo de inativação de teste",
+            "Motivo de reativação de teste",
         );
         expect(axiosPostMock).not.toHaveBeenCalled();
         expect(result).toEqual({
@@ -81,9 +81,9 @@ describe("inativarUnidadeGestaoAction", () => {
         } as unknown as AxiosResponse<unknown>;
         axiosPostMock.mockRejectedValueOnce(error);
 
-        const result = await inativarUnidadeGestaoAction(
+        const result = await reativarUnidadeGestaoAction(
             uuid,
-            "Motivo de inativação de teste",
+            "Motivo de reativação de teste",
         );
 
         expect(result).toEqual({ success: false, error: "Mensagem da API" });
@@ -95,9 +95,9 @@ describe("inativarUnidadeGestaoAction", () => {
         });
         axiosPostMock.mockRejectedValueOnce({ message: "Falha geral" });
 
-        const result = await inativarUnidadeGestaoAction(
+        const result = await reativarUnidadeGestaoAction(
             uuid,
-            "Motivo de inativação de teste",
+            "Motivo de reativação de teste",
         );
 
         expect(result).toEqual({ success: false, error: "Falha geral" });
@@ -118,9 +118,9 @@ describe("inativarUnidadeGestaoAction", () => {
             get: vi.fn().mockReturnValue({ value: mockToken }),
         });
 
-        const result = await inativarUnidadeGestaoAction(
+        const result = await reativarUnidadeGestaoAction(
             uuid,
-            "Motivo de inativação de teste",
+            "Motivo de reativação de teste",
         );
 
         expect(result).toEqual({
