@@ -351,20 +351,21 @@ export default function FormularioCadastroUnidadeEducacional({
                                                 }}
                                             />
                                         </FormControl>
-                                        {redeSelecionada === "DIRETA" && (
-                                            <Button
-                                                type="button"
-                                                variant="submit"
-                                                size="sm"
-                                                className="h-10 whitespace-nowrap rounded-l-none border-l-0"
-                                                disabled={
-                                                    disabledFields ||
-                                                    field.value.length !== 6
-                                                }
-                                            >
-                                                Consultar
-                                            </Button>
-                                        )}
+                                        {redeSelecionada === "DIRETA" &&
+                                            mode === "create" && (
+                                                <Button
+                                                    type="button"
+                                                    variant="submit"
+                                                    size="sm"
+                                                    className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                    disabled={
+                                                        disabledFields ||
+                                                        field.value.length !== 6
+                                                    }
+                                                >
+                                                    Consultar
+                                                </Button>
+                                            )}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -403,20 +404,22 @@ export default function FormularioCadastroUnidadeEducacional({
                                                     }}
                                                 />
                                             </FormControl>
-                                            {redeSelecionada === "DIRETA" && (
-                                                <Button
-                                                    type="button"
-                                                    variant="submit"
-                                                    size="sm"
-                                                    className="h-10 whitespace-nowrap rounded-l-none border-l-0"
-                                                    disabled={
-                                                        disabledFields ||
-                                                        field.value.length !== 6
-                                                    }
-                                                >
-                                                    Consultar
-                                                </Button>
-                                            )}
+                                            {redeSelecionada === "DIRETA" &&
+                                                mode === "create" && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="submit"
+                                                        size="sm"
+                                                        className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                        disabled={
+                                                            disabledFields ||
+                                                            field.value
+                                                                .length !== 6
+                                                        }
+                                                    >
+                                                        Consultar
+                                                    </Button>
+                                                )}
                                         </div>
                                         <FormMessage />
                                     </FormItem>
