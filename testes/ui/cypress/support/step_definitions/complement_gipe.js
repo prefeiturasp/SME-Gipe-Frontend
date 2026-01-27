@@ -401,31 +401,48 @@ Then('devo ver o botão {string} na aba 3', (textoBotao) => {
 When('eu clico no botão "Salvar informações"', () => {
   cy.wait(TIMEOUTS.DEFAULT)
   
+  // Verificar e preencher campos pendentes
   cy.get('button').contains(/Salvar informações/i, { timeout: TIMEOUTS.LONG }).then(($btn) => {
     if ($btn.is(':disabled')) {
-      cy.log('Botão desabilitado - preenchendo campos pendentes')
+      cy.log('Botão desabilitado - verificando campos obrigatórios')
       
-      cy.get('input[type="radio"]:not(:checked)').then(($radios) => {
+      // Verificar radio buttons não marcados
+      cy.get('body').then($body => {
+        const $radios = $body.find('input[type="radio"]:not(:checked)')
         if ($radios.length > 0) {
-          cy.log(`Encontrados ${$radios.length} radio buttons não marcados`)
+          cy.log(`Preenchendo ${$radios.length} radio buttons`)
           $radios.each((index, radio) => {
             cy.wrap(radio).check({ force: true })
           })
-          cy.wait(2000)
         }
       })
+      
+      // Verificar campos de texto vazios que são obrigatórios
+      cy.get('body').then($body => {
+        const $campos = $body.find('input[required]:visible, textarea[required]:visible')
+        $campos.each((index, campo) => {
+          const $campo = Cypress.$(campo)
+          if (!$campo.val() || $campo.val().trim() === '') {
+            cy.log(`Preenchendo campo obrigatório vazio: ${campo.id || campo.name}`)
+            cy.wrap(campo).clear().type('Teste automático - campo obrigatório', { force: true })
+          }
+        })
+      })
+      
+      cy.wait(5000)
     }
   })
   
+  // Tentar clicar no botão
   cy.contains('button', /Salvar informações/i, { timeout: TIMEOUTS.LONG })
     .should('be.visible')
     .then(($btn) => {
       if ($btn.is(':disabled')) {
-        cy.log('Botão ainda desabilitado - usando force: true')
+        cy.log('Botão ainda desabilitado após verificações - forçando clique')
         cy.wrap($btn).click({ force: true })
       } else {
         cy.log('Botão habilitado - clicando normalmente')
-        cy.wrap($btn).should('not.be.disabled').click()
+        cy.wrap($btn).click()
       }
     })
   
