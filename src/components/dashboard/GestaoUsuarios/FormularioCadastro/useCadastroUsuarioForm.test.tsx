@@ -98,12 +98,12 @@ describe("useCadastroUsuarioForm", () => {
                     isLoading: false,
                     error: null,
                 } as never;
-            }
+            },
         );
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: vi.fn(),
             isPending: false,
@@ -111,7 +111,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useAtualizarGestaoUsuarioModule,
-            "useAtualizarGestaoUsuario"
+            "useAtualizarGestaoUsuario",
         ).mockReturnValue({
             mutate: vi.fn(),
             isPending: false,
@@ -119,7 +119,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useObterUsuarioGestaoModule,
-            "useObterUsuarioGestao"
+            "useObterUsuarioGestao",
         ).mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -179,7 +179,7 @@ describe("useCadastroUsuarioForm", () => {
             () => useCadastroUsuarioForm(),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         act(() => {
@@ -198,7 +198,7 @@ describe("useCadastroUsuarioForm", () => {
     it("calcula cargoOptions corretamente para rede DIRETA (usuário GIPE)", async () => {
         const useUserPermissions = await import("@/hooks/useUserPermissions");
         const mockUseUserPermissions = vi.mocked(
-            useUserPermissions.useUserPermissions
+            useUserPermissions.useUserPermissions,
         );
 
         mockUseUserPermissions.mockReturnValue({
@@ -239,7 +239,7 @@ describe("useCadastroUsuarioForm", () => {
             () => useCadastroUsuarioForm(),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         act(() => {
@@ -298,7 +298,7 @@ describe("useCadastroUsuarioForm", () => {
     it("limpa campo UE ao trocar cargo para gipe", async () => {
         const useUserPermissions = await import("@/hooks/useUserPermissions");
         const mockUseUserPermissions = vi.mocked(
-            useUserPermissions.useUserPermissions
+            useUserPermissions.useUserPermissions,
         );
 
         mockUseUserPermissions.mockReturnValue({
@@ -340,7 +340,7 @@ describe("useCadastroUsuarioForm", () => {
         const useUserStore = await import("@/stores/useUserStore");
 
         const mockUseUserPermissions = vi.mocked(
-            useUserPermissions.useUserPermissions
+            useUserPermissions.useUserPermissions,
         );
         const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
 
@@ -419,7 +419,7 @@ describe("useCadastroUsuarioForm", () => {
         const useUserStore = await import("@/stores/useUserStore");
 
         const mockUseUserPermissions = vi.mocked(
-            useUserPermissions.useUserPermissions
+            useUserPermissions.useUserPermissions,
         );
         const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
 
@@ -480,7 +480,7 @@ describe("useCadastroUsuarioForm", () => {
         const useUserStore = await import("@/stores/useUserStore");
 
         const mockUseUserPermissions = vi.mocked(
-            useUserPermissions.useUserPermissions
+            useUserPermissions.useUserPermissions,
         );
         const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
 
@@ -576,7 +576,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -610,7 +610,7 @@ describe("useCadastroUsuarioForm", () => {
             });
             expect(result.current.modalOpen).toBe(false);
             expect(mockPush).toHaveBeenCalledWith(
-                "/dashboard/gestao-usuarios?tab=ativos"
+                "/dashboard/gestao-usuarios?tab=ativos",
             );
         });
     });
@@ -625,7 +625,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -663,7 +663,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -704,7 +704,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -765,7 +765,7 @@ describe("useCadastroUsuarioForm", () => {
 
         vi.spyOn(
             useCadastroGestaoUsuarioModule,
-            "useCadastroGestaoUsuario"
+            "useCadastroGestaoUsuario",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -796,7 +796,7 @@ describe("useCadastroUsuarioForm", () => {
 
         await waitFor(() => {
             expect(result.current.form.getValues("fullName")).toBe(
-                "Carlos Teste"
+                "Carlos Teste",
             );
         });
 
@@ -824,7 +824,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             expect(result.current.mode).toBe("edit");
@@ -845,7 +845,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -860,7 +860,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -890,7 +890,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -905,7 +905,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -922,7 +922,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -936,7 +936,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             const mockEvent = {
@@ -967,7 +967,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -981,7 +981,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             act(() => {
@@ -1006,7 +1006,7 @@ describe("useCadastroUsuarioForm", () => {
                     variant: "success",
                 });
                 expect(mockPush).toHaveBeenCalledWith(
-                    "/dashboard/gestao-usuarios?tab=ativos"
+                    "/dashboard/gestao-usuarios?tab=ativos",
                 );
             });
         });
@@ -1021,7 +1021,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -1035,7 +1035,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             act(() => {
@@ -1068,7 +1068,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -1082,7 +1082,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             act(() => {
@@ -1112,7 +1112,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -1126,7 +1126,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             act(() => {
@@ -1164,7 +1164,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1179,12 +1179,12 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "João Silva"
+                    "João Silva",
                 );
             });
 
@@ -1193,7 +1193,7 @@ describe("useCadastroUsuarioForm", () => {
             });
 
             expect(result.current.form.getValues("fullName")).toBe(
-                "João Silva"
+                "João Silva",
             );
             expect(result.current.form.getValues("rede")).toBe("DIRETA");
         });
@@ -1213,7 +1213,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1228,12 +1228,12 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "João Silva"
+                    "João Silva",
                 );
             });
 
@@ -1241,10 +1241,12 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("ue-1");
                 },
-                { timeout: 1000 }
+                { timeout: 1000 },
             );
 
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            });
 
             act(() => {
                 result.current.handleRedeChange("INDIRETA");
@@ -1267,7 +1269,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             expect(result.current.hasChanges).toBe(false);
@@ -1286,7 +1288,7 @@ describe("useCadastroUsuarioForm", () => {
         it("isPending retorna isPendingUpdate no modo edit", () => {
             vi.spyOn(
                 useAtualizarGestaoUsuarioModule,
-                "useAtualizarGestaoUsuario"
+                "useAtualizarGestaoUsuario",
             ).mockReturnValue({
                 mutate: vi.fn(),
                 isPending: true,
@@ -1300,7 +1302,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             expect(result.current.isPending).toBe(true);
@@ -1321,7 +1323,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1336,12 +1338,12 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("cargo")).toBe(
-                    "ponto_focal"
+                    "ponto_focal",
                 );
             });
         });
@@ -1361,7 +1363,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1376,7 +1378,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1400,7 +1402,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1415,7 +1417,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1426,7 +1428,7 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("ue-1");
                 },
-                { timeout: 1000 }
+                { timeout: 1000 },
             );
 
             await new Promise((resolve) => setTimeout(resolve, 300));
@@ -1454,7 +1456,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1469,7 +1471,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1498,7 +1500,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1513,7 +1515,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1542,7 +1544,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1557,7 +1559,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1568,7 +1570,7 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("ue-1");
                 },
-                { timeout: 1000 }
+                { timeout: 1000 },
             );
 
             await new Promise((resolve) => setTimeout(resolve, 300));
@@ -1587,7 +1589,7 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("");
                 },
-                { timeout: 2000 }
+                { timeout: 2000 },
             );
         });
 
@@ -1606,7 +1608,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1621,7 +1623,7 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
@@ -1632,7 +1634,7 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("ue-1");
                 },
-                { timeout: 1000 }
+                { timeout: 1000 },
             );
 
             await new Promise((resolve) => setTimeout(resolve, 300));
@@ -1644,7 +1646,7 @@ describe("useCadastroUsuarioForm", () => {
             // Aguardar o cargo ser alterado
             await waitFor(() => {
                 expect(result.current.form.getValues("cargo")).toBe(
-                    "ponto_focal"
+                    "ponto_focal",
                 );
             });
 
@@ -1653,7 +1655,7 @@ describe("useCadastroUsuarioForm", () => {
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("");
                 },
-                { timeout: 2000 }
+                { timeout: 2000 },
             );
         });
 
@@ -1672,7 +1674,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1687,12 +1689,12 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "Maria Costa"
+                    "Maria Costa",
                 );
                 expect(result.current.form.getValues("rede")).toBe("INDIRETA");
                 expect(result.current.form.getValues("rf")).toBe("");
@@ -1714,7 +1716,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1729,12 +1731,12 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "João Silva"
+                    "João Silva",
                 );
                 expect(result.current.form.getValues("dre")).toBe("");
             });
@@ -1761,7 +1763,7 @@ describe("useCadastroUsuarioForm", () => {
 
             expect(result.current.form.getValues("rede")).toBe("DIRETA");
             expect(result.current.form.getValues("fullName")).toBe(
-                "João Silva"
+                "João Silva",
             );
         });
 
@@ -1790,13 +1792,12 @@ describe("useCadastroUsuarioForm", () => {
         });
 
         it("pré-seleciona DRE para ponto focal no modo edit após carregamento", async () => {
-            const useUserPermissions = await import(
-                "@/hooks/useUserPermissions"
-            );
+            const useUserPermissions =
+                await import("@/hooks/useUserPermissions");
             const useUserStore = await import("@/stores/useUserStore");
 
             const mockUseUserPermissions = vi.mocked(
-                useUserPermissions.useUserPermissions
+                useUserPermissions.useUserPermissions,
             );
             const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
 
@@ -1859,7 +1860,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1874,16 +1875,18 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "João Silva"
+                    "João Silva",
                 );
             });
 
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            });
 
             await waitFor(() => {
                 expect(result.current.form.getValues("dre")).toBe("dre-123");
@@ -1899,13 +1902,12 @@ describe("useCadastroUsuarioForm", () => {
         });
 
         it("pré-seleciona DRE vazio quando ponto focal tem dre_uuid null", async () => {
-            const useUserPermissions = await import(
-                "@/hooks/useUserPermissions"
-            );
+            const useUserPermissions =
+                await import("@/hooks/useUserPermissions");
             const useUserStore = await import("@/stores/useUserStore");
 
             const mockUseUserPermissions = vi.mocked(
-                useUserPermissions.useUserPermissions
+                useUserPermissions.useUserPermissions,
             );
             const mockUseUserStore = vi.mocked(useUserStore.useUserStore);
 
@@ -1968,7 +1970,7 @@ describe("useCadastroUsuarioForm", () => {
 
             vi.spyOn(
                 useObterUsuarioGestaoModule,
-                "useObterUsuarioGestao"
+                "useObterUsuarioGestao",
             ).mockReturnValue({
                 data: mockUsuarioData,
                 isLoading: false,
@@ -1983,18 +1985,22 @@ describe("useCadastroUsuarioForm", () => {
                     }),
                 {
                     wrapper: createWrapper(),
-                }
+                },
             );
 
             await waitFor(() => {
                 expect(result.current.form.getValues("fullName")).toBe(
-                    "João Silva"
+                    "João Silva",
                 );
             });
 
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            });
 
-            expect(result.current.form.getValues("dre")).toBe("");
+            await waitFor(() => {
+                expect(result.current.form.getValues("dre")).toBe("");
+            });
 
             mockUseUserPermissions.mockReturnValue({
                 isPontoFocal: false,
