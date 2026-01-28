@@ -10,6 +10,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -19,9 +20,10 @@ import {
 } from "@/components/ui/select";
 import { CamposRedeDireta } from "./CamposRedeDireta";
 import { CamposRedeIndireta } from "./CamposRedeIndireta";
+import MensagemInativacao from "./MensagemInativacao";
 import ModalConfirmacao from "./ModalConfirmacao";
 import { useCadastroUsuarioForm } from "./useCadastroUsuarioForm";
-import MensagemInativacao from "./MensagemInativacao";
+import { maskCPF } from "./utils";
 
 type FormularioCadastroPessoaUsuariaProps = {
     mode?: "create" | "edit";
@@ -41,7 +43,6 @@ export default function FormularioCadastroPessoaUsuaria({
         dreOptions,
         ueOptions,
         redeOptions,
-        cargoOptions,
         isRedeSelected,
         shouldShowExtraFields,
         showFields,
@@ -50,7 +51,6 @@ export default function FormularioCadastroPessoaUsuaria({
         handleSubmitClick,
         handleConfirmCadastro,
         handleRedeChange,
-        handleCargoChange,
         handleDreChange,
         router,
         isDreDisabled,
@@ -62,6 +62,8 @@ export default function FormularioCadastroPessoaUsuaria({
         responsavelInativacaoNome,
         motivoInativacao,
         inativadoViaUnidade,
+        watchedCargo,
+        cargoOptions,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     const labelClass = (disabled: boolean, extra?: string) =>
@@ -70,7 +72,22 @@ export default function FormularioCadastroPessoaUsuaria({
         } ${extra ?? ""}`;
     const selectClass = (disabled: boolean) =>
         `w-full border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
+    const inputClass = (disabled: boolean) =>
+        `border-[#DADADA] bg-white ${disabled ? "text-[#B0B0B0]" : ""}`;
     const buttonDisabled = isFormDisabled;
+
+    const getFirstRowGridCols = () => {
+        if (isRedeSelected && isRedeDireta && watchedCargo === "gipe") {
+            return "md:grid-cols-3";
+        }
+        if (isRedeSelected && isRedeDireta) {
+            return "md:grid-cols-2";
+        }
+        if (isRedeSelected && isRedeIndireta) {
+            return "md:grid-cols-2";
+        }
+        return "";
+    };
 
     return (
         <Form {...form}>
@@ -79,7 +96,9 @@ export default function FormularioCadastroPessoaUsuaria({
                     Cadastre as informações do perfil.
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div
+                    className={`grid grid-cols-1 gap-6 mb-6 ${getFirstRowGridCols()}`}
+                >
                     <FormField
                         control={form.control}
                         name="rede"
@@ -100,7 +119,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                         <FormControl>
                                             <SelectTrigger
                                                 className={selectClass(
-                                                    disabled
+                                                    disabled,
                                                 )}
                                                 data-testid="select-rede"
                                             >
@@ -123,48 +142,139 @@ export default function FormularioCadastroPessoaUsuaria({
                             );
                         }}
                     />
-
-                    <FormField
-                        control={form.control}
-                        name="cargo"
-                        render={({ field }) => {
-                            const disabled = !isRedeSelected || isFormDisabled;
-                            return (
-                                <FormItem>
-                                    <FormLabel className={labelClass(disabled)}>
-                                        Cargo*
-                                    </FormLabel>
-                                    <Select
-                                        value={field.value}
-                                        onValueChange={handleCargoChange}
-                                        disabled={disabled}
-                                    >
+                    {isRedeSelected && isRedeIndireta && (
+                        <FormField
+                            control={form.control}
+                            name="cpf"
+                            render={({ field }) => {
+                                const disabled =
+                                    isFormDisabled || currentMode === "edit";
+                                return (
+                                    <FormItem>
+                                        <FormLabel
+                                            className={labelClass(disabled)}
+                                        >
+                                            CPF*
+                                        </FormLabel>
                                         <FormControl>
-                                            <SelectTrigger
-                                                className={selectClass(
-                                                    disabled
-                                                )}
-                                                data-testid="select-cargo"
-                                            >
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
+                                            <Input
+                                                {...field}
+                                                inputMode="numeric"
+                                                placeholder="123.456.789-10"
+                                                className={inputClass(disabled)}
+                                                disabled={disabled}
+                                                maxLength={14}
+                                                onChange={(e) =>
+                                                    field.onChange(
+                                                        maskCPF(e.target.value),
+                                                    )
+                                                }
+                                                data-testid="input-cpf"
+                                            />
                                         </FormControl>
-                                        <SelectContent>
-                                            {cargoOptions.map((cargo) => (
-                                                <SelectItem
-                                                    key={cargo.value}
-                                                    value={cargo.value}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
+                    {isRedeSelected && isRedeDireta && (
+                        <FormField
+                            control={form.control}
+                            name="rf"
+                            render={({ field }) => {
+                                const disabled =
+                                    isFormDisabled || currentMode === "edit";
+                                return (
+                                    <FormItem>
+                                        <FormLabel
+                                            className={labelClass(disabled)}
+                                        >
+                                            RF*
+                                        </FormLabel>
+                                        <div className="flex items-start">
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    inputMode="numeric"
+                                                    placeholder="Digite o RF"
+                                                    className={`${inputClass(disabled)} font-normal rounded-r-none`}
+                                                    disabled={disabled}
+                                                    maxLength={7}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value.replaceAll(
+                                                                /\D/g,
+                                                                "",
+                                                            );
+                                                        field.onChange(value);
+                                                    }}
+                                                    data-testid="input-rf"
+                                                />
+                                            </FormControl>
+                                            {currentMode === "create" && (
+                                                <Button
+                                                    type="button"
+                                                    variant="submit"
+                                                    size="sm"
+                                                    className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                    disabled={
+                                                        disabled || !field.value
+                                                    }
                                                 >
-                                                    {cargo.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
-                    />
+                                                    Consultar
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
+                    {isRedeSelected &&
+                        isRedeDireta &&
+                        watchedCargo === "gipe" && (
+                            <FormField
+                                control={form.control}
+                                name="cpf"
+                                render={({ field }) => {
+                                    const disabled =
+                                        isFormDisabled ||
+                                        currentMode === "edit";
+                                    return (
+                                        <FormItem>
+                                            <FormLabel
+                                                className={labelClass(disabled)}
+                                            >
+                                                CPF*
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    inputMode="numeric"
+                                                    placeholder="123.456.789-10"
+                                                    className={inputClass(
+                                                        disabled,
+                                                    )}
+                                                    disabled={disabled}
+                                                    maxLength={14}
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            maskCPF(
+                                                                e.target.value,
+                                                            ),
+                                                        )
+                                                    }
+                                                    data-testid="input-cpf"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    );
+                                }}
+                            />
+                        )}
                 </div>
 
                 {shouldShowExtraFields && (
@@ -177,9 +287,9 @@ export default function FormularioCadastroPessoaUsuaria({
                                 showDRE={showFields.dre}
                                 showUE={showFields.ue}
                                 isDreDisabled={isDreDisabled}
-                                mode={currentMode}
                                 onDreChange={handleDreChange}
                                 isFormDisabled={isFormDisabled}
+                                cargoOptions={cargoOptions}
                             />
                         )}
 
@@ -194,6 +304,8 @@ export default function FormularioCadastroPessoaUsuaria({
                                 mode={currentMode}
                                 onDreChange={handleDreChange}
                                 isFormDisabled={isFormDisabled}
+                                cargo={watchedCargo}
+                                cargoOptions={cargoOptions}
                             />
                         )}
                     </>
@@ -248,8 +360,12 @@ export default function FormularioCadastroPessoaUsuaria({
                 <div className="mt-4">
                     {!isActive && motivoInativacao && (
                         <MensagemInativacao
-                            dataInativacaoFormatada={dataInativacaoFormatada ?? ""}
-                            responsavelInativacaoNome={responsavelInativacaoNome ?? ""}
+                            dataInativacaoFormatada={
+                                dataInativacaoFormatada ?? ""
+                            }
+                            responsavelInativacaoNome={
+                                responsavelInativacaoNome ?? ""
+                            }
                             motivoInativacao={motivoInativacao}
                             inativadoViaUnidade={inativadoViaUnidade ?? false}
                         />
