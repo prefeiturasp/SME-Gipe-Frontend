@@ -90,7 +90,7 @@ export function useCadastroUsuarioForm({
         true,
         watchedDre,
         undefined,
-        watchedRede
+        watchedRede,
     );
 
     const { data: usuarioData } = useObterUsuarioGestao({
@@ -148,7 +148,7 @@ export function useCadastroUsuarioForm({
             const cargo = mapCargoNumericoParaString(usuarioData.cargo);
             const dreMatch = dreOptions.find(
                 (d: UnidadeEducacional) =>
-                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade
+                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade,
             );
 
             reset({
@@ -182,7 +182,7 @@ export function useCadastroUsuarioForm({
         ) {
             const ueMatch = ueOptions.find(
                 (u: UnidadeEducacional) =>
-                    u.codigo_eol === usuarioData.codigo_eol_unidade
+                    u.codigo_eol === usuarioData.codigo_eol_unidade,
             );
             if (ueMatch) {
                 setValue("ue", ueMatch.uuid, { shouldValidate: true });
@@ -247,7 +247,7 @@ export function useCadastroUsuarioForm({
                 }
             }
         },
-        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues]
+        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues],
     );
 
     const handleDreChange = useCallback(
@@ -263,7 +263,7 @@ export function useCadastroUsuarioForm({
             setValue("dre", val, { shouldValidate: true });
             setValue("ue", "", { shouldValidate: true });
         },
-        [mode, carregandoDados, setValue, getValues]
+        [mode, carregandoDados, setValue, getValues],
     );
 
     const handleCargoChange = useCallback(
@@ -282,14 +282,14 @@ export function useCadastroUsuarioForm({
                 setValue("ue", "", { shouldValidate: true });
             }
         },
-        [mode, carregandoDados, setValue, getValues]
+        [mode, carregandoDados, setValue, getValues],
     );
 
     function handleConfirmCadastro() {
         const payload = buildCadastroPayload(
             getValues(),
             dreOptions,
-            ueOptions
+            ueOptions,
         );
 
         if (mode === "edit") {
@@ -375,7 +375,7 @@ export function useCadastroUsuarioForm({
         cargoOptions,
         showFields,
         isRedeSelected: !!watchedRede,
-        shouldShowExtraFields: !!watchedRede && !!watchedCargo,
+        shouldShowExtraFields: !!watchedRede,
         isRedeIndireta: watchedRede === "INDIRETA",
         isRedeDireta: watchedRede === "DIRETA",
         handleSubmitClick: (e: React.MouseEvent) => {
@@ -400,5 +400,6 @@ export function useCadastroUsuarioForm({
         responsavelInativacaoNome,
         motivoInativacao,
         inativadoViaUnidade,
+        watchedCargo,
     };
 }
