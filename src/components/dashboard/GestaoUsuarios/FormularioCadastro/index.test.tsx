@@ -59,7 +59,7 @@ vi.mock("@/hooks/useGetUnidades", () => ({
                 isLoading: false,
                 error: null,
             };
-        }
+        },
     ),
 }));
 
@@ -117,10 +117,10 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
         expect(screen.getByTestId("select-rede")).toBeInTheDocument();
-        expect(screen.getByTestId("select-cargo")).toBeInTheDocument();
+        expect(screen.queryByTestId("select-cargo")).not.toBeInTheDocument();
     });
 
-    it("exibe campos adicionais após selecionar rede DIRETA e cargo", async () => {
+    it("exibe campos adicionais após selecionar rede DIRETA", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
         const selectRede = screen.getByTestId("select-rede");
@@ -130,22 +130,13 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             fireEvent.click(option);
         });
 
-        const selectCargo = screen.getByTestId("select-cargo");
-        fireEvent.click(selectCargo);
         await waitFor(() => {
-            const option = screen.getByRole("option", { name: "Diretor(a)" });
-            fireEvent.click(option);
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("input-fullName")).toBeInTheDocument();
-            expect(screen.getByTestId("input-cpf")).toBeInTheDocument();
             expect(screen.getByTestId("input-rf")).toBeInTheDocument();
-            expect(screen.getByTestId("input-email")).toBeInTheDocument();
+            expect(screen.getByTestId("select-cargo")).toBeInTheDocument();
         });
     });
 
-    it("exibe campos adicionais após selecionar rede INDIRETA e cargo", async () => {
+    it("exibe campos adicionais após selecionar rede INDIRETA", async () => {
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
         const selectRede = screen.getByTestId("select-rede");
@@ -155,18 +146,73 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             fireEvent.click(option);
         });
 
-        const selectCargo = screen.getByTestId("select-cargo");
-        fireEvent.click(selectCargo);
         await waitFor(() => {
-            const option = screen.getByRole("option", { name: "Diretor(a)" });
+            expect(screen.getByTestId("input-cpf")).toBeInTheDocument();
+            expect(screen.getByTestId("select-cargo")).toBeInTheDocument();
+            expect(screen.getByTestId("input-fullName")).toBeInTheDocument();
+            expect(screen.getByTestId("input-email")).toBeInTheDocument();
+            expect(screen.queryByTestId("input-rf")).not.toBeInTheDocument();
+        });
+    });
+
+    it("aplica máscara de CPF ao digitar no campo CPF da rede INDIRETA", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Indireta" });
             fireEvent.click(option);
         });
 
+        const inputCPF = await screen.findByTestId("input-cpf");
+        fireEvent.change(inputCPF, { target: { value: "12345678900" } });
+
         await waitFor(() => {
-            expect(screen.getByTestId("input-fullName")).toBeInTheDocument();
-            expect(screen.getByTestId("input-cpf")).toBeInTheDocument();
-            expect(screen.queryByTestId("input-rf")).not.toBeInTheDocument();
-            expect(screen.getByTestId("input-email")).toBeInTheDocument();
+            expect(inputCPF).toHaveValue("123.456.789-00");
+        });
+    });
+
+    it("aplica máscara de CPF ao digitar no campo CPF da rede DIRETA com cargo GIPE", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const selectCargo = await screen.findByTestId("select-cargo");
+        fireEvent.click(selectCargo);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "GIPE" });
+            fireEvent.click(option);
+        });
+
+        const inputCPF = await screen.findByTestId("input-cpf");
+        fireEvent.change(inputCPF, { target: { value: "98765432100" } });
+
+        await waitFor(() => {
+            expect(inputCPF).toHaveValue("987.654.321-00");
+        });
+    });
+
+    it("remove caracteres não numéricos do campo RF ao digitar", async () => {
+        render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+        const selectRede = screen.getByTestId("select-rede");
+        fireEvent.click(selectRede);
+        await waitFor(() => {
+            const option = screen.getByRole("option", { name: "Direta" });
+            fireEvent.click(option);
+        });
+
+        const inputRF = await screen.findByTestId("input-rf");
+        fireEvent.change(inputRF, { target: { value: "abc123def456" } });
+
+        await waitFor(() => {
+            expect(inputRF).toHaveValue("123456");
         });
     });
 
@@ -208,7 +254,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 is_app_admin: false,
                 codigo_eol_dre_da_unidade: "",
                 codigo_eol_unidade: "",
-            })
+            }),
         );
 
         render(
@@ -216,7 +262,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         const checkbox = await screen.findByRole("checkbox");
@@ -226,7 +272,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         expect(checkbox).toHaveClass("text-[#B0B0B0]");
 
         const descricao = screen.getByText(
-            /Opção disponível para usuários que possuem cargo de Ponto Focal ou GIPE/i
+            /Opção disponível para usuários que possuem cargo de Ponto Focal ou GIPE/i,
         );
 
         expect(descricao).toHaveClass("text-[#B0B0B0]");
@@ -318,7 +364,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 is_app_admin: true,
                 codigo_eol_dre_da_unidade: "",
                 codigo_eol_unidade: "",
-            })
+            }),
         );
 
         render(
@@ -326,7 +372,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         const checkbox = await screen.findByRole("checkbox");
@@ -390,7 +436,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 data_inativacao: "2025-12-01T10:30:00Z",
                 responsavel_inativacao_nome: "Admin Teste",
                 inativado_via_unidade: false,
-            })
+            }),
         );
 
         render(
@@ -398,18 +444,18 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         await waitFor(() => {
             expect(
-                screen.getByText("Motivo da inativação do perfil:")
+                screen.getByText("Motivo da inativação do perfil:"),
             ).toBeInTheDocument();
             expect(
-                screen.getByText("Usuário solicitou inativação")
+                screen.getByText("Usuário solicitou inativação"),
             ).toBeInTheDocument();
             expect(
-                screen.getByText(/Inativado por Admin Teste em/i)
+                screen.getByText(/Inativado por Admin Teste em/i),
             ).toBeInTheDocument();
         });
     });
@@ -438,7 +484,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 data_inativacao: "2025-12-01T10:30:00Z",
                 responsavel_inativacao_nome: "Admin Teste",
                 inativado_via_unidade: true,
-            })
+            }),
         );
 
         render(
@@ -446,20 +492,20 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo-via-ue"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         await waitFor(() => {
             expect(
                 screen.getByText(
-                    "Perfil inativo devido a inativação da Unidade Educacional."
-                )
+                    "Perfil inativo devido a inativação da Unidade Educacional.",
+                ),
             ).toBeInTheDocument();
             expect(
-                screen.getByText("Motivo da inativação da UE:")
+                screen.getByText("Motivo da inativação da UE:"),
             ).toBeInTheDocument();
             expect(
-                screen.getByText("Unidade foi desativada")
+                screen.getByText("Unidade foi desativada"),
             ).toBeInTheDocument();
         });
     });
@@ -488,7 +534,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 data_inativacao: undefined,
                 responsavel_inativacao_nome: undefined,
                 inativado_via_unidade: undefined,
-            })
+            }),
         );
 
         render(
@@ -496,12 +542,12 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo-sem-dados"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         await waitFor(() => {
             expect(
-                screen.getByText("Motivo da inativação do perfil:")
+                screen.getByText("Motivo da inativação do perfil:"),
             ).toBeInTheDocument();
             expect(screen.getByText("Motivo teste")).toBeInTheDocument();
         });
@@ -531,7 +577,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 data_inativacao: "2025-12-01T10:30:00Z",
                 responsavel_inativacao_nome: "Admin Teste",
                 inativado_via_unidade: null,
-            })
+            }),
         );
 
         render(
@@ -539,12 +585,12 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
                 mode="edit"
                 usuarioUuid="usuario-inativo-null"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         await waitFor(() => {
             expect(
-                screen.getByText("Motivo da inativação do perfil:")
+                screen.getByText("Motivo da inativação do perfil:"),
             ).toBeInTheDocument();
             expect(screen.getByText("Motivo teste")).toBeInTheDocument();
         });
@@ -552,7 +598,7 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
 });
 
 function getMockedQueryResult(
-    data: Partial<ObterUsuarioGestaoResponse>
+    data: Partial<ObterUsuarioGestaoResponse>,
 ): UseQueryResult<ObterUsuarioGestaoResponse, Error> {
     return {
         data: data as ObterUsuarioGestaoResponse,
@@ -606,7 +652,7 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 is_active: true,
                 codigo_eol_unidade: "",
                 codigo_eol_dre_da_unidade: "",
-            })
+            }),
         );
     });
 
@@ -620,18 +666,21 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            expect(screen.getByTestId("input-fullName")).toHaveValue(
-                "Joao da Silva"
-            );
-        });
+        await waitFor(
+            () => {
+                expect(screen.getByTestId("input-fullName")).toHaveValue(
+                    "Joao da Silva",
+                );
+            },
+            { timeout: 1000 },
+        );
 
         expect(screen.getByTestId("input-cpf")).toHaveValue("12808888813");
         expect(screen.getByTestId("input-email")).toHaveValue(
-            "joao@sme.prefeitura.sp.gov.br"
+            "joao@sme.prefeitura.sp.gov.br",
         );
 
         const inputNome = await screen.findByTestId("input-fullName");
@@ -654,18 +703,21 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            expect(screen.getByTestId("input-fullName")).toHaveValue(
-                "Joao da Silva"
-            );
-        });
+        await waitFor(
+            () => {
+                expect(screen.getByTestId("input-fullName")).toHaveValue(
+                    "Joao da Silva",
+                );
+            },
+            { timeout: 1000 },
+        );
 
         expect(screen.getByTestId("input-cpf")).toHaveValue("12808888813");
         expect(screen.getByTestId("input-email")).toHaveValue(
-            "joao@sme.prefeitura.sp.gov.br"
+            "joao@sme.prefeitura.sp.gov.br",
         );
     });
 
@@ -675,13 +727,16 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            const button = screen.getByTestId("button-cadastrar");
-            expect(button).toHaveTextContent("Salvar alterações");
-        });
+        await waitFor(
+            () => {
+                const button = screen.getByTestId("button-cadastrar");
+                expect(button).toHaveTextContent("Salvar alterações");
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("botão está desabilitado quando não há mudanças no modo edit", async () => {
@@ -690,13 +745,16 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            const button = screen.getByTestId("button-cadastrar");
-            expect(button).toBeDisabled();
-        });
+        await waitFor(
+            () => {
+                const button = screen.getByTestId("button-cadastrar");
+                expect(button).toBeDisabled();
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("desabilita botão no modo edit quando não há alterações, mesmo se válido", async () => {
@@ -705,12 +763,15 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
-        await waitFor(() => {
-            const button = screen.getByTestId("button-cadastrar");
-            expect(button).toBeDisabled();
-        });
+        await waitFor(
+            () => {
+                const button = screen.getByTestId("button-cadastrar");
+                expect(button).toBeDisabled();
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("carrega rede DIRETA no modo edit", async () => {
@@ -719,13 +780,16 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            const selectRede = screen.getByTestId("select-rede");
-            expect(selectRede).toHaveTextContent("Direta");
-        });
+        await waitFor(
+            () => {
+                const selectRede = screen.getByTestId("select-rede");
+                expect(selectRede).toHaveTextContent("Direta");
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("carrega rede INDIRETA no modo edit", () => {
@@ -741,7 +805,7 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 codigo_eol_dre_da_unidade: "000002",
                 codigo_eol_unidade: "100002",
                 is_app_admin: false,
-            })
+            }),
         );
 
         render(
@@ -749,7 +813,7 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-456"
             />,
-            { wrapper }
+            { wrapper },
         );
 
         waitFor(() => {
@@ -764,14 +828,17 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
                 mode="edit"
                 usuarioUuid="usuario-123"
             />,
-            { wrapper }
+            { wrapper },
         );
 
-        await waitFor(() => {
-            expect(screen.getByTestId("input-fullName")).toHaveValue(
-                "Joao da Silva"
-            );
-        });
+        await waitFor(
+            () => {
+                expect(screen.getByTestId("input-fullName")).toHaveValue(
+                    "Joao da Silva",
+                );
+            },
+            { timeout: 1000 },
+        );
 
         const inputNome = screen.getByTestId("input-fullName");
         fireEvent.change(inputNome, { target: { value: "" } });
