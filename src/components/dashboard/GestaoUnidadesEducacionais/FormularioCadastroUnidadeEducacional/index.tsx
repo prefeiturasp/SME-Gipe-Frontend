@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarUnidade } from "@/hooks/useAtualizarUnidade";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useConsultarEolUnidade } from "@/hooks/useConsultarEolUnidade";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
@@ -192,8 +193,30 @@ export default function FormularioCadastroUnidadeEducacional({
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
         useAtualizarUnidade(unidadeUuid || "");
+    const { mutateAsync: consultarEolUnidade, isPending: isPendingConsultar } =
+        useConsultarEolUnidade();
 
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
+
+    const handleConsultarEol = async () => {
+        const codigoEol = form.getValues("codigoEol");
+
+        const response = await consultarEolUnidade(codigoEol);
+
+        if (response.success) {
+            form.setValue(
+                "nomeUnidadeEducacional",
+                response.data.nome_unidade,
+                { shouldValidate: true },
+            );
+        } else {
+            toast({
+                title: "Código EOL inválido!",
+                description: response.error,
+                variant: "error",
+            });
+        }
+    };
 
     const onSubmit = async (data: FormData) => {
         const payload: UnidadeCadastroPayload = {
@@ -362,6 +385,8 @@ export default function FormularioCadastroUnidadeEducacional({
                                                         disabledFields ||
                                                         field.value.length !== 6
                                                     }
+                                                    loading={isPendingConsultar}
+                                                    onClick={handleConsultarEol}
                                                 >
                                                     Consultar
                                                 </Button>
@@ -415,6 +440,12 @@ export default function FormularioCadastroUnidadeEducacional({
                                                             disabledFields ||
                                                             field.value
                                                                 .length !== 6
+                                                        }
+                                                        loading={
+                                                            isPendingConsultar
+                                                        }
+                                                        onClick={
+                                                            handleConsultarEol
                                                         }
                                                     >
                                                         Consultar
