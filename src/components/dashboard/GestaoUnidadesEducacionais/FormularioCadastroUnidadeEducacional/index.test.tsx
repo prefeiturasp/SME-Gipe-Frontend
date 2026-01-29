@@ -37,6 +37,14 @@ vi.mock("@/hooks/useObterUnidadeGestao", () => ({
     },
 }));
 
+const mockConsultarEolUnidade = vi.fn();
+vi.mock("@/hooks/useConsultarEolUnidade", () => ({
+    useConsultarEolUnidade: () => ({
+        mutateAsync: mockConsultarEolUnidade,
+        isPending: false,
+    }),
+}));
+
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: vi.fn(),
 }));
@@ -196,6 +204,13 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         await waitFor(() => {
             const tipoOptions = screen.getAllByText(tipo);
             fireEvent.click(tipoOptions.at(-1)!);
+        });
+
+        // Aguarda os campos serem renderizados
+        await waitFor(() => {
+            expect(
+                screen.getByPlaceholderText(/Exemplo: EMEF João da Silva/i),
+            ).toBeInTheDocument();
         });
     };
 
@@ -1229,6 +1244,154 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 expect(
                     screen.getByText("Inativado por em"),
                 ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("Consultar Código EOL", () => {
+        beforeEach(() => {
+            mockObterUnidade.mockReturnValue({
+                data: undefined,
+                isLoading: false,
+            });
+        });
+
+        it("deve consultar código EOL e preencher campo nome com sucesso", async () => {
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEI",
+                    nome_unidade: "MARCIANO VASQUES PEREIRA, PROF.",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+
+            await waitFor(() => {
+                expect(nomeInput).toHaveValue(
+                    "MARCIANO VASQUES PEREIRA, PROF.",
+                );
+            });
+        });
+
+        it("deve exibir toast de erro quando consulta EOL falhar", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: false,
+                error: "Código EOL não encontrado",
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "999999" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith({
+                    title: "Código EOL inválido!",
+                    description: "Código EOL não encontrado",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("não deve fazer nada ao clicar em Consultar sem código EOL", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+
+            await waitFor(() => {
+                expect(consultarButton).toBeDisabled();
+            });
+
+            expect(mockConsultarEolUnidade).not.toHaveBeenCalled();
+        });
+
+        it("deve consultar código EOL para usuário ponto focal", async () => {
+            const useUserStoreModule = await import("@/stores/useUserStore");
+            const useUserPermissionsModule =
+                await import("@/hooks/useUserPermissions");
+            const mockUseUserStore = vi.mocked(useUserStoreModule.useUserStore);
+
+            mockUseUserStore.mockImplementation((selector: unknown) => {
+                if (typeof selector === "function") {
+                    return selector({ user: mockUser });
+                }
+                return { user: mockUser };
+            });
+
+            vi.mocked(
+                useUserPermissionsModule.useUserPermissions,
+            ).mockReturnValue({
+                isPontoFocal: true,
+                isGipe: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            });
+
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEF",
+                    nome_unidade: "JOÃO DA SILVA, DR.",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "654321" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("654321");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+
+            await waitFor(() => {
+                expect(nomeInput).toHaveValue("JOÃO DA SILVA, DR.");
             });
         });
     });
