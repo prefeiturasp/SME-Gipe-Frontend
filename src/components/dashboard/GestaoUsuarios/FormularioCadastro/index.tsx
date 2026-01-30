@@ -52,6 +52,8 @@ export default function FormularioCadastroPessoaUsuaria({
         handleConfirmCadastro,
         handleRedeChange,
         handleDreChange,
+        handleConsultarRf,
+        isPendingConsultarRf,
         router,
         isDreDisabled,
         mode: currentMode,
@@ -219,8 +221,14 @@ export default function FormularioCadastroPessoaUsuaria({
                                                     size="sm"
                                                     className="h-10 whitespace-nowrap rounded-l-none border-l-0"
                                                     disabled={
-                                                        disabled || !field.value
+                                                        disabled ||
+                                                        !field.value ||
+                                                        field.value.length < 7
                                                     }
+                                                    loading={
+                                                        isPendingConsultarRf
+                                                    }
+                                                    onClick={handleConsultarRf}
                                                 >
                                                     Consultar
                                                 </Button>

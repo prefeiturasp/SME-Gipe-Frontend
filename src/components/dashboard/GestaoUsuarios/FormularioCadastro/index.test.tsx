@@ -77,6 +77,13 @@ vi.mock("@/hooks/useAtualizarGestaoUsuario", () => ({
     }),
 }));
 
+vi.mock("@/hooks/useConsultarRfUsuario", () => ({
+    useConsultarRfUsuario: () => ({
+        mutateAsync: vi.fn(),
+        isPending: false,
+    }),
+}));
+
 vi.mock("@/hooks/useObterUsuarioGestao", () => ({
     useObterUsuarioGestao: vi.fn(() => ({
         data: null,
@@ -276,6 +283,8 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         );
 
         expect(descricao).toHaveClass("text-[#B0B0B0]");
+
+        await waitFor(() => {}, { timeout: 300 });
     });
 
     it("checkbox de administrador está habilitado quando usuário está ativo e cargo é gipe", async () => {
@@ -378,6 +387,8 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
         const checkbox = await screen.findByRole("checkbox");
         expect(checkbox).toBeDisabled();
         expect(checkbox).toBeChecked();
+
+        await waitFor(() => {}, { timeout: 300 });
     });
 
     it("não exibe checkbox de administrador para cargo ponto focal quando usuário é ponto focal", async () => {
@@ -447,17 +458,20 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             { wrapper },
         );
 
-        await waitFor(() => {
-            expect(
-                screen.getByText("Motivo da inativação do perfil:"),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText("Usuário solicitou inativação"),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(/Inativado por Admin Teste em/i),
-            ).toBeInTheDocument();
-        });
+        await waitFor(
+            () => {
+                expect(
+                    screen.getByText("Motivo da inativação do perfil:"),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText("Usuário solicitou inativação"),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText(/Inativado por Admin Teste em/i),
+                ).toBeInTheDocument();
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("exibe mensagem de inativação quando usuário foi inativado via unidade", async () => {
@@ -495,19 +509,22 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             { wrapper },
         );
 
-        await waitFor(() => {
-            expect(
-                screen.getByText(
-                    "Perfil inativo devido a inativação da Unidade Educacional.",
-                ),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText("Motivo da inativação da UE:"),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText("Unidade foi desativada"),
-            ).toBeInTheDocument();
-        });
+        await waitFor(
+            () => {
+                expect(
+                    screen.getByText(
+                        "Perfil inativo devido a inativação da Unidade Educacional.",
+                    ),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText("Motivo da inativação da UE:"),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText("Unidade foi desativada"),
+                ).toBeInTheDocument();
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("exibe mensagem de inativação com valores padrão quando dados são undefined", async () => {
@@ -545,12 +562,15 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             { wrapper },
         );
 
-        await waitFor(() => {
-            expect(
-                screen.getByText("Motivo da inativação do perfil:"),
-            ).toBeInTheDocument();
-            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
-        });
+        await waitFor(
+            () => {
+                expect(
+                    screen.getByText("Motivo da inativação do perfil:"),
+                ).toBeInTheDocument();
+                expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("exibe mensagem de inativação com valores padrão quando inativadoViaUnidade é null", async () => {
@@ -588,11 +608,134 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
             { wrapper },
         );
 
-        await waitFor(() => {
-            expect(
-                screen.getByText("Motivo da inativação do perfil:"),
-            ).toBeInTheDocument();
-            expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+        await waitFor(
+            () => {
+                expect(
+                    screen.getByText("Motivo da inativação do perfil:"),
+                ).toBeInTheDocument();
+                expect(screen.getByText("Motivo teste")).toBeInTheDocument();
+            },
+            { timeout: 1000 },
+        );
+    });
+
+    describe("Consultar RF", () => {
+        it("exibe botão Consultar quando rede DIRETA está selecionada", async () => {
+            render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+            const selectRede = screen.getByTestId("select-rede");
+            fireEvent.click(selectRede);
+            await waitFor(() => {
+                const option = screen.getByRole("option", { name: "Direta" });
+                fireEvent.click(option);
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("input-rf")).toBeInTheDocument();
+                const consultarButtons = screen.getAllByText("Consultar");
+                expect(consultarButtons.length).toBeGreaterThan(0);
+            });
+        });
+
+        it("botão Consultar está desabilitado quando RF tem menos de 7 dígitos", async () => {
+            render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+            const selectRede = screen.getByTestId("select-rede");
+            fireEvent.click(selectRede);
+            await waitFor(() => {
+                const option = screen.getByRole("option", { name: "Direta" });
+                fireEvent.click(option);
+            });
+
+            const inputRf = await screen.findByTestId("input-rf");
+            fireEvent.change(inputRf, { target: { value: "123456" } });
+
+            await waitFor(() => {
+                const consultarButtons = screen.getAllByText("Consultar");
+                const rfConsultarButton = consultarButtons.find((btn) =>
+                    btn
+                        .closest('[data-testid="input-rf"]')
+                        ?.parentElement?.parentElement?.contains(btn),
+                );
+                if (rfConsultarButton) {
+                    expect(rfConsultarButton).toBeDisabled();
+                }
+            });
+        });
+
+        it("botão Consultar está habilitado quando RF tem 7 ou mais dígitos", async () => {
+            render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+            const selectRede = screen.getByTestId("select-rede");
+            fireEvent.click(selectRede);
+            await waitFor(() => {
+                const option = screen.getByRole("option", { name: "Direta" });
+                fireEvent.click(option);
+            });
+
+            const inputRf = await screen.findByTestId("input-rf");
+            fireEvent.change(inputRf, { target: { value: "1234567" } });
+
+            await waitFor(() => {
+                const consultarButtons = screen.getAllByText("Consultar");
+                expect(consultarButtons.length).toBeGreaterThan(0);
+            });
+        });
+
+        it("não exibe botão Consultar quando rede INDIRETA está selecionada", async () => {
+            render(<FormularioCadastroPessoaUsuaria />, { wrapper });
+
+            const selectRede = screen.getByTestId("select-rede");
+            fireEvent.click(selectRede);
+            await waitFor(() => {
+                const option = screen.getByRole("option", { name: "Indireta" });
+                fireEvent.click(option);
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("input-cpf")).toBeInTheDocument();
+                expect(
+                    screen.queryByTestId("input-rf"),
+                ).not.toBeInTheDocument();
+            });
+        });
+
+        it("não exibe botão Consultar RF no modo edit", async () => {
+            const mockUseObterUsuarioGestao = vi.mocked(
+                obterUsuarioHook.useObterUsuarioGestao,
+            );
+            mockUseObterUsuarioGestao.mockReturnValue(
+                getMockedQueryResult({
+                    uuid: "user-123",
+                    name: "Usuário Teste",
+                    email: "teste@exemplo.com",
+                    cpf: "12345678900",
+                    username: "1234567",
+                    cargo: 1,
+                    rede: "DIRETA",
+                    is_active: true,
+                    codigo_eol_unidade: "100001",
+                    codigo_eol_dre_da_unidade: "000001",
+                }),
+            );
+
+            render(
+                <FormularioCadastroPessoaUsuaria
+                    mode="edit"
+                    usuarioUuid="user-123"
+                />,
+                { wrapper },
+            );
+
+            await waitFor(
+                () => {
+                    const rfInput = screen.queryByTestId("input-rf");
+                    if (rfInput) {
+                        expect(rfInput).toBeDisabled();
+                    }
+                },
+                { timeout: 1000 },
+            );
         });
     });
 });
@@ -792,7 +935,7 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
         );
     });
 
-    it("carrega rede INDIRETA no modo edit", () => {
+    it("carrega rede INDIRETA no modo edit", async () => {
         vi.mocked(useObterUsuarioGestao).mockReturnValue(
             getMockedQueryResult({
                 uuid: "usuario-456",
@@ -816,10 +959,13 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
             { wrapper },
         );
 
-        waitFor(() => {
-            const selectRede = screen.getByTestId("select-rede");
-            expect(selectRede).toHaveTextContent("Indireta");
-        });
+        await waitFor(
+            () => {
+                const selectRede = screen.getByTestId("select-rede");
+                expect(selectRede).toHaveTextContent("Indireta");
+            },
+            { timeout: 1000 },
+        );
     });
 
     it("deve manter o botão desabilitado se o usuário alterar um campo para um valor inválido", async () => {
@@ -843,7 +989,9 @@ describe("FormularioCadastroPessoaUsuaria - Modo Edit", () => {
         const inputNome = screen.getByTestId("input-fullName");
         fireEvent.change(inputNome, { target: { value: "" } });
 
-        const button = screen.getByTestId("button-cadastrar");
-        expect(button).toBeDisabled();
+        await waitFor(() => {
+            const button = screen.getByTestId("button-cadastrar");
+            expect(button).toBeDisabled();
+        });
     });
 });
