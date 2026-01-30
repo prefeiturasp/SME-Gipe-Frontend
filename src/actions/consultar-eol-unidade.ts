@@ -24,7 +24,7 @@ export const consultarEolUnidadeAction = async (
 
     try {
         const response = await api.get<ConsultarEolUnidadeResponse>(
-            `/unidades/${codigoEol}/consultar-eol/`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
