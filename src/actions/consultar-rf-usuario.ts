@@ -57,8 +57,6 @@ export async function consultarRfUsuarioAction(
 
         if (error.response?.status === 401) {
             message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 400) {
-            message = "RF não encontrado";
         } else if (error.response?.status === 500) {
             message = "Erro interno no servidor";
         } else if (error.response?.data?.detail) {
