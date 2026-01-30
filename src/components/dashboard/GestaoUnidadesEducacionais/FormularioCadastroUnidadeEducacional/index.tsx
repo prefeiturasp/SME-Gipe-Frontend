@@ -60,6 +60,8 @@ export default function FormularioCadastroUnidadeEducacional({
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
     const [carregandoDados, setCarregandoDados] = useState(false);
+    const [drePreenchidaAutomaticamente, setDrePreenchidaAutomaticamente] =
+        useState(false);
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
@@ -85,6 +87,7 @@ export default function FormularioCadastroUnidadeEducacional({
                 siglaDre: unidadeData.sigla,
             };
         }
+
         return {
             tipo: "",
             nomeUnidadeEducacional: "",
@@ -200,6 +203,7 @@ export default function FormularioCadastroUnidadeEducacional({
 
     const handleConsultarEol = async () => {
         const codigoEol = form.getValues("codigoEol");
+        const tipoAtual = form.getValues("tipo");
 
         const response = await consultarEolUnidade(codigoEol);
 
@@ -209,6 +213,20 @@ export default function FormularioCadastroUnidadeEducacional({
                 response.data.nome_unidade,
                 { shouldValidate: true },
             );
+
+            if (tipoAtual !== "DRE" && response.data.codigo_dre) {
+                const dreEncontrada = dreOptions.find(
+                    (dre: { codigo_eol: string; uuid: string }) =>
+                        dre.codigo_eol === response.data.codigo_dre,
+                );
+
+                if (dreEncontrada) {
+                    form.setValue("diretoriaRegional", dreEncontrada.uuid, {
+                        shouldValidate: true,
+                    });
+                    setDrePreenchidaAutomaticamente(true);
+                }
+            }
         } else {
             toast({
                 title: "Código EOL inválido!",
@@ -485,14 +503,22 @@ export default function FormularioCadastroUnidadeEducacional({
                                 name="diretoriaRegional"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={!isActive}>
+                                        <FormLabel
+                                            disabled={
+                                                !isActive ||
+                                                drePreenchidaAutomaticamente
+                                            }
+                                        >
                                             Diretoria Regional*
                                         </FormLabel>
                                         <FormControl>
                                             <Select
                                                 value={field.value}
                                                 onValueChange={field.onChange}
-                                                disabled={!isActive}
+                                                disabled={
+                                                    !isActive ||
+                                                    drePreenchidaAutomaticamente
+                                                }
                                             >
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Selecione" />

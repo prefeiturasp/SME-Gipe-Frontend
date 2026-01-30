@@ -42,7 +42,7 @@ describe("consultarEolUnidadeAction", () => {
 
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
         expect(apiGetMock).toHaveBeenCalledWith(
-            `/unidades/${codigoEol}/consultar-eol/`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}`,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
@@ -172,7 +172,7 @@ describe("consultarEolUnidadeAction", () => {
             data: mockResponseDiferente,
         });
         expect(apiGetMock).toHaveBeenCalledWith(
-            `/unidades/${codigoDiferente}/consultar-eol/`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoDiferente}`,
             expect.any(Object),
         );
     });
