@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 export type ConsultarEolUnidadeResponse = {
     etapa_modalidade: string;
     nome_unidade: string;
+    codigo_dre?: string;
 };
 
 export const consultarEolUnidadeAction = async (
