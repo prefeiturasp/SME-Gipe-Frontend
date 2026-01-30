@@ -1,6 +1,7 @@
 import { toast } from "@/components/ui/headless-toast";
 import * as useAtualizarGestaoUsuarioModule from "@/hooks/useAtualizarGestaoUsuario";
 import * as useCadastroGestaoUsuarioModule from "@/hooks/useCadastroGestaoUsuario";
+import * as useConsultarRfUsuarioModule from "@/hooks/useConsultarRfUsuario";
 import * as useGetUnidadesModule from "@/hooks/useGetUnidades";
 import * as useObterUsuarioGestaoModule from "@/hooks/useObterUsuarioGestao";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -73,7 +74,6 @@ describe("useCadastroUsuarioForm", () => {
                         error: null,
                     } as never;
                 }
-                // Retorna UEs apenas se tiver uma DRE válida
                 if (dre && (dre === "dre-1" || dre === "dre-2")) {
                     return {
                         data: [
@@ -92,7 +92,6 @@ describe("useCadastroUsuarioForm", () => {
                         error: null,
                     } as never;
                 }
-                // Retorna vazio se não houver DRE ou não for busca de DRE
                 return {
                     data: [],
                     isLoading: false,
@@ -124,6 +123,14 @@ describe("useCadastroUsuarioForm", () => {
             data: undefined,
             isLoading: false,
             error: null,
+        } as never);
+
+        vi.spyOn(
+            useConsultarRfUsuarioModule,
+            "useConsultarRfUsuario",
+        ).mockReturnValue({
+            mutateAsync: vi.fn(),
+            isPending: false,
         } as never);
     });
 
@@ -161,10 +168,8 @@ describe("useCadastroUsuarioForm", () => {
             nome: "DRE Centro",
         });
 
-        // UEs devem estar vazias inicialmente pois não há DRE selecionada
         expect(result.current.ueOptions).toHaveLength(0);
 
-        // Quando selecionamos uma DRE, as UEs devem carregar
         act(() => {
             result.current.form.setValue("dre", "dre-1");
         });
@@ -814,8 +819,189 @@ describe("useCadastroUsuarioForm", () => {
         });
     });
 
+    describe("Consultar RF", () => {
+        it("handleConsultarRf não faz nada quando RF tem menos de 7 dígitos", async () => {
+            const mockMutateAsync = vi.fn();
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "123456");
+            });
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            expect(mockMutateAsync).not.toHaveBeenCalled();
+        });
+
+        it("handleConsultarRf não faz nada quando RF está vazio", async () => {
+            const mockMutateAsync = vi.fn();
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            expect(mockMutateAsync).not.toHaveBeenCalled();
+        });
+
+        it("handleConsultarRf chama consultarRfUsuario e preenche campos com sucesso", async () => {
+            const mockMutateAsync = vi.fn().mockResolvedValue({
+                success: true,
+                data: {
+                    cpf: "12345678900",
+                    nome: "João Silva",
+                    codigoRf: "1234567",
+                    email: "joao.silva@exemplo.com",
+                    dreCodigo: "DRE-001",
+                    emailValido: true,
+                },
+            });
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "1234567");
+            });
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            expect(mockMutateAsync).toHaveBeenCalledWith("1234567");
+
+            await waitFor(() => {
+                expect(result.current.form.getValues("fullName")).toBe(
+                    "João Silva",
+                );
+                expect(result.current.form.getValues("email")).toBe(
+                    "joao.silva@exemplo.com",
+                );
+                expect(result.current.form.getValues("cpf")).toBe(
+                    "12345678900",
+                );
+            });
+        });
+
+        it("handleConsultarRf exibe toast de erro quando consulta falha", async () => {
+            const mockMutateAsync = vi.fn().mockResolvedValue({
+                success: false,
+                error: "RF não encontrado",
+            });
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "9999999");
+            });
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            expect(mockMutateAsync).toHaveBeenCalledWith("9999999");
+
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith({
+                    title: "RF inválido!",
+                    description: "RF não encontrado",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("handleConsultarRf exibe toast de erro genérico quando ocorre exceção", async () => {
+            const mockMutateAsync = vi
+                .fn()
+                .mockRejectedValue(new Error("Erro de rede"));
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "1234567");
+            });
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith({
+                    title: "Erro ao consultar RF",
+                    description: "Tente novamente mais tarde.",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("isPendingConsultarRf deve estar disponível", () => {
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.isPendingConsultarRf).toBe(false);
+        });
+    });
+
     describe("Modo Edit", () => {
-        it("deve inicializar no modo edit corretamente", () => {
+        afterEach(async () => {
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            });
+        });
+
+        it("deve inicializar no modo edit corretamente", async () => {
             const { result } = renderHook(
                 () =>
                     useCadastroUsuarioForm({
@@ -828,6 +1014,8 @@ describe("useCadastroUsuarioForm", () => {
             );
 
             expect(result.current.mode).toBe("edit");
+
+            await waitFor(() => {}, { timeout: 300 });
         });
 
         it("deve carregar dados do usuário e preencher o formulário", async () => {
@@ -863,16 +1051,19 @@ describe("useCadastroUsuarioForm", () => {
                 },
             );
 
-            await waitFor(() => {
-                const values = result.current.form.getValues();
-                expect(values.fullName).toBe("João Silva");
-                expect(values.email).toBe("joao@exemplo.com");
-                expect(values.cpf).toBe("12345678900");
-                expect(values.rede).toBe("DIRETA");
-                expect(values.cargo).toBe("diretor");
-                expect(values.rf).toBe("joao.silva");
-                expect(values.dre).toBe("dre-1");
-            });
+            await waitFor(
+                () => {
+                    const values = result.current.form.getValues();
+                    expect(values.fullName).toBe("João Silva");
+                    expect(values.email).toBe("joao@exemplo.com");
+                    expect(values.cpf).toBe("12345678900");
+                    expect(values.rede).toBe("DIRETA");
+                    expect(values.cargo).toBe("diretor");
+                    expect(values.rf).toBe("joao.silva");
+                    expect(values.dre).toBe("dre-1");
+                },
+                { timeout: 1000 },
+            );
         });
 
         it("deve carregar UE após carregar DRE", async () => {
@@ -908,13 +1099,19 @@ describe("useCadastroUsuarioForm", () => {
                 },
             );
 
-            await waitFor(() => {
-                expect(result.current.form.getValues("dre")).toBe("dre-1");
-            });
+            await waitFor(
+                () => {
+                    expect(result.current.form.getValues("dre")).toBe("dre-1");
+                },
+                { timeout: 1000 },
+            );
 
-            await waitFor(() => {
-                expect(result.current.form.getValues("ue")).toBe("ue-1");
-            });
+            await waitFor(
+                () => {
+                    expect(result.current.form.getValues("ue")).toBe("ue-1");
+                },
+                { timeout: 1000 },
+            );
         });
 
         it("handleSubmitClick no modo edit não abre modal e chama diretamente handleConfirmCadastro", async () => {
@@ -954,10 +1151,13 @@ describe("useCadastroUsuarioForm", () => {
                 result.current.handleSubmitClick(mockEvent);
             });
 
-            await waitFor(() => {
-                expect(result.current.modalOpen).toBe(false);
-                expect(mockMutate).toHaveBeenCalled();
-            });
+            await waitFor(
+                () => {
+                    expect(result.current.modalOpen).toBe(false);
+                    expect(mockMutate).toHaveBeenCalled();
+                },
+                { timeout: 1000 },
+            );
         });
 
         it("handleConfirmCadastro chama atualizarUsuario com sucesso", async () => {
@@ -1579,12 +1779,10 @@ describe("useCadastroUsuarioForm", () => {
                 result.current.handleDreChange("dre-2");
             });
 
-            // Aguardar a DRE ser alterada
             await waitFor(() => {
                 expect(result.current.form.getValues("dre")).toBe("dre-2");
             });
 
-            // Campo UE deve ser limpo via handleDreChange
             await waitFor(
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("");
@@ -1643,14 +1841,12 @@ describe("useCadastroUsuarioForm", () => {
                 result.current.handleCargoChange("ponto_focal");
             });
 
-            // Aguardar o cargo ser alterado
             await waitFor(() => {
                 expect(result.current.form.getValues("cargo")).toBe(
                     "ponto_focal",
                 );
             });
 
-            // Campo UE deve ser limpo via handleCargoChange quando cargo é ponto_focal
             await waitFor(
                 () => {
                     expect(result.current.form.getValues("ue")).toBe("");

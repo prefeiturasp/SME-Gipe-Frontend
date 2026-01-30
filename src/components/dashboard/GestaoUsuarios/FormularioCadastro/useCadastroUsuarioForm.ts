@@ -1,6 +1,7 @@
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useConsultarRfUsuario } from "@/hooks/useConsultarRfUsuario";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -56,6 +57,8 @@ export function useCadastroUsuarioForm({
     const { mutate: atualizarUsuario, isPending: isPendingUpdate } =
         useAtualizarGestaoUsuario(usuarioUuid || "");
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
+    const { mutateAsync: consultarRfUsuario, isPending: isPendingConsultarRf } =
+        useConsultarRfUsuario();
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -285,6 +288,37 @@ export function useCadastroUsuarioForm({
         [mode, carregandoDados, setValue, getValues],
     );
 
+    const handleConsultarRf = useCallback(async () => {
+        const rf = getValues("rf");
+        if (!rf || rf.length < 7) return;
+
+        try {
+            const response = await consultarRfUsuario(rf);
+
+            if (response.success) {
+                setValue("fullName", response.data.nome, {
+                    shouldValidate: true,
+                });
+                setValue("email", response.data.email, {
+                    shouldValidate: true,
+                });
+                setValue("cpf", response.data.cpf, { shouldValidate: true });
+            } else {
+                toast({
+                    title: "RF inválido!",
+                    description: response.error,
+                    variant: "error",
+                });
+            }
+        } catch {
+            toast({
+                title: "Erro ao consultar RF",
+                description: "Tente novamente mais tarde.",
+                variant: "error",
+            });
+        }
+    }, [consultarRfUsuario, setValue, getValues]);
+
     function handleConfirmCadastro() {
         const payload = buildCadastroPayload(
             getValues(),
@@ -390,6 +424,8 @@ export function useCadastroUsuarioForm({
         handleRedeChange,
         handleCargoChange,
         handleDreChange,
+        handleConsultarRf,
+        isPendingConsultarRf,
         isDreDisabled: isPontoFocal,
         router,
         mode,
@@ -401,5 +437,6 @@ export function useCadastroUsuarioForm({
         motivoInativacao,
         inativadoViaUnidade,
         watchedCargo,
+        watchedRede,
     };
 }
