@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarUnidade } from "@/hooks/useAtualizarUnidade";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useConsultarEolUnidade } from "@/hooks/useConsultarEolUnidade";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
@@ -59,6 +60,8 @@ export default function FormularioCadastroUnidadeEducacional({
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
     const [carregandoDados, setCarregandoDados] = useState(false);
+    const [drePreenchidaAutomaticamente, setDrePreenchidaAutomaticamente] =
+        useState(false);
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
@@ -84,6 +87,7 @@ export default function FormularioCadastroUnidadeEducacional({
                 siglaDre: unidadeData.sigla,
             };
         }
+
         return {
             tipo: "",
             nomeUnidadeEducacional: "",
@@ -192,8 +196,45 @@ export default function FormularioCadastroUnidadeEducacional({
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
         useAtualizarUnidade(unidadeUuid || "");
+    const { mutateAsync: consultarEolUnidade, isPending: isPendingConsultar } =
+        useConsultarEolUnidade();
 
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
+
+    const handleConsultarEol = async () => {
+        const codigoEol = form.getValues("codigoEol");
+        const tipoAtual = form.getValues("tipo");
+
+        const response = await consultarEolUnidade(codigoEol);
+
+        if (response.success) {
+            form.setValue(
+                "nomeUnidadeEducacional",
+                response.data.nome_unidade,
+                { shouldValidate: true },
+            );
+
+            if (tipoAtual !== "DRE" && response.data.codigo_dre) {
+                const dreEncontrada = dreOptions.find(
+                    (dre: { codigo_eol: string; uuid: string }) =>
+                        dre.codigo_eol === response.data.codigo_dre,
+                );
+
+                if (dreEncontrada) {
+                    form.setValue("diretoriaRegional", dreEncontrada.uuid, {
+                        shouldValidate: true,
+                    });
+                    setDrePreenchidaAutomaticamente(true);
+                }
+            }
+        } else {
+            toast({
+                title: "Código EOL inválido!",
+                description: response.error,
+                variant: "error",
+            });
+        }
+    };
 
     const onSubmit = async (data: FormData) => {
         const payload: UnidadeCadastroPayload = {
@@ -362,6 +403,8 @@ export default function FormularioCadastroUnidadeEducacional({
                                                         disabledFields ||
                                                         field.value.length !== 6
                                                     }
+                                                    loading={isPendingConsultar}
+                                                    onClick={handleConsultarEol}
                                                 >
                                                     Consultar
                                                 </Button>
@@ -416,6 +459,12 @@ export default function FormularioCadastroUnidadeEducacional({
                                                             field.value
                                                                 .length !== 6
                                                         }
+                                                        loading={
+                                                            isPendingConsultar
+                                                        }
+                                                        onClick={
+                                                            handleConsultarEol
+                                                        }
                                                     >
                                                         Consultar
                                                     </Button>
@@ -454,14 +503,22 @@ export default function FormularioCadastroUnidadeEducacional({
                                 name="diretoriaRegional"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={!isActive}>
+                                        <FormLabel
+                                            disabled={
+                                                !isActive ||
+                                                drePreenchidaAutomaticamente
+                                            }
+                                        >
                                             Diretoria Regional*
                                         </FormLabel>
                                         <FormControl>
                                             <Select
                                                 value={field.value}
                                                 onValueChange={field.onChange}
-                                                disabled={!isActive}
+                                                disabled={
+                                                    !isActive ||
+                                                    drePreenchidaAutomaticamente
+                                                }
                                             >
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Selecione" />
