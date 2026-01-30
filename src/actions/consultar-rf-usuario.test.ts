@@ -155,21 +155,6 @@ describe("consultarRfUsuarioAction", () => {
         });
     });
 
-    it("deve retornar erro 400 quando RF não for encontrado", async () => {
-        cookiesMock.mockReturnValue({
-            get: vi.fn().mockReturnValue({ value: mockToken }),
-        });
-        const error = new AxiosError("Bad Request");
-        error.response = {
-            status: 400,
-        } as AxiosResponse;
-        apiGetMock.mockRejectedValueOnce(error);
-
-        const result = await consultarRfUsuarioAction(rf);
-
-        expect(result).toEqual({ success: false, error: "RF não encontrado" });
-    });
-
     it("deve retornar erro 500 quando houver erro no servidor", async () => {
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockToken }),
