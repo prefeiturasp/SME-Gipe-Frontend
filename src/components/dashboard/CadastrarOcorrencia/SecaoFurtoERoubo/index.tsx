@@ -1,10 +1,6 @@
 "use client";
 
-import React, { useEffect, forwardRef, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/headless-toast";
 import {
     Form,
     FormControl,
@@ -13,20 +9,25 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
-import { formSchema, SecaoFurtoERouboData } from "./schema";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { hasFormDataChanged } from "@/lib/formUtils";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { formSchema, SecaoFurtoERouboData } from "./schema";
 
 export type SecaoFurtoERouboProps = {
     onPrevious?: () => void;
     onNext?: () => void;
     showButtons?: boolean;
     onFormChange?: (data: Partial<SecaoFurtoERouboData>) => void;
+    disabled?: boolean;
 };
 
 export type SecaoFurtoERouboRef = {
@@ -36,7 +37,16 @@ export type SecaoFurtoERouboRef = {
 };
 
 const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
-    ({ onPrevious, onNext, showButtons = true, onFormChange }, ref) => {
+    (
+        {
+            onPrevious,
+            onNext,
+            showButtons = true,
+            onFormChange,
+            disabled = false,
+        },
+        ref
+    ) => {
         const {
             formData,
             savedFormData,
@@ -155,23 +165,20 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             name="tiposOcorrencia"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Qual o tipo de ocorrência?*
                                     </FormLabel>
-
                                     <FormControl>
                                         <MultiSelect
                                             options={tiposOcorrenciaOptions}
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Selecione os tipos de ocorrência"
-                                            disabled={isLoadingTipos}
+                                            disabled={
+                                                isLoadingTipos || disabled
+                                            }
                                         />
                                     </FormControl>
-                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                        Se necessário, selecione mais de uma
-                                        opção
-                                    </p>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -182,10 +189,16 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             name="descricao"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Descreva a ocorrência*
                                     </FormLabel>
-                                    <p className="text-sm text-[#42474a] mt-1 mb-2">
+                                    <p
+                                        className={`text-sm mt-1 mb-2 ${
+                                            disabled
+                                                ? "text-[#B0B0B0]"
+                                                : "text-[#42474a]"
+                                        }`}
+                                    >
                                         se houver informações sobre agressores
                                         ou vítimas, preencher aqui
                                     </p>
@@ -194,6 +207,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                             placeholder="Descreva aqui..."
                                             className="min-h-[80px]"
                                             {...field}
+                                            disabled={disabled}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -206,7 +220,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             name="smartSampa"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
+                                    <FormLabel disabled={disabled}>
                                         Unidade Educacional é contemplada pelo
                                         Smart Sampa? Se sim, houve dano às
                                         câmeras do sistema?*
@@ -217,22 +231,41 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 onValueChange={field.onChange}
                                                 value={field.value ?? ""}
                                                 className="flex flex-col space-y-2"
+                                                disabled={disabled}
                                             >
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="sim_com_dano" />
-                                                    <span className="text-sm text-[#42474a]">
+                                                    <span
+                                                        className={`text-sm ${
+                                                            disabled
+                                                                ? "text-[#B0B0B0]"
+                                                                : "text-[#42474a]"
+                                                        }`}
+                                                    >
                                                         Sim e houve dano
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="sim_sem_dano" />
-                                                    <span className="text-sm text-[#42474a]">
+                                                    <span
+                                                        className={`text-sm ${
+                                                            disabled
+                                                                ? "text-[#B0B0B0]"
+                                                                : "text-[#42474a]"
+                                                        }`}
+                                                    >
                                                         Sim, mas não houve dano
                                                     </span>
                                                 </label>
-                                                <label className="flex items-center space-x-2">
+                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
                                                     <RadioGroupItem value="nao_faz_parte" />
-                                                    <span className="text-sm text-[#42474a]">
+                                                    <span
+                                                        className={`text-sm ${
+                                                            disabled
+                                                                ? "text-[#B0B0B0]"
+                                                                : "text-[#42474a]"
+                                                        }`}
+                                                    >
                                                         A UE não faz parte do
                                                         Smart Sampa
                                                     </span>

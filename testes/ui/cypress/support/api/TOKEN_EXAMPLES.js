@@ -15,7 +15,7 @@ describe('Exemplo - Sistema de Token Automático', () => {
     // 4. Configura o token no Cypress
     
     cy.api_autenticar().then((token) => {
-      cy.log(`✅ Token pronto: ${token.substring(0, 50)}...`)
+      cy.log(` Token pronto: ${token.substring(0, 50)}...`)
       
       // Agora pode fazer requisições à API
       cy.api_get('/diretor/').then((response) => {
@@ -30,7 +30,7 @@ describe('Exemplo - Sistema de Token Automático', () => {
   it('Exemplo 2: Forçar renovação de token', () => {
     // Se você precisa garantir um token novo (não do cache)
     cy.api_obter_token_via_ui().then((novoToken) => {
-      cy.log(`✅ Novo token obtido: ${novoToken.substring(0, 50)}...`)
+      cy.log(` Novo token obtido: ${novoToken.substring(0, 50)}...`)
       
       // O token já está salvo em token.json e token.txt
       // E já está configurado no Cypress
@@ -52,14 +52,14 @@ describe('Exemplo - Sistema de Token Automático', () => {
         const isValid = cy.api_validar_token(token)
         
         if (isValid) {
-          cy.log('✅ Token ainda é válido!')
+          cy.log(' Token ainda é válido!')
           Cypress.env('authToken', token)
         } else {
-          cy.log('⚠️ Token expirado, obtendo novo...')
+          cy.log(' Token expirado, obtendo novo...')
           cy.api_obter_token_via_ui()
         }
       } else {
-        cy.log('⚠️ Nenhum token encontrado, obtendo novo...')
+        cy.log(' Nenhum token encontrado, obtendo novo...')
         cy.api_obter_token_via_ui()
       }
     })
@@ -90,7 +90,7 @@ describe('Exemplo - Sistema de Token Automático', () => {
       }
       this.testData.token = token
       cy.wrap(token).as('token')
-      cy.log('✅ Token configurado e pronto para uso')
+      cy.log(' Token configurado e pronto para uso')
     })
   })
 
@@ -103,9 +103,9 @@ describe('Exemplo - Sistema de Token Automático', () => {
     const isValid = cy.api_validar_token(tokenExemplo)
     
     if (isValid) {
-      cy.log('✅ Token válido - pode ser usado')
+      cy.log(' Token válido - pode ser usado')
     } else {
-      cy.log('❌ Token inválido ou expirado')
+      cy.log(' Token inválido ou expirado')
     }
   })
 
@@ -129,7 +129,7 @@ describe('Exemplo - Sistema de Token Automático', () => {
         cy.api_get(`/diretor/${uuid}/`).then((detalhes) => {
           expect(detalhes.status).to.equal(200)
           expect(detalhes.body).to.have.property('uuid', uuid)
-          cy.log('✅ Teste completo executado com sucesso!')
+          cy.log(' Teste completo executado com sucesso!')
         })
       }
     })
@@ -196,7 +196,7 @@ FLUXO AUTOMÁTICO DE TOKEN:
             │
             ▼
 ┌─────────────────────────────────────┐
-│   Token pronto para uso! ✅         │
+│   Token pronto para uso!          │
 └─────────────────────────────────────┘
 
 */

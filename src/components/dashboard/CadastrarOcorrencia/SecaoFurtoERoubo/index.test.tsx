@@ -1,12 +1,12 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SecaoFurtoERoubo, { SecaoFurtoERouboRef } from "./index";
-import userEvent from "@testing-library/user-event";
-import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useAtualizarSecaoFurtoRouboHook from "@/hooks/useAtualizarSecaoFurtoRoubo";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import SecaoFurtoERoubo, { SecaoFurtoERouboRef } from "./index";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
@@ -122,9 +122,6 @@ describe("SecaoFurtoERoubo", () => {
         expect(
             screen.getByText("Qual o tipo de ocorrência?*")
         ).toBeInTheDocument();
-        expect(
-            screen.getByText("Se necessário, selecione mais de uma opção")
-        ).toBeInTheDocument();
         expect(screen.getByText("Descreva a ocorrência*")).toBeInTheDocument();
         expect(
             screen.getByText(
@@ -143,20 +140,30 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
         await waitFor(() => {
-            expect(screen.getByText("Violência física")).toBeInTheDocument();
             expect(
-                screen.getByText("Violência psicológica")
+                screen.getByRole("option", { name: "Violência física" })
             ).toBeInTheDocument();
-            expect(screen.getByText("Violência sexual")).toBeInTheDocument();
-            expect(screen.getByText("Negligência")).toBeInTheDocument();
-            expect(screen.getByText("Bullying")).toBeInTheDocument();
-            expect(screen.getByText("Cyberbullying")).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Violência psicológica" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Violência sexual" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Negligência" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Bullying" })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: "Cyberbullying" })
+            ).toBeInTheDocument();
         });
     });
 
@@ -199,12 +206,14 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
-        const option = await screen.findByText("Violência física");
+        const option = await screen.findByRole("option", {
+            name: "Violência física",
+        });
         await user.click(option);
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -235,83 +244,6 @@ describe("SecaoFurtoERoubo", () => {
         fireEvent.click(btnAnterior);
 
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
-    });
-
-    it("deve permitir selecionar múltiplos tipos de ocorrência", async () => {
-        const user = userEvent.setup();
-        render(
-            <SecaoFurtoERoubo
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
-        });
-        await user.click(multiSelectButton);
-
-        const opcaoFisica = await screen.findByText("Violência física");
-        await user.click(opcaoFisica);
-
-        const opcaoPsicologica = await screen.findByText(
-            "Violência psicológica"
-        );
-        await user.click(opcaoPsicologica);
-
-        const opcaoNegligencia = await screen.findByText("Negligência");
-        await user.click(opcaoNegligencia);
-
-        await waitFor(() => {
-            const removeViolenciaFisicaButton = screen.getByRole("button", {
-                name: /remover violência física/i,
-            });
-            const removeViolenciaPsicologicaButton = screen.getByRole(
-                "button",
-                {
-                    name: /remover violência psicológica/i,
-                }
-            );
-            const removeNegligenciaButton = screen.getByRole("button", {
-                name: /remover negligência/i,
-            });
-            expect(removeViolenciaFisicaButton).toBeInTheDocument();
-            expect(removeViolenciaPsicologicaButton).toBeInTheDocument();
-            expect(removeNegligenciaButton).toBeInTheDocument();
-        });
-    });
-
-    it("deve permitir selecionar e visualizar a seleção no botão", async () => {
-        const user = userEvent.setup();
-        render(
-            <SecaoFurtoERoubo
-                onPrevious={mockOnPrevious}
-                onNext={mockOnNext}
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
-        });
-        await user.click(multiSelectButton);
-
-        const violenciaFisica = await screen.findByRole("option", {
-            name: /violência física/i,
-        });
-        await user.click(violenciaFisica);
-
-        await waitFor(() => {
-            const removeButton = screen.getByRole("button", {
-                name: /remover violência física/i,
-            });
-            expect(removeButton).toBeInTheDocument();
-        });
-
-        expect(
-            screen.queryByText("Selecione os tipos de ocorrência")
-        ).not.toBeInTheDocument();
     });
     it("deve exibir erro quando descrição é muito curta", async () => {
         render(
@@ -345,12 +277,14 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButton = screen.getByRole("button", {
-            name: /selecione os tipos de ocorrência/i,
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
         });
-        await user.click(multiSelectButton);
+        await user.click(selectButton);
 
-        const opcaoFisica = await screen.findByText("Violência física");
+        const opcaoFisica = await screen.findByRole("option", {
+            name: /violência física/i,
+        });
         await user.click(opcaoFisica);
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -406,7 +340,7 @@ describe("SecaoFurtoERoubo", () => {
         });
     });
 
-    it("deve desabilitar o MultiSelect quando os tipos estão carregando", () => {
+    it("deve desabilitar o Select quando os tipos estão carregando", () => {
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
             data: undefined,
             isLoading: true,
@@ -422,12 +356,11 @@ describe("SecaoFurtoERoubo", () => {
             { wrapper: createWrapper() }
         );
 
-        const multiSelectButtons = screen.getAllByRole("button");
-        const multiSelectButton = multiSelectButtons.find(
-            (button) => button.getAttribute("aria-haspopup") === "listbox"
-        );
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
+        });
 
-        expect(multiSelectButton).toBeDisabled();
+        expect(selectButton).toBeDisabled();
     });
 
     it("deve exibir lista vazia quando não há tipos de ocorrência", () => {
@@ -450,13 +383,12 @@ describe("SecaoFurtoERoubo", () => {
             screen.getByText("Qual o tipo de ocorrência?*")
         ).toBeInTheDocument();
 
-        const multiSelectButtons = screen.getAllByRole("button");
-        const multiSelectButton = multiSelectButtons.find(
-            (button) => button.getAttribute("aria-haspopup") === "listbox"
-        );
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
+        });
 
-        expect(multiSelectButton).toBeInTheDocument();
-        expect(multiSelectButton).not.toBeDisabled();
+        expect(selectButton).toBeInTheDocument();
+        expect(selectButton).not.toBeDisabled();
     });
 
     it("deve carregar formulário com descricao vazia quando formData.descricao é undefined", () => {
@@ -464,7 +396,7 @@ describe("SecaoFurtoERoubo", () => {
             useOcorrenciaFormStoreModule.useOcorrenciaFormStore
         ).mockReturnValue({
             formData: {
-                tiposOcorrencia: [],
+                tiposOcorrencia: undefined,
                 descricao: undefined,
                 smartSampa: undefined,
             },
@@ -492,7 +424,7 @@ describe("SecaoFurtoERoubo", () => {
             useOcorrenciaFormStoreModule.useOcorrenciaFormStore
         ).mockReturnValue({
             formData: {
-                tiposOcorrencia: [],
+                tiposOcorrencia: undefined,
                 descricao: "Descrição já preenchida",
                 smartSampa: undefined,
             },
@@ -725,12 +657,16 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const multiSelectButton = screen.getByRole("button", {
-                expanded: false,
+            // O botão mostra o nome do primeiro valor selecionado
+            // Usa getAllByRole e pega o primeiro (que é o botão principal, não o de remover)
+            const selectButtons = screen.getAllByRole("button", {
+                name: /Violência física/i,
             });
-            await user.click(multiSelectButton);
+            await user.click(selectButtons[0]);
 
-            const opcaoBullying = await screen.findByText("Bullying");
+            const opcaoBullying = await screen.findByRole("option", {
+                name: /^Bullying$/i,
+            });
             await user.click(opcaoBullying);
 
             await waitFor(() => {
@@ -748,9 +684,10 @@ describe("SecaoFurtoERoubo", () => {
                     expect.objectContaining({
                         uuid: "test-uuid-123",
                         body: expect.objectContaining({
+                            // MultiSelect mantém ambos os valores (o original + o novo)
                             tipos_ocorrencia: expect.arrayContaining([
-                                "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
-                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73",
+                                "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97", // Violência física
+                                "1ccb79b1-0778-4cb8-a896-c805e37c0d73", // Bullying
                             ]),
                         }),
                     }),
@@ -794,12 +731,14 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const multiSelectButton = screen.getByRole("button", {
-                name: /selecione os tipos de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
-            await user.click(multiSelectButton);
+            await user.click(selectButton);
 
-            const opcaoBullying = await screen.findByText("Bullying");
+            const opcaoBullying = await screen.findByRole("option", {
+                name: /^Bullying$/i,
+            });
             await user.click(opcaoBullying);
 
             await waitFor(() => {
@@ -1158,10 +1097,10 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const multiSelectButton = screen.getByRole("button", {
-                name: /selecione os tipos de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
-            await user.click(multiSelectButton);
+            await user.click(selectButton);
 
             const tipoOption = await screen.findByRole("option", {
                 name: /violência física/i,
@@ -1249,10 +1188,10 @@ describe("SecaoFurtoERoubo", () => {
                 { wrapper: createWrapper() }
             );
 
-            const multiSelectButton = screen.getByRole("button", {
-                name: /selecione os tipos de ocorrência/i,
+            const selectButton = screen.getByRole("button", {
+                name: /Selecione os tipos de ocorrência/i,
             });
-            await user.click(multiSelectButton);
+            await user.click(selectButton);
 
             const tipoOption = await screen.findByRole("option", {
                 name: /violência física/i,
@@ -1262,9 +1201,9 @@ describe("SecaoFurtoERoubo", () => {
             await waitFor(() => {
                 expect(mockOnFormChange).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        tiposOcorrencia: expect.arrayContaining([
+                        tiposOcorrencia: [
                             "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
-                        ]),
+                        ],
                     })
                 );
             });
@@ -1316,5 +1255,32 @@ describe("SecaoFurtoERoubo", () => {
                 expect(descricaoField).toHaveValue("Texto qualquer");
             });
         });
+    });
+
+    it("deve desabilitar todos os campos quando disabled=true", async () => {
+        const user = userEvent.setup();
+        render(
+            <SecaoFurtoERoubo
+                onPrevious={mockOnPrevious}
+                onNext={mockOnNext}
+                disabled={true}
+            />
+        );
+
+        const selectButton = screen.getByRole("button", {
+            name: /Selecione os tipos de ocorrência/i,
+        });
+        expect(selectButton).toBeDisabled();
+
+        const textarea = screen.getByPlaceholderText(/Descreva aqui.../i);
+        expect(textarea).toBeDisabled();
+
+        const radioButtons = screen.getAllByRole("radio");
+        radioButtons.forEach((radio) => {
+            expect(radio).toBeDisabled();
+        });
+
+        await user.type(textarea, "Teste");
+        expect(textarea).toHaveValue("");
     });
 });

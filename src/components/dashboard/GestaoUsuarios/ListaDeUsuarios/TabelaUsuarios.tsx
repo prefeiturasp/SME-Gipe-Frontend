@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
     Table,
@@ -12,20 +12,24 @@ import {
 } from "@/components/ui/table";
 
 import Editar from "@/assets/icons/Editar";
-import { Usuario } from "@/types/usuarios";
 import { Button } from "@/components/ui/button";
+import { Usuario } from "@/types/usuarios";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 type TabelaUsuariosProps = {
     dataUsuarios: Usuario[];
+    status: "ativos" | "inativos";
 };
 
 export default function TabelaUsuarios({
     dataUsuarios,
+    status,
 }: Readonly<TabelaUsuariosProps>) {
     const PAGE_SIZE = 10;
-    const styeTable = "px-2 text-[#42474a] text-left last:text-text-left!";
+    const isInativo = status === "inativos";
+    const textColor = isInativo ? "text-[#B0B0B0]" : "text-[#42474a]";
+    const styeTable = `px-2 ${textColor} text-left last:text-text-left!`;
     const [pageIndex, setPageIndex] = useState(0);
 
     useEffect(() => {
@@ -61,7 +65,11 @@ export default function TabelaUsuarios({
                             <TableHead className={styeTable}>
                                 Unidade Educacional
                             </TableHead>
-                            <TableHead className="text-center">Ação</TableHead>
+                            <TableHead
+                                className={`text-center w-[49px] ${textColor}`}
+                            >
+                                Ação
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -72,7 +80,9 @@ export default function TabelaUsuarios({
 
                                 return (
                                     <TableRow key={rowKey}>
-                                        <TableCell>{usuario.perfil}</TableCell>
+                                        <TableCell className={styeTable}>
+                                            {usuario.perfil}
+                                        </TableCell>
                                         <TableCell className={styeTable}>
                                             {usuario.nome}
                                         </TableCell>

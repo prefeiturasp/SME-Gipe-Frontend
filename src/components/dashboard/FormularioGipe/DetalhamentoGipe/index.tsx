@@ -1,7 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
@@ -10,7 +9,8 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/headless-toast";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
     Select,
     SelectContent,
@@ -19,21 +19,23 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import QuadroBranco from "../../QuadroBranco/QuadroBranco";
-import Anexos from "../../CadastrarOcorrencia/Anexos";
-import { formSchema, FormularioGipeData } from "./schema";
-import { RadioForm } from "./RadioForm";
-import { TextareaForm } from "./TextareaForm";
-import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useState } from "react";
-import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
-import { useUserStore } from "@/stores/useUserStore";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { useEnvolvidos } from "@/hooks/useEnvolvidos";
-import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
-import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useAtualizarOcorrenciaGipe } from "@/hooks/useAtualizarOcorrenciaGipe";
-import { toast } from "@/components/ui/headless-toast";
+import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
+import { useEnvolvidos } from "@/hooks/useEnvolvidos";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Anexos from "../../CadastrarOcorrencia/Anexos";
+import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import QuadroBranco from "../../QuadroBranco/QuadroBranco";
+import { RadioForm } from "./RadioForm";
+import { formSchema, FormularioGipeData } from "./schema";
+import { TextareaForm } from "./TextareaForm";
 
 export type DetalhamentoGipeProps = {
     readonly onPrevious?: () => void;
@@ -44,6 +46,8 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
+    const queryClient = useQueryClient();
+    const router = useRouter();
 
     const { mutate: atualizarOcorrenciaGipe } = useAtualizarOcorrenciaGipe();
 
@@ -85,9 +89,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         defaultValues: {
             envolveArmaOuAtaque: formData.envolveArmaOuAtaque ?? undefined,
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
-            envolvidosGipe: formData.envolvidosGipe ?? [],
-            motivacaoOcorrenciaGipe: formData.motivacaoOcorrenciaGipe ?? [],
-            tipoOcorrenciaGipe: formData.tipoOcorrenciaGipe ?? "",
+            envolvidos: formData.envolvidos ?? "",
+            motivoOcorrencia: formData.motivoOcorrencia ?? [],
+            tiposOcorrencia: formData.tiposOcorrencia ?? [],
             cicloAprendizagem: formData.cicloAprendizagem ?? "",
             informacoesInteracoesVirtuais:
                 formData.informacoesInteracoesVirtuais ?? "",
@@ -106,9 +110,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     dre_codigo_eol: formData.dre!,
                     envolve_arma_ataque: data.envolveArmaOuAtaque,
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
-                    envolvido: data.envolvidosGipe[0],
-                    motivacao_ocorrencia: data.motivacaoOcorrenciaGipe,
-                    tipos_ocorrencia: [data.tipoOcorrenciaGipe],
+                    envolvido: data.envolvidos,
+                    motivacao_ocorrencia: data.motivoOcorrencia,
+                    tipos_ocorrencia: data.tiposOcorrencia,
                     qual_ciclo_aprendizagem: data.cicloAprendizagem,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
@@ -123,6 +127,15 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             description: response.error,
                             variant: "error",
                         });
+                        return;
+                    }
+                    const finalizada = formData.status === "finalizada";
+
+                    if (finalizada) {
+                        queryClient.invalidateQueries({
+                            queryKey: ["ocorrencia", ocorrenciaUuid],
+                        });
+                        router.push("/dashboard");
                         return;
                     }
 
@@ -142,6 +155,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
         setFormData(data);
     };
+
+    const tiposOcorrenciaOptions =
+        tiposOcorrencia?.map((tipo) => ({
+            value: tipo.uuid,
+            label: tipo.nome,
+        })) || [];
 
     return (
         <>
@@ -172,25 +191,39 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control}
-                                name="envolvidosGipe"
+                                name="envolvidos"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
                                             Quem são os envolvidos?*
                                         </FormLabel>
-                                        <FormControl>
-                                            <MultiSelect
-                                                options={envolvidosOptions}
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                placeholder="Selecione"
-                                                disabled={isLoadingEnvolvidos}
-                                            />
-                                        </FormControl>
-                                        <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                            Se necessário, selecione mais de uma
-                                            opção
-                                        </p>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            disabled={isLoadingEnvolvidos}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {envolvidosOptions.map(
+                                                    (envolvido) => (
+                                                        <SelectItem
+                                                            key={
+                                                                envolvido.value
+                                                            }
+                                                            value={
+                                                                envolvido.value
+                                                            }
+                                                        >
+                                                            {envolvido.label}
+                                                        </SelectItem>
+                                                    )
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -198,7 +231,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="motivacaoOcorrenciaGipe"
+                                name="motivoOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
@@ -226,35 +259,21 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="tipoOcorrenciaGipe"
+                                name="tiposOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
                                             Qual o tipo da ocorrência?*
                                         </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={isLoadingTipos}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {tiposOcorrencia?.map(
-                                                    (tipo) => (
-                                                        <SelectItem
-                                                            key={tipo.uuid}
-                                                            value={tipo.uuid}
-                                                        >
-                                                            {tipo.nome}
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <MultiSelect
+                                                options={tiposOcorrenciaOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione os tipos de ocorrência"
+                                                disabled={isLoadingTipos}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

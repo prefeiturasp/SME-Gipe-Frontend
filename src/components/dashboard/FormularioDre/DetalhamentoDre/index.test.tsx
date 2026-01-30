@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import userEvent from "@testing-library/user-event";
-import { DetalhamentoDre } from "./index";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as useUserStoreModule from "@/stores/useUserStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DetalhamentoDre } from "./index";
 
 const mockRouterBack = vi.fn();
 const mockRouterPush = vi.fn();
@@ -540,14 +540,14 @@ describe("DetalhamentoDre", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve exibir botão 'Próximo' quando é Ponto Focal e status não é 'enviado_para_dre'", () => {
+    it("deve exibir botão 'Finalizar' quando é Ponto Focal e status não é 'enviado_para_dre'", () => {
         mockIsPontoFocal.mockReturnValue(true);
         mockFormData.status = "em_andamento";
 
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /próximo/i })
+            screen.getByRole("button", { name: /finalizar/i })
         ).toBeInTheDocument();
         expect(
             screen.queryByRole("button", { name: /salvar informações/i })
@@ -692,7 +692,7 @@ describe("DetalhamentoDre", () => {
         });
     });
 
-    it("deve redirecionar para dashboard quando Ponto Focal clica em 'Próximo' em status diferente de 'enviado_para_dre'", async () => {
+    it("deve redirecionar para dashboard quando Ponto Focal clica em 'Finalizar' em status diferente de 'enviado_para_dre'", async () => {
         const user = userEvent.setup();
         const mockOnNext = vi.fn();
         mockIsPontoFocal.mockReturnValue(true);
@@ -715,15 +715,15 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[7]);
         await user.click(radios[9]);
 
-        const botaoProximo = screen.getByRole("button", {
-            name: /próximo/i,
+        const botaoFinalizar = screen.getByRole("button", {
+            name: /finalizar/i,
         });
 
         await waitFor(() => {
-            expect(botaoProximo).not.toBeDisabled();
+            expect(botaoFinalizar).not.toBeDisabled();
         });
 
-        await user.click(botaoProximo);
+        await user.click(botaoFinalizar);
 
         await waitFor(() => {
             expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();

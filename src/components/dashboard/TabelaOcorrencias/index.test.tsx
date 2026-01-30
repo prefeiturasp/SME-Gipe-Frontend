@@ -1,11 +1,10 @@
-import React from "react";
+import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
+import React from "react";
 import type { Mock } from "vitest";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import * as useTiposOcorrenciaHook from "@/hooks/useTiposOcorrencia";
-
+import { vi } from "vitest";
 
 interface MockUser {
     username: string;
@@ -29,6 +28,10 @@ vi.mock("@/hooks/useOcorrencias", () => ({
 
 vi.mock("@/hooks/useTiposOcorrencia");
 
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: vi.fn(),
+}));
+
 const mockTiposOcorrencia = [
     {
         uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
@@ -37,13 +40,14 @@ const mockTiposOcorrencia = [
     {
         uuid: "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
         nome: "Psicológica",
-    }
-]
+    },
+];
 
 import { useOcorrencias } from "@/hooks/useOcorrencias";
 import * as useUnidadesHook from "@/hooks/useUnidades";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import TabelaOcorrencias from "../TabelaOcorrencias";
-import { parseDataHora, mapStatusFilter, matchPeriodo } from "./filtros/utils";
+import { mapStatusFilter, matchPeriodo, parseDataHora } from "./filtros/utils";
 
 const renderWithQueryProvider = (ui: React.ReactElement) => {
     const queryClient = new QueryClient({
@@ -58,13 +62,13 @@ const renderWithQueryProvider = (ui: React.ReactElement) => {
     });
 };
 
-
-
 const sampleData = [
     {
         protocolo: "P0001",
         dataHora: "2025-09-01 10:00",
         codigoEol: "EOL1",
+        dre: "DRE Centro",
+        nomeUe: "EMEF Escola Teste 1",
         tipoOcorrencia: "Física",
         status: "Incompleta",
         id: "1",
@@ -74,6 +78,8 @@ const sampleData = [
         protocolo: "P0002",
         dataHora: "2025-09-02 11:00",
         codigoEol: "EOL2",
+        dre: "DRE Sul",
+        nomeUe: "EMEF Escola Teste 2",
         tipoOcorrencia: "Psicológica",
         status: "Finalizada",
         id: "2",
@@ -84,23 +90,38 @@ const sampleData = [
 describe("TabelaOcorrencias", () => {
     beforeEach(() => {
         (useOcorrencias as Mock).mockClear();
-        
+
+        (useUserPermissions as Mock).mockReturnValue({
+            isGipe: true,
+            isPontoFocal: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
         vi.spyOn(useTiposOcorrenciaHook, "useTiposOcorrencia").mockReturnValue({
-                    data: mockTiposOcorrencia,
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            data: mockTiposOcorrencia,
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
 
         vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                    data: [{ uuid: "dre-1", nome: "DRE 1" }, { uuid: "dre-2", nome: "DRE 2" }, { uuid: "dre-3", nome: "DRE 3"}],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            data: [
+                { uuid: "dre-1", nome: "DRE 1" },
+                { uuid: "dre-2", nome: "DRE 2" },
+                { uuid: "dre-3", nome: "DRE 3" },
+            ],
+            isLoading: false,
+            isError: false,
+            error: null,
+        } as never);
 
         vi.spyOn(useUnidadesHook, "useFetchTodasUEs").mockReturnValue({
-            data: [{ uuid: "ue-1", nome: "UE 1" }, { uuid: "ue-2", nome: "UE 2" }, { uuid: "ue-3", nome: "UE 3"}],
+            data: [
+                { uuid: "ue-1", nome: "UE 1" },
+                { uuid: "ue-2", nome: "UE 2" },
+                { uuid: "ue-3", nome: "UE 3" },
+            ],
             isLoading: false,
             isError: false,
             error: null,
@@ -159,9 +180,70 @@ describe("TabelaOcorrencias", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText("Nenhum resultado encontrado.")
+                screen.getByText(
+                    "Você ainda não possui nenhuma intercorrência registrada."
+                )
             ).toBeInTheDocument();
         });
+
+        expect(
+            screen.getByText("Clique em nova ocorrência para começar.")
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir alerta quando não há ocorrências registradas", async () => {
+        (useOcorrencias as Mock).mockReturnValue({
+            data: [],
+            isLoading: false,
+        });
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Você ainda não possui nenhuma intercorrência registrada."
+                )
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.getByText("Clique em nova ocorrência para começar.")
+        ).toBeInTheDocument();
+    });
+
+    it("deve desabilitar botões Exportar e Filtrar quando não há ocorrências", async () => {
+        (useOcorrencias as Mock).mockReturnValue({
+            data: [],
+            isLoading: false,
+        });
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByRole("button", { name: /Exportar/i })
+            ).toBeDisabled();
+        });
+
+        expect(screen.getByRole("button", { name: /Filtrar/i })).toBeDisabled();
+    });
+
+    it("deve habilitar botões Exportar e Filtrar quando há ocorrências", async () => {
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+        });
+
+        expect(
+            screen.getByRole("button", { name: /Exportar/i })
+        ).not.toBeDisabled();
+        expect(
+            screen.getByRole("button", { name: /Filtrar/i })
+        ).not.toBeDisabled();
     });
 
     it("deve renderizar o estado de loading", () => {
@@ -182,15 +264,14 @@ describe("TabelaOcorrencias", () => {
         });
         renderWithQueryProvider(<TabelaOcorrencias />);
 
-        await waitFor(() => {
-            expect(
-                screen.getByText("Nenhum resultado encontrado.")
-            ).toBeInTheDocument();
-        });
-
         expect(
             screen.getByText("Histórico de ocorrências registradas")
         ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", { name: /Exportar/i })
+        ).toBeDisabled();
+        expect(screen.getByRole("button", { name: /Filtrar/i })).toBeDisabled();
     });
 
     it("parseDataHora retorna Date esperado (DD/MM/YYYY - HH:mm)", () => {
@@ -339,5 +420,167 @@ describe("TabelaOcorrencias", () => {
             "td-status"
         );
         expect(within(statusCell).getByText("Finalizada")).toBeInTheDocument();
+    });
+
+    it("deve exibir colunas DRE e Nome da UE para perfil GIPE", async () => {
+        (useUserPermissions as Mock).mockReturnValue({
+            isGipe: true,
+            isPontoFocal: false,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
+
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("DRE")).toBeInTheDocument();
+        expect(screen.getByText("Nome da UE")).toBeInTheDocument();
+
+        expect(screen.getByText("DRE Centro")).toBeInTheDocument();
+        expect(screen.getByText("DRE Sul")).toBeInTheDocument();
+        expect(screen.getByText("EMEF Escola Teste 1")).toBeInTheDocument();
+        expect(screen.getByText("EMEF Escola Teste 2")).toBeInTheDocument();
+    });
+
+    it("deve exibir coluna Nome da UE mas não DRE para perfil Ponto Focal", async () => {
+        (useUserPermissions as Mock).mockReturnValue({
+            isGipe: false,
+            isPontoFocal: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: false,
+        });
+
+        (useOcorrencias as Mock).mockReturnValue({
+            data: sampleData,
+            isLoading: false,
+        });
+
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0001")).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText("DRE")).not.toBeInTheDocument();
+        expect(screen.getByText("Nome da UE")).toBeInTheDocument();
+
+        expect(screen.getByText("EMEF Escola Teste 1")).toBeInTheDocument();
+        expect(screen.getByText("EMEF Escola Teste 2")).toBeInTheDocument();
+    });
+
+    it("deve filtrar corretamente quando dre é undefined", async () => {
+        const dataComDreUndefined = [
+            {
+                protocolo: "P0003",
+                dataHora: "2025-09-03 12:00",
+                codigoEol: "EOL3",
+                nomeUe: "EMEF Escola Teste 3",
+                tipoOcorrencia: "Física",
+                status: "Incompleta",
+                id: "3",
+                uuid: "uuid-test-3",
+            },
+            {
+                protocolo: "P0004",
+                dataHora: "2025-09-04 13:00",
+                codigoEol: "EOL4",
+                dre: "DRE Norte",
+                nomeUe: "EMEF Escola Teste 4",
+                tipoOcorrencia: "Psicológica",
+                status: "Finalizada",
+                id: "4",
+                uuid: "uuid-test-4",
+            },
+        ];
+
+        (useOcorrencias as Mock).mockReturnValue({
+            data: dataComDreUndefined,
+            isLoading: false,
+        });
+
+        const user = userEvent.setup();
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0003")).toBeInTheDocument();
+        });
+
+        await user.click(screen.getByRole("button", { name: /Filtrar/i }));
+
+        const codigoInput = screen.getByLabelText(/Código EOL/i);
+        await user.type(codigoInput, "EOL3");
+
+        const botoesFiltrar = screen.getAllByRole("button", {
+            name: /Filtrar/i,
+        });
+        const botaoFiltrarDoPainel = botoesFiltrar.at(-1);
+        await user.click(botaoFiltrarDoPainel!);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0003")).toBeInTheDocument();
+            expect(screen.queryByText("P0004")).not.toBeInTheDocument();
+        });
+    });
+
+    it("deve filtrar corretamente quando nomeUe é undefined", async () => {
+        const dataComNomeUeUndefined = [
+            {
+                protocolo: "P0005",
+                dataHora: "2025-09-05 14:00",
+                codigoEol: "EOL5",
+                dre: "DRE Leste",
+                tipoOcorrencia: "Psicológica",
+                status: "Finalizada",
+                id: "5",
+                uuid: "uuid-test-5",
+            },
+            {
+                protocolo: "P0006",
+                dataHora: "2025-09-06 15:00",
+                codigoEol: "EOL6",
+                dre: "DRE Oeste",
+                nomeUe: "EMEF Escola Teste 6",
+                tipoOcorrencia: "Física",
+                status: "Incompleta",
+                id: "6",
+                uuid: "uuid-test-6",
+            },
+        ];
+
+        (useOcorrencias as Mock).mockReturnValue({
+            data: dataComNomeUeUndefined,
+            isLoading: false,
+        });
+
+        const user = userEvent.setup();
+        renderWithQueryProvider(<TabelaOcorrencias />);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0005")).toBeInTheDocument();
+        });
+
+        await user.click(screen.getByRole("button", { name: /Filtrar/i }));
+
+        const codigoInput = screen.getByLabelText(/Código EOL/i);
+        await user.type(codigoInput, "EOL5");
+
+        const botoesFiltrar = screen.getAllByRole("button", {
+            name: /Filtrar/i,
+        });
+        const botaoFiltrarDoPainel = botoesFiltrar.at(-1);
+        await user.click(botaoFiltrarDoPainel!);
+
+        await waitFor(() => {
+            expect(screen.getByText("P0005")).toBeInTheDocument();
+            expect(screen.queryByText("P0006")).not.toBeInTheDocument();
+        });
     });
 });

@@ -29,7 +29,7 @@ Then('a resposta deve ser uma lista de envolvidos', () => {
   cy.get('@response').then((res) => {
     expect(res.body).to.be.an('array')
     expect(res.body.length).to.be.greaterThan(0)
-    Cypress.log({ name: 'Validação', message: `✅ Lista com ${res.body.length} tipos de envolvidos` })
+    Cypress.log({ name: 'Validação', message: ` Lista com ${res.body.length} tipos de envolvidos` })
   })
 })
 
@@ -45,7 +45,7 @@ Then('cada envolvido deve ter os campos obrigatórios:', (dataTable) => {
       })
     })
     
-    Cypress.log({ name: 'Validação', message: `✅ Todos os ${res.body.length} envolvidos têm campos obrigatórios` })
+    Cypress.log({ name: 'Validação', message: ` Todos os ${res.body.length} envolvidos têm campos obrigatórios` })
   })
 })
 
@@ -53,7 +53,7 @@ Then('a lista deve conter pelo menos {int} tipos de envolvidos', (quantidadeMini
   cy.get('@response').then((res) => {
     expect(res.body).to.be.an('array')
     expect(res.body.length).to.be.at.least(quantidadeMinima)
-    Cypress.log({ name: 'Validação', message: `✅ Lista tem ${res.body.length} envolvidos (mínimo: ${quantidadeMinima})` })
+    Cypress.log({ name: 'Validação', message: ` Lista tem ${res.body.length} envolvidos (mínimo: ${quantidadeMinima})` })
   })
 })
 
@@ -68,10 +68,10 @@ Then('devem existir os seguintes perfis:', (dataTable) => {
         (envolvido) => envolvido.perfil_dos_envolvidos === perfilEsperado
       )
       expect(perfilEncontrado).to.exist
-      Cypress.log({ name: 'Perfil', message: `✅ "${perfilEsperado}" encontrado` })
+      Cypress.log({ name: 'Perfil', message: ` "${perfilEsperado}" encontrado` })
     })
     
-    Cypress.log({ name: 'Validação', message: `✅ Todos os ${perfisEsperados.length} perfis esperados existem` })
+    Cypress.log({ name: 'Validação', message: ` Todos os ${perfisEsperados.length} perfis esperados existem` })
   })
 })
 
@@ -81,7 +81,7 @@ Then('o perfil {string} deve ter o UUID {string}', (perfil, uuidEsperado) => {
     
     expect(envolvido).to.exist
     expect(envolvido.uuid).to.equal(uuidEsperado)
-    Cypress.log({ name: 'Validação', message: `✅ Perfil "${perfil}" tem UUID correto` })
+    Cypress.log({ name: 'Validação', message: ` Perfil "${perfil}" tem UUID correto` })
   })
 })
 
@@ -95,7 +95,7 @@ Then('todos os UUIDs devem estar no formato válido', () => {
       expect(envolvido.uuid).to.match(uuidRegex)
     })
     
-    Cypress.log({ name: 'Validação', message: `✅ Todos os ${res.body.length} UUIDs estão válidos` })
+    Cypress.log({ name: 'Validação', message: ` Todos os ${res.body.length} UUIDs estão válidos` })
   })
 })
 
@@ -107,6 +107,6 @@ Then('não devem existir perfis duplicados', () => {
     const perfisUnicos = [...new Set(perfis)]
     
     expect(perfis.length).to.equal(perfisUnicos.length)
-    Cypress.log({ name: 'Validação', message: `✅ Nenhum perfil duplicado (${perfisUnicos.length} únicos)` })
+    Cypress.log({ name: 'Validação', message: ` Nenhum perfil duplicado (${perfisUnicos.length} únicos)` })
   })
 })

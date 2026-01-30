@@ -1,4 +1,3 @@
-import { Control, FieldPath } from "react-hook-form";
 import {
     FormControl,
     FormField,
@@ -7,6 +6,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Control, FieldPath } from "react-hook-form";
 import { FormularioGipeData } from "./schema";
 
 type RadioFormProps = {
@@ -45,7 +45,7 @@ export function RadioForm({
                                 {options.map((option) => (
                                     <label
                                         key={option.value}
-                                        className="flex items-center space-x-2"
+                                        className="flex items-center space-x-2 w-fit cursor-pointer"
                                     >
                                         <RadioGroupItem value={option.value} />
                                         <span className="text-sm text-[#42474a]">

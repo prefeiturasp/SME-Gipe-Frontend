@@ -1,10 +1,9 @@
 import * as React from "react";
 
-import { Props as BaseInputMaskProps } from "react-input-mask";
 import BaseInputMask from "@mona-health/react-input-mask";
+import { Props as BaseInputMaskProps } from "react-input-mask";
 
-import { cn } from "@/lib/utils";
-import { numberToBRL } from "@/lib/utils";
+import { cn, numberToBRL } from "@/lib/utils";
 import { useFormField } from "./form";
 
 export interface InputProps
@@ -18,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <input
                 type={type}
                 className={cn(
-                    "flex h-10 w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium ring-0 ring-offset-0 shadow-none outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:bg-[#E8F0FE] focus:border-[#ced4da] disabled:cursor-not-allowed rounded-[4px]",
+                    "flex h-10 w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium ring-0 ring-offset-0 shadow-none outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:bg-[#E8F0FE] focus:border-[#ced4da] disabled:cursor-not-allowed disabled:border-[#B0B0B0] disabled:text-[#B0B0B0] rounded-[4px]",
                     error && "!border-destructive",
                     className
                 )}
@@ -129,4 +128,4 @@ const PhoneInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 );
 PhoneInput.displayName = "PhoneInput";
 
-export { Input, InputMask, CurrencyInput, DocumentInput, PhoneInput };
+export { CurrencyInput, DocumentInput, Input, InputMask, PhoneInput };

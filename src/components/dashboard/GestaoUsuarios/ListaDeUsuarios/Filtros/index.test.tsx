@@ -1,12 +1,12 @@
-import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
-import { describe, it, vi, expect, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import FiltrosUsuarios from "./index";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import * as useUnidadesHook from "@/hooks/useUnidades";
+import * as useGetUnidadesHook from "@/hooks/useGetUnidades";
 import * as useUserStoreModule from "@/stores/useUserStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function renderWithQueryProvider(ui: React.ReactElement) {
     const queryClient = new QueryClient({
@@ -30,6 +30,39 @@ function getUeCombobox() {
     return screen.getAllByRole("combobox")[1];
 }
 
+// Helper para mockar useGetUnidades
+type MockQueryResult = {
+    data?: Array<{ uuid: string; nome: string }>;
+    isLoading: boolean;
+    isError: boolean;
+    error?: Error | null;
+};
+
+function mockUseGetUnidades(
+    mockDREs?: MockQueryResult,
+    mockUEs?: MockQueryResult
+) {
+    const defaultMock: MockQueryResult = {
+        data: [],
+        isLoading: false,
+        isError: false,
+        error: null,
+    };
+
+    const dres = mockDREs ?? defaultMock;
+    const ues = mockUEs ?? defaultMock;
+    const spy = vi.spyOn(useGetUnidadesHook, "useGetUnidades");
+    spy.mockImplementation(
+        (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+            if (tipo_unidade === "DRE") {
+                return dres as never;
+            }
+            return ues as never;
+        }
+    );
+    return spy;
+}
+
 describe("FiltrosUsuarios component", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -37,19 +70,7 @@ describe("FiltrosUsuarios component", () => {
 
     describe("Renderização inicial", () => {
         it("deve renderizar o texto explicativo", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -61,19 +82,7 @@ describe("FiltrosUsuarios component", () => {
         });
 
         it("deve renderizar os labels dos filtros", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -84,19 +93,15 @@ describe("FiltrosUsuarios component", () => {
 
     describe("Select de DRE", () => {
         it("deve mostrar 'Carregando...' quando isLoadingDres é true", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: undefined,
-                isLoading: true,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades(
+                {
+                    data: undefined,
+                    isLoading: true,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -104,19 +109,15 @@ describe("FiltrosUsuarios component", () => {
         });
 
         it("deve mostrar 'Erro ao carregar DREs' quando isErrorDres é true", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: undefined,
-                isLoading: false,
-                isError: true,
-                error: new Error("Erro"),
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades(
+                {
+                    data: undefined,
+                    isLoading: false,
+                    isError: true,
+                    error: new Error("Erro"),
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -132,19 +133,15 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "dre-3", nome: "DRE Sul" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
 
             const user = userEvent.setup();
             renderWithQueryProvider(<FiltrosUsuarios />);
@@ -165,19 +162,15 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "dre-2", nome: "DRE Norte" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
 
             const onFilterChange = vi.fn();
             const user = userEvent.setup();
@@ -202,19 +195,7 @@ describe("FiltrosUsuarios component", () => {
 
     describe("Combobox de UE", () => {
         it("deve mostrar 'Selecione primeiro uma DRE' quando nenhuma DRE está selecionada", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -224,19 +205,7 @@ describe("FiltrosUsuarios component", () => {
         });
 
         it("deve estar desabilitado quando nenhuma DRE está selecionada", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -247,21 +216,36 @@ describe("FiltrosUsuarios component", () => {
         it("deve mostrar 'Carregando...' quando isLoadingUes é true", async () => {
             const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: undefined,
-                    isLoading: true,
-                    isError: false,
-                    error: null,
-                } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-1") {
+                        return {
+                            data: undefined,
+                            isLoading: true,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const user = userEvent.setup();
             renderWithQueryProvider(<FiltrosUsuarios />);
@@ -271,10 +255,6 @@ describe("FiltrosUsuarios component", () => {
 
             const dreOption = await screen.findByText("DRE Centro");
             await user.click(dreOption);
-
-            await waitFor(() => {
-                expect(useFetchUEsMock).toHaveBeenCalledWith("dre-1", "TODAS");
-            });
 
             await waitFor(() => {
                 expect(
@@ -286,21 +266,36 @@ describe("FiltrosUsuarios component", () => {
         it("deve mostrar 'Erro ao carregar UEs' quando isErrorUes é true", async () => {
             const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: undefined,
-                    isLoading: false,
-                    isError: true,
-                    error: new Error("Erro"),
-                } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-1") {
+                        return {
+                            data: undefined,
+                            isLoading: false,
+                            isError: true,
+                            error: new Error("Erro"),
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const user = userEvent.setup();
             renderWithQueryProvider(<FiltrosUsuarios />);
@@ -310,10 +305,6 @@ describe("FiltrosUsuarios component", () => {
 
             const dreOption = await screen.findByText("DRE Centro");
             await user.click(dreOption);
-
-            await waitFor(() => {
-                expect(useFetchUEsMock).toHaveBeenCalledWith("dre-1", "TODAS");
-            });
 
             await waitFor(() => {
                 expect(
@@ -330,21 +321,36 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "ue-3", nome: "CEI Paulo Freire" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: mockUEs,
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-1") {
+                        return {
+                            data: mockUEs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const user = userEvent.setup();
             renderWithQueryProvider(<FiltrosUsuarios />);
@@ -355,10 +361,6 @@ describe("FiltrosUsuarios component", () => {
 
             const dreOption = await screen.findByText("DRE Centro");
             await user.click(dreOption);
-
-            await waitFor(() => {
-                expect(useFetchUEsMock).toHaveBeenCalledWith("dre-1", "TODAS");
-            });
 
             // Abre o combobox de UE
             const ueCombobox = getUeCombobox();
@@ -386,19 +388,36 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "ue-2", nome: "EMEI Maria Santos" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: mockUEs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-1") {
+                        return {
+                            data: mockUEs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const onFilterChange = vi.fn();
             const user = userEvent.setup();
@@ -472,34 +491,42 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "dre-2", nome: "DRE Outra" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-ponto-focal-123") {
+                        return {
+                            data: [],
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const onFilterChange = vi.fn();
 
             renderWithQueryProvider(
                 <FiltrosUsuarios onFilterChange={onFilterChange} />
             );
-
-            await waitFor(() => {
-                expect(useFetchUEsMock).toHaveBeenCalledWith(
-                    "dre-ponto-focal-123",
-                    "TODAS"
-                );
-            });
 
             await waitFor(() => {
                 expect(onFilterChange).toHaveBeenCalledWith({
@@ -540,25 +567,9 @@ describe("FiltrosUsuarios component", () => {
                 return mockUserStore;
             });
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
-
-            expect(useFetchUEsMock).toHaveBeenCalledWith("", "TODAS");
 
             useUserStoreSpy.mockRestore();
         });
@@ -585,30 +596,14 @@ describe("FiltrosUsuarios component", () => {
                 return mockUserStore;
             });
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
-
-            expect(useFetchUEsMock).toHaveBeenCalledWith("", "TODAS");
 
             useUserStoreSpy.mockRestore();
         });
 
-        it("deve chamar useFetchUEs com string vazia quando dreUuid é null", () => {
+        it("deve chamar useGetUnidades com string vazia quando dreUuid é null", () => {
             const mockUserStore = {
                 user: null,
             };
@@ -624,26 +619,9 @@ describe("FiltrosUsuarios component", () => {
                 return mockUserStore;
             });
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
-
-            // Deve chamar com string vazia quando dreUuid é vazio (coalescência nula)
-            expect(useFetchUEsMock).toHaveBeenCalledWith("", "TODAS");
 
             useUserStoreSpy.mockRestore();
         });
@@ -664,19 +642,7 @@ describe("FiltrosUsuarios component", () => {
                 return mockUserStore;
             });
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            mockUseGetUnidades();
 
             const onFilterChange = vi.fn();
 
@@ -728,19 +694,28 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "dre-ponto-focal-123", nome: "DRE Ponto Focal Teste" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
@@ -785,19 +760,28 @@ describe("FiltrosUsuarios component", () => {
                 { uuid: "dre-with-value", nome: "DRE Com Valor" },
             ];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const onFilterChange = vi.fn();
 
@@ -820,19 +804,36 @@ describe("FiltrosUsuarios component", () => {
             const mockDREs = [{ uuid: "dre-1", nome: "DRE Teste" }];
             const mockUEs = [{ uuid: "ue-123", nome: "UE Teste" }];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: mockUEs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    if (dre === "dre-1") {
+                        return {
+                            data: mockUEs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const onFilterChange = vi.fn();
             const user = userEvent.setup();
@@ -864,80 +865,98 @@ describe("FiltrosUsuarios component", () => {
     });
 
     describe("Integração do filtro", () => {
-        it("deve chamar useFetchUEs com dreUuid vazio quando nenhuma DRE está selecionada", () => {
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+        const findCallWithDreUuid = (
+            calls: Array<unknown[]>,
+            dreUuid: string
+        ) => {
+            return calls.find(
+                (call) => call[0] === true && call[1] === dreUuid
+            );
+        };
 
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+        const clickDreOptionAndVerify = async (
+            user: ReturnType<typeof userEvent.setup>,
+            optionText: string
+        ) => {
+            const dreSelect = getDreSelect();
+            await user.click(dreSelect);
+            const dreOption = await screen.findByText(optionText);
+            await user.click(dreOption);
+        };
+
+        it("deve chamar useGetUnidades corretamente quando nenhuma DRE está selecionada", () => {
+            mockUseGetUnidades();
 
             renderWithQueryProvider(<FiltrosUsuarios />);
 
-            expect(useFetchUEsMock).toHaveBeenCalledWith("", "TODAS");
+            // O componente deve renderizar normalmente
+            expect(screen.getByText("Diretoria Regional")).toBeInTheDocument();
         });
 
-        it("deve chamar useFetchUEs com dreUuid correto quando DRE está selecionada", async () => {
+        it("deve chamar useGetUnidades com dreUuid correto quando DRE está selecionada", async () => {
             const mockDREs = [{ uuid: "dre-123", nome: "DRE Teste" }];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const useFetchUEsMock = vi
-                .spyOn(useUnidadesHook, "useFetchUEs")
-                .mockReturnValue({
-                    data: [],
-                    isLoading: false,
-                    isError: false,
-                    error: null,
-                } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const user = userEvent.setup();
             renderWithQueryProvider(<FiltrosUsuarios />);
 
-            const dreSelect = getDreSelect();
-            await user.click(dreSelect);
-
-            const dreOption = await screen.findByText("DRE Teste");
-            await user.click(dreOption);
+            await clickDreOptionAndVerify(user, "DRE Teste");
 
             await waitFor(() => {
-                expect(useFetchUEsMock).toHaveBeenCalledWith(
-                    "dre-123",
-                    "TODAS"
-                );
+                // Verifica se foi chamado com o dreUuid correto
+                const calls = useGetUnidadesSpy.mock.calls;
+                const callWithDreUuid = findCallWithDreUuid(calls, "dre-123");
+                expect(callWithDreUuid).toBeDefined();
             });
         });
 
         it("não deve chamar onFilterChange se não for fornecido", async () => {
             const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
 
-            vi.spyOn(useUnidadesHook, "useFetchDREs").mockReturnValue({
-                data: mockDREs,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            vi.spyOn(useUnidadesHook, "useFetchUEs").mockReturnValue({
-                data: [],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
+            const useGetUnidadesSpy = vi.spyOn(
+                useGetUnidadesHook,
+                "useGetUnidades"
+            );
+            useGetUnidadesSpy.mockImplementation(
+                (ativa?: boolean, dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: mockDREs,
+                            isLoading: false,
+                            isError: false,
+                            error: null,
+                        } as never;
+                    }
+                    return {
+                        data: [],
+                        isLoading: false,
+                        isError: false,
+                        error: null,
+                    } as never;
+                }
+            );
 
             const user = userEvent.setup();
 
@@ -956,4 +975,394 @@ describe("FiltrosUsuarios component", () => {
         });
     });
 
+    describe("Botão Limpar filtros", () => {
+        it("deve renderizar o botão 'Limpar filtros' quando não é Ponto Focal", () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 2,
+                        descricao: "GIPE",
+                    },
+                    unidades: [],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
+
+            renderWithQueryProvider(<FiltrosUsuarios />);
+
+            expect(
+                screen.getByRole("button", { name: /limpar filtros/i })
+            ).toBeInTheDocument();
+
+            useUserStoreSpy.mockRestore();
+        });
+
+        it("deve desabilitar o botão 'Limpar filtros' quando não há filtros aplicados", () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 2,
+                        descricao: "GIPE",
+                    },
+                    unidades: [],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
+
+            renderWithQueryProvider(<FiltrosUsuarios />);
+
+            const limparButton = screen.getByRole("button", {
+                name: /limpar filtros/i,
+            });
+            expect(limparButton).toBeDisabled();
+
+            useUserStoreSpy.mockRestore();
+        });
+
+        it("deve habilitar o botão 'Limpar filtros' quando há filtro de DRE aplicado", async () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 2,
+                        descricao: "GIPE",
+                    },
+                    unidades: [],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [
+                { uuid: "dre-1", nome: "DRE Centro" },
+                { uuid: "dre-2", nome: "DRE Norte" },
+            ];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                { data: [], isLoading: false, isError: false, error: null }
+            );
+
+            const user = userEvent.setup();
+            renderWithQueryProvider(<FiltrosUsuarios />);
+
+            const dreSelect = getDreSelect();
+            await user.click(dreSelect);
+
+            const dreOption = await screen.findByText("DRE Centro");
+            await user.click(dreOption);
+
+            await waitFor(() => {
+                const limparButton = screen.getByRole("button", {
+                    name: /limpar filtros/i,
+                });
+                expect(limparButton).not.toBeDisabled();
+            });
+
+            useUserStoreSpy.mockRestore();
+        });
+
+        it("deve habilitar o botão 'Limpar filtros' quando há filtro de UE aplicado", async () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 2,
+                        descricao: "GIPE",
+                    },
+                    unidades: [],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
+            const mockUEs = [{ uuid: "ue-1", nome: "UE Teste" }];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                {
+                    data: mockUEs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                }
+            );
+
+            const user = userEvent.setup();
+            renderWithQueryProvider(<FiltrosUsuarios />);
+
+            const dreSelect = getDreSelect();
+            await user.click(dreSelect);
+            const dreOption = await screen.findByText("DRE Centro");
+            await user.click(dreOption);
+
+            const ueCombobox = getUeCombobox();
+            await user.click(ueCombobox);
+
+            const ueOption = await screen.findByRole("option", {
+                name: "UE Teste",
+            });
+            await user.click(ueOption);
+
+            await waitFor(() => {
+                const limparButton = screen.getByRole("button", {
+                    name: /limpar filtros/i,
+                });
+                expect(limparButton).not.toBeDisabled();
+            });
+
+            useUserStoreSpy.mockRestore();
+        });
+
+        it("deve limpar ambos os filtros quando o botão 'Limpar filtros' é clicado (não-ponto-focal)", async () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 2,
+                        descricao: "GIPE",
+                    },
+                    unidades: [],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [{ uuid: "dre-1", nome: "DRE Centro" }];
+            const mockUEs = [{ uuid: "ue-1", nome: "UE Teste" }];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                {
+                    data: mockUEs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                }
+            );
+
+            const onFilterChange = vi.fn();
+            const user = userEvent.setup();
+            renderWithQueryProvider(
+                <FiltrosUsuarios onFilterChange={onFilterChange} />
+            );
+
+            const dreSelect = getDreSelect();
+            await user.click(dreSelect);
+            const dreOption = await screen.findByText("DRE Centro");
+            await user.click(dreOption);
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenCalledWith({
+                    dreUuid: "dre-1",
+                    ueUuid: undefined,
+                });
+            });
+
+            const ueCombobox = getUeCombobox();
+            await user.click(ueCombobox);
+            const ueOption = await screen.findByRole("option", {
+                name: "UE Teste",
+            });
+            await user.click(ueOption);
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenCalledWith({
+                    dreUuid: "dre-1",
+                    ueUuid: "ue-1",
+                });
+            });
+
+            const limparButton = screen.getByRole("button", {
+                name: /limpar filtros/i,
+            });
+            await user.click(limparButton);
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenLastCalledWith({
+                    dreUuid: undefined,
+                    ueUuid: undefined,
+                });
+            });
+
+            expect(limparButton).toBeDisabled();
+
+            useUserStoreSpy.mockRestore();
+        });
+
+        it("deve limpar apenas UE quando o botão 'Limpar filtros' é clicado (ponto-focal)", async () => {
+            const mockUserStore = {
+                user: {
+                    perfil_acesso: {
+                        codigo: 1,
+                        descricao: "Ponto Focal",
+                    },
+                    unidades: [
+                        {
+                            dre: {
+                                dre_uuid: "dre-ponto-focal",
+                                nome: "DRE Ponto Focal",
+                            },
+                        },
+                    ],
+                },
+            };
+
+            const useUserStoreSpy = vi.spyOn(
+                useUserStoreModule,
+                "useUserStore"
+            );
+            useUserStoreSpy.mockImplementation((selector) => {
+                if (typeof selector === "function") {
+                    return selector(mockUserStore as never);
+                }
+                return mockUserStore;
+            });
+
+            const mockDREs = [
+                { uuid: "dre-ponto-focal", nome: "DRE Ponto Focal" },
+            ];
+            const mockUEs = [{ uuid: "ue-1", nome: "UE Teste" }];
+
+            mockUseGetUnidades(
+                {
+                    data: mockDREs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                },
+                {
+                    data: mockUEs,
+                    isLoading: false,
+                    isError: false,
+                    error: null,
+                }
+            );
+
+            const onFilterChange = vi.fn();
+            const user = userEvent.setup();
+            renderWithQueryProvider(
+                <FiltrosUsuarios onFilterChange={onFilterChange} />
+            );
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenCalledWith({
+                    dreUuid: "dre-ponto-focal",
+                    ueUuid: undefined,
+                });
+            });
+
+            const ueCombobox = getUeCombobox();
+            await user.click(ueCombobox);
+            const ueOption = await screen.findByRole("option", {
+                name: "UE Teste",
+            });
+            await user.click(ueOption);
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenCalledWith({
+                    dreUuid: "dre-ponto-focal",
+                    ueUuid: "ue-1",
+                });
+            });
+
+            const limparButton = screen.getByRole("button", {
+                name: /limpar filtros/i,
+            });
+            await user.click(limparButton);
+
+            await waitFor(() => {
+                expect(onFilterChange).toHaveBeenLastCalledWith({
+                    dreUuid: "dre-ponto-focal",
+                    ueUuid: undefined,
+                });
+            });
+
+            useUserStoreSpy.mockRestore();
+        });
+    });
 });

@@ -32,6 +32,14 @@ if (typeof window !== "undefined") {
             scrollIntoView: () => void;
         }
     ).scrollIntoView = vi.fn();
+
+    // jsdom não implementa scrollTo; usado em vários componentes
+    // Mock para evitar warnings durante os testes
+    window.scrollTo = vi.fn();
+
+    // jsdom não implementa navegação via <a> click para downloads
+    // Mock para evitar erros ao baixar arquivos nos testes
+    window.HTMLAnchorElement.prototype.click = vi.fn();
 }
 
 // Limpa o estado após cada teste

@@ -1,11 +1,14 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import UnidadesEducacionais from "./page";
-import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
+import UnidadesEducacionais from "./page";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         back: vi.fn(),
+    }),
+    useSearchParams: () => ({
+        get: vi.fn().mockReturnValue(null),
     }),
 }));
 
@@ -17,7 +20,7 @@ const renderWithProvider = (ui: React.ReactElement) => {
     );
 };
 
-describe("Pessoa Usuária page", () => {
+describe("Unidades educacionais page", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });

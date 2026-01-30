@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { transformOcorrenciaToFormData } from "./transformOcorrenciaToFormData";
 import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
+import { describe, expect, it } from "vitest";
+import { transformOcorrenciaToFormData } from "./transformOcorrenciaToFormData";
 
 describe("transformOcorrenciaToFormData", () => {
     const baseOcorrencia: OcorrenciaDetalheAPI = {
