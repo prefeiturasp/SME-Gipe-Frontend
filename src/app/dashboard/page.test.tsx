@@ -47,7 +47,7 @@ const queryClient = new QueryClient();
 
 const renderWithProvider = (ui: React.ReactElement) => {
     return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
     );
 };
 
@@ -68,7 +68,7 @@ describe("Dashboard page", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/intercorrências institucionais/i)
+                screen.getByText(/intercorrências institucionais/i),
             ).toBeInTheDocument();
         });
     });
@@ -86,13 +86,13 @@ describe("Dashboard page", () => {
         await waitFor(() => {
             expect(
                 screen.getByText(
-                    /Para registrar uma nova intercorrência institucional/i
-                )
+                    /Para registrar uma nova intercorrência institucional/i,
+                ),
             ).toBeInTheDocument();
         });
 
         expect(
-            screen.getByRole("link", { name: /Nova ocorrência/i })
+            screen.getByRole("button", { name: /Nova ocorrência/i }),
         ).toBeInTheDocument();
     });
 
@@ -108,17 +108,17 @@ describe("Dashboard page", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/intercorrências institucionais/i)
+                screen.getByText(/intercorrências institucionais/i),
             ).toBeInTheDocument();
         });
 
         expect(
             screen.queryByText(
-                /Para registrar uma nova intercorrência institucional/i
-            )
+                /Para registrar uma nova intercorrência institucional/i,
+            ),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole("link", { name: /Nova ocorrência/i })
+            screen.queryByRole("button", { name: /Nova ocorrência/i }),
         ).not.toBeInTheDocument();
     });
 
@@ -134,17 +134,17 @@ describe("Dashboard page", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/intercorrências institucionais/i)
+                screen.getByText(/intercorrências institucionais/i),
             ).toBeInTheDocument();
         });
 
         expect(
             screen.queryByText(
-                /Para registrar uma nova intercorrência institucional/i
-            )
+                /Para registrar uma nova intercorrência institucional/i,
+            ),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole("link", { name: /Nova ocorrência/i })
+            screen.queryByRole("button", { name: /Nova ocorrência/i }),
         ).not.toBeInTheDocument();
     });
 });
