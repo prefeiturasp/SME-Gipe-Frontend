@@ -62,6 +62,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const [carregandoDados, setCarregandoDados] = useState(false);
     const [drePreenchidaAutomaticamente, setDrePreenchidaAutomaticamente] =
         useState(false);
+    const [consultaEolRealizada, setConsultaEolRealizada] = useState(false);
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
@@ -106,6 +107,7 @@ export default function FormularioCadastroUnidadeEducacional({
 
     const redeSelecionada = form.watch("rede");
     const tipoSelecionado = form.watch("tipo");
+    const codigoEol = form.watch("codigoEol");
 
     const filteredTipoOptions = useMemo(() => {
         let opcoesFiltradas = tipoOptions;
@@ -144,8 +146,33 @@ export default function FormularioCadastroUnidadeEducacional({
                 isPontoFocal && userDreUuid ? userDreUuid : "",
             );
             form.setValue("siglaDre", "");
+            setConsultaEolRealizada(false);
         }
     }, [redeSelecionada, mode, form, isPontoFocal, userDreUuid]);
+
+    useEffect(() => {
+        if (mode === "create" && redeSelecionada === "DIRETA") {
+            setConsultaEolRealizada(false);
+        }
+    }, [mode, redeSelecionada, codigoEol]);
+
+    useEffect(() => {
+        if (
+            mode === "create" &&
+            tipoSelecionado &&
+            !montagemInicialRef.current
+        ) {
+            form.setValue("codigoEol", "");
+            form.setValue("nomeUnidadeEducacional", "");
+            form.setValue(
+                "diretoriaRegional",
+                isPontoFocal && userDreUuid ? userDreUuid : "",
+            );
+            form.setValue("siglaDre", "");
+            setConsultaEolRealizada(false);
+            setDrePreenchidaAutomaticamente(false);
+        }
+    }, [tipoSelecionado, mode, form, isPontoFocal, userDreUuid]);
 
     useEffect(() => {
         if (
@@ -192,6 +219,11 @@ export default function FormularioCadastroUnidadeEducacional({
 
     const isFormValid = form.formState.isValid;
 
+    const precisaConsultarEol =
+        mode === "create" &&
+        redeSelecionada === "DIRETA" &&
+        !consultaEolRealizada;
+
     const { mutateAsync: cadastrarUnidade, isPending: isPendingCreate } =
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
@@ -204,6 +236,12 @@ export default function FormularioCadastroUnidadeEducacional({
     const handleConsultarEol = async () => {
         const codigoEol = form.getValues("codigoEol");
         const tipoAtual = form.getValues("tipo");
+
+        form.setValue("nomeUnidadeEducacional", "", { shouldValidate: false });
+        if (!isPontoFocal && tipoAtual !== "DRE") {
+            form.setValue("diretoriaRegional", "", { shouldValidate: false });
+            setDrePreenchidaAutomaticamente(false);
+        }
 
         const response = await consultarEolUnidade(codigoEol);
 
@@ -227,6 +265,8 @@ export default function FormularioCadastroUnidadeEducacional({
                     setDrePreenchidaAutomaticamente(true);
                 }
             }
+
+            setConsultaEolRealizada(true);
         } else {
             toast({
                 title: "Código EOL inválido!",
@@ -601,7 +641,12 @@ export default function FormularioCadastroUnidadeEducacional({
                     <Button
                         type="submit"
                         variant="submit"
-                        disabled={!isFormValid || isPending || !isActive}
+                        disabled={
+                            !isFormValid ||
+                            isPending ||
+                            !isActive ||
+                            precisaConsultarEol
+                        }
                         loading={isPending}
                     >
                         {mode === "edit" ? "Salvar alterações" : "Cadastrar UE"}

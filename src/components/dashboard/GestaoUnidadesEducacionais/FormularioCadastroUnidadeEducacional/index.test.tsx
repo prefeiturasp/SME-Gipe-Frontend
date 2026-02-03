@@ -729,6 +729,14 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         };
 
         it("deve habilitar o botão de cadastrar quando todos os campos obrigatórios forem preenchidos", async () => {
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    nome_unidade: "EMEF Teste",
+                    codigo_dre: "000001",
+                },
+            });
+
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             await preencherCamposObrigatorios({
@@ -737,6 +745,16 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 rede: "Direta",
                 codigo: "123456",
                 dre: "DRE - Butantã",
+            });
+
+            // Consultar EOL é obrigatório para rede DIRETA
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
             });
 
             await waitFor(() => {
@@ -748,6 +766,13 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         });
 
         it("deve habilitar o botão quando tipo for DRE e campos não-DRE estiverem preenchidos", async () => {
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    nome_unidade: "DRE Butantã",
+                },
+            });
+
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             await preencherCamposObrigatorios({
@@ -755,6 +780,16 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 nome: "DRE Butantã",
                 rede: "Direta",
                 codigo: "123456",
+            });
+
+            // Consultar EOL é obrigatório mesmo para DRE na rede DIRETA
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
             });
 
             await waitFor(() => {
@@ -783,6 +818,14 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve chamar o cadastro e exibir toast de sucesso ao submeter o formulário válido", async () => {
             const { toast } = await import("@/components/ui/headless-toast");
             mockCadastrarUnidade.mockResolvedValueOnce({ success: true });
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    nome_unidade: "EMEF Teste",
+                    codigo_dre: "000001",
+                },
+            });
+
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             const tipoSelect = getSelectByLabel("Tipo*");
@@ -807,6 +850,16 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             const codigoInput =
                 await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            // Consultar EOL é obrigatório para rede DIRETA
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
             fireEvent.click(dreSelect);
@@ -845,6 +898,14 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 success: false,
                 error: "Erro ao cadastrar unidade",
             });
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    nome_unidade: "EMEF Teste",
+                    codigo_dre: "000001",
+                },
+            });
+
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             const tipoSelect = getSelectByLabel("Tipo*");
@@ -869,6 +930,16 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             const codigoInput =
                 await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            // Consultar EOL é obrigatório para rede DIRETA
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
             fireEvent.click(dreSelect);
@@ -1540,6 +1611,271 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 const dreSelect = comboboxes[2];
                 expect(dreSelect).toHaveTextContent("DRE - Centro");
                 expect(dreSelect).toBeDisabled();
+            });
+        });
+    });
+
+    describe("Obrigatoriedade de Consultar EOL na Rede Direta", () => {
+        beforeEach(() => {
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    nome_unidade: "EMEF José da Silva",
+                    codigo_dre: "000001",
+                },
+            });
+        });
+
+        it("deve desabilitar o botão de cadastrar mesmo com formulário válido se não consultou EOL na rede DIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEF Maria Clara" },
+            });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const dreOption = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(dreOption.at(-1)!);
+            });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).toBeDisabled();
+            });
+        });
+
+        it("deve habilitar o botão de cadastrar após consultar EOL com sucesso na rede DIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const dreOption = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(dreOption.at(-1)!);
+            });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).not.toBeDisabled();
+            });
+        });
+
+        it("não deve exigir consulta EOL para rede INDIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Indireta", "EMEI");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEI Maria Clara" },
+            });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const dreOption = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(dreOption.at(-1)!);
+            });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).not.toBeDisabled();
+                expect(mockConsultarEolUnidade).not.toHaveBeenCalled();
+            });
+        });
+
+        it("não deve exigir consulta EOL no modo de edição", async () => {
+            const mockUnidadeData = {
+                uuid: "unidade-123",
+                nome: "EMEF João da Silva",
+                codigo_eol: "123456",
+                tipo_unidade: "EMEF",
+                rede: "DIRETA",
+                dre_uuid: "dre-1",
+                sigla: "JDS",
+                ativa: true,
+            };
+
+            mockObterUnidade.mockReturnValue({
+                data: mockUnidadeData,
+                isLoading: false,
+            });
+
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(
+                    screen.getByDisplayValue("EMEF João da Silva"),
+                ).toBeInTheDocument();
+            });
+
+            const nomeInput = screen.getByDisplayValue("EMEF João da Silva");
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEF João da Silva Alterado" },
+            });
+
+            await waitFor(() => {
+                const salvarButton = screen.getByRole("button", {
+                    name: /Salvar alterações/i,
+                });
+                expect(salvarButton).not.toBeDisabled();
+                expect(mockConsultarEolUnidade).not.toHaveBeenCalled();
+            });
+        });
+
+        it("deve desabilitar novamente o botão se trocar o código EOL após consulta bem-sucedida", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const dreOption = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(dreOption.at(-1)!);
+            });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).not.toBeDisabled();
+            });
+
+            // Altera o código EOL
+            fireEvent.change(codigoInput, { target: { value: "654321" } });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).toBeDisabled();
+            });
+        });
+
+        it("deve manter o estado de consulta realizada ao preencher outros campos após consultar EOL", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            const dreSelect = getSelectByLabel("Diretoria Regional*");
+            fireEvent.click(dreSelect);
+            await waitFor(() => {
+                const dreOption = screen.getAllByText("DRE - Butantã");
+                fireEvent.click(dreOption.at(-1)!);
+            });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, {
+                target: { value: "EMEF Nome Editado" },
+            });
+
+            await waitFor(() => {
+                const cadastrarButton = screen.getByRole("button", {
+                    name: /Cadastrar UE/i,
+                });
+                expect(cadastrarButton).not.toBeDisabled();
+            });
+        });
+
+        it("deve resetar o estado de consulta ao mudar o tipo de rede de DIRETA para INDIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            // Muda para rede INDIRETA
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                const indiretaOptions = screen.getAllByText("Indireta");
+                fireEvent.click(indiretaOptions.at(-1)!);
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByRole("button", {
+                        name: /Consultar/i,
+                    }),
+                ).not.toBeInTheDocument();
             });
         });
     });
