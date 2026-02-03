@@ -992,6 +992,176 @@ describe("useCadastroUsuarioForm", () => {
 
             expect(result.current.isPendingConsultarRf).toBe(false);
         });
+
+        it("deve limpar campos CPF, nome e email ao clicar em consultar RF", async () => {
+            const mockMutateAsync = vi.fn().mockResolvedValue({
+                success: true,
+                data: {
+                    cpf: "98765432100",
+                    nome: "Maria Santos",
+                    codigoRf: "7654321",
+                    email: "maria.santos@exemplo.com",
+                    dreCodigo: "DRE-002",
+                    emailValido: true,
+                },
+            });
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "7654321");
+                result.current.form.setValue("cpf", "12345678900");
+                result.current.form.setValue("fullName", "Nome Antigo");
+                result.current.form.setValue("email", "antigo@exemplo.com");
+            });
+
+            expect(result.current.form.getValues("cpf")).toBe("12345678900");
+            expect(result.current.form.getValues("fullName")).toBe(
+                "Nome Antigo",
+            );
+            expect(result.current.form.getValues("email")).toBe(
+                "antigo@exemplo.com",
+            );
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            await waitFor(() => {
+                expect(result.current.form.getValues("cpf")).toBe(
+                    "98765432100",
+                );
+                expect(result.current.form.getValues("fullName")).toBe(
+                    "Maria Santos",
+                );
+                expect(result.current.form.getValues("email")).toBe(
+                    "maria.santos@exemplo.com",
+                );
+            });
+        });
+
+        it("deve limpar campos mesmo quando consulta RF falha", async () => {
+            const mockMutateAsync = vi.fn().mockResolvedValue({
+                success: false,
+                error: "RF não encontrado",
+            });
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rf", "9999999");
+                result.current.form.setValue("cpf", "11111111111");
+                result.current.form.setValue("fullName", "Nome Teste");
+                result.current.form.setValue("email", "teste@exemplo.com");
+            });
+
+            expect(result.current.form.getValues("cpf")).toBe("11111111111");
+            expect(result.current.form.getValues("fullName")).toBe(
+                "Nome Teste",
+            );
+            expect(result.current.form.getValues("email")).toBe(
+                "teste@exemplo.com",
+            );
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            await waitFor(() => {
+                expect(result.current.form.getValues("cpf")).toBe("");
+                expect(result.current.form.getValues("fullName")).toBe("");
+                expect(result.current.form.getValues("email")).toBe("");
+            });
+
+            expect(toast).toHaveBeenCalledWith({
+                title: "RF inválido!",
+                description: "RF não encontrado",
+                variant: "error",
+            });
+        });
+
+        it("deve limpar apenas campos relacionados ao servidor ao consultar RF", async () => {
+            const mockMutateAsync = vi.fn().mockResolvedValue({
+                success: true,
+                data: {
+                    cpf: "99988877766",
+                    nome: "Carlos Alberto",
+                    codigoRf: "5555555",
+                    email: "carlos@exemplo.com",
+                    dreCodigo: "DRE-003",
+                    emailValido: true,
+                },
+            });
+
+            vi.spyOn(
+                useConsultarRfUsuarioModule,
+                "useConsultarRfUsuario",
+            ).mockReturnValue({
+                mutateAsync: mockMutateAsync,
+                isPending: false,
+            } as never);
+
+            const { result } = renderHook(() => useCadastroUsuarioForm(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.form.setValue("rede", "DIRETA");
+                result.current.form.setValue("cargo", "diretor");
+                result.current.form.setValue("rf", "5555555");
+                result.current.form.setValue("cpf", "12345678900");
+                result.current.form.setValue("fullName", "Nome Original");
+                result.current.form.setValue("email", "original@exemplo.com");
+                result.current.form.setValue("dre", "dre-1");
+                result.current.form.setValue("ue", "ue-1");
+            });
+
+            expect(result.current.form.getValues("rede")).toBe("DIRETA");
+            expect(result.current.form.getValues("cargo")).toBe("diretor");
+            expect(result.current.form.getValues("dre")).toBe("dre-1");
+            expect(result.current.form.getValues("ue")).toBe("ue-1");
+
+            await act(async () => {
+                await result.current.handleConsultarRf();
+            });
+
+            await waitFor(() => {
+                expect(result.current.form.getValues("cpf")).toBe(
+                    "99988877766",
+                );
+                expect(result.current.form.getValues("fullName")).toBe(
+                    "Carlos Alberto",
+                );
+                expect(result.current.form.getValues("email")).toBe(
+                    "carlos@exemplo.com",
+                );
+            });
+
+            expect(result.current.form.getValues("rede")).toBe("DIRETA");
+            expect(result.current.form.getValues("cargo")).toBe("diretor");
+            expect(result.current.form.getValues("dre")).toBe("dre-1");
+            expect(result.current.form.getValues("ue")).toBe("ue-1");
+        });
     });
 
     describe("Modo Edit", () => {
