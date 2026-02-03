@@ -181,6 +181,12 @@ describe("FormularioCadastroPessoaUsuaria - Testes de Integração", () => {
     });
 
     it("aplica máscara de CPF ao digitar no campo CPF da rede DIRETA com cargo GIPE", async () => {
+        vi.spyOn(permissionsHook, "useUserPermissions").mockReturnValue({
+            isPontoFocal: false,
+            isGipe: true,
+            isAssistenteOuDiretor: false,
+            isGipeAdmin: true,
+        });
         render(<FormularioCadastroPessoaUsuaria />, { wrapper });
 
         const selectRede = screen.getByTestId("select-rede");

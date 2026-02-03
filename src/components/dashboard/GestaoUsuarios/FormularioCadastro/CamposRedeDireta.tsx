@@ -202,18 +202,6 @@ export function CamposRedeDireta({
                         control={form.control}
                         name="cargo"
                         render={({ field }) => {
-                            const cargoOptions = [
-                                { value: "diretor", label: "Diretor(a)" },
-                                {
-                                    value: "assistente",
-                                    label: "Assistente de direção",
-                                },
-                                {
-                                    value: "ponto_focal",
-                                    label: "Ponto focal",
-                                },
-                                { value: "gipe", label: "GIPE" },
-                            ];
                             const disabled = isFormDisabled;
                             return (
                                 <FormItem>
