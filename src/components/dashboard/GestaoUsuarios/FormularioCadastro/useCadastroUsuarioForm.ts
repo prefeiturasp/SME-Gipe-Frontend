@@ -47,6 +47,7 @@ export function useCadastroUsuarioForm({
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
     const [carregandoDados, setCarregandoDados] = useState(false);
+    const [consultaRfRealizada, setConsultaRfRealizada] = useState(false);
     const montagemInicialRef = useRef(true);
     const ueJaPreenchidaRef = useRef(false);
 
@@ -87,6 +88,7 @@ export function useCadastroUsuarioForm({
     const watchedRede = useWatch({ control, name: "rede" });
     const watchedCargo = useWatch({ control, name: "cargo" });
     const watchedDre = useWatch({ control, name: "dre" });
+    const watchedRf = useWatch({ control, name: "rf" });
 
     const { data: dreOptions = [] } = useGetUnidades(true, undefined, "DRE");
     const { data: ueOptions = [] } = useGetUnidades(
@@ -116,6 +118,12 @@ export function useCadastroUsuarioForm({
             ueJaPreenchidaRef.current = false;
         }
     }, [usuarioUuid, mode]);
+
+    useEffect(() => {
+        if (mode === "create" && watchedRede === "DIRETA") {
+            setConsultaRfRealizada(false);
+        }
+    }, [mode, watchedRede, watchedRf]);
 
     const cargoOptions = useMemo(() => {
         const options =
@@ -247,6 +255,7 @@ export function useCadastroUsuarioForm({
                     setValue("rf", "");
                     setValue("cpf", "");
                     setValue("email", "");
+                    setConsultaRfRealizada(false);
                 }
             }
         },
@@ -292,6 +301,10 @@ export function useCadastroUsuarioForm({
         const rf = getValues("rf");
         if (!rf || rf.length < 7) return;
 
+        setValue("fullName", "", { shouldValidate: false });
+        setValue("cpf", "", { shouldValidate: false });
+        setValue("email", "", { shouldValidate: false });
+
         try {
             const response = await consultarRfUsuario(rf);
 
@@ -303,6 +316,9 @@ export function useCadastroUsuarioForm({
                     shouldValidate: true,
                 });
                 setValue("cpf", response.data.cpf, { shouldValidate: true });
+
+                // Marcar que a consulta foi realizada com sucesso
+                setConsultaRfRealizada(true);
             } else {
                 toast({
                     title: "RF inválido!",
@@ -397,6 +413,9 @@ export function useCadastroUsuarioForm({
         cargoAlterado = watchedCargo !== cargoInicial;
     }
 
+    const precisaConsultarRf =
+        mode === "create" && watchedRede === "DIRETA" && !consultaRfRealizada;
+
     return {
         form,
         isValid,
@@ -438,5 +457,6 @@ export function useCadastroUsuarioForm({
         inativadoViaUnidade,
         watchedCargo,
         watchedRede,
+        precisaConsultarRf,
     };
 }

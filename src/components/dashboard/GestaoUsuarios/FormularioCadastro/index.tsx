@@ -66,6 +66,7 @@ export default function FormularioCadastroPessoaUsuaria({
         inativadoViaUnidade,
         watchedCargo,
         cargoOptions,
+        precisaConsultarRf,
     } = useCadastroUsuarioForm({ mode, usuarioUuid });
 
     const labelClass = (disabled: boolean, extra?: string) =>
@@ -396,7 +397,8 @@ export default function FormularioCadastroPessoaUsuaria({
                         disabled={
                             buttonDisabled ||
                             !isValid ||
-                            (currentMode === "edit" && !hasChanges)
+                            (currentMode === "edit" && !hasChanges) ||
+                            precisaConsultarRf
                         }
                         data-testid="button-cadastrar"
                         onClick={handleSubmitClick}
