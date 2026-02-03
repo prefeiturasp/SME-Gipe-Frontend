@@ -1,6 +1,7 @@
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarGestaoUsuario } from "@/hooks/useAtualizarGestaoUsuario";
 import { useCadastroGestaoUsuario } from "@/hooks/useCadastroGestaoUsuario";
+import { useConsultarRfUsuario } from "@/hooks/useConsultarRfUsuario";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUsuarioGestao } from "@/hooks/useObterUsuarioGestao";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -56,6 +57,8 @@ export function useCadastroUsuarioForm({
     const { mutate: atualizarUsuario, isPending: isPendingUpdate } =
         useAtualizarGestaoUsuario(usuarioUuid || "");
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
+    const { mutateAsync: consultarRfUsuario, isPending: isPendingConsultarRf } =
+        useConsultarRfUsuario();
 
     const form = useForm<FormDataCadastroUsuario>({
         resolver: zodResolver(formSchema),
@@ -90,7 +93,7 @@ export function useCadastroUsuarioForm({
         true,
         watchedDre,
         undefined,
-        watchedRede
+        watchedRede,
     );
 
     const { data: usuarioData } = useObterUsuarioGestao({
@@ -148,7 +151,7 @@ export function useCadastroUsuarioForm({
             const cargo = mapCargoNumericoParaString(usuarioData.cargo);
             const dreMatch = dreOptions.find(
                 (d: UnidadeEducacional) =>
-                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade
+                    d.codigo_eol === usuarioData.codigo_eol_dre_da_unidade,
             );
 
             reset({
@@ -182,7 +185,7 @@ export function useCadastroUsuarioForm({
         ) {
             const ueMatch = ueOptions.find(
                 (u: UnidadeEducacional) =>
-                    u.codigo_eol === usuarioData.codigo_eol_unidade
+                    u.codigo_eol === usuarioData.codigo_eol_unidade,
             );
             if (ueMatch) {
                 setValue("ue", ueMatch.uuid, { shouldValidate: true });
@@ -247,7 +250,7 @@ export function useCadastroUsuarioForm({
                 }
             }
         },
-        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues]
+        [mode, dadosIniciaisCarregados, carregandoDados, setValue, getValues],
     );
 
     const handleDreChange = useCallback(
@@ -263,7 +266,7 @@ export function useCadastroUsuarioForm({
             setValue("dre", val, { shouldValidate: true });
             setValue("ue", "", { shouldValidate: true });
         },
-        [mode, carregandoDados, setValue, getValues]
+        [mode, carregandoDados, setValue, getValues],
     );
 
     const handleCargoChange = useCallback(
@@ -282,14 +285,45 @@ export function useCadastroUsuarioForm({
                 setValue("ue", "", { shouldValidate: true });
             }
         },
-        [mode, carregandoDados, setValue, getValues]
+        [mode, carregandoDados, setValue, getValues],
     );
+
+    const handleConsultarRf = useCallback(async () => {
+        const rf = getValues("rf");
+        if (!rf || rf.length < 7) return;
+
+        try {
+            const response = await consultarRfUsuario(rf);
+
+            if (response.success) {
+                setValue("fullName", response.data.nome, {
+                    shouldValidate: true,
+                });
+                setValue("email", response.data.email, {
+                    shouldValidate: true,
+                });
+                setValue("cpf", response.data.cpf, { shouldValidate: true });
+            } else {
+                toast({
+                    title: "RF inválido!",
+                    description: response.error,
+                    variant: "error",
+                });
+            }
+        } catch {
+            toast({
+                title: "Erro ao consultar RF",
+                description: "Tente novamente mais tarde.",
+                variant: "error",
+            });
+        }
+    }, [consultarRfUsuario, setValue, getValues]);
 
     function handleConfirmCadastro() {
         const payload = buildCadastroPayload(
             getValues(),
             dreOptions,
-            ueOptions
+            ueOptions,
         );
 
         if (mode === "edit") {
@@ -375,7 +409,7 @@ export function useCadastroUsuarioForm({
         cargoOptions,
         showFields,
         isRedeSelected: !!watchedRede,
-        shouldShowExtraFields: !!watchedRede && !!watchedCargo,
+        shouldShowExtraFields: !!watchedRede,
         isRedeIndireta: watchedRede === "INDIRETA",
         isRedeDireta: watchedRede === "DIRETA",
         handleSubmitClick: (e: React.MouseEvent) => {
@@ -390,6 +424,8 @@ export function useCadastroUsuarioForm({
         handleRedeChange,
         handleCargoChange,
         handleDreChange,
+        handleConsultarRf,
+        isPendingConsultarRf,
         isDreDisabled: isPontoFocal,
         router,
         mode,
@@ -400,5 +436,7 @@ export function useCadastroUsuarioForm({
         responsavelInativacaoNome,
         motivoInativacao,
         inativadoViaUnidade,
+        watchedCargo,
+        watchedRede,
     };
 }

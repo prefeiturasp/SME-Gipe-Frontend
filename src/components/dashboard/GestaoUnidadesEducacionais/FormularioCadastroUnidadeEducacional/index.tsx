@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarUnidade } from "@/hooks/useAtualizarUnidade";
 import { useCadastrarUnidade } from "@/hooks/useCadastrarUnidade";
+import { useConsultarEolUnidade } from "@/hooks/useConsultarEolUnidade";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useObterUnidadeGestao } from "@/hooks/useObterUnidadeGestao";
 import { useTiposUnidade } from "@/hooks/useTiposUnidade";
@@ -55,17 +56,12 @@ export default function FormularioCadastroUnidadeEducacional({
     const { data: dreOptions = [] } = useGetUnidades(true, undefined, "DRE");
     const { data: tipoOptions = [] } = useTiposUnidade();
 
-    const filteredTipoOptions = useMemo(() => {
-        if (isPontoFocal) {
-            return tipoOptions.filter((tipo) => tipo.id !== "DRE");
-        }
-        return tipoOptions;
-    }, [tipoOptions, isPontoFocal]);
-
     const queryClient = useQueryClient();
     const [dadosIniciaisCarregados, setDadosIniciaisCarregados] =
         useState(false);
     const [carregandoDados, setCarregandoDados] = useState(false);
+    const [drePreenchidaAutomaticamente, setDrePreenchidaAutomaticamente] =
+        useState(false);
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
@@ -91,6 +87,7 @@ export default function FormularioCadastroUnidadeEducacional({
                 siglaDre: unidadeData.sigla,
             };
         }
+
         return {
             tipo: "",
             nomeUnidadeEducacional: "",
@@ -107,13 +104,48 @@ export default function FormularioCadastroUnidadeEducacional({
         mode: "onChange",
     });
 
+    const redeSelecionada = form.watch("rede");
+    const tipoSelecionado = form.watch("tipo");
+
+    const filteredTipoOptions = useMemo(() => {
+        let opcoesFiltradas = tipoOptions;
+
+        // Remover DRE se for rede INDIRETA ou ponto focal
+        if (redeSelecionada === "INDIRETA" || isPontoFocal) {
+            opcoesFiltradas = opcoesFiltradas.filter(
+                (tipo) => tipo.id !== "DRE",
+            );
+        }
+
+        return opcoesFiltradas;
+    }, [tipoOptions, isPontoFocal, redeSelecionada]);
+
     useEffect(() => {
         if (mode === "edit") {
             setDadosIniciaisCarregados(false);
             setCarregandoDados(false);
             montagemInicialRef.current = true;
+        } else if (mode === "create" && montagemInicialRef.current) {
+            montagemInicialRef.current = false;
         }
     }, [mode, unidadeUuid]);
+
+    useEffect(() => {
+        if (
+            mode === "create" &&
+            redeSelecionada &&
+            !montagemInicialRef.current
+        ) {
+            form.setValue("tipo", "");
+            form.setValue("codigoEol", "");
+            form.setValue("nomeUnidadeEducacional", "");
+            form.setValue(
+                "diretoriaRegional",
+                isPontoFocal && userDreUuid ? userDreUuid : "",
+            );
+            form.setValue("siglaDre", "");
+        }
+    }, [redeSelecionada, mode, form, isPontoFocal, userDreUuid]);
 
     useEffect(() => {
         if (
@@ -151,8 +183,12 @@ export default function FormularioCadastroUnidadeEducacional({
         filteredTipoOptions,
     ]);
 
-    const tipoSelecionado = form.watch("tipo");
     const isDreSelected = tipoSelecionado === "DRE";
+    const mostrarCamposAdicionais = redeSelecionada && tipoSelecionado;
+    const gridColsFirstRow =
+        !isPontoFocal && mostrarCamposAdicionais
+            ? "md:grid-cols-3"
+            : "md:grid-cols-2";
 
     const isFormValid = form.formState.isValid;
 
@@ -160,8 +196,45 @@ export default function FormularioCadastroUnidadeEducacional({
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
         useAtualizarUnidade(unidadeUuid || "");
+    const { mutateAsync: consultarEolUnidade, isPending: isPendingConsultar } =
+        useConsultarEolUnidade();
 
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
+
+    const handleConsultarEol = async () => {
+        const codigoEol = form.getValues("codigoEol");
+        const tipoAtual = form.getValues("tipo");
+
+        const response = await consultarEolUnidade(codigoEol);
+
+        if (response.success) {
+            form.setValue(
+                "nomeUnidadeEducacional",
+                response.data.nome_unidade,
+                { shouldValidate: true },
+            );
+
+            if (tipoAtual !== "DRE" && response.data.codigo_dre) {
+                const dreEncontrada = dreOptions.find(
+                    (dre: { codigo_eol: string; uuid: string }) =>
+                        dre.codigo_eol === response.data.codigo_dre,
+                );
+
+                if (dreEncontrada) {
+                    form.setValue("diretoriaRegional", dreEncontrada.uuid, {
+                        shouldValidate: true,
+                    });
+                    setDrePreenchidaAutomaticamente(true);
+                }
+            }
+        } else {
+            toast({
+                title: "Código EOL inválido!",
+                description: response.error,
+                variant: "error",
+            });
+        }
+    };
 
     const onSubmit = async (data: FormData) => {
         const payload: UnidadeCadastroPayload = {
@@ -213,7 +286,7 @@ export default function FormularioCadastroUnidadeEducacional({
                     Cadastre as informações da Unidade Educacional.
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${gridColsFirstRow}`}>
                     <FormField
                         control={form.control}
                         name="rede"
@@ -254,7 +327,11 @@ export default function FormularioCadastroUnidadeEducacional({
                         name="tipo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel disabled={disabledFields}>
+                                <FormLabel
+                                    disabled={
+                                        disabledFields || !redeSelecionada
+                                    }
+                                >
                                     Etapa/modalidade*
                                 </FormLabel>
                                 <FormControl>
@@ -264,7 +341,8 @@ export default function FormularioCadastroUnidadeEducacional({
                                         disabled={
                                             field.disabled ||
                                             carregandoDados ||
-                                            disabledFields
+                                            disabledFields ||
+                                            !redeSelecionada
                                         }
                                     >
                                         <SelectTrigger className="w-full">
@@ -286,106 +364,131 @@ export default function FormularioCadastroUnidadeEducacional({
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="codigoEol"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabledFields}>
-                                    Código EOL*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        disabled={disabledFields}
-                                        {...field}
-                                        type="number"
-                                        placeholder="Exemplo: 1234567"
-                                        className="font-normal"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="nomeUnidadeEducacional"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={!isActive}>
-                                    Nome da Unidade Educacional*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        disabled={!isActive}
-                                        {...field}
-                                        type="text"
-                                        placeholder="Exemplo: EMEF João da Silva"
-                                        className="font-normal"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    {!isDreSelected ? (
+                    {!isPontoFocal && mostrarCamposAdicionais && (
                         <FormField
                             control={form.control}
-                            name="diretoriaRegional"
+                            name="codigoEol"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel disabled={!isActive}>
-                                        Diretoria Regional*
+                                    <FormLabel disabled={disabledFields}>
+                                        Código EOL*
                                     </FormLabel>
-                                    <FormControl>
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            disabled={!isActive || isPontoFocal}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {dreOptions.map(
-                                                    (dre: {
-                                                        uuid: string;
-                                                        nome: string;
-                                                    }) => (
-                                                        <SelectItem
-                                                            key={dre.uuid}
-                                                            value={dre.uuid}
-                                                        >
-                                                            {dre.nome}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormControl>
+                                    <div className="flex items-start">
+                                        <FormControl>
+                                            <Input
+                                                disabled={disabledFields}
+                                                {...field}
+                                                type="text"
+                                                placeholder="Exemplo: 123456"
+                                                className="font-normal rounded-r-none"
+                                                maxLength={6}
+                                                onChange={(e) => {
+                                                    const value =
+                                                        e.target.value.replace(
+                                                            /\D/g,
+                                                            "",
+                                                        );
+                                                    field.onChange(value);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        {redeSelecionada === "DIRETA" &&
+                                            mode === "create" && (
+                                                <Button
+                                                    type="button"
+                                                    variant="submit"
+                                                    size="sm"
+                                                    className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                    disabled={
+                                                        disabledFields ||
+                                                        field.value.length !== 6
+                                                    }
+                                                    loading={isPendingConsultar}
+                                                    onClick={handleConsultarEol}
+                                                >
+                                                    Consultar
+                                                </Button>
+                                            )}
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                    ) : (
+                    )}
+                </div>
+
+                {mostrarCamposAdicionais && (
+                    <div className={`grid grid-cols-1 gap-4 md:grid-cols-2`}>
+                        {isPontoFocal && (
+                            <FormField
+                                control={form.control}
+                                name="codigoEol"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel disabled={disabledFields}>
+                                            Código EOL*
+                                        </FormLabel>
+                                        <div className="flex items-start">
+                                            <FormControl>
+                                                <Input
+                                                    disabled={disabledFields}
+                                                    {...field}
+                                                    type="text"
+                                                    placeholder="Exemplo: 123456"
+                                                    className="font-normal rounded-r-none"
+                                                    maxLength={6}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value.replace(
+                                                                /\D/g,
+                                                                "",
+                                                            );
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            {redeSelecionada === "DIRETA" &&
+                                                mode === "create" && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="submit"
+                                                        size="sm"
+                                                        className="h-10 whitespace-nowrap rounded-l-none border-l-0"
+                                                        disabled={
+                                                            disabledFields ||
+                                                            field.value
+                                                                .length !== 6
+                                                        }
+                                                        loading={
+                                                            isPendingConsultar
+                                                        }
+                                                        onClick={
+                                                            handleConsultarEol
+                                                        }
+                                                    >
+                                                        Consultar
+                                                    </Button>
+                                                )}
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
-                            name="siglaDre"
+                            name="nomeUnidadeEducacional"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={!isActive}>
-                                        Sigla da DRE (opcional)
+                                        Nome da Unidade Educacional*
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             disabled={!isActive}
                                             {...field}
                                             type="text"
-                                            placeholder="Digite..."
+                                            placeholder="Exemplo: EMEF João da Silva"
                                             className="font-normal"
                                         />
                                     </FormControl>
@@ -393,8 +496,81 @@ export default function FormularioCadastroUnidadeEducacional({
                                 </FormItem>
                             )}
                         />
-                    )}
-                </div>
+
+                        {!isDreSelected && !isPontoFocal && (
+                            <FormField
+                                control={form.control}
+                                name="diretoriaRegional"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel
+                                            disabled={
+                                                !isActive ||
+                                                drePreenchidaAutomaticamente
+                                            }
+                                        >
+                                            Diretoria Regional*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Select
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                disabled={
+                                                    !isActive ||
+                                                    drePreenchidaAutomaticamente
+                                                }
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {dreOptions.map(
+                                                        (dre: {
+                                                            uuid: string;
+                                                            nome: string;
+                                                        }) => (
+                                                            <SelectItem
+                                                                key={dre.uuid}
+                                                                value={dre.uuid}
+                                                            >
+                                                                {dre.nome}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
+                        {isDreSelected && (
+                            <FormField
+                                control={form.control}
+                                name="siglaDre"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel disabled={!isActive}>
+                                            Sigla da DRE (opcional)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={!isActive}
+                                                {...field}
+                                                type="text"
+                                                placeholder="Digite..."
+                                                className="font-normal"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                    </div>
+                )}
 
                 <div className="mt-4">
                     {!isActive && motivoInativacao && (

@@ -37,6 +37,14 @@ vi.mock("@/hooks/useObterUnidadeGestao", () => ({
     },
 }));
 
+const mockConsultarEolUnidade = vi.fn();
+vi.mock("@/hooks/useConsultarEolUnidade", () => ({
+    useConsultarEolUnidade: () => ({
+        mutateAsync: mockConsultarEolUnidade,
+        isPending: false,
+    }),
+}));
+
 vi.mock("@/components/ui/headless-toast", () => ({
     toast: vi.fn(),
 }));
@@ -130,38 +138,47 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         const label = screen.getByText(labelText);
         const container = label.closest(".space-y-2");
         return container?.querySelector(
-            'button[role="combobox"]'
+            'button[role="combobox"]',
         ) as HTMLElement;
     };
 
-    it("deve renderizar o formulário com todos os campos iniciais", () => {
+    it("deve renderizar o formulário com todos os campos iniciais", async () => {
         render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
         expect(
-            screen.getByText("Cadastre as informações da Unidade Educacional.")
-        ).toBeInTheDocument();
-        expect(screen.getByText("Etapa/modalidade*")).toBeInTheDocument();
-        expect(
-            screen.getByText("Nome da Unidade Educacional*")
+            screen.getByText("Cadastre as informações da Unidade Educacional."),
         ).toBeInTheDocument();
         expect(screen.getByText("Tipo*")).toBeInTheDocument();
-        expect(screen.getByText("Código EOL*")).toBeInTheDocument();
+
+        await selecionarRedeETipo("Direta", "EMEF");
+
+        await waitFor(() => {
+            expect(screen.getByText("Etapa/modalidade*")).toBeInTheDocument();
+            expect(
+                screen.getByText("Nome da Unidade Educacional*"),
+            ).toBeInTheDocument();
+            expect(screen.getByText("Código EOL*")).toBeInTheDocument();
+        });
     });
 
-    it("deve renderizar o campo de DRE por padrão", () => {
+    it("deve renderizar o campo de DRE por padrão", async () => {
         render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-        expect(screen.getByText("Diretoria Regional*")).toBeInTheDocument();
+        await selecionarRedeETipo("Direta", "EMEF");
+
+        await waitFor(() => {
+            expect(screen.getByText("Diretoria Regional*")).toBeInTheDocument();
+        });
     });
 
     it("deve renderizar os botões Cancelar e Cadastrar UE", () => {
         render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
         expect(
-            screen.getByRole("button", { name: /Cancelar/i })
+            screen.getByRole("button", { name: /Cancelar/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Cadastrar UE/i })
+            screen.getByRole("button", { name: /Cadastrar UE/i }),
         ).toBeInTheDocument();
     });
 
@@ -173,6 +190,28 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         });
         expect(cadastrarButton).toBeDisabled();
     });
+
+    const selecionarRedeETipo = async (rede: string, tipo: string) => {
+        const tipoSelect = getSelectByLabel("Tipo*");
+        fireEvent.click(tipoSelect);
+        await waitFor(() => {
+            const redeOptions = screen.getAllByText(rede);
+            fireEvent.click(redeOptions.at(-1)!);
+        });
+
+        const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+        fireEvent.click(etapaModalidadeSelect);
+        await waitFor(() => {
+            const tipoOptions = screen.getAllByText(tipo);
+            fireEvent.click(tipoOptions.at(-1)!);
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByPlaceholderText(/Exemplo: EMEF João da Silva/i),
+            ).toBeInTheDocument();
+        });
+    };
 
     const openetapaModalidadeSelect = () => {
         const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
@@ -195,7 +234,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         await waitFor(() => {
             mockTipoOptions.forEach((opt) => {
                 expect(screen.getAllByText(opt.label).length).toBeGreaterThan(
-                    0
+                    0,
                 );
             });
         });
@@ -203,6 +242,13 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
     it("deve permitir selecionar um tipo", async () => {
         render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+        const tipoSelect = getSelectByLabel("Tipo*");
+        fireEvent.click(tipoSelect);
+        await waitFor(() => {
+            const diretaOptions = screen.getAllByText("Direta");
+            fireEvent.click(diretaOptions.at(-1)!);
+        });
 
         const etapaModalidadeSelect = openetapaModalidadeSelect();
         await selectTipoOption("EMEF");
@@ -216,8 +262,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve permitir digitar o nome da UE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
             );
             fireEvent.change(nomeInput, {
                 target: { value: "EMEF Maria Clara" },
@@ -231,15 +279,17 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir erro se o nome da UE tiver menos de 3 caracteres", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
             );
             fireEvent.change(nomeInput, { target: { value: "AB" } });
             fireEvent.blur(nomeInput);
 
             await waitFor(() => {
                 expect(
-                    screen.getByText(/Campo obrigatório/i)
+                    screen.getByText(/Campo obrigatório/i),
                 ).toBeInTheDocument();
             });
         });
@@ -255,7 +305,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 expect(screen.getAllByText("Direta").length).toBeGreaterThan(0);
                 expect(screen.getAllByText("Indireta").length).toBeGreaterThan(
-                    0
+                    0,
                 );
             });
         });
@@ -281,12 +331,65 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve permitir digitar apenas números", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
+            await selecionarRedeETipo("Direta", "EMEF");
+
             const codigoInput =
-                screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: "123456" } });
 
             await waitFor(() => {
-                expect(codigoInput).toHaveValue(123456);
+                expect(codigoInput).toHaveValue("123456");
+            });
+        });
+
+        it("deve limitar o código EOL a 6 dígitos", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = (await screen.findByPlaceholderText(
+                /Exemplo: 123456/i,
+            )) as HTMLInputElement;
+
+            fireEvent.change(codigoInput, { target: { value: "1234567890" } });
+
+            await waitFor(() => {
+                expect(codigoInput.value.length).toBeGreaterThanOrEqual(6);
+            });
+        });
+
+        it("deve filtrar caracteres não numéricos do código EOL", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput =
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "12ab34cd56" } });
+
+            await waitFor(() => {
+                expect(codigoInput).toHaveValue("123456");
+            });
+        });
+
+        it("deve chamar onChange ao digitar no campo Código EOL", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput =
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
+
+            fireEvent.change(codigoInput, { target: { value: "abc456" } });
+
+            await waitFor(() => {
+                expect(codigoInput).toHaveValue("456");
+            });
+
+            fireEvent.change(codigoInput, { target: { value: "789012" } });
+
+            await waitFor(() => {
+                expect(codigoInput).toHaveValue("789012");
             });
         });
     });
@@ -295,18 +398,22 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir as opções de DRE do hook useFetchDREs", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const dreSelect = getSelectByLabel("Diretoria Regional*");
-            fireEvent.click(dreSelect);
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            await waitFor(() => {
+                const dreSelect = getSelectByLabel("Diretoria Regional*");
+                fireEvent.click(dreSelect);
+            });
 
             await waitFor(() => {
                 expect(
-                    screen.getAllByText("DRE - Butantã").length
+                    screen.getAllByText("DRE - Butantã").length,
                 ).toBeGreaterThan(0);
                 expect(
-                    screen.getAllByText("DRE - Centro").length
+                    screen.getAllByText("DRE - Centro").length,
                 ).toBeGreaterThan(0);
                 expect(
-                    screen.getAllByText("DRE - Capela do Socorro").length
+                    screen.getAllByText("DRE - Capela do Socorro").length,
                 ).toBeGreaterThan(0);
             });
         });
@@ -314,8 +421,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve permitir selecionar uma DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const dreSelect = getSelectByLabel("Diretoria Regional*");
-            fireEvent.click(dreSelect);
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            await waitFor(() => {
+                const dreSelect = getSelectByLabel("Diretoria Regional*");
+                fireEvent.click(dreSelect);
+            });
 
             await waitFor(() => {
                 const dreOptions = screen.getAllByText("DRE - Butantã");
@@ -323,7 +434,66 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
 
             await waitFor(() => {
+                const dreSelect = getSelectByLabel("Diretoria Regional*");
                 expect(dreSelect).toHaveTextContent("DRE - Butantã");
+            });
+        });
+    });
+
+    describe("Botão Consultar EOL", () => {
+        it("deve exibir o botão Consultar quando rede for DIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            await waitFor(() => {
+                expect(
+                    screen.getByRole("button", { name: /Consultar/i }),
+                ).toBeInTheDocument();
+            });
+        });
+
+        it("não deve exibir o botão Consultar quando rede for INDIRETA", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Indireta", "EMEI");
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByRole("button", { name: /Consultar/i }),
+                ).not.toBeInTheDocument();
+            });
+        });
+
+        it("deve desabilitar o botão Consultar quando código EOL tiver menos de 6 dígitos", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "12345" } });
+
+            await waitFor(() => {
+                const consultarButton = screen.getByRole("button", {
+                    name: /Consultar/i,
+                });
+                expect(consultarButton).toBeDisabled();
+            });
+        });
+
+        it("deve habilitar o botão Consultar quando código EOL tiver 6 dígitos", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            await waitFor(() => {
+                const consultarButton = screen.getByRole("button", {
+                    name: /Consultar/i,
+                });
+                expect(consultarButton).not.toBeDisabled();
             });
         });
     });
@@ -345,7 +515,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.queryByLabelText(/Diretoria Regional\*/i)
+                    screen.queryByLabelText(/Diretoria Regional\*/i),
                 ).not.toBeInTheDocument();
             });
         });
@@ -353,11 +523,11 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir campo de Diretoria Regional quando tipo não for DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            await selectTipoAndWait("EMEF");
+            await selecionarRedeETipo("Direta", "EMEF");
 
             await waitFor(() => {
                 expect(
-                    getSelectByLabel("Diretoria Regional*")
+                    getSelectByLabel("Diretoria Regional*"),
                 ).toBeInTheDocument();
             });
         });
@@ -365,10 +535,11 @@ describe("FormularioCadastroUnidadeEducacional", () => {
         it("deve exibir campo Sigla for selecionar tipo DRE", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            await selectTipoAndWait("DRE");
+            await selecionarRedeETipo("Direta", "DRE");
+
             await waitFor(() => {
                 expect(
-                    screen.getByText("Sigla da DRE (opcional)")
+                    screen.getByText("Sigla da DRE (opcional)"),
                 ).toBeInTheDocument();
             });
         });
@@ -377,9 +548,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     describe("Usuário Ponto Focal", () => {
         beforeEach(async () => {
             const useUserStoreModule = await import("@/stores/useUserStore");
-            const useUserPermissionsModule = await import(
-                "@/hooks/useUserPermissions"
-            );
+            const useUserPermissionsModule =
+                await import("@/hooks/useUserPermissions");
             const mockUseUserStore = vi.mocked(useUserStoreModule.useUserStore);
 
             mockUseUserStore.mockImplementation((selector: unknown) => {
@@ -390,7 +560,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
 
             vi.mocked(
-                useUserPermissionsModule.useUserPermissions
+                useUserPermissionsModule.useUserPermissions,
             ).mockReturnValue({
                 isPontoFocal: true,
                 isGipe: false,
@@ -403,17 +573,87 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
             await waitFor(() => {
-                const dreSelect = getSelectByLabel("Diretoria Regional*");
-                expect(dreSelect).toHaveTextContent("DRE - Butantã");
+                expect(
+                    screen.queryByText("Diretoria Regional*"),
+                ).not.toBeInTheDocument();
             });
         });
 
-        it("deve desabilitar o campo DRE para usuário ponto focal", async () => {
+        it("não deve exibir o campo Diretoria Regional para usuário ponto focal", async () => {
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
             await waitFor(() => {
-                const dreSelect = getSelectByLabel("Diretoria Regional*");
-                expect(dreSelect).toBeDisabled();
+                const diretaOptions = screen.getAllByText("Direta");
+                fireEvent.click(diretaOptions.at(-1)!);
+            });
+
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            await waitFor(() => {
+                const emefOptions = screen.getAllByText("EMEF");
+                fireEvent.click(emefOptions.at(-1)!);
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByText("Diretoria Regional*"),
+                ).not.toBeInTheDocument();
+            });
+        });
+
+        it("não deve exibir DRE como opção de Etapa/modalidade para ponto focal", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                const diretaOptions = screen.getAllByText("Direta");
+                fireEvent.click(diretaOptions.at(-1)!);
+            });
+
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+
+            await waitFor(() => {
+                expect(screen.getAllByText("EMEF").length).toBeGreaterThan(0);
+                expect(screen.getAllByText("EMEI").length).toBeGreaterThan(0);
+                const dreOptions = screen.queryAllByText(/^DRE$/);
+                expect(dreOptions.length).toBe(0);
+            });
+        });
+
+        it("deve filtrar caracteres não numéricos no campo Código EOL quando ponto focal", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                const diretaOptions = screen.getAllByText("Direta");
+                fireEvent.click(diretaOptions.at(-1)!);
+            });
+
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            await waitFor(() => {
+                const emefOptions = screen.getAllByText("EMEF");
+                fireEvent.click(emefOptions.at(-1)!);
+            });
+
+            const codigoInput =
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
+
+            fireEvent.change(codigoInput, { target: { value: "abc123def" } });
+
+            await waitFor(() => {
+                expect(codigoInput).toHaveValue("123");
+            });
+
+            fireEvent.change(codigoInput, { target: { value: "45@67#89" } });
+
+            await waitFor(() => {
+                expect(codigoInput).toHaveValue("456789");
             });
         });
     });
@@ -421,9 +661,8 @@ describe("FormularioCadastroUnidadeEducacional", () => {
     describe("Validação do formulário", () => {
         beforeEach(async () => {
             const useUserStoreModule = await import("@/stores/useUserStore");
-            const useUserPermissionsModule = await import(
-                "@/hooks/useUserPermissions"
-            );
+            const useUserPermissionsModule =
+                await import("@/hooks/useUserPermissions");
             const mockUseUserStore = vi.mocked(useUserStoreModule.useUserStore);
 
             mockUseUserStore.mockImplementation((selector: unknown) => {
@@ -434,7 +673,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
 
             vi.mocked(
-                useUserPermissionsModule.useUserPermissions
+                useUserPermissionsModule.useUserPermissions,
             ).mockReturnValue({
                 isPontoFocal: false,
                 isGipe: true,
@@ -456,27 +695,27 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             codigo: string;
             dre?: string;
         }) => {
-            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
-            fireEvent.click(etapaModalidadeSelect);
-            await waitFor(() => {
-                const options = screen.getAllByText(tipo);
-                fireEvent.click(options.at(-1)!);
-            });
-
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
-            );
-            fireEvent.change(nomeInput, { target: { value: nome } });
-
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
             await waitFor(() => {
-                const options = screen.getAllByText(rede);
-                fireEvent.click(options.at(-1)!);
+                const redeOptions = screen.getAllByText(rede);
+                fireEvent.click(redeOptions.at(-1)!);
             });
 
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            await waitFor(() => {
+                const tipoOptions = screen.getAllByText(tipo);
+                fireEvent.click(tipoOptions.at(-1)!);
+            });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, { target: { value: nome } });
+
             const codigoInput =
-                screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: codigo } });
 
             if (dre) {
@@ -537,7 +776,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(cancelarButton);
 
             expect(mockPush).toHaveBeenCalledWith(
-                "/dashboard/gestao-unidades-educacionais"
+                "/dashboard/gestao-unidades-educacionais",
             );
         });
 
@@ -546,18 +785,6 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             mockCadastrarUnidade.mockResolvedValueOnce({ success: true });
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
-            fireEvent.click(etapaModalidadeSelect);
-            await waitFor(() => {
-                const options = screen.getAllByText("EMEF");
-                fireEvent.click(options.at(-1)!);
-            });
-
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
-            );
-            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
-
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
             await waitFor(() => {
@@ -565,8 +792,20 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 fireEvent.click(options.at(-1)!);
             });
 
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText("EMEF");
+                fireEvent.click(options.at(-1)!);
+            });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
+
             const codigoInput =
-                screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: "123456" } });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -592,10 +831,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     expect.objectContaining({
                         title: expect.stringMatching(/sucesso|certo/i),
                         variant: "success",
-                    })
+                    }),
                 );
                 expect(mockPush).toHaveBeenCalledWith(
-                    "/dashboard/gestao-unidades-educacionais"
+                    "/dashboard/gestao-unidades-educacionais",
                 );
             });
         });
@@ -608,18 +847,6 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             });
             render(<FormularioCadastroUnidadeEducacional />, { wrapper });
 
-            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
-            fireEvent.click(etapaModalidadeSelect);
-            await waitFor(() => {
-                const options = screen.getAllByText("EMEF");
-                fireEvent.click(options.at(-1)!);
-            });
-
-            const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
-            );
-            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
-
             const tipoSelect = getSelectByLabel("Tipo*");
             fireEvent.click(tipoSelect);
             await waitFor(() => {
@@ -627,8 +854,20 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 fireEvent.click(options.at(-1)!);
             });
 
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+            await waitFor(() => {
+                const options = screen.getAllByText("EMEF");
+                fireEvent.click(options.at(-1)!);
+            });
+
+            const nomeInput = await screen.findByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+            fireEvent.change(nomeInput, { target: { value: "EMEF Teste" } });
+
             const codigoInput =
-                screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                await screen.findByPlaceholderText(/Exemplo: 123456/i);
             fireEvent.change(codigoInput, { target: { value: "123456" } });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -654,7 +893,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     expect.objectContaining({
                         title: expect.stringMatching(/erro|ação/i),
                         variant: "error",
-                    })
+                    }),
                 );
             });
         });
@@ -686,12 +925,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
@@ -703,18 +942,18 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
 
                 const codigoInput =
-                    screen.getByPlaceholderText(/Exemplo: 1234567/i);
-                expect(codigoInput).toHaveValue(123456);
+                    screen.getByPlaceholderText(/Exemplo: 123456/i);
+                expect(codigoInput).toHaveValue("123456");
 
                 const etapaModalidadeSelect =
                     getSelectByLabel("Etapa/modalidade*");
@@ -731,7 +970,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
@@ -739,7 +978,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 expect(tipoSelect).toBeDisabled();
 
                 const codigoInput =
-                    screen.getByPlaceholderText(/Exemplo: 1234567/i);
+                    screen.getByPlaceholderText(/Exemplo: 123456/i);
                 expect(codigoInput).toBeDisabled();
             });
         });
@@ -750,15 +989,15 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 expect(
-                    screen.getByRole("button", { name: /Salvar alterações/i })
+                    screen.getByRole("button", { name: /Salvar alterações/i }),
                 ).toBeInTheDocument();
                 expect(
-                    screen.queryByRole("button", { name: /Cadastrar UE/i })
+                    screen.queryByRole("button", { name: /Cadastrar UE/i }),
                 ).not.toBeInTheDocument();
             });
         });
@@ -772,18 +1011,18 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
 
             const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
+                /Exemplo: EMEF João da Silva/i,
             );
             fireEvent.change(nomeInput, {
                 target: { value: "EMEF João da Silva Atualizado" },
@@ -814,7 +1053,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                         title: "Tudo certo por aqui!",
                         description: "As alterações foram salvas com sucesso!",
                         variant: "success",
-                    })
+                    }),
                 );
             });
         });
@@ -831,12 +1070,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
@@ -854,7 +1093,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                         title: "Não conseguimos concluir a ação!",
                         description: "Erro ao atualizar unidade",
                         variant: "error",
-                    })
+                    }),
                 );
             });
         });
@@ -867,18 +1106,18 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
 
             const nomeInput = screen.getByPlaceholderText(
-                /Exemplo: EMEF João da Silva/i
+                /Exemplo: EMEF João da Silva/i,
             );
             fireEvent.change(nomeInput, {
                 target: { value: "EMEF Novo Nome" },
@@ -897,7 +1136,7 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             await waitFor(() => {
                 expect(mockAtualizarUnidade).toHaveBeenCalled();
                 expect(mockPush).toHaveBeenCalledWith(
-                    "/dashboard/gestao-unidades-educacionais"
+                    "/dashboard/gestao-unidades-educacionais",
                 );
             });
         });
@@ -910,12 +1149,12 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 const nomeInput = screen.getByPlaceholderText(
-                    /Exemplo: EMEF João da Silva/i
+                    /Exemplo: EMEF João da Silva/i,
                 );
                 expect(nomeInput).toHaveValue("EMEF João da Silva");
             });
@@ -957,18 +1196,18 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Motivo da inativação UE:")
+                    screen.getByText("Motivo da inativação UE:"),
                 ).toBeInTheDocument();
                 expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
                 expect(
                     screen.getByText(
-                        /Inativado por Maria Teste em 01\/01\/2024/i
-                    )
+                        /Inativado por Maria Teste em 01\/01\/2024/i,
+                    ),
                 ).toBeInTheDocument();
             });
         });
@@ -996,14 +1235,311 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                     mode="edit"
                     unidadeUuid="unidade-123"
                 />,
-                { wrapper }
+                { wrapper },
             );
 
             await waitFor(() => {
                 expect(screen.getByText("Motivo de teste")).toBeInTheDocument();
                 expect(
-                    screen.getByText("Inativado por em")
+                    screen.getByText("Inativado por em"),
                 ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("Consultar Código EOL", () => {
+        beforeEach(() => {
+            mockObterUnidade.mockReturnValue({
+                data: undefined,
+                isLoading: false,
+            });
+        });
+
+        it("deve consultar código EOL e preencher campo nome com sucesso", async () => {
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEI",
+                    nome_unidade: "MARCIANO VASQUES PEREIRA, PROF.",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+
+            await waitFor(() => {
+                expect(nomeInput).toHaveValue(
+                    "MARCIANO VASQUES PEREIRA, PROF.",
+                );
+            });
+        });
+
+        it("deve exibir toast de erro quando consulta EOL falhar", async () => {
+            const { toast } = await import("@/components/ui/headless-toast");
+
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: false,
+                error: "Código EOL não encontrado",
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "999999" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(toast).toHaveBeenCalledWith({
+                    title: "Código EOL inválido!",
+                    description: "Código EOL não encontrado",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("não deve fazer nada ao clicar em Consultar sem código EOL", async () => {
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+
+            await waitFor(() => {
+                expect(consultarButton).toBeDisabled();
+            });
+
+            expect(mockConsultarEolUnidade).not.toHaveBeenCalled();
+        });
+
+        it("deve consultar código EOL para usuário ponto focal", async () => {
+            const useUserStoreModule = await import("@/stores/useUserStore");
+            const useUserPermissionsModule =
+                await import("@/hooks/useUserPermissions");
+            const mockUseUserStore = vi.mocked(useUserStoreModule.useUserStore);
+
+            mockUseUserStore.mockImplementation((selector: unknown) => {
+                if (typeof selector === "function") {
+                    return selector({ user: mockUser });
+                }
+                return { user: mockUser };
+            });
+
+            vi.mocked(
+                useUserPermissionsModule.useUserPermissions,
+            ).mockReturnValue({
+                isPontoFocal: true,
+                isGipe: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            });
+
+            mockConsultarEolUnidade.mockResolvedValue({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEF",
+                    nome_unidade: "JOÃO DA SILVA, DR.",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "654321" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("654321");
+            });
+
+            const nomeInput = screen.getByPlaceholderText(
+                /Exemplo: EMEF João da Silva/i,
+            );
+
+            await waitFor(() => {
+                expect(nomeInput).toHaveValue("JOÃO DA SILVA, DR.");
+            });
+        });
+
+        it("deve preencher automaticamente a DRE quando API retorna codigo_dre", async () => {
+            const useUserStoreModule = await import("@/stores/useUserStore");
+            const useUserPermissionsModule =
+                await import("@/hooks/useUserPermissions");
+            const mockUseUserStore = vi.mocked(useUserStoreModule.useUserStore);
+
+            mockUseUserStore.mockImplementation((selector: unknown) => {
+                if (typeof selector === "function") {
+                    return selector({ user: mockUser });
+                }
+                return { user: mockUser };
+            });
+
+            vi.mocked(
+                useUserPermissionsModule.useUserPermissions,
+            ).mockReturnValue({
+                isPontoFocal: false,
+                isGipe: true,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: true,
+            });
+            mockConsultarEolUnidade.mockResolvedValueOnce({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEF",
+                    nome_unidade: "ABRAO HUCK, DR.",
+                    codigo_dre: "000002",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "019480" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("019480");
+            });
+
+            await waitFor(
+                () => {
+                    const comboboxes = screen.getAllByRole("combobox");
+                    const dreSelect = comboboxes[2];
+                    expect(dreSelect).toHaveTextContent("DRE - Centro");
+                },
+                { timeout: 3000 },
+            );
+        });
+
+        it("não deve preencher DRE quando tipo selecionado é DRE", async () => {
+            mockConsultarEolUnidade.mockResolvedValueOnce({
+                success: true,
+                data: {
+                    etapa_modalidade: "DRE",
+                    nome_unidade: "DRE TESTE",
+                    codigo_dre: "000001",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            const tipoSelect = getSelectByLabel("Tipo*");
+            fireEvent.click(tipoSelect);
+            await waitFor(() => {
+                expect(screen.getAllByText("Direta").length).toBeGreaterThan(0);
+            });
+            const diretaOptions = screen.getAllByText("Direta");
+            fireEvent.click(diretaOptions.at(-1)!);
+
+            await waitFor(() => {
+                expect(tipoSelect).toHaveTextContent("Direta");
+            });
+
+            const etapaModalidadeSelect = getSelectByLabel("Etapa/modalidade*");
+            fireEvent.click(etapaModalidadeSelect);
+
+            await waitFor(() => {
+                const dreOptions = screen.queryAllByText("DRE");
+                expect(dreOptions.length).toBeGreaterThan(0);
+            });
+
+            const dreOptions = screen.getAllByText("DRE");
+            fireEvent.click(dreOptions.at(-1)!);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByPlaceholderText(/Exemplo: EMEF João da Silva/i),
+                ).toBeInTheDocument();
+            });
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            await waitFor(() => {
+                const comboboxes = screen.getAllByRole("combobox");
+                expect(comboboxes.length).toBe(2);
+            });
+        });
+
+        it("deve desabilitar campo DRE após preenchimento automático", async () => {
+            mockConsultarEolUnidade.mockResolvedValueOnce({
+                success: true,
+                data: {
+                    etapa_modalidade: "EMEF",
+                    nome_unidade: "TESTE UNIDADE",
+                    codigo_dre: "000002",
+                },
+            });
+
+            render(<FormularioCadastroUnidadeEducacional />, { wrapper });
+
+            await selecionarRedeETipo("Direta", "EMEF");
+
+            const codigoInput = screen.getByPlaceholderText(/Exemplo: 123456/i);
+            fireEvent.change(codigoInput, { target: { value: "123456" } });
+
+            const consultarButton = screen.getByRole("button", {
+                name: /Consultar/i,
+            });
+            fireEvent.click(consultarButton);
+
+            await waitFor(() => {
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+            });
+
+            await waitFor(() => {
+                const comboboxes = screen.getAllByRole("combobox");
+                const dreSelect = comboboxes[2];
+                expect(dreSelect).toHaveTextContent("DRE - Centro");
+                expect(dreSelect).toBeDisabled();
             });
         });
     });
