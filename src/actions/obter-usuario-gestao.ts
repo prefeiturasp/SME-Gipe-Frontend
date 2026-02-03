@@ -18,6 +18,12 @@ export type ObterUsuarioGestaoResponse = {
     is_active: boolean;
     codigo_eol_unidade: string;
     codigo_eol_dre_da_unidade: string;
+    data_inativacao: string | null;
+    data_inativacao_formatada: string | null;
+    responsavel_inativacao: string | null;
+    responsavel_inativacao_nome: string | null;
+    motivo_inativacao: string | null;
+    inativado_via_unidade: boolean | null;
 };
 
 export type ObterUsuarioGestaoResult =

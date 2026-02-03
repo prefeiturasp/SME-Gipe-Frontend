@@ -132,13 +132,11 @@ describe("TabsContainer", () => {
         const user = userEvent.setup();
         renderTabs();
 
-        await user.click(screen.getByRole("tab", { name: "Usuários ativos" }));
+        await user.click(screen.getByRole("tab", { name: "Perfis ativos" }));
         expect(listaUsuariosSpy).toHaveBeenLastCalledWith("ativos");
         expect(screen.getByTestId("lista-ativos")).toBeInTheDocument();
 
-        await user.click(
-            screen.getByRole("tab", { name: "Usuários inativos" })
-        );
+        await user.click(screen.getByRole("tab", { name: "Perfis inativos" }));
         expect(listaUsuariosSpy).toHaveBeenLastCalledWith("inativos");
         expect(screen.getByTestId("lista-inativos")).toBeInTheDocument();
     });
@@ -150,9 +148,9 @@ describe("TabsContainer", () => {
         const pendenciasTab = screen.getByRole("tab", {
             name: /Pendências de aprovação/i,
         });
-        const ativosTab = screen.getByRole("tab", { name: "Usuários ativos" });
+        const ativosTab = screen.getByRole("tab", { name: "Perfis ativos" });
         const inativosTab = screen.getByRole("tab", {
-            name: "Usuários inativos",
+            name: "Perfis inativos",
         });
 
         expect(pendenciasTab).toHaveAttribute("aria-selected", "true");
@@ -193,7 +191,7 @@ describe("TabsContainer", () => {
 
         renderTabs();
 
-        const ativosTab = screen.getByRole("tab", { name: "Usuários ativos" });
+        const ativosTab = screen.getByRole("tab", { name: "Perfis ativos" });
         expect(ativosTab).toHaveAttribute("aria-selected", "true");
     });
 
@@ -206,7 +204,7 @@ describe("TabsContainer", () => {
         renderTabs();
 
         const inativosTab = screen.getByRole("tab", {
-            name: "Usuários inativos",
+            name: "Perfis inativos",
         });
         expect(inativosTab).toHaveAttribute("aria-selected", "true");
     });

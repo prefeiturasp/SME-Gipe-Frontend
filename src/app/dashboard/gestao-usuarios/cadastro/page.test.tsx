@@ -39,7 +39,7 @@ vi.mock("@/components/dashboard/GestaoUsuarios/FormularioCadastro", () => ({
     ),
 }));
 
-describe("Página de cadastro de pessoa usuária", () => {
+describe("Página de cadastro de perfil de usuário", () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
@@ -55,9 +55,7 @@ describe("Página de cadastro de pessoa usuária", () => {
             </QueryClientProvider>
         );
 
-        expect(
-            screen.getByText("Cadastrar pessoa usuária")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Cadastrar perfil")).toBeInTheDocument();
     });
 
     it("renderiza o formulário de cadastro", () => {

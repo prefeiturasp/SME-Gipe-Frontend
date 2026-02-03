@@ -10,7 +10,7 @@ export type UnidadeCadastroPayload = {
     tipo_unidade: string;
     rede: string;
     sigla?: string;
-    dre?: string;
+    dre?: string | null;
     ativa: boolean;
 };
 
@@ -37,8 +37,6 @@ export const cadastrarUnidadeAction = async (
 
         if (error.response?.status === 401) {
             message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 400) {
-            message = "Dados inválidos para cadastro";
         } else if (error.response?.status === 500) {
             message = "Erro interno no servidor";
         } else if (error.response?.data?.detail) {
