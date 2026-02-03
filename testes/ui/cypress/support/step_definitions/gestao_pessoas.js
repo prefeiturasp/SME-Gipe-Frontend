@@ -144,11 +144,13 @@ When('acesso o menu de Gestão', () => {
 })
 
 When('seleciono a opção {string}', (opcao) => {
-  cy.wait(3000)
-  cy.xpath(locators.opcao_gestao_pessoa_usuaria(), { timeout: 15000 })
-    .should('be.visible')
-    .click({ force: true })
-  cy.wait(3000)
+  if (opcao === 'Gestão de pessoa usuária') {
+    cy.wait(3000)
+    cy.xpath(locators.opcao_gestao_pessoa_usuaria(), { timeout: 15000 })
+      .should('be.visible')
+      .click({ force: true })
+    cy.wait(3000)
+  }
 })
 
 Then('visualizo a página de Gestão de usuários', () => {
