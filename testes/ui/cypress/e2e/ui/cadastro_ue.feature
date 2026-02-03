@@ -10,6 +10,17 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Dado que eu acesso o sistema
     E eu efetuo login com RF
 
+  @login @validacao @smoke
+  Cenário: Validar autenticação e acesso ao dashboard
+    Então devo ser redirecionado para o dashboard
+    E devo visualizar a página principal do sistema
+    E devo ver o título "Intercorrências Institucionais"
+    E o sistema deve exibir as funcionalidades disponíveis para UE
+
+  @consulta @listagem
+  Cenário: Consultar listagem de ocorrências cadastradas no sistema
+    Quando o usuário está na página principal do sistema
+    Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
   @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
