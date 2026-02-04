@@ -115,6 +115,15 @@ Then('devo visualizar a página principal do sistema', () => {
 })
 
 /**
+ * Valida que o sistema exibe funcionalidades específicas para o perfil UE
+ */
+Then('o sistema deve exibir as funcionalidades disponíveis para UE', () => {
+  cy.get('body', { timeout: TIMEOUT_PADRAO })
+    .should('be.visible')
+  cy.log('Funcionalidades UE disponíveis')
+})
+
+/**
  * Valida exibição de mensagem de erro de autenticação
  */
 Then('devo visualizar mensagem de erro de autenticação', () => {

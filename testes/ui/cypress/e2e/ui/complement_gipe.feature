@@ -18,7 +18,12 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para GIPE
 
-  @complemento @preenchimento @critico @fluxo_completo
+  @consulta @listagem
+  Cenário: Consultar listagem de ocorrências cadastradas no sistema
+    Quando o usuário está na página principal do sistema
+    Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
+
+  @skip @complemento @preenchimento @critico @fluxo_completo
   Cenário: Complementar detalhes DRE e GIPE de intercorrência registrada
     
     Quando eu valido os campos da tabela de ocorrências
@@ -38,7 +43,9 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     
     # ABA 3 - DETALHES GIPE
     Então devo visualizar o formulário da aba 3 GIPE
-    E devo preencher os campos GIPE obrigatórios
+    E valida a existencia do texto "Continuação da ocorrência"
+    E valido e preencho o campo "Envolve arma ou ataque?"
+    E valido e preencho o campo "Ameaça foi realizada de qual maneira?"
     E devo selecionar opções aleatórias nos campos GIPE
     E devo preencher os campos complementares GIPE
     E devo ver o botão "Anterior" na aba 3

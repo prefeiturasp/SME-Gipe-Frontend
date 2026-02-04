@@ -20,6 +20,7 @@ const apiGetMock = api.get as Mock;
 describe("consultarEolUnidadeAction", () => {
     const mockAuthToken = "test-token-123";
     const codigoEol = "123456";
+    const etapaModalidade = "EMEI";
     const mockResponse: ConsultarEolUnidadeResponse = {
         etapa_modalidade: "EMEI",
         nome_unidade: "MARCIANO VASQUES PEREIRA, PROF.",
@@ -36,13 +37,16 @@ describe("consultarEolUnidadeAction", () => {
     it("deve consultar código EOL com sucesso", async () => {
         apiGetMock.mockResolvedValue({ data: mockResponse });
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({ success: true, data: mockResponse });
 
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
         expect(apiGetMock).toHaveBeenCalledWith(
-            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}&etapa_modalidade=${etapaModalidade}`,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
@@ -56,7 +60,10 @@ describe("consultarEolUnidadeAction", () => {
             get: vi.fn().mockReturnValue(undefined),
         });
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -78,7 +85,10 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockRejectedValue(error);
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -98,7 +108,10 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockRejectedValue(error);
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -120,7 +133,10 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockRejectedValue(error);
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -135,7 +151,10 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockRejectedValue(error);
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -148,7 +167,10 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockRejectedValue(error);
 
-        const result = await consultarEolUnidadeAction(codigoEol);
+        const result = await consultarEolUnidadeAction(
+            codigoEol,
+            etapaModalidade,
+        );
 
         expect(result).toEqual({
             success: false,
@@ -158,6 +180,7 @@ describe("consultarEolUnidadeAction", () => {
 
     it("deve consultar diferentes códigos EOL", async () => {
         const codigoDiferente = "654321";
+        const etapaDiferente = "EMEF";
         const mockResponseDiferente: ConsultarEolUnidadeResponse = {
             etapa_modalidade: "EMEF",
             nome_unidade: "JOÃO DA SILVA, DR.",
@@ -165,14 +188,17 @@ describe("consultarEolUnidadeAction", () => {
 
         apiGetMock.mockResolvedValue({ data: mockResponseDiferente });
 
-        const result = await consultarEolUnidadeAction(codigoDiferente);
+        const result = await consultarEolUnidadeAction(
+            codigoDiferente,
+            etapaDiferente,
+        );
 
         expect(result).toEqual({
             success: true,
             data: mockResponseDiferente,
         });
         expect(apiGetMock).toHaveBeenCalledWith(
-            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoDiferente}`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoDiferente}&etapa_modalidade=${etapaDiferente}`,
             expect.any(Object),
         );
     });

@@ -8,10 +8,12 @@ const TestWrapper = ({
     showDRE = true,
     showUE = true,
     isFormDisabled = false,
+    mode = "create",
 }: {
     showDRE?: boolean;
     showUE?: boolean;
     isFormDisabled?: boolean;
+    mode?: "create" | "edit";
 }) => {
     const methods = useForm<FormDataCadastroUsuario>({
         defaultValues: {
@@ -49,6 +51,7 @@ const TestWrapper = ({
                 showUE={showUE}
                 isFormDisabled={isFormDisabled}
                 cargoOptions={cargoOptions}
+                mode={mode}
             />
         </FormProvider>
     );
@@ -111,5 +114,13 @@ describe("CamposRedeIndireta", () => {
         fields.forEach((field) => {
             expect(field).toHaveClass("text-[#B0B0B0]");
         });
+    });
+
+    it("desabilita campos DRE e UE no modo edit", () => {
+        render(<TestWrapper mode="edit" />);
+        const dreSelect = screen.getByTestId("select-dre");
+        const ueSelect = screen.getByTestId("select-ue");
+        expect(dreSelect).toBeDisabled();
+        expect(ueSelect).toBeDisabled();
     });
 });
