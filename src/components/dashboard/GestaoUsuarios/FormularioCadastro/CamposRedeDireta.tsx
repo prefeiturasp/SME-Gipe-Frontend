@@ -48,8 +48,8 @@ export function CamposRedeDireta({
     const fullNameDisabled = isFormDisabled;
     const cpfDisabled = isFormDisabled || mode === "edit";
     const emailDisabled = isFormDisabled;
-    const dreDisabled = isFormDisabled || isDreDisabled;
-    const ueDisabled = isFormDisabled;
+    const dreDisabled = isFormDisabled || isDreDisabled || mode === "edit";
+    const ueDisabled = isFormDisabled || mode === "edit";
 
     const labelClass = (disabled: boolean) =>
         `required text-[14px] font-[700] ${disabled ? "text-[#B0B0B0]" : "text-[#42474a]"}`;

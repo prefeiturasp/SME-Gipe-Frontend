@@ -1,9 +1,9 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useConsultarEolUnidade } from "./useConsultarEolUnidade";
-import * as consultarEolUnidadeModule from "@/actions/consultar-eol-unidade";
 import type { ConsultarEolUnidadeResponse } from "@/actions/consultar-eol-unidade";
+import * as consultarEolUnidadeModule from "@/actions/consultar-eol-unidade";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useConsultarEolUnidade } from "./useConsultarEolUnidade";
 
 vi.mock("@/actions/consultar-eol-unidade", () => ({
     consultarEolUnidadeAction: vi.fn(),
@@ -49,7 +49,8 @@ describe("useConsultarEolUnidade", () => {
         });
 
         const codigoEol = "123456";
-        result.current.mutate(codigoEol);
+        const etapaModalidade = "EMEI";
+        result.current.mutate({ codigoEol, etapaModalidade });
 
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
@@ -61,7 +62,7 @@ describe("useConsultarEolUnidade", () => {
         });
         expect(
             consultarEolUnidadeModule.consultarEolUnidadeAction,
-        ).toHaveBeenCalledWith(codigoEol);
+        ).toHaveBeenCalledWith(codigoEol, etapaModalidade);
     });
 
     it("deve retornar erro ao consultar código EOL", async () => {
@@ -80,7 +81,8 @@ describe("useConsultarEolUnidade", () => {
         });
 
         const codigoEol = "999999";
-        result.current.mutate(codigoEol);
+        const etapaModalidade = "EMEF";
+        result.current.mutate({ codigoEol, etapaModalidade });
 
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
@@ -111,7 +113,11 @@ describe("useConsultarEolUnidade", () => {
         });
 
         const codigoEol = "654321";
-        const response = await result.current.mutateAsync(codigoEol);
+        const etapaModalidade = "EMEF";
+        const response = await result.current.mutateAsync({
+            codigoEol,
+            etapaModalidade,
+        });
 
         expect(response).toEqual({
             success: true,
@@ -119,7 +125,7 @@ describe("useConsultarEolUnidade", () => {
         });
         expect(
             consultarEolUnidadeModule.consultarEolUnidadeAction,
-        ).toHaveBeenCalledWith(codigoEol);
+        ).toHaveBeenCalledWith(codigoEol, etapaModalidade);
     });
 
     it("deve indicar isPending durante a consulta", async () => {
@@ -149,7 +155,7 @@ describe("useConsultarEolUnidade", () => {
 
         expect(result.current.isPending).toBe(false);
 
-        result.current.mutate("123456");
+        result.current.mutate({ codigoEol: "123456", etapaModalidade: "EMEI" });
 
         await waitFor(() => {
             expect(result.current.isPending).toBe(true);
@@ -185,7 +191,7 @@ describe("useConsultarEolUnidade", () => {
             wrapper: createWrapper(),
         });
 
-        result.current.mutate("111111");
+        result.current.mutate({ codigoEol: "111111", etapaModalidade: "EMEI" });
 
         await waitFor(() => {
             expect(result.current.data?.success).toBe(true);
@@ -201,7 +207,7 @@ describe("useConsultarEolUnidade", () => {
             data: mockResponse2,
         });
 
-        result.current.mutate("222222");
+        result.current.mutate({ codigoEol: "222222", etapaModalidade: "EMEF" });
 
         await waitFor(() => {
             expect(result.current.data).toEqual({
