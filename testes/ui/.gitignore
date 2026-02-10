@@ -21,9 +21,7 @@ cypress-cloud/
 
 
 # Testes complement (não subir)
-cypress/support/step_definitions/gestao_unidade.js
-cypress/support/locators/gestao_unidade_locators.js
-cypress/e2e/ui/gestao_unidade.feature
+
 
 # Novas features de teste avançado (experimental)
 cypress/e2e/ui/gipe_extra.feature
