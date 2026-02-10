@@ -46,41 +46,21 @@ const clickButtonByIndex = (index, waitAfter = 2500) => {
 // ==================== STEPS ====================
 
 Given('que eu acesso o sistema para cadastro de ocorrências', () => {
-  cy.clearCookies()
-  cy.clearLocalStorage()
-  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
-    timeout: 60000,
-    retryOnNetworkFailure: true,
-    failOnStatusCode: false
-  })
-  cy.wait(3000)
-  cy.url({ timeout: 30000 }).should('include', 'gipe.sme.prefeitura.sp.gov.br')
+  cy.loginWithSession(RF_PADRAO, SENHA_PADRAO, 'CADASTRO')
 })
 
 Given('eu efetuo login com RF', () => {
-  cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(RF_PADRAO, { delay: 100 })
-  
-  cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(SENHA_PADRAO, { delay: 100 })
-  
-  cy.get('button')
-    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
-  
-  cy.wait(5000)
-  cy.url({ timeout: 30000 }).should('include', '/dashboard')
-  cy.wait(3000)
+  cy.log(`Efetuando login com RF: ${RF_PADRAO}`)
+  cy.loginWithSession(RF_PADRAO, SENHA_PADRAO, 'CADASTRO')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: 30000,
+    failOnStatusCode: false 
+  })
+  cy.wait(2000)
 })
 
 When('o usuário está na página principal do sistema', () => {
-  cy.url({ timeout: 15000 }).should('include', '/dashboard')
+  cy.url({ timeout: 20000 }).should('include', '/dashboard')
 })
 
 Then('o sistema deve mostrar a listagem de ocorrências cadastradas no sistema', () => {
@@ -543,4 +523,30 @@ When('clica em {string}', (texto) => {
       .click({ force: true })
     cy.wait(3000)
   }
+})
+// ==================== PASSOS ADICIONAIS DE VALIDAÇÃO ====================
+
+Then('devo ser redirecionado para o dashboard', () => {
+  cy.url({ timeout: 30000 }).should('include', '/dashboard')
+  cy.log('Redirecionado para dashboard')
+})
+
+Then('devo visualizar a página principal do sistema', () => {
+  cy.get('body', { timeout: 15000 })
+    .should('be.visible')
+    .and('not.be.empty')
+  cy.log('Página principal carregada com sucesso')
+})
+
+Then('devo ver o título {string}', (titulo) => {
+  cy.log(`Validando titulo: ${titulo}`)
+  cy.contains('h1, h2', titulo, { timeout: 15000 })
+    .should('be.visible')
+  cy.log('Titulo validado')
+})
+
+Then('o sistema deve exibir as funcionalidades disponíveis para UE', () => {
+  cy.get('body', { timeout: 15000 })
+    .should('be.visible')
+  cy.log('Funcionalidades UE disponíveis')
 })

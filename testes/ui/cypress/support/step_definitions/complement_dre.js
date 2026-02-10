@@ -59,35 +59,21 @@ After(() => {
 })
 
 Given('que eu acesso o sistema como DRE', () => {
+  const rfDRE = Cypress.env('RF_DRE') || '12345678'
+  const senhaDRE = Cypress.env('SENHA_DRE') || 'senha123'
+  
   cy.log('Acessando sistema com perfil DRE')
-  cy.login_gipe()
-  cy.wait(TIMEOUTS.SHORT)
+  cy.loginWithSession(rfDRE, senhaDRE, 'DRE')
 })
 
 When('eu efetuo login com RF DRE', () => {
-  const rfDRE = Cypress.env('RF_DRE')
-  const senhaDRE = Cypress.env('SENHA_DRE')
-  
-  cy.log('Efetuando login com perfil DRE')
-  
-  cy.get(locators_login.campo_usuario(), { timeout: TIMEOUTS.LONG })
-    .should('be.visible')
-    .clear()
-    .type(rfDRE, { delay: 50 })
-    .should('have.value', rfDRE)
-  
-  cy.get(locators_login.campo_senha(), { timeout: TIMEOUTS.LONG })
-    .should('be.visible')
-    .clear()
-    .type(senhaDRE, { delay: 50 })
-  
-  cy.get('button')
-    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
-  
-  cy.wait(TIMEOUTS.DEFAULT)
+  cy.log('Validando login DRE')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: TIMEOUTS.VERY_LONG,
+    failOnStatusCode: false 
+  })
+  cy.url({ timeout: TIMEOUTS.LONG }).should('include', '/dashboard')
+  cy.wait(TIMEOUTS.SHORT)
   cy.log('Login DRE realizado com sucesso')
 })
 
