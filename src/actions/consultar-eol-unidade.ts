@@ -12,6 +12,7 @@ export type ConsultarEolUnidadeResponse = {
 
 export const consultarEolUnidadeAction = async (
     codigoEol: string,
+    etapaModalidade: string,
 ): Promise<
     | { success: true; data: ConsultarEolUnidadeResponse }
     | { success: false; error: string }
@@ -25,7 +26,7 @@ export const consultarEolUnidadeAction = async (
 
     try {
         const response = await api.get<ConsultarEolUnidadeResponse>(
-            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}`,
+            `/unidades/gestao-unidades/consultar-eol/?codigo_eol=${codigoEol}&etapa_modalidade=${etapaModalidade}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

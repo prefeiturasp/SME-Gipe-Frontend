@@ -243,7 +243,10 @@ export default function FormularioCadastroUnidadeEducacional({
             setDrePreenchidaAutomaticamente(false);
         }
 
-        const response = await consultarEolUnidade(codigoEol);
+        const response = await consultarEolUnidade({
+            codigoEol,
+            etapaModalidade: tipoAtual,
+        });
 
         if (response.success) {
             form.setValue(
@@ -546,7 +549,8 @@ export default function FormularioCadastroUnidadeEducacional({
                                         <FormLabel
                                             disabled={
                                                 !isActive ||
-                                                drePreenchidaAutomaticamente
+                                                drePreenchidaAutomaticamente ||
+                                                mode === "edit"
                                             }
                                         >
                                             Diretoria Regional*
@@ -557,7 +561,8 @@ export default function FormularioCadastroUnidadeEducacional({
                                                 onValueChange={field.onChange}
                                                 disabled={
                                                     !isActive ||
-                                                    drePreenchidaAutomaticamente
+                                                    drePreenchidaAutomaticamente ||
+                                                    mode === "edit"
                                                 }
                                             >
                                                 <SelectTrigger className="w-full">

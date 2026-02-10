@@ -754,7 +754,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             await waitFor(() => {
@@ -789,7 +792,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "DRE",
+                });
             });
 
             await waitFor(() => {
@@ -858,7 +864,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -938,7 +947,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -1051,6 +1063,21 @@ describe("FormularioCadastroUnidadeEducacional", () => {
                 const codigoInput =
                     screen.getByPlaceholderText(/Exemplo: 123456/i);
                 expect(codigoInput).toBeDisabled();
+            });
+        });
+
+        it("deve desabilitar o campo Diretoria Regional no modo de edição", async () => {
+            render(
+                <FormularioCadastroUnidadeEducacional
+                    mode="edit"
+                    unidadeUuid="unidade-123"
+                />,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const dreSelect = getSelectByLabel("Diretoria Regional*");
+                expect(dreSelect).toBeDisabled();
             });
         });
 
@@ -1348,7 +1375,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const nomeInput = screen.getByPlaceholderText(
@@ -1453,7 +1483,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("654321");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "654321",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const nomeInput = screen.getByPlaceholderText(
@@ -1508,7 +1541,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("019480");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "019480",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             await waitFor(
@@ -1571,7 +1607,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "DRE",
+                });
             });
 
             await waitFor(() => {
@@ -1603,7 +1642,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             await waitFor(() => {
@@ -1670,7 +1712,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -1778,7 +1823,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -1820,7 +1868,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             const dreSelect = getSelectByLabel("Diretoria Regional*");
@@ -1859,7 +1910,10 @@ describe("FormularioCadastroUnidadeEducacional", () => {
             fireEvent.click(consultarButton);
 
             await waitFor(() => {
-                expect(mockConsultarEolUnidade).toHaveBeenCalledWith("123456");
+                expect(mockConsultarEolUnidade).toHaveBeenCalledWith({
+                    codigoEol: "123456",
+                    etapaModalidade: "EMEF",
+                });
             });
 
             // Muda para rede INDIRETA
