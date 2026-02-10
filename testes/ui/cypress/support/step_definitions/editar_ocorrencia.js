@@ -9,10 +9,12 @@ Given('eu efetuo login com RF', () => {
   const RF = '40450525856'
   const SENHA = 'Sgp5856'
   
-  cy.xpath(locators_login.campo_usuario()).clear().type(RF)
-  cy.xpath(locators_login.campo_senha()).clear().type(SENHA)
-  cy.xpath(locators_login.btn_entrar()).click()
-  cy.wait(5000)
+  cy.loginWithSession(RF, SENHA, 'EDITAR')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: 30000,
+    failOnStatusCode: false 
+  })
+  cy.wait(3000)
 })
 
 Given('estou na página principal do sistema', () => {

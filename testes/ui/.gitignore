@@ -25,6 +25,22 @@ cypress/support/step_definitions/gestao_unidade.js
 cypress/support/locators/gestao_unidade_locators.js
 cypress/e2e/ui/gestao_unidade.feature
 
+# Novas features de teste avançado (experimental)
+cypress/e2e/ui/gipe_extra.feature
+cypress/e2e/ui/gipe_seguranca.feature
+cypress/e2e/ui/gipe_unitario.feature
+cypress/e2e/ui/gipe_integracao.feature
+cypress/e2e/ui/gipe_carga.feature
+cypress/e2e/ui/gipe_stress.feature
+
+# Step definitions avançados (experimental)
+cypress/support/step_definitions/gipe_extra.js
+cypress/support/step_definitions/gipe_seguranca.js
+cypress/support/step_definitions/gipe_unitario.js
+cypress/support/step_definitions/gipe_integracao.js
+cypress/support/step_definitions/gipe_carga.js
+cypress/support/step_definitions/gipe_stress.js
+
 # Scripts auxiliares
 token.txt
 token.json
@@ -40,6 +56,16 @@ JENKINS_SETUP.md
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
+DIAGNOSTICO_FALHA_API.md
+
+# Documentação e scripts temporários (não subir)
+EXEMPLO_MODAL_RAPIDO.md
+GESTAO_UNIDADES_SETUP.md
+OTIMIZACAO_SESSION.md
+RESUMO_CORRECOES.md
+TROUBLESHOOTING_MODALS.md
+testar-correcao-modal.bat
+testar-modal-v2.bat
 
 # Scripts de limpeza de código
 remove_emojis.py
