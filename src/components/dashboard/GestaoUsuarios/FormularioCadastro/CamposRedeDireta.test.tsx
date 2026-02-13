@@ -177,4 +177,12 @@ describe("CamposRedeDireta", () => {
             expect(field).toHaveClass("text-[#B0B0B0]");
         });
     });
+
+    it("desabilita campos DRE e UE no modo edit", () => {
+        render(<TestWrapper mode="edit" cargo="diretor" />);
+        const dreSelect = screen.getByTestId("select-dre");
+        const ueSelect = screen.getByTestId("select-ue");
+        expect(dreSelect).toBeDisabled();
+        expect(ueSelect).toBeDisabled();
+    });
 });

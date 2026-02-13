@@ -3,6 +3,12 @@ import { useMutation } from "@tanstack/react-query";
 
 export const useConsultarEolUnidade = () => {
     return useMutation({
-        mutationFn: (codigoEol: string) => consultarEolUnidadeAction(codigoEol),
+        mutationFn: ({
+            codigoEol,
+            etapaModalidade,
+        }: {
+            codigoEol: string;
+            etapaModalidade: string;
+        }) => consultarEolUnidadeAction(codigoEol, etapaModalidade),
     });
 };

@@ -299,6 +299,7 @@ export default function FormularioCadastroPessoaUsuaria({
                                 onDreChange={handleDreChange}
                                 isFormDisabled={isFormDisabled}
                                 cargoOptions={cargoOptions}
+                                mode={currentMode}
                             />
                         )}
 

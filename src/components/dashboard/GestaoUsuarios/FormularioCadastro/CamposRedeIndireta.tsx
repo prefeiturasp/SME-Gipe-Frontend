@@ -27,6 +27,7 @@ type CamposRedeIndiretaProps = {
     onDreChange?: (val: string) => void;
     isFormDisabled?: boolean;
     cargoOptions: Array<{ value: string; label: string }>;
+    mode?: "create" | "edit";
 };
 
 export function CamposRedeIndireta({
@@ -39,11 +40,12 @@ export function CamposRedeIndireta({
     onDreChange,
     isFormDisabled = false,
     cargoOptions,
+    mode = "create",
 }: Readonly<CamposRedeIndiretaProps>) {
     const fullNameDisabled = isFormDisabled;
     const emailDisabled = isFormDisabled;
-    const dreDisabled = isFormDisabled || isDreDisabled;
-    const ueDisabled = isFormDisabled;
+    const dreDisabled = isFormDisabled || isDreDisabled || mode === "edit";
+    const ueDisabled = isFormDisabled || mode === "edit";
 
     const labelClass = (disabled: boolean) =>
         `required text-[14px] font-[700] ${disabled ? "text-[#B0B0B0]" : "text-[#42474a]"}`;
