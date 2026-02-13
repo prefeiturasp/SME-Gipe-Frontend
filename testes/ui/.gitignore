@@ -1,74 +1,164 @@
-node_modules
-
+# ========================================
+# DEPENDÊNCIAS E CACHE
+# ========================================
+node_modules/
 package-lock.json
+.npm/
+.yarn/
+yarn.lock
 
-screenshots/
+# ========================================
+# CYPRESS - OUTPUTS E RESULTADOS
+# ================================git========
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
 
-videos/
-
-.vscode/
-
-# Relatórios gerados
+# Relatórios de testes
 allure-report/
 allure-results/
 allure-results-*.zip
 mochawesome-report/
 cypress-cloud/
-
-# Cache do Cypress Cloud
 .currents/
 .cypress-cloud/
 
+# ========================================
+# IDE E EDITORES
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
-# Testes complement (não subir)
+# ========================================
+# LOGS E OUTPUTS
+# ========================================
+*.log
+*.txt
+!README.txt
+run_log.txt
+test_output.txt
+test_output.log
+test_result.log
+test_results.log
+test_run_final.log
+run_gipe_*.log
+cypress.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-
-# Novas features de teste avançado (experimental)
-cypress/e2e/ui/gipe_extra.feature
-cypress/e2e/ui/gipe_seguranca.feature
-cypress/e2e/ui/gipe_unitario.feature
-cypress/e2e/ui/gipe_integracao.feature
-cypress/e2e/ui/gipe_carga.feature
-cypress/e2e/ui/gipe_stress.feature
-
-# Step definitions avançados (experimental)
-cypress/support/step_definitions/gipe_extra.js
-cypress/support/step_definitions/gipe_seguranca.js
-cypress/support/step_definitions/gipe_unitario.js
-cypress/support/step_definitions/gipe_integracao.js
-cypress/support/step_definitions/gipe_carga.js
-cypress/support/step_definitions/gipe_stress.js
-
-# Scripts auxiliares
+# ========================================
+# TOKENS E CREDENCIAIS
+# ========================================
 token.txt
 token.json
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+
+# ========================================
+# SCRIPTS AUXILIARES TEMPORÁRIOS
+# ========================================
 run-api-tests.js
 run-api-tests.bat
 run-api-tests-smart.js
 run-validacao-tests.js
 run-validacao-tests.bat
 validate-token.js
-TOKEN-VALIDATION-README.md
+testar-correcao-modal.bat
+testar-modal-v2.bat
+remove_emojis.py
+remove-emojis.ps1
+
+# ========================================
+# DOCUMENTAÇÃO TEMPORÁRIA/INTERNA
+# ========================================
+# Documentos de troubleshooting e análises temporárias
+DIAGNOSTICO_FALHA_API.md
+EVIDENCIAS_TESTES_CARGA.md
+EXEMPLO_MODAL_RAPIDO.md
+GESTAO_PESSOAS_README.md
+GESTAO_UNIDADES_SETUP.md
 GHERKIN_SYNTAX_CHECKLIST.md
-JENKINS_SETUP.md
+OTIMIZACAO_SESSION.md
+OTIMIZACAO_TESTES_CARGA_SUMMARY.md
+RELATORIO_LIMPEZA.md
+RESUMO_CORRECOES.md
+TROUBLESHOOTING_MODALS.md
+CENARIOS_ADICIONADOS_REQUISICOES.md
+CENARIOS_REMOVIDOS_CARGA.md
+CORRECOES_TIMEOUT_STATUS.md
+REFATORACAO_INTEGRACAO.md
+
+# ========================================
+# CI/CD CONFIGURAÇÕES (se não utilizado)
+# ========================================
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
-DIAGNOSTICO_FALHA_API.md
+JENKINS_SETUP.md
 
-# Documentação e scripts temporários (não subir)
-EXEMPLO_MODAL_RAPIDO.md
-GESTAO_UNIDADES_SETUP.md
-OTIMIZACAO_SESSION.md
-RESUMO_CORRECOES.md
-TROUBLESHOOTING_MODALS.md
-testar-correcao-modal.bat
-testar-modal-v2.bat
+# ========================================
+# ARQUIVOS TEMPORÁRIOS E BACKUPS
+# ========================================
+*.bak
+*.tmp
+*.temp
+*_backup.*
+*_old.*
+*.backup
+.cache/
+.temp/
 
-# Scripts de limpeza de código
-remove_emojis.py
-remove-emojis.ps1
-RELATORIO_LIMPEZA.md
+# ========================================
+# SISTEMA OPERACIONAL
+# ========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
 
-# Documentação de testes específicos
-GESTAO_PESSOAS_README.md
+# ========================================
+# FEATURES E STEPS EXPERIMENTAIS/NÃO FUNCIONAIS
+# ========================================
+# Features de teste avançado (experimentais - não 100% funcionais)
+cypress/e2e/ui/consulta_ocorrencia.feature
+cypress/e2e/ui/gipe_extra.feature
+cypress/e2e/ui/gipe_integracao.feature
+cypress/e2e/ui/gipe_seguranca.feature
+cypress/e2e/ui/gipe_unitario.feature
+cypress/e2e/ui/gipe_carga.feature
+cypress/e2e/ui/gipe_stress.feature
+
+# Step definitions experimentais (não 100% funcionais)
+cypress/support/step_definitions/consulta_ocorrencia.js
+cypress/support/step_definitions/gipe_extra.js
+cypress/support/step_definitions/gipe_integracao.js
+cypress/support/step_definitions/gipe_seguranca.js
+cypress/support/step_definitions/gipe_unitario.js
+cypress/support/step_definitions/gipe_carga.js
+cypress/support/step_definitions/gipe_stress.js
+
+# ========================================
+# MANTER NO REPOSITÓRIO (100% FUNCIONAIS):
+# ========================================
+# ✅ package.json
+# ✅ cypress.config.js
+# ✅ currents.config.js
+# ✅ README.md (principal)
+# ✅ .env.example
+# ✅ cypress/e2e/**/*.feature (outras features funcionais)
+# ✅ cypress/support/**/*.js (outros steps funcionais)
+# ✅ cypress/fixtures/**
+# ✅ cypress/support/commands.js
+# ✅ cypress/support/locators/**
