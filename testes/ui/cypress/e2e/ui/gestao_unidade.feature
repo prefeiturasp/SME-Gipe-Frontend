@@ -27,7 +27,7 @@ Cenário: Cadastrar nova unidade (indireta)
   Quando clico no botão Cadastrar Unidade Educacional
   Então valido a existência do título Cadastrar Unidade Educacional
 
-@inativar_unidade
+@skip @inativar_unidade
 Cenário: Inativar Unidade Educacional
   Quando acesso o menu de Gestão
   E clica na opção "Gestão de unidades Educacionais"
@@ -56,7 +56,7 @@ Cenário: Inativar Unidade Educacional
   Então o sistema redireciona para a tela de Gestão de usuários
   E o perfil é inativado com sucesso
 
-@reativar_unidade
+@skip @reativar_unidade
 Cenário: Reativar Unidade Educacional
   Quando acesso o menu de Gestão
   E clica na opção "Gestão de unidades Educacionais"

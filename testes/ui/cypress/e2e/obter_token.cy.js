@@ -1,4 +1,4 @@
-describe.skip('Obter Token', () => {
+describe('Obter Token', () => {
   it('Login e captura de token do cookie auth_token', () => {
     cy.clearCookies()
     cy.clearLocalStorage()

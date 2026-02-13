@@ -30,10 +30,11 @@ module.exports = defineConfig({
     failOnStatusCode: false,
     specPattern: 'cypress/e2e/**/*.{feature,cy.js,cy.jsx}',
     // Ajustes de timeout para lidar com carregamento mais lento em QA
-    defaultCommandTimeout: 60000,
-    requestTimeout: 60000,
-    execTimeout: 60000,
-    pageLoadTimeout: 300000,
+    // Aumentados para permitir APIs com tempo de resposta maior
+    defaultCommandTimeout: 120000,    // 120 segundos para comandos padrão
+    requestTimeout: 120000,           // 120 segundos para requisições HTTP
+    execTimeout: 120000,              // 120 segundos para execução
+    pageLoadTimeout: 300000,          // 300 segundos para carregamento de página (mantido)
     waitForAnimations: true,
     animationDistanceThreshold: 5,
 

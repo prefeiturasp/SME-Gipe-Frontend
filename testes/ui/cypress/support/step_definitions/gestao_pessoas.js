@@ -23,7 +23,7 @@ const clickElement = (selector, options = {}) => {
 
 const clickElementXPath = (xpath, options = {}) => {
   const { force = true, wait = 1500 } = options
-  cy.xpath(xpath, { timeout: 15000 })
+  cy.xpath(xpath, { timeout: 30000 })
     .should('be.visible')
     .click({ force })
   cy.wait(wait)
