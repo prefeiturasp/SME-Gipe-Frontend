@@ -250,26 +250,28 @@ describe("transformOcorrenciaToFormData", () => {
     });
 
     describe("Informações Adicionais - Dados Pessoais do Agressor", () => {
-        it("deve incluir nome do agressor quando presente", () => {
+        it("deve incluir pessoas agressoras quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                nome_pessoa_agressora: "João Silva",
+                pessoas_agressoras: [{ nome: "João Silva", idade: 25 }],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.nomeAgressor).toBe("João Silva");
+            expect(result.pessoasAgressoras).toEqual([
+                { nome: "João Silva", idade: "25" },
+            ]);
         });
 
-        it("deve converter idade do agressor para string quando presente", () => {
+        it("deve converter idade das pessoas agressoras para string", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Maria Santos", idade: 35 }],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.idadeAgressor).toBe("35");
+            expect(result.pessoasAgressoras?.[0].idade).toBe("35");
         });
 
         it("deve incluir gênero do agressor quando presente", () => {
@@ -342,7 +344,7 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.interacaoAmbienteEscolar).toBe(
-                "Como é a interação da pessoa agressora no ambiente escolar?"
+                "Como é a interação da pessoa agressora no ambiente escolar?",
             );
         });
 
@@ -428,8 +430,7 @@ describe("transformOcorrenciaToFormData", () => {
         it("deve transformar todos os campos de informações adicionais quando todos estão presentes", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                nome_pessoa_agressora: "Kleber Machado",
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
                 motivacao_ocorrencia_display: [
                     { value: "homofobia", label: "Homofobia" },
                     { value: "racismo", label: "Racismo" },
@@ -442,14 +443,13 @@ describe("transformOcorrenciaToFormData", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false
+                acompanhado_naapa: false,
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result).toMatchObject({
-                nomeAgressor: "Kleber Machado",
-                idadeAgressor: "35",
+                pessoasAgressoras: [{ nome: "Kleber Machado", idade: "35" }],
                 motivoOcorrencia: ["homofobia", "racismo"],
                 genero: "mulher_cis",
                 grupoEtnicoRacial: "indigena",
@@ -459,7 +459,7 @@ describe("transformOcorrenciaToFormData", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não"
+                acompanhadoNAAPA: "Não",
             });
         });
     });
