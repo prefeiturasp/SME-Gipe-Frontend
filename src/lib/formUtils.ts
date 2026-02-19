@@ -12,6 +12,45 @@ export const compareArrays = (arr1: string[], arr2: string[] = []): boolean => {
 };
 
 /**
+ * Compara dois arrays de objetos para verificar se são diferentes.
+ * A comparação é feita por deep equality (JSON.stringify), respeitando a ordem.
+ */
+export const compareObjectArrays = (
+    arr1: Record<string, unknown>[],
+    arr2: Record<string, unknown>[] = [],
+): boolean => {
+    if (arr1.length !== arr2.length) return true;
+
+    return JSON.stringify(arr1) !== JSON.stringify(arr2);
+};
+
+/**
+ * Verifica se um campo do tipo array teve mudanças.
+ * Detecta automaticamente se é um array de objetos ou de strings.
+ */
+const hasArrayFieldChanged = (
+    currentValue: unknown,
+    referenceValue: unknown,
+): boolean => {
+    const currentArr = currentValue as unknown[];
+    const referenceArr = (referenceValue as unknown[]) || [];
+
+    const isObjectArray =
+        currentArr.length > 0 &&
+        typeof currentArr[0] === "object" &&
+        currentArr[0] !== null;
+
+    if (isObjectArray) {
+        return compareObjectArrays(
+            currentArr as Record<string, unknown>[],
+            referenceArr as Record<string, unknown>[],
+        );
+    }
+
+    return compareArrays(currentArr as string[], referenceArr as string[]);
+};
+
+/**
  * Verifica se houve mudanças entre os dados atuais e os dados de referência.
  * Suporta comparação de valores primitivos e arrays.
  *
@@ -33,7 +72,7 @@ export const compareArrays = (arr1: string[], arr2: string[] = []): boolean => {
 export const hasFormDataChanged = <T extends Record<string, unknown>>(
     currentData: T,
     referenceData: Partial<T> | undefined,
-    arrayFields: (keyof T)[] = []
+    arrayFields: (keyof T)[] = [],
 ): boolean => {
     // Se não houver dados de referência, considera como mudança
     if (!referenceData || Object.keys(referenceData).length === 0) {
@@ -47,10 +86,7 @@ export const hasFormDataChanged = <T extends Record<string, unknown>>(
 
         // Se o campo é um array, usa comparação especial
         if (arrayFields.includes(key)) {
-            const arr1 = currentValue as string[];
-            const arr2 = (referenceValue as string[]) || [];
-
-            if (compareArrays(arr1, arr2)) {
+            if (hasArrayFieldChanged(currentValue, referenceValue)) {
                 return true;
             }
             continue;
