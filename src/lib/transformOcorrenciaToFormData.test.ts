@@ -295,110 +295,6 @@ describe("transformOcorrenciaToFormData", () => {
         });
     });
 
-    describe("Informações Adicionais - Endereço do Agressor", () => {
-        it("deve incluir CEP quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cep: "13366-222",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.cep).toBe("13366-222");
-        });
-
-        it("deve incluir logradouro quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                logradouro: "Rua dos Enderessos",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.logradouro).toBe("Rua dos Enderessos");
-        });
-
-        it("deve incluir número da residência quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                numero_residencia: "428",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.numero).toBe("428");
-        });
-
-        it("deve incluir complemento quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                complemento: "Apto 101",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.complemento).toBe("Apto 101");
-        });
-
-        it("deve incluir estado quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                estado: "MA",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.estado).toBe("MA");
-        });
-
-        it("deve incluir cidade quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cidade: "Mato Grosso",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.cidade).toBe("Mato Grosso");
-        });
-
-        it("deve incluir bairro quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                bairro: "Aquele lá",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.bairro).toBe("Aquele lá");
-        });
-
-        it("deve incluir todos os campos de endereço quando presentes", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero_residencia: "428",
-                complemento: "Apto 101",
-                estado: "MA",
-                cidade: "Mato Grosso",
-                bairro: "Aquele lá",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result).toMatchObject({
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero: "428",
-                complemento: "Apto 101",
-                estado: "MA",
-                cidade: "Mato Grosso",
-                bairro: "Aquele lá",
-            });
-        });
-    });
-
     describe("Informações Adicionais - Dados Escolares e Acompanhamento", () => {
         it("deve extrair valores de motivacao_ocorrencia_display corretamente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
@@ -546,14 +442,7 @@ describe("transformOcorrenciaToFormData", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false,
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero_residencia: "428",
-                complemento: "Rua da rua",
-                bairro: "Aquele lá",
-                cidade: "Mato Grosso",
-                estado: "MA",
+                acompanhado_naapa: false
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
@@ -570,14 +459,7 @@ describe("transformOcorrenciaToFormData", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero: "428",
-                complemento: "Rua da rua",
-                bairro: "Aquele lá",
-                cidade: "Mato Grosso",
-                estado: "MA",
+                acompanhadoNAAPA: "Não"
             });
         });
     });
