@@ -30,7 +30,11 @@ export default function PessoasAgressoras({
             {fields.map((field, index) => (
                 <div
                     key={field.id}
-                    className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-start"
+                    className={`grid grid-cols-1 gap-4 items-start ${
+                        fields.length > 1
+                            ? "md:grid-cols-[1fr_1fr_auto]"
+                            : "md:grid-cols-2"
+                    }`}
                 >
                     <FormField
                         control={control}
