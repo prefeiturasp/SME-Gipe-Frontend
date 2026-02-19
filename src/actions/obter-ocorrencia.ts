@@ -1,8 +1,8 @@
 "use server";
 
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { cookies } from "next/headers";
 import { AxiosError } from "axios";
+import { cookies } from "next/headers";
 
 export type OcorrenciaDetalheAPI = {
     id: number;
@@ -32,8 +32,7 @@ export type OcorrenciaDetalheAPI = {
         perfil_dos_envolvidos: string;
     };
     tem_info_agressor_ou_vitima?: "sim" | "nao";
-    nome_pessoa_agressora?: string;
-    idade_pessoa_agressora?: number;
+    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
     genero_pessoa_agressora?: string;
     grupo_etnico_racial?: string;
@@ -46,7 +45,7 @@ export type OcorrenciaDetalheAPI = {
 };
 
 export async function obterOcorrencia(
-    uuid: string
+    uuid: string,
 ): Promise<
     | { success: true; data: OcorrenciaDetalheAPI }
     | { success: false; error: string }
@@ -65,7 +64,7 @@ export async function obterOcorrencia(
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-            }
+            },
         );
         return { success: true, data };
     } catch (err) {
