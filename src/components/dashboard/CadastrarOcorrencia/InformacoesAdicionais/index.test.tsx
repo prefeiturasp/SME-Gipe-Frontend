@@ -20,7 +20,6 @@ describe("InformacoesAdicionais", () => {
     const mockSetFormData = vi.fn();
     const mockSetSavedFormData = vi.fn();
     const mockMutate = vi.fn();
-    const mockMutateAsync = vi.fn();
 
     const queryClient = new QueryClient();
 

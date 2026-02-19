@@ -35,7 +35,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
-        (state) => state.ocorrenciaUuid
+        (state) => state.ocorrenciaUuid,
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
@@ -212,7 +212,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         };
 
         const dataHoraOcorrencia = new Date(
-            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`
+            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
         ).toISOString();
 
         return {
@@ -242,10 +242,13 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
                 "registro",
             ...(informacoesAdicionaisData && {
-                nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,
-                idade_pessoa_agressora: Number(
-                    informacoesAdicionaisData.idadeAgressor
-                ),
+                pessoas_agressoras:
+                    informacoesAdicionaisData.pessoasAgressoras?.map(
+                        (pessoa) => ({
+                            nome: pessoa.nome,
+                            idade: Number(pessoa.idade),
+                        }),
+                    ) ?? [],
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
                 genero_pessoa_agressora: informacoesAdicionaisData.genero,
@@ -262,13 +265,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     "Sim",
                 acompanhado_naapa:
                     informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
-                cep: informacoesAdicionaisData.cep,
-                logradouro: informacoesAdicionaisData.logradouro,
-                numero_residencia: informacoesAdicionaisData.numero,
-                complemento: informacoesAdicionaisData.complemento,
-                bairro: informacoesAdicionaisData.bairro,
-                cidade: informacoesAdicionaisData.cidade,
-                estado: informacoesAdicionaisData.estado,
             }),
         };
     };
@@ -331,7 +327,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         } catch {
             toast({
