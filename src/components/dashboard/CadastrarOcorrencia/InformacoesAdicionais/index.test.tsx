@@ -31,27 +31,27 @@ describe("InformacoesAdicionais", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
     const preencherFormularioCompleto = async (
-        user: ReturnType<typeof userEvent.setup>
+        user: ReturnType<typeof userEvent.setup>,
     ) => {
-        await user.type(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-            "João Silva"
+        const nomesInputs = screen.getAllByLabelText(
+            /Qual o nome da pessoa agressora\?/i,
         );
-        await user.type(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-            "25"
+        await user.type(nomesInputs[0], "João Silva");
+        const idadesInputs = screen.getAllByLabelText(
+            /Qual a idade da pessoa agressora\?/i,
         );
+        await user.type(idadesInputs[0], "25");
         await user.type(
             screen.getByLabelText(/Como é a interação da pessoa agressora/i),
-            "Boa interação"
+            "Boa interação",
         );
         await user.type(
             screen.getByLabelText(/Quais as redes de proteção/i),
-            "CRAS, NAAPA"
+            "CRAS, NAAPA",
         );
 
         const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
@@ -67,7 +67,7 @@ describe("InformacoesAdicionais", () => {
         });
         await user.click(generoTrigger);
         await user.click(
-            await screen.findByRole("option", { name: /Masculino/i })
+            await screen.findByRole("option", { name: /Masculino/i }),
         );
 
         const grupoTrigger = screen.getByRole("combobox", {
@@ -83,7 +83,7 @@ describe("InformacoesAdicionais", () => {
         await user.click(
             await screen.findByRole("option", {
                 name: /Ensino Fundamental II/i,
-            })
+            }),
         );
 
         const frequenciaTrigger = screen.getByRole("combobox", {
@@ -98,10 +98,10 @@ describe("InformacoesAdicionais", () => {
         await waitFor(
             () => {
                 expect(
-                    screen.getByRole("button", { name: /Próximo/i })
+                    screen.getByRole("button", { name: /Próximo/i }),
                 ).not.toBeDisabled();
             },
-            { timeout: 5000 }
+            { timeout: 5000 },
         );
     };
 
@@ -136,7 +136,7 @@ describe("InformacoesAdicionais", () => {
         } as unknown as ReturnType<typeof useCategoriasDisponiveis>);
         vi.spyOn(
             useAtualizarInfoAgressorHook,
-            "useAtualizarInfoAgressor"
+            "useAtualizarInfoAgressor",
         ).mockReturnValue({
             mutate: mockMutate,
             isPending: false,
@@ -150,20 +150,20 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         expect(
-            screen.getByLabelText(/nome da pessoa agressora/i)
+            screen.getAllByLabelText(/nome da pessoa agressora/i).length,
+        ).toBeGreaterThanOrEqual(1);
+        expect(
+            screen.getByText(/O que motivou a ocorrência/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/O que motivou a ocorrência/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/notificada ao Conselho Tutelar/i)
+            screen.getByText(/notificada ao Conselho Tutelar/i),
         ).toBeInTheDocument();
         expect(screen.getByText(/acompanhada pelo NAAPA/i)).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Anterior/i })
+            screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Próximo/i })
+            screen.getByRole("button", { name: /Próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -183,8 +183,7 @@ describe("InformacoesAdicionais", () => {
     it("deve preencher os campos com dados do store", () => {
         vi.mocked(useOcorrenciaFormStore).mockReturnValue({
             formData: {
-                nomeAgressor: "João Silva",
-                idadeAgressor: "25",
+                pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
                 motivoOcorrencia: ["bullying"],
                 genero: "masculino",
                 grupoEtnicoRacial: "pardo",
@@ -200,12 +199,14 @@ describe("InformacoesAdicionais", () => {
 
         renderComponent();
 
-        expect(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i)
-        ).toHaveValue("João Silva");
-        expect(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i)
-        ).toHaveValue(25);
+        const nomesInputs = screen.getAllByLabelText(
+            /Qual o nome da pessoa agressora\?/i,
+        );
+        expect(nomesInputs[0]).toHaveValue("João Silva");
+        const idadesInputs = screen.getAllByLabelText(
+            /Qual a idade da pessoa agressora\?/i,
+        );
+        expect(idadesInputs[0]).toHaveValue(25);
     });
 
     it("deve validar campos obrigatórios", async () => {
@@ -215,10 +216,10 @@ describe("InformacoesAdicionais", () => {
         const proximoButton = screen.getByRole("button", { name: /Próximo/i });
         expect(proximoButton).toBeDisabled();
 
-        const nomeInput = screen.getByLabelText(
-            /Qual o nome da pessoa agressora\?/i
+        const nomesInputs = screen.getAllByLabelText(
+            /Qual o nome da pessoa agressora\?/i,
         );
-        await user.type(nomeInput, "João Silva");
+        await user.type(nomesInputs[0], "João Silva");
 
         expect(proximoButton).toBeDisabled();
     });
@@ -226,7 +227,7 @@ describe("InformacoesAdicionais", () => {
     it("deve exibir mensagem de ajuda para motivo de ocorrência", () => {
         renderComponent();
         expect(
-            screen.getByText(/Se necessário, selecione mais de uma opção/i)
+            screen.getByText(/Se necessário, selecione mais de uma opção/i),
         ).toBeInTheDocument();
     });
 
@@ -246,21 +247,21 @@ describe("InformacoesAdicionais", () => {
         const user = userEvent.setup();
         renderComponent();
 
-        await user.type(
-            screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-            "João Silva"
+        const nomesInputs = screen.getAllByLabelText(
+            /Qual o nome da pessoa agressora\?/i,
         );
-        await user.type(
-            screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-            "25"
+        await user.type(nomesInputs[0], "João Silva");
+        const idadesInputs = screen.getAllByLabelText(
+            /Qual a idade da pessoa agressora\?/i,
         );
+        await user.type(idadesInputs[0], "25");
         await user.type(
             screen.getByLabelText(/Como é a interação da pessoa agressora/i),
-            "Boa interação com todos"
+            "Boa interação com todos",
         );
         await user.type(
             screen.getByLabelText(/Quais as redes de proteção/i),
-            "CRAS e Conselho Tutelar"
+            "CRAS e Conselho Tutelar",
         );
 
         const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
@@ -315,7 +316,7 @@ describe("InformacoesAdicionais", () => {
                 });
                 expect(proximoButton).not.toBeDisabled();
             },
-            { timeout: 5000 }
+            { timeout: 5000 },
         );
 
         const proximoButton = screen.getByRole("button", { name: /Próximo/i });
@@ -324,9 +325,8 @@ describe("InformacoesAdicionais", () => {
         await waitFor(() => {
             expect(mockSetFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    nomeAgressor: "João Silva",
-                    idadeAgressor: "25"
-                })
+                    pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
+                }),
             );
             expect(mockOnNext).toHaveBeenCalled();
         });
@@ -346,7 +346,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/O que motivou a ocorrência\?/i)
+            screen.getByText(/O que motivou a ocorrência\?/i),
         ).toBeInTheDocument();
     });
 
@@ -386,15 +386,16 @@ describe("InformacoesAdicionais", () => {
                         body: expect.objectContaining({
                             unidade_codigo_eol: "123456",
                             dre_codigo_eol: "DRE-001",
-                            nome_pessoa_agressora: "João Silva",
-                            idade_pessoa_agressora: 25,
+                            pessoas_agressoras: [
+                                { nome: "João Silva", idade: 25 },
+                            ],
                             motivacao_ocorrencia: ["bullying"],
                             genero_pessoa_agressora: "masculino",
                             notificado_conselho_tutelar: true,
                             acompanhado_naapa: true,
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -501,7 +502,7 @@ describe("InformacoesAdicionais", () => {
                         dre_codigo_eol: "",
                     }),
                 }),
-                expect.any(Object)
+                expect.any(Object),
             );
         });
 
@@ -514,8 +515,7 @@ describe("InformacoesAdicionais", () => {
                     dre: "DRE-001",
                 },
                 savedFormData: {
-                    nomeAgressor: "João Silva",
-                    idadeAgressor: "25",
+                    pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
                     motivoOcorrencia: ["bullying"],
                     genero: "masculino",
                     grupoEtnicoRacial: "pardo",
@@ -556,13 +556,12 @@ describe("InformacoesAdicionais", () => {
                         onNext={mockOnNext}
                         onPrevious={mockOnPrevious}
                     />
-                </QueryClientProvider>
+                </QueryClientProvider>,
             );
 
             const formData = ref.current?.getFormData();
 
-            expect(formData).toHaveProperty("nomeAgressor");
-            expect(formData).toHaveProperty("idadeAgressor");
+            expect(formData).toHaveProperty("pessoasAgressoras");
             expect(formData).toHaveProperty("motivoOcorrencia");
             expect(formData).toHaveProperty("genero");
             expect(formData).toHaveProperty("grupoEtnicoRacial");
@@ -583,7 +582,7 @@ describe("InformacoesAdicionais", () => {
                         onNext={mockOnNext}
                         onPrevious={mockOnPrevious}
                     />
-                </QueryClientProvider>
+                </QueryClientProvider>,
             );
 
             const formInstance = ref.current?.getFormInstance();
@@ -615,7 +614,7 @@ describe("InformacoesAdicionais", () => {
 
             vi.spyOn(
                 useAtualizarInfoAgressorHook,
-                "useAtualizarInfoAgressor"
+                "useAtualizarInfoAgressor",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -629,26 +628,30 @@ describe("InformacoesAdicionais", () => {
                         onNext={mockOnNext}
                         onPrevious={mockOnPrevious}
                     />
-                </QueryClientProvider>
+                </QueryClientProvider>,
             );
 
             await user.type(
-                screen.getByLabelText(/Qual o nome da pessoa agressora\?/i),
-                "João Silva"
+                screen.getAllByLabelText(
+                    /Qual o nome da pessoa agressora\?/i,
+                )[0],
+                "João Silva",
             );
             await user.type(
-                screen.getByLabelText(/Qual a idade da pessoa agressora\?/i),
-                "25"
+                screen.getAllByLabelText(
+                    /Qual a idade da pessoa agressora\?/i,
+                )[0],
+                "25",
             );
             await user.type(
                 screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i
+                    /Como é a interação da pessoa agressora/i,
                 ),
-                "Boa interação"
+                "Boa interação",
             );
             await user.type(
                 screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA"
+                "CRAS, NAAPA",
             );
 
             const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
@@ -666,7 +669,7 @@ describe("InformacoesAdicionais", () => {
             });
             await user.click(generoTrigger);
             await user.click(
-                await screen.findByRole("option", { name: /Masculino/i })
+                await screen.findByRole("option", { name: /Masculino/i }),
             );
 
             const grupoTrigger = screen.getByRole("combobox", {
@@ -674,7 +677,7 @@ describe("InformacoesAdicionais", () => {
             });
             await user.click(grupoTrigger);
             await user.click(
-                await screen.findByRole("option", { name: /Pardo/i })
+                await screen.findByRole("option", { name: /Pardo/i }),
             );
 
             const etapaTrigger = screen.getByRole("combobox", {
@@ -684,7 +687,7 @@ describe("InformacoesAdicionais", () => {
             await user.click(
                 await screen.findByRole("option", {
                     name: /Ensino Fundamental II/i,
-                })
+                }),
             );
 
             const frequenciaTrigger = screen.getByRole("combobox", {
@@ -713,7 +716,7 @@ describe("InformacoesAdicionais", () => {
                         onNext={mockOnNext}
                         onPrevious={mockOnPrevious}
                     />
-                </QueryClientProvider>
+                </QueryClientProvider>,
             );
 
             await waitFor(async () => {
@@ -735,17 +738,17 @@ describe("InformacoesAdicionais", () => {
                         onNext={mockOnNext}
                         disabled={true}
                     />
-                </QueryClientProvider>
+                </QueryClientProvider>,
             );
 
         renderComponent();
 
-        const nomeInput = screen.getByLabelText(
-            /Qual o nome da pessoa agressora\?/i
-        );
-        const idadeInput = screen.getByLabelText(
-            /Qual a idade da pessoa agressora\?/i
-        );
+        const nomeInput = screen.getAllByLabelText(
+            /Qual o nome da pessoa agressora\?/i,
+        )[0];
+        const idadeInput = screen.getAllByLabelText(
+            /Qual a idade da pessoa agressora\?/i,
+        )[0];
         expect(nomeInput).toBeDisabled();
         expect(idadeInput).toBeDisabled();
 

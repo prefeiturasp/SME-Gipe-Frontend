@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarInfoAgressor } from "./atualizar-info-agressor";
 import { InfoAgressorBody } from "@/types/info-agressor";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarInfoAgressor } from "./atualizar-info-agressor";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -22,8 +22,7 @@ describe("atualizarInfoAgressor action", () => {
     const mockBody: InfoAgressorBody = {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-001",
-        nome_pessoa_agressora: "Kleber Machado",
-        idade_pessoa_agressora: 35,
+        pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
         motivacao_ocorrencia: ["homofobia", "racismo"],
         genero_pessoa_agressora: "mulher_cis",
         grupo_etnico_racial: "indigena",
@@ -33,7 +32,7 @@ describe("atualizarInfoAgressor action", () => {
             "Como é a interação da pessoa agressora no ambiente escolar?",
         redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
-        acompanhado_naapa: false
+        acompanhado_naapa: false,
     };
     const mockAuthToken = "test-token";
 
@@ -50,8 +49,7 @@ describe("atualizarInfoAgressor action", () => {
                 uuid: mockUuid,
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-001",
-                nome_pessoa_agressora: "Kleber Machado",
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
                 motivacao_ocorrencia_display: "Homofobia, Racismo",
                 genero_pessoa_agressora: "mulher_cis",
@@ -62,7 +60,7 @@ describe("atualizarInfoAgressor action", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false
+                acompanhado_naapa: false,
             },
         };
         vi.mocked(apiIntercorrencias.put).mockResolvedValue(mockResponse);
@@ -78,7 +76,7 @@ describe("atualizarInfoAgressor action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 
@@ -209,8 +207,7 @@ describe("atualizarInfoAgressor action", () => {
             expect.objectContaining({
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-001",
-                nome_pessoa_agressora: "Kleber Machado",
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
                 genero_pessoa_agressora: "mulher_cis",
                 grupo_etnico_racial: "indigena",
@@ -220,9 +217,9 @@ describe("atualizarInfoAgressor action", () => {
                     "Como é a interação da pessoa agressora no ambiente escolar?",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false
+                acompanhado_naapa: false,
             }),
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 });
