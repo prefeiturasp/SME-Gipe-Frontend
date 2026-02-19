@@ -1,5 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { compareArrays, hasFormDataChanged } from "./formUtils";
+import { describe, expect, it } from "vitest";
+import {
+    compareArrays,
+    compareObjectArrays,
+    hasFormDataChanged,
+} from "./formUtils";
 
 describe("formUtils", () => {
     describe("compareArrays", () => {
@@ -39,6 +43,42 @@ describe("formUtils", () => {
 
         it("deve retornar false quando ambos os arrays estão vazios", () => {
             expect(compareArrays([], [])).toBe(false);
+        });
+    });
+
+    describe("compareObjectArrays", () => {
+        it("deve retornar false quando os arrays de objetos são iguais", () => {
+            const arr1 = [{ nome: "João", idade: 25 }];
+            const arr2 = [{ nome: "João", idade: 25 }];
+
+            expect(compareObjectArrays(arr1, arr2)).toBe(false);
+        });
+
+        it("deve retornar true quando os arrays de objetos têm tamanhos diferentes", () => {
+            const arr1 = [{ nome: "João", idade: 25 }];
+            const arr2 = [
+                { nome: "João", idade: 25 },
+                { nome: "Maria", idade: 30 },
+            ];
+
+            expect(compareObjectArrays(arr1, arr2)).toBe(true);
+        });
+
+        it("deve retornar true quando os arrays de objetos têm valores diferentes", () => {
+            const arr1 = [{ nome: "João", idade: 25 }];
+            const arr2 = [{ nome: "Maria", idade: 30 }];
+
+            expect(compareObjectArrays(arr1, arr2)).toBe(true);
+        });
+
+        it("deve retornar true quando o segundo array é undefined", () => {
+            const arr1 = [{ nome: "João", idade: 25 }];
+
+            expect(compareObjectArrays(arr1)).toBe(true);
+        });
+
+        it("deve retornar false quando ambos os arrays estão vazios", () => {
+            expect(compareObjectArrays([], [])).toBe(false);
         });
     });
 
@@ -98,7 +138,7 @@ describe("formUtils", () => {
             };
 
             expect(hasFormDataChanged(current, reference, ["tags"])).toBe(
-                false
+                false,
             );
         });
 
@@ -249,8 +289,47 @@ describe("formUtils", () => {
             };
 
             expect(
-                hasFormDataChanged(current, reference, ["tiposOcorrencia"])
+                hasFormDataChanged(current, reference, ["tiposOcorrencia"]),
             ).toBe(false);
+        });
+
+        it("deve comparar arrays de objetos corretamente quando não há mudanças", () => {
+            const current = {
+                nome: "João",
+                pessoasAgressoras: [
+                    { nome: "Maria", idade: "25" },
+                    { nome: "Pedro", idade: "30" },
+                ],
+            };
+            const reference = {
+                nome: "João",
+                pessoasAgressoras: [
+                    { nome: "Maria", idade: "25" },
+                    { nome: "Pedro", idade: "30" },
+                ],
+            };
+
+            expect(
+                hasFormDataChanged(current, reference, ["pessoasAgressoras"]),
+            ).toBe(false);
+        });
+
+        it("deve detectar mudanças em arrays de objetos", () => {
+            const current = {
+                nome: "João",
+                pessoasAgressoras: [
+                    { nome: "Maria", idade: "25" },
+                    { nome: "Pedro", idade: "30" },
+                ],
+            };
+            const reference = {
+                nome: "João",
+                pessoasAgressoras: [{ nome: "Maria", idade: "25" }],
+            };
+
+            expect(
+                hasFormDataChanged(current, reference, ["pessoasAgressoras"]),
+            ).toBe(true);
         });
     });
 });
