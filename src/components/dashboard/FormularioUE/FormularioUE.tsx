@@ -243,12 +243,12 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 "registro",
             ...(informacoesAdicionaisData && {
                 pessoas_agressoras:
-                    informacoesAdicionaisData.pessoasAgressoras?.map(
+                    informacoesAdicionaisData.pessoasAgressoras.map(
                         (pessoa) => ({
                             nome: pessoa.nome,
                             idade: Number(pessoa.idade),
                         }),
-                    ) ?? [],
+                    ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
                 genero_pessoa_agressora: informacoesAdicionaisData.genero,

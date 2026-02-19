@@ -293,8 +293,7 @@ describe("FormularioUE", () => {
         });
 
         mockInfoAdicionaisGetData.mockReturnValue({
-            nomeAgressor: "João",
-            idadeAgressor: "15",
+            pessoasAgressoras: [{ nome: "João", idade: "15" }],
             motivoOcorrencia: "Bullying",
             genero: "Masculino",
             grupoEtnicoRacial: "Branco",
@@ -303,7 +302,7 @@ describe("FormularioUE", () => {
             interacaoAmbienteEscolar: "Boa",
             redesProtecao: ["CRAS"],
             notificadoConselhoTutelar: "Sim",
-            acompanhadoNAAPA: "Não"
+            acompanhadoNAAPA: "Não",
         });
 
         mockSecaoFinalGetData.mockReturnValue({
@@ -317,7 +316,7 @@ describe("FormularioUE", () => {
         it("deve renderizar o título 'Intercorrências Institucionais'", () => {
             renderWithClient(<FormularioUE />);
             expect(
-                screen.getByText("Intercorrências Institucionais")
+                screen.getByText("Intercorrências Institucionais"),
             ).toBeInTheDocument();
         });
 
@@ -334,7 +333,7 @@ describe("FormularioUE", () => {
         it("deve renderizar SecaoInicial", () => {
             renderWithClient(<FormularioUE />);
             expect(
-                screen.getByTestId("mock-secao-inicial")
+                screen.getByTestId("mock-secao-inicial"),
             ).toBeInTheDocument();
         });
 
@@ -355,10 +354,10 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
+                screen.getByText("Mock SecaoFurtoERoubo"),
             ).toBeInTheDocument();
             expect(
-                screen.queryByTestId("mock-secao-nao-furto")
+                screen.queryByTestId("mock-secao-nao-furto"),
             ).not.toBeInTheDocument();
         });
 
@@ -367,10 +366,10 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByTestId("mock-secao-nao-furto")
+                screen.getByTestId("mock-secao-nao-furto"),
             ).toBeInTheDocument();
             expect(
-                screen.queryByText("Mock SecaoFurtoERoubo")
+                screen.queryByText("Mock SecaoFurtoERoubo"),
             ).not.toBeInTheDocument();
         });
 
@@ -382,7 +381,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByText("Mock InformacoesAdicionais")
+                screen.getByText("Mock InformacoesAdicionais"),
             ).toBeInTheDocument();
         });
 
@@ -394,7 +393,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.queryByText("Mock InformacoesAdicionais")
+                screen.queryByText("Mock InformacoesAdicionais"),
             ).not.toBeInTheDocument();
         });
 
@@ -406,7 +405,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.queryByText("Mock InformacoesAdicionais")
+                screen.queryByText("Mock InformacoesAdicionais"),
             ).not.toBeInTheDocument();
         });
     });
@@ -417,7 +416,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByText("Formulário patrimonial")
+                screen.getByText("Formulário patrimonial"),
             ).toBeInTheDocument();
         });
 
@@ -466,7 +465,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByText("Informações adicionais")
+                screen.getByText("Informações adicionais"),
             ).toBeInTheDocument();
         });
 
@@ -488,7 +487,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.getByTestId("mock-secao-nao-furto")
+                screen.getByTestId("mock-secao-nao-furto"),
             ).toBeInTheDocument();
 
             await act(async () => {
@@ -499,7 +498,7 @@ describe("FormularioUE", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoFurtoERoubo")
+                    screen.getByText("Mock SecaoFurtoERoubo"),
                 ).toBeInTheDocument();
             });
         });
@@ -512,7 +511,7 @@ describe("FormularioUE", () => {
             renderWithClient(<FormularioUE />);
 
             expect(
-                screen.queryByText("Mock InformacoesAdicionais")
+                screen.queryByText("Mock InformacoesAdicionais"),
             ).not.toBeInTheDocument();
 
             await act(async () => {
@@ -525,7 +524,7 @@ describe("FormularioUE", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock InformacoesAdicionais")
+                    screen.getByText("Mock InformacoesAdicionais"),
                 ).toBeInTheDocument();
             });
         });
@@ -669,7 +668,7 @@ describe("FormularioUE", () => {
 
         it("deve lidar com erro ao validar", async () => {
             mockSecaoInicialTrigger.mockRejectedValue(
-                new Error("Erro de validação")
+                new Error("Erro de validação"),
             );
             renderWithClient(<FormularioUE />);
 
@@ -880,14 +879,52 @@ describe("FormularioUE", () => {
             mockMutate.mockImplementation((data) => {
                 expect(data.body).toMatchObject({
                     tem_info_agressor_ou_vitima: "sim",
-                    nome_pessoa_agressora: "João",
-                    idade_pessoa_agressora: 15,
+                    pessoas_agressoras: [{ nome: "João", idade: 15 }],
                     motivacao_ocorrencia: "Bullying",
                     genero_pessoa_agressora: "Masculino",
                     grupo_etnico_racial: "Branco",
                     notificado_conselho_tutelar: true,
-                    acompanhado_naapa: false
+                    acompanhado_naapa: false,
                 });
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve mapear pessoasAgressoras corretamente convertendo idade para número", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            mockInfoAdicionaisGetData.mockReturnValue({
+                pessoasAgressoras: [
+                    { nome: "João Silva", idade: "25" },
+                    { nome: "Maria Santos", idade: "30" },
+                ],
+                motivoOcorrencia: "Bullying",
+                genero: "Masculino",
+                grupoEtnicoRacial: "Branco",
+                etapaEscolar: "Fundamental II",
+                frequenciaEscolar: "Regular",
+                interacaoAmbienteEscolar: "Boa",
+                redesProtecao: ["CRAS"],
+                notificadoConselhoTutelar: "Sim",
+                acompanhadoNAAPA: "Não",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.pessoas_agressoras).toEqual([
+                    { nome: "João Silva", idade: 25 },
+                    { nome: "Maria Santos", idade: 30 },
+                ]);
             });
 
             renderWithClient(<FormularioUE />);
