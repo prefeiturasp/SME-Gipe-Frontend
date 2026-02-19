@@ -30,7 +30,7 @@ function getValidSmartSampa(rawSmartSampa?: string) {
     if (
         rawSmartSampa &&
         validSmartSampaValues.includes(
-            rawSmartSampa as (typeof validSmartSampaValues)[number]
+            rawSmartSampa as (typeof validSmartSampaValues)[number],
         )
     ) {
         return rawSmartSampa as (typeof validSmartSampaValues)[number];
@@ -42,7 +42,7 @@ function getValidSmartSampa(rawSmartSampa?: string) {
  * Converte valor de comunicação com segurança pública para formato do formulário
  */
 function getComunicacaoSeguranca(
-    comunicacao?: "sim_gcm" | "sim_pm" | "nao"
+    comunicacao?: "sim_gcm" | "sim_pm" | "nao",
 ): string | undefined {
     const comunicacaoMap: Record<string, string> = {
         sim_gcm: "Sim, com a GCM",
@@ -57,7 +57,7 @@ function getComunicacaoSeguranca(
  * Converte valor de protocolo acionado para formato do formulário
  */
 function getProtocoloAcionado(
-    protocolo?: "ameaca" | "alerta" | "registro"
+    protocolo?: "ameaca" | "alerta" | "registro",
 ): string | undefined {
     const protocoloMap: Record<string, string> = {
         ameaca: "Ameaça",
@@ -72,7 +72,7 @@ function getProtocoloAcionado(
  * Converte valor de informação sobre agressor/vítima para formato do formulário
  */
 function getPossuiInfoAgressorVitima(
-    temInfo?: "sim" | "nao"
+    temInfo?: "sim" | "nao",
 ): "Sim" | "Não" | undefined {
     if (!temInfo) return undefined;
     return temInfo === "sim" ? "Sim" : "Não";
@@ -91,11 +91,11 @@ function getBooleanAsSimNao(value?: boolean): "Sim" | "Não" | undefined {
  */
 function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     return {
-        ...(ocorrencia.nome_pessoa_agressora && {
-            nomeAgressor: ocorrencia.nome_pessoa_agressora,
-        }),
-        ...(ocorrencia.idade_pessoa_agressora !== undefined && {
-            idadeAgressor: String(ocorrencia.idade_pessoa_agressora),
+        ...(ocorrencia.pessoas_agressoras?.length && {
+            pessoasAgressoras: ocorrencia.pessoas_agressoras.map((pessoa) => ({
+                nome: pessoa.nome,
+                idade: String(pessoa.idade),
+            })),
         }),
         ...(ocorrencia.genero_pessoa_agressora && {
             genero: ocorrencia.genero_pessoa_agressora,
@@ -111,11 +111,11 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
  */
 function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     const notificadoConselhoTutelar = getBooleanAsSimNao(
-        ocorrencia.notificado_conselho_tutelar
+        ocorrencia.notificado_conselho_tutelar,
     );
     const acompanhadoNAAPA = getBooleanAsSimNao(ocorrencia.acompanhado_naapa);
     const motivoOcorrencia = ocorrencia.motivacao_ocorrencia_display?.map(
-        (item) => item.value
+        (item) => item.value,
     );
 
     return {
@@ -153,7 +153,7 @@ function extractInfoAdicionais(ocorrencia: OcorrenciaDetalheAPI) {
  * Transforma dados da API de ocorrência para o formato esperado pelo formulário
  */
 export function transformOcorrenciaToFormData(
-    ocorrencia: OcorrenciaDetalheAPI
+    ocorrencia: OcorrenciaDetalheAPI,
 ) {
     const { dataOcorrencia, horaOcorrencia } = ocorrencia.data_ocorrencia
         ? extractDateAndTime(ocorrencia.data_ocorrencia)
@@ -165,16 +165,16 @@ export function transformOcorrenciaToFormData(
 
     const smartSampa = getValidSmartSampa(ocorrencia.smart_sampa_situacao);
     const tiposOcorrencia = ocorrencia.tipos_ocorrencia?.map(
-        (tipo) => tipo.uuid
+        (tipo) => tipo.uuid,
     );
     const comunicacaoSeguranca = getComunicacaoSeguranca(
-        ocorrencia.comunicacao_seguranca_publica
+        ocorrencia.comunicacao_seguranca_publica,
     );
     const protocoloAcionado = getProtocoloAcionado(
-        ocorrencia.protocolo_acionado
+        ocorrencia.protocolo_acionado,
     );
     const possuiInfoAgressorVitima = getPossuiInfoAgressorVitima(
-        ocorrencia.tem_info_agressor_ou_vitima
+        ocorrencia.tem_info_agressor_ou_vitima,
     );
     const infoAdicionais = extractInfoAdicionais(ocorrencia);
 
