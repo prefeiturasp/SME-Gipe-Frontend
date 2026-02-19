@@ -303,14 +303,7 @@ describe("FormularioUE", () => {
             interacaoAmbienteEscolar: "Boa",
             redesProtecao: ["CRAS"],
             notificadoConselhoTutelar: "Sim",
-            acompanhadoNAAPA: "Não",
-            cep: "01310-100",
-            logradouro: "Av. Paulista",
-            numero: "1000",
-            complemento: "Apto 10",
-            bairro: "Bela Vista",
-            cidade: "São Paulo",
-            estado: "SP",
+            acompanhadoNAAPA: "Não"
         });
 
         mockSecaoFinalGetData.mockReturnValue({
@@ -893,9 +886,7 @@ describe("FormularioUE", () => {
                     genero_pessoa_agressora: "Masculino",
                     grupo_etnico_racial: "Branco",
                     notificado_conselho_tutelar: true,
-                    acompanhado_naapa: false,
-                    cep: "01310-100",
-                    logradouro: "Av. Paulista",
+                    acompanhado_naapa: false
                 });
             });
 

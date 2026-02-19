@@ -43,13 +43,6 @@ export type OcorrenciaDetalheAPI = {
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;
-    cep?: string;
-    logradouro?: string;
-    numero_residencia?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
 };
 
 export async function obterOcorrencia(
