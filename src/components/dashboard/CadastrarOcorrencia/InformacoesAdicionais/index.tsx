@@ -9,7 +9,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -25,9 +24,9 @@ import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Search } from "lucide-react";
 import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
+import PessoasAgressoras from "./PessoasAgressoras";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 export type InformacoesAdicionaisProps = {
@@ -60,8 +59,9 @@ const InformacoesAdicionais = forwardRef<
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            nomeAgressor: formData.nomeAgressor ?? "",
-            idadeAgressor: formData.idadeAgressor ?? "",
+            pessoasAgressoras: formData.pessoasAgressoras?.length
+                ? formData.pessoasAgressoras
+                : [{ nome: "", idade: "" }],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
             genero: formData.genero ?? "",
             grupoEtnicoRacial: formData.grupoEtnicoRacial ?? "",
@@ -98,8 +98,7 @@ const InformacoesAdicionais = forwardRef<
         if (ocorrenciaUuid) {
             if (
                 !hasFormDataChanged(currentValues, savedFormData, [
-                    "nomeAgressor",
-                    "idadeAgressor",
+                    "pessoasAgressoras",
                     "motivoOcorrencia",
                     "genero",
                     "grupoEtnicoRacial",
@@ -121,9 +120,11 @@ const InformacoesAdicionais = forwardRef<
                     body: {
                         unidade_codigo_eol: formData.unidadeEducacional || "",
                         dre_codigo_eol: formData.dre || "",
-                        nome_pessoa_agressora: data.nomeAgressor,
-                        idade_pessoa_agressora: Number.parseInt(
-                            data.idadeAgressor
+                        pessoas_agressoras: data.pessoasAgressoras.map(
+                            (pessoa) => ({
+                                nome: pessoa.nome,
+                                idade: Number.parseInt(pessoa.idade),
+                            }),
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
                         genero_pessoa_agressora: data.genero,
@@ -135,7 +136,7 @@ const InformacoesAdicionais = forwardRef<
                         redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
-                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim"
+                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim",
                     },
                 },
                 {
@@ -161,7 +162,7 @@ const InformacoesAdicionais = forwardRef<
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         } else {
             setFormData(data);
@@ -176,45 +177,9 @@ const InformacoesAdicionais = forwardRef<
                 className="flex flex-col gap-4 mt-4"
             >
                 <fieldset className="contents">
-                    <FormField
+                    <PessoasAgressoras
                         control={form.control}
-                        name="nomeAgressor"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Qual o nome da pessoa agressora?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        disabled={disabled}
-                                        placeholder="Digite aqui..."
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="idadeAgressor"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Qual a idade da pessoa agressora?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        disabled={disabled}
-                                        type="number"
-                                        placeholder="Digite aqui..."
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                        disabled={disabled}
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,7 +239,7 @@ const InformacoesAdicionais = forwardRef<
                                                     >
                                                         {genero.label}
                                                     </SelectItem>
-                                                )
+                                                ),
                                             )}
                                         </SelectContent>
                                     </Select>
@@ -312,7 +277,7 @@ const InformacoesAdicionais = forwardRef<
                                                     >
                                                         {grupo.label}
                                                     </SelectItem>
-                                                )
+                                                ),
                                             )}
                                         </SelectContent>
                                     </Select>
@@ -348,7 +313,7 @@ const InformacoesAdicionais = forwardRef<
                                                     >
                                                         {etapa.label}
                                                     </SelectItem>
-                                                )
+                                                ),
                                             )}
                                         </SelectContent>
                                     </Select>
@@ -384,7 +349,7 @@ const InformacoesAdicionais = forwardRef<
                                                     >
                                                         {frequencia.label}
                                                     </SelectItem>
-                                                )
+                                                ),
                                             )}
                                         </SelectContent>
                                     </Select>
