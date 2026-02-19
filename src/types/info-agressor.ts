@@ -12,13 +12,6 @@ export type InfoAgressorBody = {
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;
-    cep: string;
-    logradouro: string;
-    numero_residencia: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
 };
 
 export type InfoAgressorResponse = {
@@ -37,11 +30,4 @@ export type InfoAgressorResponse = {
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;
-    cep: string;
-    logradouro: string;
-    numero_residencia: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
 };

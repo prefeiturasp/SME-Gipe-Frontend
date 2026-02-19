@@ -9,16 +9,6 @@ export const formSchema = z.object({
         .refine((val) => !Number.isNaN(Number(val)) && Number(val) > 0, {
             message: "Idade deve ser um número válido",
         }),
-    cep: z
-        .string()
-        .min(1, "CEP é obrigatório")
-        .regex(/^\d{5}-\d{3}$/, "CEP deve estar no formato 00000-000"),
-    logradouro: z.string().min(1, "Logradouro é obrigatório"),
-    numero: z.string().min(1, "Número é obrigatório"),
-    complemento: z.string().optional(),
-    estado: z.string().min(1, "Estado é obrigatório"),
-    cidade: z.string().min(1, "Cidade é obrigatória"),
-    bairro: z.string().min(1, "Bairro é obrigatório"),
     motivoOcorrencia: z
         .array(z.string())
         .min(1, "Selecione pelo menos um motivo"),

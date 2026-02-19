@@ -20,10 +20,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ESTADOS_BRASILEIROS } from "@/const/estados-brasileiros";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
-import { useEnderecoPorCep } from "@/hooks/useEnderecoViaCep";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,20 +56,12 @@ const InformacoesAdicionais = forwardRef<
     } = useOcorrenciaFormStore();
     const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
     const { mutate: atualizarInfoAgressor } = useAtualizarInfoAgressor();
-    const { mutateAsync: buscarCep, isPending } = useEnderecoPorCep();
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
             nomeAgressor: formData.nomeAgressor ?? "",
             idadeAgressor: formData.idadeAgressor ?? "",
-            cep: formData.cep ?? "",
-            logradouro: formData.logradouro ?? "",
-            numero: formData.numero ?? "",
-            complemento: formData.complemento ?? "",
-            estado: formData.estado ?? "",
-            cidade: formData.cidade ?? "",
-            bairro: formData.bairro ?? "",
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
             genero: formData.genero ?? "",
             grupoEtnicoRacial: formData.grupoEtnicoRacial ?? "",
@@ -101,19 +91,6 @@ const InformacoesAdicionais = forwardRef<
         getFormInstance: () => form,
     }));
 
-    const formatCep = (value: string) => {
-        const numbers = value.replaceAll(/\D/g, "");
-        if (numbers.length <= 5) {
-            return numbers;
-        }
-        return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
-    };
-
-    const handleCepChange = (value: string) => {
-        const formatted = formatCep(value);
-        form.setValue("cep", formatted, { shouldValidate: true });
-    };
-
     // Função de submit isolada para ser chamada programaticamente
     const handleSubmit = async (data: InformacoesAdicionaisData) => {
         const currentValues = form.getValues();
@@ -123,13 +100,6 @@ const InformacoesAdicionais = forwardRef<
                 !hasFormDataChanged(currentValues, savedFormData, [
                     "nomeAgressor",
                     "idadeAgressor",
-                    "cep",
-                    "logradouro",
-                    "numero",
-                    "complemento",
-                    "estado",
-                    "cidade",
-                    "bairro",
                     "motivoOcorrencia",
                     "genero",
                     "grupoEtnicoRacial",
@@ -165,14 +135,7 @@ const InformacoesAdicionais = forwardRef<
                         redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
-                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim",
-                        cep: data.cep,
-                        logradouro: data.logradouro,
-                        numero_residencia: data.numero,
-                        complemento: data.complemento || "",
-                        bairro: data.bairro,
-                        cidade: data.cidade,
-                        estado: data.estado,
+                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim"
                     },
                 },
                 {
@@ -206,33 +169,6 @@ const InformacoesAdicionais = forwardRef<
         }
     };
 
-    const handleBuscarCep = async () => {
-        const cep = form.getValues("cep");
-        try {
-            const endereco = await buscarCep(cep);
-            form.setValue("logradouro", endereco.logradouro);
-            form.setValue("bairro", endereco.bairro);
-            form.setValue("cidade", endereco.cidade);
-            form.setValue("estado", endereco.estado);
-        } catch (err) {
-            const mensagemErro = err instanceof Error ? err.message : "";
-
-            if (mensagemErro.includes("CEP")) {
-                toast({
-                    variant: "error",
-                    title: "Número de CEP inválido!",
-                    description: "Verifique o número e tente novamente.",
-                });
-            } else {
-                toast({
-                    variant: "error",
-                    title: "Houve um erro...",
-                    description:
-                        "Não conseguimos buscar o CEP. Por favor, tente novamente.",
-                });
-            }
-        }
-    };
     return (
         <Form {...form}>
             <form
@@ -280,200 +216,6 @@ const InformacoesAdicionais = forwardRef<
                             </FormItem>
                         )}
                     />
-
-                    <div className="border border-[#DADADA] rounded-md p-6 space-y-3 my-3">
-                        <h3
-                            className={
-                                disabled
-                                    ? "text-[14px] font-bold text-[#B0B0B0]"
-                                    : "text-[14px] font-bold text-[#42474a]"
-                            }
-                        >
-                            Qual o endereço da pessoa agressora?
-                        </h3>
-
-                        <div className="flex gap-2 mt-4 items-start">
-                            <FormField
-                                control={form.control}
-                                name="cep"
-                                render={({ field }) => (
-                                    <FormItem className="flex-1">
-                                        <FormLabel disabled={disabled}>
-                                            CEP*
-                                        </FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <Input
-                                                    placeholder="Digite o CEP..."
-                                                    {...field}
-                                                    onChange={(e) =>
-                                                        handleCepChange(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    maxLength={9}
-                                                    className="pr-10"
-                                                    disabled={disabled}
-                                                />
-                                                <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#717FC7] pointer-events-none" />
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button
-                                type="button"
-                                variant="customOutline"
-                                size="sm"
-                                className="h-10 mt-8"
-                                onClick={handleBuscarCep}
-                                disabled={isPending}
-                            >
-                                {isPending ? "Buscando..." : "Pesquisar CEP"}
-                            </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="logradouro"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Logradouro
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={disabled}
-                                                placeholder="Digite o logradouro..."
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="numero"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Número da residência
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={disabled}
-                                                placeholder="Digite o número..."
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="complemento"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Complemento
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={disabled}
-                                                placeholder="Digite o complemento..."
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="estado"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Estado
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={disabled}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {ESTADOS_BRASILEIROS.map(
-                                                    (estado) => (
-                                                        <SelectItem
-                                                            key={estado.sigla}
-                                                            value={estado.sigla}
-                                                        >
-                                                            {estado.nome}
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="cidade"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Cidade
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={disabled}
-                                                placeholder="Digite a cidade..."
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="bairro"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Bairro
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={disabled}
-                                                placeholder="Digite o bairro..."
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField

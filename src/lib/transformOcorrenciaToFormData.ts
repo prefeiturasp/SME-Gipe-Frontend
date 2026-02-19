@@ -107,23 +107,6 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
 }
 
 /**
- * Extrai dados de endereço do agressor
- */
-function extractEnderecoAgressor(ocorrencia: OcorrenciaDetalheAPI) {
-    return {
-        ...(ocorrencia.cep && { cep: ocorrencia.cep }),
-        ...(ocorrencia.logradouro && { logradouro: ocorrencia.logradouro }),
-        ...(ocorrencia.numero_residencia && {
-            numero: ocorrencia.numero_residencia,
-        }),
-        ...(ocorrencia.complemento && { complemento: ocorrencia.complemento }),
-        ...(ocorrencia.estado && { estado: ocorrencia.estado }),
-        ...(ocorrencia.cidade && { cidade: ocorrencia.cidade }),
-        ...(ocorrencia.bairro && { bairro: ocorrencia.bairro }),
-    };
-}
-
-/**
  * Extrai dados escolares e acompanhamento do agressor
  */
 function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
@@ -162,7 +145,6 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
 function extractInfoAdicionais(ocorrencia: OcorrenciaDetalheAPI) {
     return {
         ...extractDadosPessoaisAgressor(ocorrencia),
-        ...extractEnderecoAgressor(ocorrencia),
         ...extractDadosEscolaresAgressor(ocorrencia),
     };
 }
