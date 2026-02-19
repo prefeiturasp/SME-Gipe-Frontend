@@ -262,13 +262,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     "Sim",
                 acompanhado_naapa:
                     informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
-                cep: informacoesAdicionaisData.cep,
-                logradouro: informacoesAdicionaisData.logradouro,
-                numero_residencia: informacoesAdicionaisData.numero,
-                complemento: informacoesAdicionaisData.complemento,
-                bairro: informacoesAdicionaisData.bairro,
-                cidade: informacoesAdicionaisData.cidade,
-                estado: informacoesAdicionaisData.estado,
             }),
         };
     };

@@ -224,13 +224,6 @@ describe("atualizarFormularioCompletoUE action", () => {
             redes_protecao_acompanhamento: "CRAS",
             notificado_conselho_tutelar: true,
             acompanhado_naapa: false,
-            cep: "01310-100",
-            logradouro: "Av. Paulista",
-            numero_residencia: "1000",
-            complemento: "Apto 10",
-            bairro: "Bela Vista",
-            cidade: "São Paulo",
-            estado: "SP",
         };
 
         const mockResponse = {
