@@ -712,4 +712,55 @@ describe("DetalhamentoGipe", () => {
 
         expect(mockSetFormData).toHaveBeenCalled();
     });
+
+    it("deve exibir 'Finalizar e enviar' quando status é enviado_para_gipe", () => {
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: { ...mockFormData, status: "enviado_para_gipe" },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        renderComponent();
+
+        expect(
+            screen.getByRole("button", { name: /finalizar e enviar/i }),
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir 'Finalizar' quando status não é enviado_para_gipe", () => {
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: { ...mockFormData, status: "rascunho" },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        renderComponent();
+
+        const botao = screen.getByRole("button", { name: /finalizar/i });
+        expect(botao).toBeInTheDocument();
+        expect(botao).not.toHaveTextContent("Finalizar e enviar");
+    });
+
+    it("deve exibir 'Finalizar' quando status é undefined", () => {
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: { ...mockFormData },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        renderComponent();
+
+        const botao = screen.getByRole("button", { name: /finalizar/i });
+        expect(botao).toBeInTheDocument();
+        expect(botao).not.toHaveTextContent("Finalizar e enviar");
+    });
 });
