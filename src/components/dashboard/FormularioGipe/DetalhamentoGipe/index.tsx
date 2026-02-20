@@ -27,6 +27,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,6 +45,7 @@ export type DetalhamentoGipeProps = {
 export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
+    const [isFinalizando, setIsFinalizando] = useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
@@ -150,7 +152,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                         variant: "error",
                     });
                 },
-            }
+            },
         );
 
         setFormData(data);
@@ -220,7 +222,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                         >
                                                             {envolvido.label}
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -305,7 +307,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                         >
                                                             {ciclo.label}
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -368,9 +370,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                         onClick={() => handleSubmit(form.getValues())}
                         type="submit"
                         variant="submit"
-                        disabled={!isValid}
+                        disabled={!isValid || isFinalizando}
                     >
-                        Salvar informações
+                        {isFinalizando && (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        )}
+                        Finalizar e enviar
                     </Button>
                 </div>
             </QuadroBranco>
@@ -378,6 +383,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             <ModalFinalizarEtapa
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
+                onLoadingChange={setIsFinalizando}
                 perfilUsuario={perfilUsuario}
             />
         </>

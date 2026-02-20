@@ -9,6 +9,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ export type DetalhamentoDreProps = {
 export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
+    const [isFinalizando, setIsFinalizando] = useState(false);
     const { isPontoFocal } = useUserPermissions();
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
@@ -133,13 +135,13 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                         variant: "error",
                     });
                 },
-            }
+            },
         );
 
         setFormData(data);
     };
 
-    const finalizarTexts = isPontoFocal ? "Finalizar" : "Próximo";
+    const finalizarTexts = isPontoFocal ? "Finalizar e enviar" : "Próximo";
 
     return (
         <>
@@ -234,8 +236,11 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                         onClick={() => handleSubmit(form.getValues())}
                         type="submit"
                         variant="submit"
-                        disabled={!isValid}
+                        disabled={!isValid || isFinalizando}
                     >
+                        {isFinalizando && (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        )}
                         {isPontoFocal && formData.status === "enviado_para_dre"
                             ? "Salvar informações"
                             : finalizarTexts}
@@ -246,6 +251,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
             <ModalFinalizarEtapa
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
+                onLoadingChange={setIsFinalizando}
                 perfilUsuario={perfilUsuario}
             />
         </>
