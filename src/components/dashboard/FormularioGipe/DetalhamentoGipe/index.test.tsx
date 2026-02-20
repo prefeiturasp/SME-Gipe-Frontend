@@ -156,22 +156,22 @@ describe("DetalhamentoGipe", () => {
         expect(screen.getByTestId("mock-anexos")).toBeInTheDocument();
     });
 
-    it("deve renderizar os botões Anterior e Finalizar e enviar", () => {
+    it("deve renderizar os botões Anterior e Finalizar", () => {
         renderComponent();
 
         expect(
             screen.getByRole("button", { name: /anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
     });
 
-    it("deve ter o botão Finalizar e enviar desabilitado inicialmente", () => {
+    it("deve ter o botão Finalizar desabilitado inicialmente", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
         expect(botaoSalvar).toBeDisabled();
     });
@@ -253,7 +253,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
     });
 
@@ -297,11 +297,11 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve ter botão Finalizar e enviar com onClick definido", () => {
+    it("deve ter botão Finalizar com onClick definido", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
 
         expect(botaoSalvar).toBeInTheDocument();
@@ -316,7 +316,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
     });
 
@@ -332,7 +332,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
     });
 
@@ -437,7 +437,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
     });
 
@@ -453,7 +453,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnSuccess) {
@@ -480,7 +480,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnError) {
@@ -507,7 +507,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /Finalizar e enviar/i }),
+            screen.getByRole("button", { name: /Finalizar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnSuccess) {
@@ -517,7 +517,7 @@ describe("DetalhamentoGipe", () => {
         }
     });
 
-    it("deve chamar handleSubmit ao clicar no botão Finalizar e enviar quando o formulário está válido", async () => {
+    it("deve chamar handleSubmit ao clicar no botão Finalizar quando o formulário está válido", async () => {
         const user = userEvent.setup();
 
         const formDataValido = {
@@ -548,7 +548,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
 
         await waitFor(() => {
@@ -595,7 +595,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
 
         await waitFor(() => {
@@ -644,7 +644,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
 
         await waitFor(() => {
@@ -695,7 +695,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /Finalizar e enviar/i,
+            name: /Finalizar/i,
         });
 
         await waitFor(() => {
