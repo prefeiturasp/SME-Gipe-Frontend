@@ -141,7 +141,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         setFormData(data);
     };
 
-    const finalizarTexts = isPontoFocal ? "Finalizar e enviar" : "Próximo";
+    const finalizarTexts = isPontoFocal ? "Finalizar" : "Próximo";
 
     return (
         <>
@@ -242,7 +242,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         )}
                         {isPontoFocal && formData.status === "enviado_para_dre"
-                            ? "Salvar informações"
+                            ? "Finalizar e enviar"
                             : finalizarTexts}
                     </Button>
                 </div>

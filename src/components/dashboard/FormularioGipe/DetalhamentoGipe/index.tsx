@@ -375,7 +375,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                         {isFinalizando && (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         )}
-                        Finalizar e enviar
+                        {formData.status === "enviado_para_gipe"
+                            ? "Finalizar e enviar"
+                            : "Finalizar"}
                     </Button>
                 </div>
             </QuadroBranco>
