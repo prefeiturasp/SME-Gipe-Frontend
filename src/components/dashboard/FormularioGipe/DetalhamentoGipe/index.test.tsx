@@ -139,14 +139,14 @@ describe("DetalhamentoGipe", () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <DetalhamentoGipe onPrevious={onPrevious} />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
     it("deve renderizar o título 'Continuação da ocorrência'", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("heading", { name: /continuação da ocorrência/i })
+            screen.getByRole("heading", { name: /continuação da ocorrência/i }),
         ).toBeInTheDocument();
     });
 
@@ -156,22 +156,22 @@ describe("DetalhamentoGipe", () => {
         expect(screen.getByTestId("mock-anexos")).toBeInTheDocument();
     });
 
-    it("deve renderizar os botões Anterior e Salvar informações", () => {
+    it("deve renderizar os botões Anterior e Finalizar e enviar", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /anterior/i })
+            screen.getByRole("button", { name: /anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
-    it("deve ter o botão Salvar informações desabilitado inicialmente", () => {
+    it("deve ter o botão Finalizar e enviar desabilitado inicialmente", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
         expect(botaoSalvar).toBeDisabled();
     });
@@ -199,7 +199,7 @@ describe("DetalhamentoGipe", () => {
             "text-[20px]",
             "font-bold",
             "text-[#42474a]",
-            "mb-2"
+            "mb-2",
         );
     });
 
@@ -207,7 +207,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/são informações após a análise feita pelo gipe/i)
+            screen.getByText(/são informações após a análise feita pelo gipe/i),
         ).toBeInTheDocument();
     });
 
@@ -246,14 +246,14 @@ describe("DetalhamentoGipe", () => {
         };
         vi.doMock("@/stores/useUserStore", () => ({
             useUserStore: (
-                selector: (state: { user: typeof mockUser }) => unknown
+                selector: (state: { user: typeof mockUser }) => unknown,
             ) => selector({ user: mockUser }),
         }));
 
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
@@ -261,22 +261,22 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/envolve arma ou ataque\?\*/i)
+            screen.getByText(/envolve arma ou ataque\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/ameaça foi realizada de qual maneira\?\*/i)
+            screen.getByText(/ameaça foi realizada de qual maneira\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/quem são os envolvidos\?\*/i)
+            screen.getByText(/quem são os envolvidos\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/o que motivou a ocorrência\?\*/i)
+            screen.getByText(/o que motivou a ocorrência\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/qual o tipo da ocorrência\?\*/i)
+            screen.getByText(/qual o tipo da ocorrência\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/qual o ciclo de aprendizagem\?\*/i)
+            screen.getByText(/qual o ciclo de aprendizagem\?\*/i),
         ).toBeInTheDocument();
         expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
     });
@@ -285,21 +285,23 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/envolve arma ou ataque\?/i)
+            screen.getByText(/envolve arma ou ataque\?/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/quem são os envolvidos\?/i)
+            screen.getByText(/quem são os envolvidos\?/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/existe informações sobre as interações virtuais/i)
+            screen.getByText(
+                /existe informações sobre as interações virtuais/i,
+            ),
         ).toBeInTheDocument();
     });
 
-    it("deve ter botão Salvar informações com onClick definido", () => {
+    it("deve ter botão Finalizar e enviar com onClick definido", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
 
         expect(botaoSalvar).toBeInTheDocument();
@@ -314,7 +316,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
@@ -330,7 +332,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
@@ -343,14 +345,14 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/quem são os envolvidos\?/i)
+            screen.getByText(/quem são os envolvidos\?/i),
         ).toBeInTheDocument();
     });
 
     it("deve retornar array vazio para motivacaoOptions quando categorias.motivo_ocorrencia é undefined", () => {
         vi.spyOn(
             useCategoriasDisponiveisGipeModule,
-            "useCategoriasDisponiveisGipe"
+            "useCategoriasDisponiveisGipe",
         ).mockReturnValue({
             data: { motivo_ocorrencia: undefined },
             isLoading: false,
@@ -359,14 +361,14 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/o que motivou a ocorrência\?/i)
+            screen.getByText(/o que motivou a ocorrência\?/i),
         ).toBeInTheDocument();
     });
 
     it("deve retornar array vazio para motivacaoOptions quando categorias é undefined", () => {
         vi.spyOn(
             useCategoriasDisponiveisGipeModule,
-            "useCategoriasDisponiveisGipe"
+            "useCategoriasDisponiveisGipe",
         ).mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -375,14 +377,14 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/o que motivou a ocorrência\?/i)
+            screen.getByText(/o que motivou a ocorrência\?/i),
         ).toBeInTheDocument();
     });
 
     it("deve retornar array vazio para tiposOcorrenciaOptions quando tiposOcorrencia é undefined", () => {
         vi.spyOn(
             useTiposOcorrenciaModule,
-            "useTiposOcorrencia"
+            "useTiposOcorrencia",
         ).mockReturnValue({
             data: undefined,
             isLoading: false,
@@ -391,7 +393,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/qual o tipo da ocorrência\?/i)
+            screen.getByText(/qual o tipo da ocorrência\?/i),
         ).toBeInTheDocument();
     });
 
@@ -399,7 +401,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/quem são os envolvidos\?/i)
+            screen.getByText(/quem são os envolvidos\?/i),
         ).toBeInTheDocument();
         expect(mockEnvolvidos).toHaveLength(3);
     });
@@ -408,7 +410,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/o que motivou a ocorrência\?/i)
+            screen.getByText(/o que motivou a ocorrência\?/i),
         ).toBeInTheDocument();
         expect(mockCategoriasGipe.motivo_ocorrencia).toHaveLength(3);
     });
@@ -425,7 +427,7 @@ describe("DetalhamentoGipe", () => {
             expect(params.body).toHaveProperty("tipos_ocorrencia");
             expect(params.body).toHaveProperty("qual_ciclo_aprendizagem");
             expect(params.body).toHaveProperty(
-                "info_sobre_interacoes_virtuais_pessoa_agressora"
+                "info_sobre_interacoes_virtuais_pessoa_agressora",
             );
             expect(params.body).toHaveProperty("encaminhamentos_gipe");
 
@@ -435,7 +437,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
@@ -451,7 +453,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnSuccess) {
@@ -478,7 +480,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnError) {
@@ -505,7 +507,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
 
         if (capturedOnSuccess) {
@@ -515,7 +517,7 @@ describe("DetalhamentoGipe", () => {
         }
     });
 
-    it("deve chamar handleSubmit ao clicar no botão Salvar informações quando o formulário está válido", async () => {
+    it("deve chamar handleSubmit ao clicar no botão Finalizar e enviar quando o formulário está válido", async () => {
         const user = userEvent.setup();
 
         const formDataValido = {
@@ -532,7 +534,7 @@ describe("DetalhamentoGipe", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: formDataValido,
             setFormData: mockSetFormData,
@@ -546,7 +548,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
 
         await waitFor(() => {
@@ -579,7 +581,7 @@ describe("DetalhamentoGipe", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: formDataValido,
             setFormData: mockSetFormData,
@@ -593,7 +595,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
 
         await waitFor(() => {
@@ -628,7 +630,7 @@ describe("DetalhamentoGipe", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: formDataValido,
             setFormData: mockSetFormData,
@@ -642,7 +644,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
 
         await waitFor(() => {
@@ -679,7 +681,7 @@ describe("DetalhamentoGipe", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: formDataFinalizado,
             setFormData: mockSetFormData,
@@ -693,7 +695,7 @@ describe("DetalhamentoGipe", () => {
         renderComponent();
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /Finalizar e enviar/i,
         });
 
         await waitFor(() => {
