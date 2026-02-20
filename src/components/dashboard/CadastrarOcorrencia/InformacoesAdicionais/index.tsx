@@ -25,7 +25,6 @@ import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Search } from "lucide-react";
 import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
@@ -493,7 +492,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência foi acompanhada pelo NAAPA?*
+                                    A ocorrência é acompanhada pelo NAAPA?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
