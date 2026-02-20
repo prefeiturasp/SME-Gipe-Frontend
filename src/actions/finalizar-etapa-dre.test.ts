@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-import { finalizarEtapaDre } from "./finalizar-etapa-dre";
 import { MotivoEncerramentoBody } from "@/types/finalizar-etapa";
+import { finalizarEtapaDre } from "./finalizar-etapa-dre";
 
 import { AxiosError, AxiosRequestHeaders } from "axios";
 
 vi.mock("next/headers", () => ({
-  cookies: vi.fn(),
+    cookies: vi.fn(),
 }));
 
 vi.mock("@/lib/axios-intercorrencias");
@@ -16,177 +16,176 @@ vi.mock("@/lib/axios-intercorrencias");
 const cookiesMock = cookies as Mock;
 
 describe("finalizarEtapaDre action", () => {
-  const uuid = "abc-123-uuid";
+    const uuid = "abc-123-uuid";
 
-  const mockBody: MotivoEncerramentoBody = {
-    unidade_codigo_eol: "0001",
-    dre_codigo_eol: "01",
-    motivo_encerramento_ue: "Teste",
-  };
-
-  const mockAuthToken = "test-token";
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    cookiesMock.mockReturnValue({
-      get: vi.fn().mockReturnValue({ value: mockAuthToken }),
-    });
-  });
-
-  it("deve finalizar a etapa DRE com sucesso", async () => {
-    const mockResponse = {
-      data: {
-        protocolo_da_intercorrencia: "2025-XYZ",
-      },
+    const mockBody: MotivoEncerramentoBody = {
+        unidade_codigo_eol: "0001",
+        dre_codigo_eol: "01",
     };
 
-    const putSpy = vi
-      .spyOn(apiIntercorrencias, "put")
-      .mockResolvedValue(mockResponse);
+    const mockAuthToken = "test-token";
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
-
-    expect(result).toEqual({
-      success: true,
-      data: mockResponse.data,
+    beforeEach(() => {
+        vi.clearAllMocks();
+        cookiesMock.mockReturnValue({
+            get: vi.fn().mockReturnValue({ value: mockAuthToken }),
+        });
     });
 
-    expect(cookies().get).toHaveBeenCalledWith("auth_token");
-    expect(putSpy).toHaveBeenCalledWith(
-      `/dre/${uuid}/enviar-para-gipe/`,
-      mockBody,
-      {
-        headers: {
-          Authorization: `Bearer ${mockAuthToken}`,
-        },
-      }
-    );
-  });
+    it("deve finalizar a etapa DRE com sucesso", async () => {
+        const mockResponse = {
+            data: {
+                protocolo_da_intercorrencia: "2025-XYZ",
+            },
+        };
 
-  it("deve retornar erro quando o token não existir", async () => {
-    cookiesMock.mockReturnValue({
-      get: vi.fn().mockReturnValue(undefined),
+        const putSpy = vi
+            .spyOn(apiIntercorrencias, "put")
+            .mockResolvedValue(mockResponse);
+
+        const result = await finalizarEtapaDre(uuid, mockBody);
+
+        expect(result).toEqual({
+            success: true,
+            data: mockResponse.data,
+        });
+
+        expect(cookies().get).toHaveBeenCalledWith("auth_token");
+        expect(putSpy).toHaveBeenCalledWith(
+            `/dre/${uuid}/enviar-para-gipe/`,
+            mockBody,
+            {
+                headers: {
+                    Authorization: `Bearer ${mockAuthToken}`,
+                },
+            },
+        );
     });
 
-    const putSpy = vi.spyOn(apiIntercorrencias, "put");
+    it("deve retornar erro quando o token não existir", async () => {
+        cookiesMock.mockReturnValue({
+            get: vi.fn().mockReturnValue(undefined),
+        });
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const putSpy = vi.spyOn(apiIntercorrencias, "put");
 
-    expect(result).toEqual({
-      success: false,
-      error: "Usuário não autenticado. Token não encontrado.",
+        const result = await finalizarEtapaDre(uuid, mockBody);
+
+        expect(result).toEqual({
+            success: false,
+            error: "Usuário não autenticado. Token não encontrado.",
+        });
+
+        expect(putSpy).not.toHaveBeenCalled();
     });
 
-    expect(putSpy).not.toHaveBeenCalled();
-  });
+    it("deve retornar erro 401 (não autorizado)", async () => {
+        const error = new AxiosError("Unauthorized");
+        error.response = {
+            status: 401,
+            data: {},
+            statusText: "Unauthorized",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
 
-  it("deve retornar erro 401 (não autorizado)", async () => {
-    const error = new AxiosError("Unauthorized");
-    error.response = {
-      status: 401,
-      data: {},
-      statusText: "Unauthorized",
-      headers: {},
-      config: { headers: {} as AxiosRequestHeaders },
-    };
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
-
-    expect(result).toEqual({
-      success: false,
-      error: "Não autorizado. Faça login novamente.",
+        expect(result).toEqual({
+            success: false,
+            error: "Não autorizado. Faça login novamente.",
+        });
     });
-  });
 
-  it("deve retornar erro 404 (não encontrado)", async () => {
-    const error = new AxiosError("Not Found");
-    error.response = {
-      status: 404,
-      data: {},
-      statusText: "Not Found",
-      headers: {},
-      config: { headers: {} as AxiosRequestHeaders },
-    };
+    it("deve retornar erro 404 (não encontrado)", async () => {
+        const error = new AxiosError("Not Found");
+        error.response = {
+            status: 404,
+            data: {},
+            statusText: "Not Found",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    expect(result).toEqual({
-      success: false,
-      error: "Ocorrência não encontrada.",
+        expect(result).toEqual({
+            success: false,
+            error: "Ocorrência não encontrada.",
+        });
     });
-  });
 
-  it("deve retornar erro 500 (erro servidor)", async () => {
-    const error = new AxiosError("Internal Server Error");
-    error.response = {
-      status: 500,
-      data: {},
-      statusText: "Internal Server Error",
-      headers: {},
-      config: { headers: {} as AxiosRequestHeaders },
-    };
+    it("deve retornar erro 500 (erro servidor)", async () => {
+        const error = new AxiosError("Internal Server Error");
+        error.response = {
+            status: 500,
+            data: {},
+            statusText: "Internal Server Error",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    expect(result).toEqual({
-      success: false,
-      error: "Erro interno no servidor.",
+        expect(result).toEqual({
+            success: false,
+            error: "Erro interno no servidor.",
+        });
     });
-  });
 
-  it("deve retornar mensagem detail da API se existir", async () => {
-    const detailMessage = "Mensagem detalhada da API";
+    it("deve retornar mensagem detail da API se existir", async () => {
+        const detailMessage = "Mensagem detalhada da API";
 
-    const error = new AxiosError("Request failed");
-    error.response = {
-      status: 400,
-      data: { detail: detailMessage },
-      statusText: "Bad Request",
-      headers: {},
-      config: { headers: {} as AxiosRequestHeaders },
-    };
+        const error = new AxiosError("Request failed");
+        error.response = {
+            status: 400,
+            data: { detail: detailMessage },
+            statusText: "Bad Request",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    expect(result).toEqual({
-      success: false,
-      error: detailMessage,
+        expect(result).toEqual({
+            success: false,
+            error: detailMessage,
+        });
     });
-  });
 
-  it("deve retornar mensagem do próprio erro (error.message)", async () => {
-    const errorMessage = "Network Error";
+    it("deve retornar mensagem do próprio erro (error.message)", async () => {
+        const errorMessage = "Network Error";
 
-    const error = new AxiosError(errorMessage);
+        const error = new AxiosError(errorMessage);
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    expect(result).toEqual({
-      success: false,
-      error: errorMessage,
+        expect(result).toEqual({
+            success: false,
+            error: errorMessage,
+        });
     });
-  });
 
-  it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
-    const error = new AxiosError();
+    it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
+        const error = new AxiosError();
 
-    vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
+        vi.spyOn(apiIntercorrencias, "put").mockRejectedValue(error);
 
-    const result = await finalizarEtapaDre(uuid, mockBody);
+        const result = await finalizarEtapaDre(uuid, mockBody);
 
-    expect(result).toEqual({
-      success: false,
-      error: "Erro ao enviar etapa para DRE",
+        expect(result).toEqual({
+            success: false,
+            error: "Erro ao enviar etapa para DRE",
+        });
     });
-  });
 });
