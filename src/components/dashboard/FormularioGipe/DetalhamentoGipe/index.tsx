@@ -57,8 +57,10 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useEnvolvidos();
     const { data: categoriasGipe, isLoading: isLoadingCategoriasGipe } =
         useCategoriasDisponiveisGipe();
+    const tipoFormulario =
+        formData.tipoOcorrencia === "Sim" ? "PATRIMONIAL" : "GERAL";
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
-        useTiposOcorrencia();
+        useTiposOcorrencia(tipoFormulario);
 
     const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
         {

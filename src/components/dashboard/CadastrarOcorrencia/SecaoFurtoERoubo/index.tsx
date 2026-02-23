@@ -55,7 +55,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             ocorrenciaUuid,
         } = useOcorrenciaFormStore();
         const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
-            useTiposOcorrencia();
+            useTiposOcorrencia("PATRIMONIAL");
         const { mutate: atualizarSecaoFurtoRoubo } =
             useAtualizarSecaoFurtoRoubo();
 

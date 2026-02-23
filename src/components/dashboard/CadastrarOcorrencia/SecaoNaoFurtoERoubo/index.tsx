@@ -60,7 +60,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
         const { formData, setFormData, setSavedFormData, ocorrenciaUuid } =
             useOcorrenciaFormStore();
         const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
-            useTiposOcorrencia();
+            useTiposOcorrencia("GERAL");
         const { data: envolvidos, isLoading: isLoadingEnvolvidos } =
             useEnvolvidos();
 
