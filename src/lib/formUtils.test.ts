@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { compareArrays, hasFormDataChanged } from "./formUtils";
 
 describe("formUtils", () => {
@@ -98,7 +98,7 @@ describe("formUtils", () => {
             };
 
             expect(hasFormDataChanged(current, reference, ["tags"])).toBe(
-                false
+                false,
             );
         });
 
@@ -240,16 +240,16 @@ describe("formUtils", () => {
             const current = {
                 tiposOcorrencia: ["uuid1", "uuid2", "uuid3"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "sim_com_dano",
+                smartSampa: "Sim",
             };
             const reference = {
                 tiposOcorrencia: ["uuid3", "uuid1", "uuid2"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "sim_com_dano",
+                smartSampa: "Sim",
             };
 
             expect(
-                hasFormDataChanged(current, reference, ["tiposOcorrencia"])
+                hasFormDataChanged(current, reference, ["tiposOcorrencia"]),
             ).toBe(false);
         });
     });

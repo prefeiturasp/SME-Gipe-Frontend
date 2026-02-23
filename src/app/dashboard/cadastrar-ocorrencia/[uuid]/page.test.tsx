@@ -26,7 +26,7 @@ const queryClient = new QueryClient();
 
 const renderWithClient = (ui: React.ReactElement) => {
     return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
     );
 };
 
@@ -56,7 +56,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -98,17 +98,17 @@ describe("EditarOcorrenciaPage", () => {
         expect(
             screen.getByRole("heading", {
                 name: /intercorrências institucionais/i,
-            })
+            }),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByRole("heading", { name: /nova ocorrência/i })
+            screen.getByRole("heading", { name: /nova ocorrência/i }),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /preencha as informações abaixo para registrar uma nova ocorrência/i
-            )
+                /preencha as informações abaixo para registrar uma nova ocorrência/i,
+            ),
         ).toBeInTheDocument();
 
         expect(screen.getByText("Cadastro de ocorrência")).toBeInTheDocument();
@@ -161,14 +161,14 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         await waitFor(() => {
             expect(
-                screen.getByText("Formulário patrimonial")
+                screen.getByText("Formulário patrimonial"),
             ).toBeInTheDocument();
         });
     });
@@ -217,7 +217,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -238,7 +238,7 @@ describe("EditarOcorrenciaPage", () => {
         renderWithClient(<EditarOcorrenciaPage />);
 
         expect(
-            screen.getByText("Carregando ocorrência...")
+            screen.getByText("Carregando ocorrência..."),
         ).toBeInTheDocument();
     });
 
@@ -254,7 +254,7 @@ describe("EditarOcorrenciaPage", () => {
 
         expect(screen.getByText(/erro ao buscar dados/i)).toBeInTheDocument();
         expect(
-            screen.getByText(/ocorrência não encontrada/i)
+            screen.getByText(/ocorrência não encontrada/i),
         ).toBeInTheDocument();
     });
 
@@ -274,7 +274,7 @@ describe("EditarOcorrenciaPage", () => {
                 { uuid: "uuid-2", nome: "Violência psicológica" },
             ],
             descricao_ocorrencia: "Descrição detalhada da ocorrência",
-            smart_sampa_situacao: "sim_com_dano" as const,
+            smart_sampa_situacao: "sim" as const,
         };
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -300,13 +300,13 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         expect(mockStoreState.setOcorrenciaUuid).toHaveBeenCalledWith(
-            "test-uuid-456"
+            "test-uuid-456",
         );
 
         expect(mockStoreState.setFormData).toHaveBeenCalledWith(
@@ -317,8 +317,8 @@ describe("EditarOcorrenciaPage", () => {
                 tipoOcorrencia: "Sim",
                 tiposOcorrencia: ["uuid-1", "uuid-2"],
                 descricao: "Descrição detalhada da ocorrência",
-                smartSampa: "sim_com_dano",
-            })
+                smartSampa: "Sim",
+            }),
         );
     });
 
@@ -359,7 +359,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -367,7 +367,7 @@ describe("EditarOcorrenciaPage", () => {
         expect(mockStoreState.setFormData).toHaveBeenCalledWith(
             expect.objectContaining({
                 tipoOcorrencia: "Não",
-            })
+            }),
         );
     });
 
@@ -383,10 +383,7 @@ describe("EditarOcorrenciaPage", () => {
             status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
-            smart_sampa_situacao: "valor-invalido" as
-                | "sim_com_dano"
-                | "sim_sem_dano"
-                | "nao_faz_parte",
+            smart_sampa_situacao: "valor-invalido" as "sim" | "nao",
         };
 
         mockUseGetOcorrencia.mockReturnValue({
@@ -412,7 +409,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -438,7 +435,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         const { unmount } = renderWithClient(<EditarOcorrenciaPage />);
@@ -467,7 +464,7 @@ describe("EditarOcorrenciaPage", () => {
                     element?.textContent === "String de erro simples" ||
                     content.includes("String de erro simples")
                 );
-            })
+            }),
         ).toBeInTheDocument();
     });
 
@@ -506,14 +503,14 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         expect(mockStoreState.setFormData).toHaveBeenCalled();
         expect(mockStoreState.setOcorrenciaUuid).toHaveBeenCalledWith(
-            "test-uuid-loading"
+            "test-uuid-loading",
         );
     });
 
@@ -554,7 +551,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -562,7 +559,7 @@ describe("EditarOcorrenciaPage", () => {
         expect(mockStoreState.setFormData).toHaveBeenCalledWith(
             expect.objectContaining({
                 dataOcorrencia: "",
-            })
+            }),
         );
     });
 
@@ -609,7 +606,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -619,7 +616,7 @@ describe("EditarOcorrenciaPage", () => {
                 comunicacaoSeguranca: "Sim, com a PM",
                 protocoloAcionado: "Alerta",
                 declarante: "declarante-uuid-456",
-            })
+            }),
         );
     });
 
@@ -665,19 +662,19 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         await waitFor(() => {
             expect(
-                screen.getByRole("heading", { name: /nova ocorrência/i })
+                screen.getByRole("heading", { name: /nova ocorrência/i }),
             ).toBeInTheDocument();
         });
 
         expect(
-            screen.queryByRole("heading", { name: /visualizar ocorrência/i })
+            screen.queryByRole("heading", { name: /visualizar ocorrência/i }),
         ).not.toBeInTheDocument();
     });
 
@@ -747,14 +744,14 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         await waitFor(() => {
             expect(
-                screen.getByRole("heading", { name: /Nova ocorrência/i })
+                screen.getByRole("heading", { name: /Nova ocorrência/i }),
             ).toBeInTheDocument();
         });
     });
@@ -825,14 +822,14 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         await waitFor(() => {
             expect(
-                screen.getByRole("heading", { name: /Nova ocorrência/i })
+                screen.getByRole("heading", { name: /Nova ocorrência/i }),
             ).toBeInTheDocument();
         });
     });
@@ -908,7 +905,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -921,7 +918,7 @@ describe("EditarOcorrenciaPage", () => {
                     encaminhamentos: "Encaminhamentos GIPE",
                     envolveArmaOuAtaque: "sim",
                     informacoesInteracoesVirtuais: "Info virtual",
-                })
+                }),
             );
         });
 
@@ -974,7 +971,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -1035,13 +1032,13 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         expect(
-            screen.getByText("Carregando ocorrência...")
+            screen.getByText("Carregando ocorrência..."),
         ).toBeInTheDocument();
     });
 
@@ -1096,13 +1093,13 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
 
         expect(
-            screen.getByText("Carregando ocorrência...")
+            screen.getByText("Carregando ocorrência..."),
         ).toBeInTheDocument();
     });
 
@@ -1173,7 +1170,7 @@ describe("EditarOcorrenciaPage", () => {
                     return selector(mockStoreState);
                 }
                 return mockStoreState;
-            }
+            },
         );
 
         renderWithClient(<EditarOcorrenciaPage />);
@@ -1182,7 +1179,7 @@ describe("EditarOcorrenciaPage", () => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
                     tiposOcorrencia: ["tipo-ue-1"],
-                })
+                }),
             );
         });
     });
