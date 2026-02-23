@@ -55,7 +55,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
             onFormChange,
             disabled = false,
         },
-        ref
+        ref,
     ) => {
         const { formData, setFormData, setSavedFormData, ocorrenciaUuid } =
             useOcorrenciaFormStore();
@@ -153,7 +153,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         };
 
@@ -222,7 +222,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                                 envolvido.perfil_dos_envolvidos
                                                             }
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -247,8 +247,10 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                 : "text-[#42474a]"
                                         }`}
                                     >
-                                        se houver informações sobre agressores
-                                        ou vítimas, preencher aqui
+                                        Descreva o que ocorreu, incluindo data,
+                                        local, caso existam pessoas envolvidas e
+                                        demais informações relevantes para o
+                                        registro.
                                     </p>
                                     <FormControl>
                                         <Textarea
@@ -327,7 +329,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 </form>
             </Form>
         );
-    }
+    },
 );
 
 SecaoNaoFurtoERoubo.displayName = "SecaoNaoFurtoERoubo";

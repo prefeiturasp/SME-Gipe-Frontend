@@ -45,7 +45,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             onFormChange,
             disabled = false,
         },
-        ref
+        ref,
     ) => {
         const {
             formData,
@@ -145,7 +145,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                 variant: "error",
                             });
                         },
-                    }
+                    },
                 );
             } else {
                 setFormData(data);
@@ -199,8 +199,10 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 : "text-[#42474a]"
                                         }`}
                                     >
-                                        se houver informações sobre agressores
-                                        ou vítimas, preencher aqui
+                                        Descreva o que ocorreu, incluindo data,
+                                        local, caso existam pessoas envolvidas e
+                                        demais informações relevantes para o
+                                        registro.
                                     </p>
                                     <FormControl>
                                         <Textarea
@@ -305,7 +307,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                 </form>
             </Form>
         );
-    }
+    },
 );
 
 SecaoFurtoERoubo.displayName = "SecaoFurtoERoubo";
