@@ -40,6 +40,16 @@ vi.mock("@/stores/useUserStore", () => ({
     ),
 }));
 
+const mockReset = vi.fn();
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: vi.fn(
+        (selector: (state: { reset: () => void }) => unknown) => {
+            const state = { reset: mockReset };
+            return selector ? selector(state) : state;
+        },
+    ),
+}));
+
 describe("Header - Nova Ocorrência", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -81,6 +91,42 @@ describe("Header - Nova Ocorrência", () => {
             expect(mockPush).toHaveBeenCalledWith(
                 "/dashboard/cadastrar-ocorrencia",
             );
+        });
+    });
+
+    it("deve limpar o estado da store ao clicar em nova ocorrência", async () => {
+        mockUser = {
+            unidades: [{ uuid: "123", nome: "EMEF Teste" }],
+        };
+
+        render(<Header />);
+
+        const button = screen.getByRole("button", {
+            name: /\+ nova ocorrência/i,
+        });
+
+        fireEvent.click(button);
+
+        await waitFor(() => {
+            expect(mockReset).toHaveBeenCalled();
+        });
+    });
+
+    it("não deve limpar o estado da store quando usuario não tem unidades", async () => {
+        mockUser = {
+            unidades: [],
+        };
+
+        render(<Header />);
+
+        const button = screen.getByRole("button", {
+            name: /\+ nova ocorrência/i,
+        });
+
+        fireEvent.click(button);
+
+        await waitFor(() => {
+            expect(mockReset).not.toHaveBeenCalled();
         });
     });
 

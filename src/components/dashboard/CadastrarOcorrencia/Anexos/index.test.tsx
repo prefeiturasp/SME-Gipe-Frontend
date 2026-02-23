@@ -1,4 +1,7 @@
 import * as useEnviarAnexoHook from "@/hooks/useEnviarAnexo";
+import * as useFinalizarEtapaHook from "@/hooks/useFinalizarEtapa";
+import * as useFinalizarEtapaDreHook from "@/hooks/useFinalizarEtapaDre";
+import * as useFinalizarEtapaGipeHook from "@/hooks/useFinalizarEtapaGipe";
 import * as useObterAnexosHook from "@/hooks/useObterAnexos";
 import * as useTiposDocumentosHook from "@/hooks/useTiposDocumentos";
 import * as useUserPermissionsHook from "@/hooks/useUserPermissions";
@@ -19,6 +22,9 @@ import Anexos from "./index";
 vi.mock("@/stores/useOcorrenciaFormStore");
 vi.mock("@/stores/useUserStore");
 vi.mock("@/hooks/useEnviarAnexo");
+vi.mock("@/hooks/useFinalizarEtapa");
+vi.mock("@/hooks/useFinalizarEtapaDre");
+vi.mock("@/hooks/useFinalizarEtapaGipe");
 vi.mock("@/hooks/useObterAnexos");
 vi.mock("@/hooks/useTiposDocumentos");
 vi.mock("@/hooks/useUserPermissions");
@@ -107,7 +113,7 @@ describe("Anexos", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: {},
             setFormData: mockSetFormData,
@@ -146,11 +152,32 @@ describe("Anexos", () => {
             isAssistenteOuDiretor: false,
             isGipeAdmin: false,
         });
+
+        vi.spyOn(useFinalizarEtapaHook, "useFinalizarEtapa").mockReturnValue({
+            mutateAsync: vi.fn().mockReturnValue(new Promise(() => {})),
+            isPending: false,
+        } as never);
+
+        vi.spyOn(
+            useFinalizarEtapaDreHook,
+            "useFinalizarEtapaDre",
+        ).mockReturnValue({
+            mutateAsync: vi.fn().mockReturnValue(new Promise(() => {})),
+            isPending: false,
+        } as never);
+
+        vi.spyOn(
+            useFinalizarEtapaGipeHook,
+            "useFinalizarEtapaGipe",
+        ).mockReturnValue({
+            mutateAsync: vi.fn().mockReturnValue(new Promise(() => {})),
+            isPending: false,
+        } as never);
     });
 
     it("deve renderizar o título e descrições", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -160,53 +187,53 @@ describe("Anexos", () => {
         expect(screen.getByText("Anexar novo arquivo")).toBeInTheDocument();
         expect(
             screen.getByText(
-                /Selecione e classifique o tipo de arquivo, depois clique em/i
-            )
+                /Selecione e classifique o tipo de arquivo, depois clique em/i,
+            ),
         ).toBeInTheDocument();
     });
 
     it("deve renderizar todos os campos do formulário", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
             expect(
-                screen.getByLabelText(/Selecione o arquivo/i)
+                screen.getByLabelText(/Selecione o arquivo/i),
             ).toBeInTheDocument();
         });
 
         expect(
-            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
+            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Escolher arquivo/i })
+            screen.getByRole("button", { name: /Escolher arquivo/i }),
         ).toBeInTheDocument();
         expect(screen.getByLabelText(/Tipo do documento/i)).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Anexar documento/i })
+            screen.getByRole("button", { name: /Anexar documento/i }),
         ).toBeInTheDocument();
     });
 
     it("deve renderizar os botões Anterior e Finalizar", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
             expect(
-                screen.getByRole("button", { name: /Anterior/i })
+                screen.getByRole("button", { name: /Anterior/i }),
             ).toBeInTheDocument();
         });
 
         expect(
-            screen.getByRole("button", { name: /Finalizar/i })
+            screen.getByRole("button", { name: /Finalizar e enviar/i }),
         ).toBeInTheDocument();
     });
 
     it("deve desabilitar o botão Anexar documento quando não há arquivo selecionado", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -220,7 +247,7 @@ describe("Anexos", () => {
     it("deve selecionar um arquivo válido", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -232,20 +259,20 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
         await waitFor(() => {
             expect(
-                screen.getByDisplayValue("documento.pdf")
+                screen.getByDisplayValue("documento.pdf"),
             ).toBeInTheDocument();
         });
     });
 
     it("deve exibir alerta ao tentar anexar arquivo maior que 2MB", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -257,11 +284,11 @@ describe("Anexos", () => {
             "grande.pdf",
             {
                 type: "application/pdf",
-            }
+            },
         );
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
@@ -270,18 +297,18 @@ describe("Anexos", () => {
                 expect.objectContaining({
                     variant: "error",
                     title: "Arquivo muito grande",
-                })
+                }),
             );
         });
 
         expect(
-            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
+            screen.getByPlaceholderText(/Nenhum arquivo selecionado/i),
         ).toHaveValue("");
     });
 
     it("deve exibir alerta ao tentar anexar arquivo de formato não suportado", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -293,7 +320,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         fireEvent.change(fileInput, { target: { files: [invalidFile] } });
 
@@ -302,7 +329,7 @@ describe("Anexos", () => {
                 expect.objectContaining({
                     variant: "error",
                     title: "Formato não suportado",
-                })
+                }),
             );
         });
     });
@@ -310,7 +337,7 @@ describe("Anexos", () => {
     it("deve aceitar arquivo PDF válido", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -322,13 +349,13 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
         await waitFor(() => {
             expect(
-                screen.getByDisplayValue("documento.pdf")
+                screen.getByDisplayValue("documento.pdf"),
             ).toBeInTheDocument();
         });
     });
@@ -336,7 +363,7 @@ describe("Anexos", () => {
     it("deve aceitar arquivo JPG válido", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -348,7 +375,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -360,7 +387,7 @@ describe("Anexos", () => {
     it("deve aceitar arquivo PNG válido", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -372,7 +399,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -384,7 +411,7 @@ describe("Anexos", () => {
     it("deve habilitar o botão Anexar documento quando arquivo e tipo são selecionados", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -396,7 +423,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -421,7 +448,7 @@ describe("Anexos", () => {
     it("deve anexar documento e chamar refetch para atualizar lista da API", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -433,7 +460,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -468,7 +495,7 @@ describe("Anexos", () => {
     it("deve resetar o formulário após anexar documento", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -480,7 +507,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -504,7 +531,7 @@ describe("Anexos", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(/Nenhum arquivo selecionado/i)
+                screen.getByPlaceholderText(/Nenhum arquivo selecionado/i),
             ).toHaveValue("");
             expect(anexarButton).toBeDisabled();
         });
@@ -554,7 +581,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -565,7 +592,7 @@ describe("Anexos", () => {
             expect(boletimTexts.length).toBeGreaterThan(0);
 
             const registroTexts = screen.getAllByText(
-                "Registro de ocorrência interno"
+                "Registro de ocorrência interno",
             );
             expect(registroTexts.length).toBeGreaterThan(0);
         });
@@ -602,7 +629,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -614,7 +641,7 @@ describe("Anexos", () => {
     it("deve chamar onPrevious ao clicar no botão Anterior", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -632,7 +659,7 @@ describe("Anexos", () => {
 
     it("deve chamar onNext ao submeter o formulário", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -652,7 +679,7 @@ describe("Anexos", () => {
     it("deve preencher campos com dados do store", async () => {
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: {
                 tipoDocumento: "boletim_ocorrencia",
@@ -662,7 +689,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -675,19 +702,19 @@ describe("Anexos", () => {
 
     it("deve exibir link de ajuda sobre arquivos suportados", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
             expect(
                 screen.getByText(
-                    /Para conferir mais detalhes sobre os arquivos suportados/i
-                )
+                    /Para conferir mais detalhes sobre os arquivos suportados/i,
+                ),
             ).toBeInTheDocument();
         });
 
         expect(
-            screen.getByRole("button", { name: /clique aqui/i })
+            screen.getByRole("button", { name: /clique aqui/i }),
         ).toBeInTheDocument();
     });
 
@@ -722,7 +749,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -734,7 +761,7 @@ describe("Anexos", () => {
     it("não deve anexar documento se não houver arquivo selecionado", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -759,7 +786,7 @@ describe("Anexos", () => {
     it("não deve anexar documento se não houver tipo selecionado", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -770,7 +797,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -783,7 +810,7 @@ describe("Anexos", () => {
     it("deve abrir o seletor de arquivo ao clicar no botão Escolher arquivo", async () => {
         const user = userEvent.setup();
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -795,7 +822,7 @@ describe("Anexos", () => {
         });
 
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         const clickSpy = vi.spyOn(fileInput, "click");
 
@@ -809,7 +836,7 @@ describe("Anexos", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockReturnValue({
             formData: {},
             setFormData: mockSetFormData,
@@ -817,7 +844,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -828,7 +855,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -871,7 +898,7 @@ describe("Anexos", () => {
         });
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -882,7 +909,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -932,7 +959,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -943,7 +970,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -969,7 +996,7 @@ describe("Anexos", () => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
                 expect.objectContaining({
                     perfil: "diretor",
-                })
+                }),
             );
         });
     });
@@ -998,7 +1025,7 @@ describe("Anexos", () => {
 
         vi.spyOn(
             useOcorrenciaFormStoreModule,
-            "useOcorrenciaFormStore"
+            "useOcorrenciaFormStore",
         ).mockImplementation(((selector: unknown) => {
             const state = {
                 formData: {},
@@ -1011,7 +1038,7 @@ describe("Anexos", () => {
         }) as never);
 
         vi.spyOn(useUserStoreModule, "useUserStore").mockImplementation(((
-            selector: unknown
+            selector: unknown,
         ) => {
             const state = {
                 user: {
@@ -1028,7 +1055,7 @@ describe("Anexos", () => {
         }) as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -1039,7 +1066,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -1062,7 +1089,7 @@ describe("Anexos", () => {
             expect(mockMutateAsyncLocal).toHaveBeenCalledWith(
                 expect.objectContaining({
                     perfil: "assistente",
-                })
+                }),
             );
         });
     });
@@ -1081,7 +1108,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -1092,7 +1119,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -1118,7 +1145,7 @@ describe("Anexos", () => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
                 expect.objectContaining({
                     perfil: "diretor",
-                })
+                }),
             );
         });
     });
@@ -1134,7 +1161,7 @@ describe("Anexos", () => {
         } as never);
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -1145,7 +1172,7 @@ describe("Anexos", () => {
             type: "application/pdf",
         });
         const fileInput = document.querySelector(
-            "#fileInput"
+            "#fileInput",
         ) as HTMLInputElement;
         await user.upload(fileInput, file);
 
@@ -1171,14 +1198,14 @@ describe("Anexos", () => {
             expect(mockMutateAsync).toHaveBeenCalledWith(
                 expect.objectContaining({
                     perfil: "diretor",
-                })
+                }),
             );
         });
     });
 
     it("deve abrir o modal de tipos ao clicar em 'clique aqui'", async () => {
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         const botao = screen.getByRole("button", { name: /clique aqui/i });
@@ -1186,21 +1213,37 @@ describe("Anexos", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByText(/Formatos e tamanhos suportados/i)
+                screen.getByText(/Formatos e tamanhos suportados/i),
             ).toBeInTheDocument();
         });
     });
 
-    it("deve abrir o modal de tipos ao clicar em 'Finalizar'", async () => {
+    it("deve abrir o modal de sucesso ao clicar em 'Finalizar e enviar'", async () => {
+        vi.spyOn(useFinalizarEtapaHook, "useFinalizarEtapa").mockReturnValue({
+            mutateAsync: vi.fn().mockResolvedValue({
+                success: true,
+                data: {
+                    uuid: "mock-uuid",
+                    protocolo_da_intercorrencia: "PROTO-123",
+                    responsavel_nome: "Fulano",
+                },
+            }),
+            isPending: false,
+        } as never);
+
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
-        const botao = screen.getByRole("button", { name: /finalizar/i });
+        const botao = screen.getByRole("button", {
+            name: /Finalizar e enviar/i,
+        });
         await userEvent.click(botao);
 
         await waitFor(() => {
-            expect(screen.getByText(/Conclusão de etapa/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(/Ocorrência registrada com sucesso/i),
+            ).toBeInTheDocument();
         });
     });
 
@@ -1223,7 +1266,7 @@ describe("Anexos", () => {
         });
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -1253,7 +1296,7 @@ describe("Anexos", () => {
         });
 
         renderWithProvider(
-            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
         );
 
         await waitFor(() => {
@@ -1287,7 +1330,7 @@ describe("Anexos", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
                 disabled={true}
-            />
+            />,
         );
 
         const tipoSelect = screen.getByRole("combobox");
