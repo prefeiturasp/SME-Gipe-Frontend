@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getTiposOcorrenciaAction } from "./tipos-ocorrencia";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getTiposOcorrenciaAction } from "./tipos-ocorrencia";
 
 vi.mock("@/lib/axios-intercorrencias", () => ({
     default: {
@@ -21,7 +21,7 @@ describe("getTiposOcorrenciaAction", () => {
         vi.clearAllMocks();
     });
 
-    it("deve retornar os tipos de ocorrência com sucesso", async () => {
+    it("deve retornar os tipos de ocorrência com sucesso sem parâmetro", async () => {
         const mockData = [
             {
                 uuid: "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
@@ -53,6 +53,62 @@ describe("getTiposOcorrenciaAction", () => {
                 Authorization: "Bearer fake-token",
             },
         });
+    });
+
+    it("deve enviar tipo_formulario=PATRIMONIAL quando informado", async () => {
+        const mockData = [{ uuid: "uuid-1", nome: "Furto" }];
+
+        mockCookies.mockReturnValue({
+            get: vi.fn().mockReturnValue({ value: "fake-token" }),
+        } as never);
+
+        mockGet.mockResolvedValue({
+            data: mockData,
+        } as never);
+
+        const result = await getTiposOcorrenciaAction("PATRIMONIAL");
+
+        expect(result).toEqual({
+            success: true,
+            data: mockData,
+        });
+
+        expect(mockGet).toHaveBeenCalledWith(
+            "/tipos-ocorrencia/?tipo_formulario=PATRIMONIAL",
+            {
+                headers: {
+                    Authorization: "Bearer fake-token",
+                },
+            },
+        );
+    });
+
+    it("deve enviar tipo_formulario=GERAL quando informado", async () => {
+        const mockData = [{ uuid: "uuid-2", nome: "Agressão" }];
+
+        mockCookies.mockReturnValue({
+            get: vi.fn().mockReturnValue({ value: "fake-token" }),
+        } as never);
+
+        mockGet.mockResolvedValue({
+            data: mockData,
+        } as never);
+
+        const result = await getTiposOcorrenciaAction("GERAL");
+
+        expect(result).toEqual({
+            success: true,
+            data: mockData,
+        });
+
+        expect(mockGet).toHaveBeenCalledWith(
+            "/tipos-ocorrencia/?tipo_formulario=GERAL",
+            {
+                headers: {
+                    Authorization: "Bearer fake-token",
+                },
+            },
+        );
     });
 
     it("deve retornar erro quando não há token", async () => {
