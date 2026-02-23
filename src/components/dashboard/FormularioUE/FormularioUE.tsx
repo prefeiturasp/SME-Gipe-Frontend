@@ -35,7 +35,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
-        (state) => state.ocorrenciaUuid
+        (state) => state.ocorrenciaUuid,
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
@@ -212,8 +212,15 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         };
 
         const dataHoraOcorrencia = new Date(
-            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`
+            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
         ).toISOString();
+
+        let smartSampaSituacao = "nao";
+        if (isFurtoRoubo) {
+            const smartSampaValue = (secaoTipoData as { smartSampa?: string })
+                ?.smartSampa;
+            smartSampaSituacao = smartSampaValue === "Sim" ? "sim" : "nao";
+        }
 
         return {
             data_ocorrencia: dataHoraOcorrencia,
@@ -223,10 +230,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 secaoInicialData?.tipoOcorrencia === "Sim",
             tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
-            smart_sampa_situacao: isFurtoRoubo
-                ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
-                  "nao_faz_parte"
-                : "nao_faz_parte",
+            smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
                 (secaoTipoData as { envolvidos?: string })?.envolvidos && {
                     envolvido:
@@ -244,7 +248,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             ...(informacoesAdicionaisData && {
                 nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,
                 idade_pessoa_agressora: Number(
-                    informacoesAdicionaisData.idadeAgressor
+                    informacoesAdicionaisData.idadeAgressor,
                 ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
@@ -324,7 +328,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         } catch {
             toast({

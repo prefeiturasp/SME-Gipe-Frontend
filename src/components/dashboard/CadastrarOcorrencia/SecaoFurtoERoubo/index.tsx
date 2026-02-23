@@ -111,7 +111,8 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                     return;
                 }
 
-                const smartSampaSituacao = data.smartSampa;
+                const smartSampaSituacao: "sim" | "nao" =
+                    data.smartSampa === "Sim" ? "sim" : "nao";
 
                 atualizarSecaoFurtoRoubo(
                     {
@@ -224,8 +225,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
                                         Unidade Educacional é contemplada pelo
-                                        Smart Sampa? Se sim, houve dano às
-                                        câmeras do sistema?*
+                                        Smart Sampa?*
                                     </FormLabel>
                                     <FormControl>
                                         <div className="pt-2">
@@ -236,40 +236,15 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 disabled={disabled}
                                             >
                                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="sim_com_dano" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        Sim e houve dano
+                                                    <RadioGroupItem value="Sim" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Sim
                                                     </span>
                                                 </label>
                                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="sim_sem_dano" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        Sim, mas não houve dano
-                                                    </span>
-                                                </label>
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="nao_faz_parte" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        A UE não faz parte do
-                                                        Smart Sampa
+                                                    <RadioGroupItem value="Não" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Não
                                                     </span>
                                                 </label>
                                             </RadioGroup>
