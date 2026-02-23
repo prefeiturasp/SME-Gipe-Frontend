@@ -9,7 +9,11 @@ export type TipoOcorrenciaAPI = {
     nome: string;
 };
 
-export const getTiposOcorrenciaAction = async (): Promise<
+export type TipoFormulario = "PATRIMONIAL" | "GERAL";
+
+export const getTiposOcorrenciaAction = async (
+    tipoFormulario?: TipoFormulario,
+): Promise<
     | { success: true; data: TipoOcorrenciaAPI[] }
     | { success: false; error: string }
 > => {
@@ -21,13 +25,17 @@ export const getTiposOcorrenciaAction = async (): Promise<
     }
 
     try {
+        const url = tipoFormulario
+            ? `/tipos-ocorrencia/?tipo_formulario=${tipoFormulario}`
+            : "/tipos-ocorrencia/";
+
         const { data } = await apiIntercorrencias.get<TipoOcorrenciaAPI[]>(
-            "/tipos-ocorrencia/",
+            url,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-            }
+            },
         );
 
         return { success: true, data };
