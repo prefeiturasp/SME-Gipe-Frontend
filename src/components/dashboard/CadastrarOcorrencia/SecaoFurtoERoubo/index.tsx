@@ -15,7 +15,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
-import { hasFormDataChanged } from "@/lib/formUtils";
+import {
+    filterValidTiposOcorrencia,
+    hasFormDataChanged,
+} from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useEffect, useImperativeHandle } from "react";
@@ -77,6 +80,22 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
 
         const { isValid } = form.formState;
 
+        // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
+        useEffect(() => {
+            if (!isLoadingTipos && tiposOcorrencia) {
+                const current = form.getValues("tiposOcorrencia");
+                const filtered = filterValidTiposOcorrencia(
+                    current,
+                    tiposOcorrencia,
+                );
+                if (filtered.length !== current.length) {
+                    form.setValue("tiposOcorrencia", filtered, {
+                        shouldValidate: true,
+                    });
+                }
+            }
+        }, [isLoadingTipos, tiposOcorrencia, form]);
+
         // Notifica mudanças em tempo real
         const watchedValues = form.watch();
         useEffect(() => {
@@ -114,11 +133,16 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                 const smartSampaSituacao: "sim" | "nao" =
                     data.smartSampa === "Sim" ? "sim" : "nao";
 
+                const tiposValidos = filterValidTiposOcorrencia(
+                    data.tiposOcorrencia,
+                    tiposOcorrencia,
+                );
+
                 atualizarSecaoFurtoRoubo(
                     {
                         uuid: ocorrenciaUuid,
                         body: {
-                            tipos_ocorrencia: data.tiposOcorrencia,
+                            tipos_ocorrencia: tiposValidos,
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },

@@ -23,13 +23,14 @@ import { useAtualizarOcorrenciaGipe } from "@/hooks/useAtualizarOcorrenciaGipe";
 import { useCategoriasDisponiveisGipe } from "@/hooks/useCategoriasDisponiveisGipe";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
@@ -105,7 +106,37 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
     const { isValid } = form.formState;
 
+    const prevTipoFormularioRef = useRef(tipoFormulario);
+    useEffect(() => {
+        if (prevTipoFormularioRef.current !== tipoFormulario) {
+            form.setValue("tiposOcorrencia", []);
+            setFormData({ tiposOcorrencia: [] });
+            prevTipoFormularioRef.current = tipoFormulario;
+        }
+    }, [tipoFormulario, form, setFormData]);
+
+    // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
+    useEffect(() => {
+        if (!isLoadingTipos && tiposOcorrencia) {
+            const current = form.getValues("tiposOcorrencia");
+            const filtered = filterValidTiposOcorrencia(
+                current,
+                tiposOcorrencia,
+            );
+            if (filtered.length !== current.length) {
+                form.setValue("tiposOcorrencia", filtered, {
+                    shouldValidate: true,
+                });
+            }
+        }
+    }, [isLoadingTipos, tiposOcorrencia, form]);
+
     const handleSubmit = async (data: FormularioGipeData) => {
+        const tiposValidos = filterValidTiposOcorrencia(
+            data.tiposOcorrencia,
+            tiposOcorrencia,
+        );
+
         atualizarOcorrenciaGipe(
             {
                 uuid: ocorrenciaUuid!,
@@ -116,7 +147,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
                     envolvido: data.envolvidos,
                     motivacao_ocorrencia: data.motivoOcorrencia,
-                    tipos_ocorrencia: data.tiposOcorrencia,
+                    tipos_ocorrencia: tiposValidos,
                     qual_ciclo_aprendizagem: data.cicloAprendizagem,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,

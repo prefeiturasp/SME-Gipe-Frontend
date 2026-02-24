@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useEffect, useImperativeHandle } from "react";
@@ -87,6 +88,22 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
         const { isValid } = form.formState;
 
+        // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
+        useEffect(() => {
+            if (!isLoadingTipos && tiposOcorrencia) {
+                const current = form.getValues("tiposOcorrencia");
+                const filtered = filterValidTiposOcorrencia(
+                    current,
+                    tiposOcorrencia,
+                );
+                if (filtered.length !== current.length) {
+                    form.setValue("tiposOcorrencia", filtered, {
+                        shouldValidate: true,
+                    });
+                }
+            }
+        }, [isLoadingTipos, tiposOcorrencia, form]);
+
         // Notifica mudanças em tempo real
         const watchedValues = form.watch();
         useEffect(() => {
@@ -121,8 +138,13 @@ const SecaoNaoFurtoERoubo = forwardRef<
             const temInfo: "sim" | "nao" =
                 data.possuiInfoAgressorVitima === "Sim" ? "sim" : "nao";
 
+            const tiposValidos = filterValidTiposOcorrencia(
+                data.tiposOcorrencia,
+                tiposOcorrencia,
+            );
+
             const body = {
-                tipos_ocorrencia: data.tiposOcorrencia,
+                tipos_ocorrencia: tiposValidos,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
                 tem_info_agressor_ou_vitima: temInfo,

@@ -5,7 +5,9 @@ import { Stepper } from "@/components/stepper/Stepper";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { useQueryClient } from "@tanstack/react-query";
@@ -64,6 +66,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     // Valores reativos baseados nos estados locais
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    // Usa estado local (reativo) para buscar tipos corretos ao trocar o radio
+    const tipoFormulario = isFurtoRoubo ? "PATRIMONIAL" : "GERAL";
+    const { data: tiposOcorrenciaDisponiveis } =
+        useTiposOcorrencia(tipoFormulario);
 
     // Callbacks para receber mudanças dos formulários
     const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
@@ -228,7 +235,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
-            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
+            tipos_ocorrencia: filterValidTiposOcorrencia(
+                secaoTipoData?.tiposOcorrencia ?? [],
+                tiposOcorrenciaDisponiveis,
+            ),
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&

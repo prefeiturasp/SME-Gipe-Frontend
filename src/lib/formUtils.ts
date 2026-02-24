@@ -33,7 +33,7 @@ export const compareArrays = (arr1: string[], arr2: string[] = []): boolean => {
 export const hasFormDataChanged = <T extends Record<string, unknown>>(
     currentData: T,
     referenceData: Partial<T> | undefined,
-    arrayFields: (keyof T)[] = []
+    arrayFields: (keyof T)[] = [],
 ): boolean => {
     // Se não houver dados de referência, considera como mudança
     if (!referenceData || Object.keys(referenceData).length === 0) {
@@ -67,4 +67,23 @@ export const hasFormDataChanged = <T extends Record<string, unknown>>(
     }
 
     return false;
+};
+
+/**
+ * Filtra os UUIDs de tiposOcorrencia selecionados mantendo apenas
+ * aqueles que existem na lista de tipos disponíveis retornada pela API.
+ * Evita que UUIDs de um tipo de formulário (ex: PATRIMONIAL) sejam
+ * enviados quando o formulário ativo é de outro tipo (ex: GERAL).
+ *
+ * @param selectedIds - UUIDs atualmente selecionados no formulário
+ * @param availableTypes - Lista de tipos retornados pela API para o tipo de formulário ativo
+ * @returns Array filtrado contendo apenas UUIDs válidos
+ */
+export const filterValidTiposOcorrencia = (
+    selectedIds: string[],
+    availableTypes: { uuid: string }[] | undefined,
+): string[] => {
+    if (!availableTypes || availableTypes.length === 0) return selectedIds;
+    const validUuids = new Set(availableTypes.map((t) => t.uuid));
+    return selectedIds.filter((id) => validUuids.has(id));
 };
