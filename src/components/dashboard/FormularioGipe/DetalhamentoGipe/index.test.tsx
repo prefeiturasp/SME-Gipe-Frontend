@@ -763,4 +763,26 @@ describe("DetalhamentoGipe", () => {
         expect(botao).toBeInTheDocument();
         expect(botao).not.toHaveTextContent("Finalizar e enviar");
     });
+
+    it("deve usar tipoFormulario 'PATRIMONIAL' quando tipoOcorrencia é 'Sim'", () => {
+        const spyTiposOcorrencia = vi
+            .spyOn(useTiposOcorrenciaModule, "useTiposOcorrencia")
+            .mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+            } as never);
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: { ...mockFormData, tipoOcorrencia: "Sim" },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        renderComponent();
+
+        expect(spyTiposOcorrencia).toHaveBeenCalledWith("PATRIMONIAL");
+    });
 });

@@ -122,6 +122,28 @@ describe("transformOcorrenciaToFormData", () => {
         expect(result.smartSampa).toBeUndefined();
     });
 
+    it("deve validar e incluir smartSampa como 'Não' quando valor é 'nao'", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            smart_sampa_situacao: "nao",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.smartSampa).toBe("Não");
+    });
+
+    it("deve incluir status quando presente", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            status: "em_preenchimento_diretor",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.status).toBe("em_preenchimento_diretor");
+    });
+
     it("deve incluir declarante quando presente", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,

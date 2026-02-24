@@ -966,6 +966,28 @@ describe("FormularioUE", () => {
             });
         });
 
+        it("deve definir smart_sampa_situacao como 'sim' quando smartSampa é 'Sim' em furto/roubo", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Sim" };
+            mockSecaoFurtoGetData.mockReturnValue({
+                tiposOcorrencia: ["Furto"],
+                descricao: "Descrição do furto",
+                smartSampa: "Sim",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.smart_sampa_situacao).toBe("sim");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
         it("deve usar fallback 'nao' quando comunicacaoSeguranca é uma string não mapeada", async () => {
             mockSecaoFinalGetData.mockReturnValue({
                 declarante: "Diretor",
