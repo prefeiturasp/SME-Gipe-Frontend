@@ -919,6 +919,56 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
     });
 
+    describe("filtragem de tiposOcorrencia inválidos", () => {
+        it("deve remover UUIDs que não pertencem ao tipo atual ao montar", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: [
+                        "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        "uuid-invalido-de-outro-tipo",
+                    ],
+                    descricao: "Teste",
+                    envolvidos: "uuid-estudante",
+                    possuiInfoAgressorVitima: "Não",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: "test-uuid",
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoNaoFurtoERouboRef>();
+            render(
+                <SecaoNaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const formValues = ref.current?.getFormData();
+                expect(formValues?.tiposOcorrencia).toEqual([
+                    "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                ]);
+            });
+        });
+    });
+
     it("deve desabilitar todos os campos quando disabled=true", async () => {
         const user = userEvent.setup();
         render(

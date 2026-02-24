@@ -1254,6 +1254,103 @@ describe("SecaoFurtoERoubo", () => {
         });
     });
 
+    describe("filtragem de tiposOcorrencia inválidos", () => {
+        it("deve remover UUIDs que não pertencem ao tipo atual ao montar", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: [
+                        "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        "uuid-invalido-de-outro-tipo",
+                    ],
+                    descricao: "Teste",
+                    smartSampa: "Sim",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const formValues = ref.current?.getFormData();
+                expect(formValues?.tiposOcorrencia).toEqual([
+                    "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                ]);
+            });
+        });
+
+        it("não deve alterar tiposOcorrencia quando todos são válidos", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: [
+                        "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+                    ],
+                    descricao: "Teste",
+                    smartSampa: "Sim",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const formValues = ref.current?.getFormData();
+                expect(formValues?.tiposOcorrencia).toEqual([
+                    "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+                ]);
+            });
+        });
+    });
+
     it("deve desabilitar todos os campos quando disabled=true", async () => {
         const user = userEvent.setup();
         render(

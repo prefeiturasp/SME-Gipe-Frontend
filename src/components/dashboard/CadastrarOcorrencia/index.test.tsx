@@ -1,8 +1,8 @@
-import "./__tests__/setup";
-import { fireEvent, screen, waitFor, act } from "@testing-library/react";
-import { vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
-import { renderWithClient, mockUseUserStore } from "./__tests__/helpers";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
+import { mockUseUserStore, renderWithClient } from "./__tests__/helpers";
+import "./__tests__/setup";
 
 vi.mock("./StepRenderer", () => ({
     default: vi.fn(
@@ -73,7 +73,7 @@ vi.mock("./StepRenderer", () => ({
             };
 
             return <div data-testid="step-renderer">{getStepContent()}</div>;
-        }
+        },
     ),
 }));
 
@@ -102,13 +102,14 @@ const queryClient = new QueryClient();
 
 const setupStoreMock = (
     formData: Record<string, unknown>,
-    uuid: string | null = null
+    uuid: string | null = null,
 ) => {
+    const mockSetFormData = vi.fn();
     const mockStore = {
         formData,
         ocorrenciaUuid: uuid,
         reset: mockReset,
-        setFormData: vi.fn(),
+        setFormData: mockSetFormData,
         setSavedFormData: vi.fn(),
         setOcorrenciaUuid: vi.fn(),
         savedFormData: {},
@@ -116,7 +117,7 @@ const setupStoreMock = (
 
     vi.doMock("@/stores/useOcorrenciaFormStore", () => ({
         useOcorrenciaFormStore: (
-            selector?: (state: typeof mockStore) => unknown
+            selector?: (state: typeof mockStore) => unknown,
         ) => {
             if (typeof selector === "function") {
                 return selector(mockStore);
@@ -124,6 +125,8 @@ const setupStoreMock = (
             return mockStore;
         },
     }));
+
+    return mockStore;
 };
 
 vi.doMock("@tanstack/react-query", async () => {
@@ -158,7 +161,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia />);
 
             expect(
-                screen.getByRole("button", { name: "Voltar" })
+                screen.getByRole("button", { name: "Voltar" }),
             ).toBeInTheDocument();
             expect(screen.getByTestId("mock-stepper")).toBeInTheDocument();
             expect(screen.getByTestId("step-renderer")).toBeInTheDocument();
@@ -183,7 +186,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
 
             expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
+                screen.getByText("Mock SecaoFurtoERoubo"),
             ).toBeInTheDocument();
             expect(screen.getByTestId("current-step")).toHaveTextContent("2");
         });
@@ -203,7 +206,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoFurtoERoubo")
+                    screen.getByText("Mock SecaoFurtoERoubo"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("2");
@@ -220,7 +223,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoNaoFurtoERoubo")
+                    screen.getByText("Mock SecaoNaoFurtoERoubo"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("2");
@@ -234,14 +237,14 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
 
             expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
+                screen.getByText("Mock SecaoFurtoERoubo"),
             ).toBeInTheDocument();
 
             fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoInicial")
+                    screen.getByText("Mock SecaoInicial"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("1");
@@ -255,14 +258,14 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
 
             expect(
-                screen.getByText("Mock SecaoNaoFurtoERoubo")
+                screen.getByText("Mock SecaoNaoFurtoERoubo"),
             ).toBeInTheDocument();
 
             fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoInicial")
+                    screen.getByText("Mock SecaoInicial"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("1");
@@ -300,7 +303,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock InformacoesAdicionais")
+                    screen.getByText("Mock InformacoesAdicionais"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("3");
@@ -317,14 +320,14 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={3} />);
 
             expect(
-                screen.getByText("Mock InformacoesAdicionais")
+                screen.getByText("Mock InformacoesAdicionais"),
             ).toBeInTheDocument();
 
             fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoNaoFurtoERoubo")
+                    screen.getByText("Mock SecaoNaoFurtoERoubo"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("2");
@@ -338,14 +341,14 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={3} />);
 
             expect(
-                screen.getByText("Mock InformacoesAdicionais")
+                screen.getByText("Mock InformacoesAdicionais"),
             ).toBeInTheDocument();
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
 
             await waitFor(() => {
                 expect(screen.getByTestId("current-step")).toHaveTextContent(
-                    "4"
+                    "4",
                 );
             });
         });
@@ -366,7 +369,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText("Mock SecaoFurtoERoubo")
+                    screen.getByText("Mock SecaoFurtoERoubo"),
                 ).toBeInTheDocument();
             });
             expect(screen.getByTestId("current-step")).toHaveTextContent("2");
@@ -385,7 +388,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
 
             await waitFor(() => {
                 expect(screen.getByTestId("current-step")).toHaveTextContent(
-                    "4"
+                    "4",
                 );
             });
         });
@@ -419,7 +422,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
 
             expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
+                screen.getByText("Mock SecaoFurtoERoubo"),
             ).toBeInTheDocument();
         });
 
@@ -431,7 +434,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={3} />);
 
             expect(
-                screen.getByText("Mock InformacoesAdicionais")
+                screen.getByText("Mock InformacoesAdicionais"),
             ).toBeInTheDocument();
         });
     });
@@ -455,7 +458,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia />);
 
             expect(
-                screen.getByText("Formulário patrimonial")
+                screen.getByText("Formulário patrimonial"),
             ).toBeInTheDocument();
         });
 
@@ -487,7 +490,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia initialStep={3} />);
 
             expect(
-                screen.getByText("Informações adicionais")
+                screen.getByText("Informações adicionais"),
             ).toBeInTheDocument();
         });
 
@@ -512,10 +515,10 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             renderWithClient(<CadastrarOcorrencia />);
 
             expect(
-                screen.getByText("Cadastro de ocorrência")
+                screen.getByText("Cadastro de ocorrência"),
             ).toBeInTheDocument();
             expect(
-                screen.getByText("Formulário patrimonial")
+                screen.getByText("Formulário patrimonial"),
             ).toBeInTheDocument();
             expect(screen.getByText("Seção final")).toBeInTheDocument();
             expect(screen.getByText("Anexos")).toBeInTheDocument();
@@ -530,7 +533,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             const CadastrarOcorrencia = mod.default;
 
             const mockStepRenderer = vi.mocked(
-                (await import("./StepRenderer")).default
+                (await import("./StepRenderer")).default,
             );
 
             renderWithClient(<CadastrarOcorrencia />);
@@ -555,7 +558,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             const CadastrarOcorrencia = mod.default;
 
             const mockStepRenderer = vi.mocked(
-                (await import("./StepRenderer")).default
+                (await import("./StepRenderer")).default,
             );
 
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
@@ -582,7 +585,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             const CadastrarOcorrencia = mod.default;
 
             const mockStepRenderer = vi.mocked(
-                (await import("./StepRenderer")).default
+                (await import("./StepRenderer")).default,
             );
 
             renderWithClient(<CadastrarOcorrencia />);
@@ -611,7 +614,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             const CadastrarOcorrencia = mod.default;
 
             const mockStepRenderer = vi.mocked(
-                (await import("./StepRenderer")).default
+                (await import("./StepRenderer")).default,
             );
 
             renderWithClient(<CadastrarOcorrencia initialStep={2} />);
@@ -629,8 +632,62 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
             await waitFor(() => {
                 const updatedCall = mockStepRenderer.mock.calls.at(-1);
                 expect(updatedCall?.[0].hasAgressorVitimaInfo).toBe(
-                    initialHasAgressorVitimaInfo
+                    initialHasAgressorVitimaInfo,
                 );
+            });
+        });
+
+        it("deve limpar campos do Step 2 no store ao trocar tipoOcorrencia", async () => {
+            const mockStore = setupStoreMock({ tipoOcorrencia: "Sim" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default,
+            );
+
+            renderWithClient(<CadastrarOcorrencia />);
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            act(() => {
+                props?.onSecaoInicialChange?.({ tipoOcorrencia: "Não" });
+            });
+
+            await waitFor(() => {
+                expect(mockStore.setFormData).toHaveBeenCalledWith({
+                    tiposOcorrencia: [],
+                    descricao: "",
+                    smartSampa: undefined,
+                    envolvidos: "",
+                    possuiInfoAgressorVitima: undefined,
+                });
+            });
+        });
+
+        it("não deve limpar campos do Step 2 quando tipoOcorrencia não muda de valor", async () => {
+            const mockStore = setupStoreMock({ tipoOcorrencia: "Sim" });
+
+            const mod = await import("./index");
+            const CadastrarOcorrencia = mod.default;
+
+            const mockStepRenderer = vi.mocked(
+                (await import("./StepRenderer")).default,
+            );
+
+            renderWithClient(<CadastrarOcorrencia />);
+
+            const lastCall = mockStepRenderer.mock.calls.at(-1);
+            const props = lastCall?.[0];
+
+            act(() => {
+                props?.onSecaoInicialChange?.({ tipoOcorrencia: "Sim" });
+            });
+
+            await waitFor(() => {
+                expect(mockStore.setFormData).not.toHaveBeenCalled();
             });
         });
     });

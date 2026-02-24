@@ -58,6 +58,16 @@ vi.mock("@/hooks/useUserPermissions", () => ({
     }),
 }));
 
+vi.mock("@/hooks/useTiposOcorrencia", () => ({
+    useTiposOcorrencia: () => ({
+        data: [
+            { uuid: "Furto", nome: "Furto" },
+            { uuid: "Agressão", nome: "Agressão" },
+        ],
+        isLoading: false,
+    }),
+}));
+
 const mockToast = vi.mocked(toast);
 
 vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
