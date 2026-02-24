@@ -9,7 +9,7 @@ export type TipoOcorrenciaAPI = {
     nome: string;
 };
 
-export type TipoFormulario = "PATRIMONIAL" | "GERAL";
+export type TipoFormulario = "PATRIMONIAL" | "GERAL" | "TODOS";
 
 export const getTiposOcorrenciaAction = async (
     tipoFormulario?: TipoFormulario,

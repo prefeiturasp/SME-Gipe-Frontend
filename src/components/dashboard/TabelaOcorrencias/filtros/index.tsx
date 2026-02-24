@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -8,10 +8,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useFetchDREs, useFetchTodasUEs } from "@/hooks/useUnidades";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useState } from "react";
 
 export type FiltrosValues = {
     codigoEol: string;
@@ -39,20 +39,23 @@ export default function Filtros({
     const [nomeUe, setNomeUe] = useState(initialValues?.nomeUe ?? "");
     const [dre, setDre] = useState(initialValues?.dre ?? "");
     const [periodoInicial, setPeriodoInicial] = useState(
-        initialValues?.periodoInicial ?? ""
+        initialValues?.periodoInicial ?? "",
     );
     const [periodoFinal, setPeriodoFinal] = useState(
-        initialValues?.periodoFinal ?? ""
+        initialValues?.periodoFinal ?? "",
     );
     const [tipoOcorrenciaSelecionado, setTipoOcorrenciaSelecionado] = useState(
-        initialValues?.tiposOcorrencia ?? ""
+        initialValues?.tiposOcorrencia ?? "",
     );
     const [status, setStatus] = useState(initialValues?.status ?? "");
-    const { data: tiposOcorrencia, isLoading: isLoadingTipos } = useTiposOcorrencia();
+    const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
+        useTiposOcorrencia("TODOS");
     const { data: dreOptions = [] } = useFetchDREs();
-    const { data: todasUEsOptions = []} = useFetchTodasUEs()
+    const { data: todasUEsOptions = [] } = useFetchTodasUEs();
 
-    const uesSemDRE = todasUEsOptions.filter((item: any) => item.tipo_unidade !== "DRE");
+    const uesSemDRE = todasUEsOptions.filter(
+        (item: any) => item.tipo_unidade !== "DRE",
+    );
 
     function handleClear() {
         setCodigoEol("");
@@ -118,19 +121,11 @@ export default function Filtros({
                     <SelectValue placeholder="Selecione a UE" />
                 </SelectTrigger>
                 <SelectContent>
-                    {uesSemDRE.map(
-                        (dre: {
-                            uuid: string;
-                            nome: string;
-                        }) => (
-                            <SelectItem
-                                key={dre.uuid}
-                                value={dre.uuid}
-                            >
-                                {dre.nome}
-                            </SelectItem>
-                        )
-                    )}
+                    {uesSemDRE.map((dre: { uuid: string; nome: string }) => (
+                        <SelectItem key={dre.uuid} value={dre.uuid}>
+                            {dre.nome}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
         </div>
@@ -149,19 +144,11 @@ export default function Filtros({
                     <SelectValue placeholder="Selecione a DRE" />
                 </SelectTrigger>
                 <SelectContent>
-                    {dreOptions.map(
-                        (dre: {
-                            uuid: string;
-                            nome: string;
-                        }) => (
-                            <SelectItem
-                                key={dre.uuid}
-                                value={dre.uuid}
-                            >
-                                {dre.nome}
-                            </SelectItem>
-                        )
-                    )}
+                    {dreOptions.map((dre: { uuid: string; nome: string }) => (
+                        <SelectItem key={dre.uuid} value={dre.uuid}>
+                            {dre.nome}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
         </div>
@@ -234,11 +221,11 @@ export default function Filtros({
                             <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
-                        {tiposOcorrencia?.map((tipo: any) => (
-                            <SelectItem key={tipo.uuid} value={tipo.nome}>
-                                {tipo.nome}
-                            </SelectItem>
-                        ))}
+                            {tiposOcorrencia?.map((tipo) => (
+                                <SelectItem key={tipo.uuid} value={tipo.nome}>
+                                    {tipo.nome}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
