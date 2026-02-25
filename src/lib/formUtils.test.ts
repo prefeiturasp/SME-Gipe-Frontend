@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
     compareArrays,
     compareObjectArrays,
+    filterValidTiposOcorrencia,
     hasFormDataChanged,
 } from "./formUtils";
 
@@ -280,12 +281,12 @@ describe("formUtils", () => {
             const current = {
                 tiposOcorrencia: ["uuid1", "uuid2", "uuid3"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "sim_com_dano",
+                smartSampa: "Sim",
             };
             const reference = {
                 tiposOcorrencia: ["uuid3", "uuid1", "uuid2"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "sim_com_dano",
+                smartSampa: "Sim",
             };
 
             expect(
@@ -330,6 +331,67 @@ describe("formUtils", () => {
             expect(
                 hasFormDataChanged(current, reference, ["pessoasAgressoras"]),
             ).toBe(true);
+        });
+    });
+
+    describe("filterValidTiposOcorrencia", () => {
+        it("deve manter apenas UUIDs que existem na lista disponível", () => {
+            const selected = ["uuid1", "uuid2", "uuid3"];
+            const available = [
+                { uuid: "uuid1" },
+                { uuid: "uuid3" },
+                { uuid: "uuid5" },
+            ];
+
+            expect(filterValidTiposOcorrencia(selected, available)).toEqual([
+                "uuid1",
+                "uuid3",
+            ]);
+        });
+
+        it("deve retornar array vazio quando nenhum UUID selecionado é válido", () => {
+            const selected = ["uuid-invalido-1", "uuid-invalido-2"];
+            const available = [{ uuid: "uuid1" }, { uuid: "uuid2" }];
+
+            expect(filterValidTiposOcorrencia(selected, available)).toEqual([]);
+        });
+
+        it("deve retornar todos os UUIDs quando todos são válidos", () => {
+            const selected = ["uuid1", "uuid2"];
+            const available = [
+                { uuid: "uuid1" },
+                { uuid: "uuid2" },
+                { uuid: "uuid3" },
+            ];
+
+            expect(filterValidTiposOcorrencia(selected, available)).toEqual([
+                "uuid1",
+                "uuid2",
+            ]);
+        });
+
+        it("deve retornar os selectedIds quando availableTypes é undefined", () => {
+            const selected = ["uuid1", "uuid2"];
+
+            expect(filterValidTiposOcorrencia(selected, undefined)).toEqual([
+                "uuid1",
+                "uuid2",
+            ]);
+        });
+
+        it("deve retornar os selectedIds quando availableTypes é um array vazio", () => {
+            const selected = ["uuid1", "uuid2"];
+
+            expect(filterValidTiposOcorrencia(selected, [])).toEqual([
+                "uuid1",
+                "uuid2",
+            ]);
+        });
+
+        it("deve retornar array vazio quando selectedIds é vazio", () => {
+            const available = [{ uuid: "uuid1" }];
+
+            expect(filterValidTiposOcorrencia([], available)).toEqual([]);
         });
     });
 });

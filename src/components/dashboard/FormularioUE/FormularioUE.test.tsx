@@ -58,6 +58,16 @@ vi.mock("@/hooks/useUserPermissions", () => ({
     }),
 }));
 
+vi.mock("@/hooks/useTiposOcorrencia", () => ({
+    useTiposOcorrencia: () => ({
+        data: [
+            { uuid: "Furto", nome: "Furto" },
+            { uuid: "Agressão", nome: "Agressão" },
+        ],
+        isLoading: false,
+    }),
+}));
+
 const mockToast = vi.mocked(toast);
 
 vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
@@ -854,7 +864,7 @@ describe("FormularioUE", () => {
             mockMutate.mockImplementation((data) => {
                 expect(data.body).toMatchObject({
                     sobre_furto_roubo_invasao_depredacao: false,
-                    smart_sampa_situacao: "nao_faz_parte",
+                    smart_sampa_situacao: "nao",
                     envolvido: "Alunos",
                     tem_info_agressor_ou_vitima: "nao",
                 });
@@ -981,7 +991,7 @@ describe("FormularioUE", () => {
             });
         });
 
-        it("deve usar fallback 'nao_faz_parte' quando smartSampa é undefined em furto/roubo", async () => {
+        it("deve usar fallback 'nao' quando smartSampa é undefined em furto/roubo", async () => {
             mockStoreState.formData = { tipoOcorrencia: "Sim" };
             mockSecaoFurtoGetData.mockReturnValue({
                 tiposOcorrencia: ["Furto"],
@@ -990,7 +1000,29 @@ describe("FormularioUE", () => {
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.smart_sampa_situacao).toBe("nao_faz_parte");
+                expect(data.body.smart_sampa_situacao).toBe("nao");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve definir smart_sampa_situacao como 'sim' quando smartSampa é 'Sim' em furto/roubo", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Sim" };
+            mockSecaoFurtoGetData.mockReturnValue({
+                tiposOcorrencia: ["Furto"],
+                descricao: "Descrição do furto",
+                smartSampa: "Sim",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.smart_sampa_situacao).toBe("sim");
             });
 
             renderWithClient(<FormularioUE />);

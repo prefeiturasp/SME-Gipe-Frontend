@@ -5,7 +5,9 @@ import { Stepper } from "@/components/stepper/Stepper";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { useQueryClient } from "@tanstack/react-query";
@@ -64,6 +66,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     // Valores reativos baseados nos estados locais
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    // Usa estado local (reativo) para buscar tipos corretos ao trocar o radio
+    const tipoFormulario = isFurtoRoubo ? "PATRIMONIAL" : "GERAL";
+    const { data: tiposOcorrenciaDisponiveis } =
+        useTiposOcorrencia(tipoFormulario);
 
     // Callbacks para receber mudanças dos formulários
     const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
@@ -215,18 +222,25 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
         ).toISOString();
 
+        let smartSampaSituacao = "nao";
+        if (isFurtoRoubo) {
+            const smartSampaValue = (secaoTipoData as { smartSampa?: string })
+                ?.smartSampa;
+            smartSampaSituacao = smartSampaValue === "Sim" ? "sim" : "nao";
+        }
+
         return {
             data_ocorrencia: dataHoraOcorrencia,
             unidade_codigo_eol: secaoInicialData?.unidadeEducacional ?? "",
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
-            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
+            tipos_ocorrencia: filterValidTiposOcorrencia(
+                secaoTipoData?.tiposOcorrencia ?? [],
+                tiposOcorrenciaDisponiveis,
+            ),
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
-            smart_sampa_situacao: isFurtoRoubo
-                ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
-                  "nao_faz_parte"
-                : "nao_faz_parte",
+            smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
                 (secaoTipoData as { envolvidos?: string })?.envolvidos && {
                     envolvido:

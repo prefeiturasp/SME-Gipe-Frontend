@@ -1,5 +1,7 @@
 import { OcorrenciaDetalheAPI } from "@/actions/obter-ocorrencia";
 
+type SimNao = "Sim" | "Não";
+
 /**
  * Extrai data e hora da ocorrência no formato esperado pelos formulários
  */
@@ -18,23 +20,12 @@ function extractDateAndTime(dataOcorrencia: string) {
 }
 
 /**
- * Valida e retorna o valor de smartSampa se for válido
+ * Valida e retorna o valor de smartSampa convertido para formato do formulário
  */
-function getValidSmartSampa(rawSmartSampa?: string) {
-    const validSmartSampaValues = [
-        "sim_com_dano",
-        "sim_sem_dano",
-        "nao_faz_parte",
-    ] as const;
-
-    if (
-        rawSmartSampa &&
-        validSmartSampaValues.includes(
-            rawSmartSampa as (typeof validSmartSampaValues)[number],
-        )
-    ) {
-        return rawSmartSampa as (typeof validSmartSampaValues)[number];
-    }
+function getValidSmartSampa(rawSmartSampa?: string): SimNao | undefined {
+    if (!rawSmartSampa) return undefined;
+    if (rawSmartSampa === "sim") return "Sim";
+    if (rawSmartSampa === "nao") return "Não";
     return undefined;
 }
 
@@ -73,7 +64,7 @@ function getProtocoloAcionado(
  */
 function getPossuiInfoAgressorVitima(
     temInfo?: "sim" | "nao",
-): "Sim" | "Não" | undefined {
+): SimNao | undefined {
     if (!temInfo) return undefined;
     return temInfo === "sim" ? "Sim" : "Não";
 }
@@ -81,7 +72,7 @@ function getPossuiInfoAgressorVitima(
 /**
  * Converte valor booleano para formato do formulário ("Sim" | "Não")
  */
-function getBooleanAsSimNao(value?: boolean): "Sim" | "Não" | undefined {
+function getBooleanAsSimNao(value?: boolean): SimNao | undefined {
     if (value === undefined) return undefined;
     return value ? "Sim" : "Não";
 }

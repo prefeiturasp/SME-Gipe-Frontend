@@ -1,7 +1,7 @@
 export type SecaoFurtoRouboBody = {
     tipos_ocorrencia: string[];
     descricao_ocorrencia: string;
-    smart_sampa_situacao: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
+    smart_sampa_situacao: "sim" | "nao";
 };
 
 export type TipoOcorrenciaDetalhe = {
@@ -13,7 +13,7 @@ export type SecaoFurtoRouboResponse = {
     uuid: string;
     tipos_ocorrencia_detalhes: TipoOcorrenciaDetalhe[];
     descricao_ocorrencia: string;
-    smart_sampa_situacao: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
+    smart_sampa_situacao: "sim" | "nao";
     status_display: string;
     status_extra: string;
 };

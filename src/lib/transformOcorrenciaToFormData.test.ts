@@ -103,12 +103,12 @@ describe("transformOcorrenciaToFormData", () => {
     it("deve validar e incluir smartSampa quando valor é válido", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
-            smart_sampa_situacao: "sim_com_dano",
+            smart_sampa_situacao: "sim",
         };
 
         const result = transformOcorrenciaToFormData(ocorrencia);
 
-        expect(result.smartSampa).toBe("sim_com_dano");
+        expect(result.smartSampa).toBe("Sim");
     });
 
     it("não deve incluir smartSampa quando valor é inválido", () => {
@@ -120,6 +120,28 @@ describe("transformOcorrenciaToFormData", () => {
         const result = transformOcorrenciaToFormData(ocorrencia);
 
         expect(result.smartSampa).toBeUndefined();
+    });
+
+    it("deve validar e incluir smartSampa como 'Não' quando valor é 'nao'", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            smart_sampa_situacao: "nao",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.smartSampa).toBe("Não");
+    });
+
+    it("deve incluir status quando presente", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            status: "em_preenchimento_diretor",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.status).toBe("em_preenchimento_diretor");
     });
 
     it("deve incluir declarante quando presente", () => {
@@ -216,7 +238,7 @@ describe("transformOcorrenciaToFormData", () => {
             nome_unidade: "EMEF Teste",
             tipos_ocorrencia: [{ uuid: "tipo-1", nome: "Violência física" }],
             descricao_ocorrencia: "Descrição da ocorrência",
-            smart_sampa_situacao: "sim_com_dano",
+            smart_sampa_situacao: "sim",
             declarante_detalhes: {
                 uuid: "declarante-uuid",
                 declarante: "João Silva",
@@ -240,7 +262,7 @@ describe("transformOcorrenciaToFormData", () => {
             nomeUnidade: "EMEF Teste",
             tiposOcorrencia: ["tipo-1"],
             descricao: "Descrição da ocorrência",
-            smartSampa: "sim_com_dano",
+            smartSampa: "Sim",
             declarante: "declarante-uuid",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "Ameaça",

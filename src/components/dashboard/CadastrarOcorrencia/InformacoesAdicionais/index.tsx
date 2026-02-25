@@ -458,7 +458,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência foi acompanhada pelo NAAPA?*
+                                    A ocorrência é acompanhada pelo NAAPA?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import ModalSemUnidade from "./ModalSemUnidade";
 
 export default function Header() {
     const user = useUserStore((state) => state.user);
+    const reset = useOcorrenciaFormStore((state) => state.reset);
 
     const hasUnidades = !!(user?.unidades && user.unidades.length > 0);
     const [openModal, setOpenModal] = useState(false);
@@ -15,6 +17,7 @@ export default function Header() {
 
     const handleNovaOcorrencia = () => {
         if (hasUnidades) {
+            reset();
             router.push("/dashboard/cadastrar-ocorrencia");
         } else {
             setOpenModal(true);

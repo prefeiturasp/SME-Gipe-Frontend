@@ -25,7 +25,7 @@ import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ListagemAnexos } from "./ListagemAnexos";
@@ -57,6 +57,7 @@ export default function Anexos({
     const [openModalTipos, setOpenModalTipos] = useState(false);
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
+    const [isFinalizando, setIsFinalizando] = useState(false);
 
     const { data: anexosData, refetch: refetchAnexos } = useObterAnexos({
         intercorrenciaUuid: ocorrenciaUuid ?? "",
@@ -144,7 +145,7 @@ export default function Anexos({
         });
 
         const fileInput = document.getElementById(
-            "fileInput"
+            "fileInput",
         ) as HTMLInputElement;
         if (fileInput) {
             fileInput.value = "";
@@ -245,7 +246,7 @@ export default function Anexos({
                                                     onClick={() =>
                                                         document
                                                             .getElementById(
-                                                                "fileInput"
+                                                                "fileInput",
                                                             )
                                                             ?.click()
                                                     }
@@ -291,7 +292,7 @@ export default function Anexos({
                                                             >
                                                                 {tipo.label}
                                                             </SelectItem>
-                                                        )
+                                                        ),
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -356,11 +357,15 @@ export default function Anexos({
                                     size="sm"
                                     type="submit"
                                     variant="submit"
+                                    disabled={isFinalizando}
                                     onClick={() =>
                                         setOpenModalFinalizarEtapa(true)
                                     }
                                 >
-                                    Finalizar
+                                    {isFinalizando && (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    )}
+                                    Finalizar e enviar
                                 </Button>
                             </div>
                         )}
@@ -374,6 +379,7 @@ export default function Anexos({
             <ModalFinalizarEtapa
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
+                onLoadingChange={setIsFinalizando}
                 perfilUsuario={perfilUsuario}
             />
         </div>

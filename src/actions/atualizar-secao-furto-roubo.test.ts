@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarSecaoFurtoRoubo } from "./atualizar-secao-furto-roubo";
 import { SecaoFurtoRouboBody } from "@/types/secao-furto-roubo";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarSecaoFurtoRoubo } from "./atualizar-secao-furto-roubo";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -22,7 +22,7 @@ describe("atualizarSecaoFurtoRoubo action", () => {
     const mockBody: SecaoFurtoRouboBody = {
         tipos_ocorrencia: ["tipo-uuid-1", "tipo-uuid-2"],
         descricao_ocorrencia: "Descrição da ocorrência",
-        smart_sampa_situacao: "sim_com_dano",
+        smart_sampa_situacao: "sim",
     };
     const mockAuthToken = "test-token";
 
@@ -42,7 +42,7 @@ describe("atualizarSecaoFurtoRoubo action", () => {
                     { uuid: "tipo-uuid-2", nome: "Roubo" },
                 ],
                 descricao_ocorrencia: "Descrição da ocorrência",
-                smart_sampa_situacao: "sim_com_dano" as const,
+                smart_sampa_situacao: "sim" as const,
                 status_display: "Em andamento",
                 status_extra: "Aguardando análise",
             },
@@ -60,7 +60,7 @@ describe("atualizarSecaoFurtoRoubo action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 

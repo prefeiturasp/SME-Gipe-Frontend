@@ -1,14 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import {
     getTiposOcorrenciaAction,
+    TipoFormulario,
     TipoOcorrenciaAPI,
 } from "@/actions/tipos-ocorrencia";
+import { useQuery } from "@tanstack/react-query";
 
-export const useTiposOcorrencia = () => {
+export const useTiposOcorrencia = (tipoFormulario?: TipoFormulario) => {
     return useQuery<TipoOcorrenciaAPI[]>({
-        queryKey: ["tipos-ocorrencia"],
+        queryKey: ["tipos-ocorrencia", tipoFormulario],
         queryFn: async () => {
-            const response = await getTiposOcorrenciaAction();
+            const response = await getTiposOcorrenciaAction(tipoFormulario);
 
             if (!response.success) {
                 throw new Error(response.error);

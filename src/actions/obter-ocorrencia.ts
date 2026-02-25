@@ -19,7 +19,7 @@ export type OcorrenciaDetalheAPI = {
     tipos_ocorrencia?: Array<{ uuid: string; nome: string }>;
     descricao_ocorrencia?: string;
     status?: string;
-    smart_sampa_situacao?: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
+    smart_sampa_situacao?: "sim" | "nao";
     smart_sampa_situacao_display?: string;
     declarante_detalhes?: {
         uuid: string;

@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAtualizarFormularioCompletoUE } from "./useAtualizarFormularioCompletoUE";
 import * as atualizarFormularioCompletoUEAction from "@/actions/atualizar-formulario-completo-ue";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAtualizarFormularioCompletoUE } from "./useAtualizarFormularioCompletoUE";
 
 vi.mock("@/actions/atualizar-formulario-completo-ue");
 
@@ -32,7 +32,7 @@ describe("useAtualizarFormularioCompletoUE", () => {
         sobre_furto_roubo_invasao_depredacao: false,
         tipos_ocorrencia: ["uuid-tipo-1"],
         descricao_ocorrencia: "Descrição teste",
-        smart_sampa_situacao: "nao_faz_parte",
+        smart_sampa_situacao: "nao",
         envolvido: "uuid-envolvido",
         tem_info_agressor_ou_vitima: "sim",
         declarante: "uuid-declarante",
@@ -55,14 +55,14 @@ describe("useAtualizarFormularioCompletoUE", () => {
 
         vi.spyOn(
             atualizarFormularioCompletoUEAction,
-            "atualizarFormularioCompletoUE"
+            "atualizarFormularioCompletoUE",
         ).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useAtualizarFormularioCompletoUE(),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         result.current.mutate({ uuid: mockUuid, body: mockBody });
@@ -72,10 +72,10 @@ describe("useAtualizarFormularioCompletoUE", () => {
         });
 
         expect(
-            atualizarFormularioCompletoUEAction.atualizarFormularioCompletoUE
+            atualizarFormularioCompletoUEAction.atualizarFormularioCompletoUE,
         ).toHaveBeenCalledWith(mockUuid, mockBody);
         expect(
-            atualizarFormularioCompletoUEAction.atualizarFormularioCompletoUE
+            atualizarFormularioCompletoUEAction.atualizarFormularioCompletoUE,
         ).toHaveBeenCalledTimes(1);
     });
 
@@ -90,14 +90,14 @@ describe("useAtualizarFormularioCompletoUE", () => {
 
         vi.spyOn(
             atualizarFormularioCompletoUEAction,
-            "atualizarFormularioCompletoUE"
+            "atualizarFormularioCompletoUE",
         ).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useAtualizarFormularioCompletoUE(),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         result.current.mutate({ uuid: mockUuid, body: mockBody });
@@ -117,14 +117,14 @@ describe("useAtualizarFormularioCompletoUE", () => {
 
         vi.spyOn(
             atualizarFormularioCompletoUEAction,
-            "atualizarFormularioCompletoUE"
+            "atualizarFormularioCompletoUE",
         ).mockResolvedValue(mockError);
 
         const { result } = renderHook(
             () => useAtualizarFormularioCompletoUE(),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         result.current.mutate({ uuid: mockUuid, body: mockBody });
