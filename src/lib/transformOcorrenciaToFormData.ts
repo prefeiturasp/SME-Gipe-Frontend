@@ -82,11 +82,11 @@ function getBooleanAsSimNao(value?: boolean): SimNao | undefined {
  */
 function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     return {
-        ...(ocorrencia.nome_pessoa_agressora && {
-            nomeAgressor: ocorrencia.nome_pessoa_agressora,
-        }),
-        ...(ocorrencia.idade_pessoa_agressora !== undefined && {
-            idadeAgressor: String(ocorrencia.idade_pessoa_agressora),
+        ...(ocorrencia.pessoas_agressoras?.length && {
+            pessoasAgressoras: ocorrencia.pessoas_agressoras.map((pessoa) => ({
+                nome: pessoa.nome,
+                idade: String(pessoa.idade),
+            })),
         }),
         ...(ocorrencia.genero_pessoa_agressora && {
             genero: ocorrencia.genero_pessoa_agressora,

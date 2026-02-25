@@ -256,10 +256,13 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
                 "registro",
             ...(informacoesAdicionaisData && {
-                nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,
-                idade_pessoa_agressora: Number(
-                    informacoesAdicionaisData.idadeAgressor,
-                ),
+                pessoas_agressoras:
+                    informacoesAdicionaisData.pessoasAgressoras.map(
+                        (pessoa) => ({
+                            nome: pessoa.nome,
+                            idade: Number(pessoa.idade),
+                        }),
+                    ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
                 genero_pessoa_agressora: informacoesAdicionaisData.genero,

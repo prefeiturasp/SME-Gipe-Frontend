@@ -32,8 +32,7 @@ export type OcorrenciaDetalheAPI = {
         perfil_dos_envolvidos: string;
     };
     tem_info_agressor_ou_vitima?: "sim" | "nao";
-    nome_pessoa_agressora?: string;
-    idade_pessoa_agressora?: number;
+    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
     genero_pessoa_agressora?: string;
     grupo_etnico_racial?: string;

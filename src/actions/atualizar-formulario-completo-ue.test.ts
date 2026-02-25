@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarFormularioCompletoUE } from "./atualizar-formulario-completo-ue";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarFormularioCompletoUE } from "./atualizar-formulario-completo-ue";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -69,7 +69,7 @@ describe("atualizarFormularioCompletoUE action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
 
         expect(result).toEqual({ success: true, data: mockResponse.data });
@@ -204,7 +204,7 @@ describe("atualizarFormularioCompletoUE action", () => {
         expect(putMock).toHaveBeenCalledWith(
             `/diretor/${mockUuid}/`,
             mockBody,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 
@@ -213,8 +213,7 @@ describe("atualizarFormularioCompletoUE action", () => {
             ...mockBody,
             sobre_furto_roubo_invasao_depredacao: false,
             tem_info_agressor_ou_vitima: "sim",
-            nome_pessoa_agressora: "João Silva",
-            idade_pessoa_agressora: 15,
+            pessoas_agressoras: [{ nome: "João Silva", idade: 15 }],
             motivacao_ocorrencia: ["Bullying"],
             genero_pessoa_agressora: "Masculino",
             grupo_etnico_racial: "Branco",
@@ -237,7 +236,7 @@ describe("atualizarFormularioCompletoUE action", () => {
 
         const result = await atualizarFormularioCompletoUE(
             mockUuid,
-            bodyComInfoAdicionais
+            bodyComInfoAdicionais,
         );
 
         expect(apiIntercorrencias.put).toHaveBeenCalledWith(
@@ -247,7 +246,7 @@ describe("atualizarFormularioCompletoUE action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
 
         expect(result).toEqual({ success: true, data: mockResponse.data });
@@ -270,7 +269,7 @@ describe("atualizarFormularioCompletoUE action", () => {
         expect(putMock).toHaveBeenCalledWith(
             `/diretor/${mockUuid}/`,
             expect.any(Object),
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 });
