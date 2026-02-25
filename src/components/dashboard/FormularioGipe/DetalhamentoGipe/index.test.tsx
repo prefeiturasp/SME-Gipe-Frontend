@@ -763,4 +763,110 @@ describe("DetalhamentoGipe", () => {
         expect(botao).toBeInTheDocument();
         expect(botao).not.toHaveTextContent("Finalizar e enviar");
     });
+
+    it("deve usar tipoFormulario 'PATRIMONIAL' quando tipoOcorrencia é 'Sim'", () => {
+        const spyTiposOcorrencia = vi
+            .spyOn(useTiposOcorrenciaModule, "useTiposOcorrencia")
+            .mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+            } as never);
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: { ...mockFormData, tipoOcorrencia: "Sim" },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        renderComponent();
+
+        expect(spyTiposOcorrencia).toHaveBeenCalledWith("PATRIMONIAL");
+    });
+
+    it("deve limpar tiposOcorrencia no formulário quando tipoFormulario muda", () => {
+        const localSetFormData = vi.fn();
+        const storeSpy = vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        );
+
+        storeSpy.mockReturnValue({
+            formData: {
+                ...mockFormData,
+                tipoOcorrencia: "Sim",
+                tiposOcorrencia: ["tipo1"],
+            },
+            setFormData: localSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        const { rerender } = render(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoGipe />
+            </QueryClientProvider>,
+        );
+
+        storeSpy.mockReturnValue({
+            formData: {
+                ...mockFormData,
+                tipoOcorrencia: "Não",
+                tiposOcorrencia: ["tipo1"],
+            },
+            setFormData: localSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <DetalhamentoGipe />
+            </QueryClientProvider>,
+        );
+
+        const tiposOcorrenciaCheckboxes = screen.queryAllByRole("option");
+        const hasChecked = tiposOcorrenciaCheckboxes.some(
+            (el) => el.getAttribute("aria-selected") === "true",
+        );
+        expect(hasChecked).toBe(false);
+        expect(localSetFormData).toHaveBeenCalledWith({ tiposOcorrencia: [] });
+    });
+
+    it("deve remover UUIDs inválidos de tiposOcorrencia ao montar o componente", async () => {
+        const user = userEvent.setup();
+        const mockOnPrevious = vi.fn();
+
+        vi.spyOn(
+            useOcorrenciaFormStoreModule,
+            "useOcorrenciaFormStore",
+        ).mockReturnValue({
+            formData: {
+                ...mockFormData,
+                tipoOcorrencia: "Não",
+                tiposOcorrencia: ["tipo1", "uuid-invalido-de-outro-tipo"],
+            },
+            setFormData: mockSetFormData,
+            ocorrenciaUuid: "test-uuid-gipe-123",
+        } as never);
+
+        vi.spyOn(
+            useTiposOcorrenciaModule,
+            "useTiposOcorrencia",
+        ).mockReturnValue({
+            data: mockTiposOcorrencia,
+            isLoading: false,
+        } as never);
+
+        renderComponent(mockOnPrevious);
+
+        const anteriorBtn = screen.getByRole("button", { name: /anterior/i });
+        await user.click(anteriorBtn);
+
+        expect(mockSetFormData).toHaveBeenCalledWith(
+            expect.objectContaining({
+                tiposOcorrencia: ["tipo1"],
+            }),
+        );
+    });
 });

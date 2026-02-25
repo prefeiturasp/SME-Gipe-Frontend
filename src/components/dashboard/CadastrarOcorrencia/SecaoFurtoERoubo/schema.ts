@@ -13,7 +13,7 @@ export const formSchema = z.object({
         .refine((val) => val.trim().length >= 10, {
             message: "A descrição deve ter pelo menos 10 caracteres.",
         }),
-    smartSampa: z.enum(["sim_com_dano", "sim_sem_dano", "nao_faz_parte"], {
+    smartSampa: z.enum(["Sim", "Não"], {
         required_error: "Selecione uma opção.",
     }),
 });
