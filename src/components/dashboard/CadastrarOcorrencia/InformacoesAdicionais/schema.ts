@@ -1,24 +1,22 @@
 import { z } from "zod";
 
-export const formSchema = z.object({
-    nomeAgressor: z.string().min(1, "Nome da pessoa agressora é obrigatório"),
-    idadeAgressor: z
+const pessoaAgressoraSchema = z.object({
+    nome: z.string().min(1, "Nome da pessoa agressora é obrigatório"),
+    idade: z
         .string()
         .min(1, "Idade é obrigatória")
         .max(2, "Idade deve ter no máximo 2 dígitos")
         .refine((val) => !Number.isNaN(Number(val)) && Number(val) > 0, {
             message: "Idade deve ser um número válido",
         }),
-    cep: z
-        .string()
-        .min(1, "CEP é obrigatório")
-        .regex(/^\d{5}-\d{3}$/, "CEP deve estar no formato 00000-000"),
-    logradouro: z.string().min(1, "Logradouro é obrigatório"),
-    numero: z.string().min(1, "Número é obrigatório"),
-    complemento: z.string().optional(),
-    estado: z.string().min(1, "Estado é obrigatório"),
-    cidade: z.string().min(1, "Cidade é obrigatória"),
-    bairro: z.string().min(1, "Bairro é obrigatório"),
+});
+
+export type PessoaAgressoraForm = z.infer<typeof pessoaAgressoraSchema>;
+
+export const formSchema = z.object({
+    pessoasAgressoras: z
+        .array(pessoaAgressoraSchema)
+        .min(1, "Adicione pelo menos uma pessoa agressora"),
     motivoOcorrencia: z
         .array(z.string())
         .min(1, "Selecione pelo menos um motivo"),

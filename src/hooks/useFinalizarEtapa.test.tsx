@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useFinalizarEtapa } from "./useFinalizarEtapa";
 import * as finalizarEtapaModule from "@/actions/finalizar-etapa";
+import { useFinalizarEtapa } from "./useFinalizarEtapa";
 
 vi.mock("@/actions/finalizar-etapa", () => ({
     finalizarEtapa: vi.fn(),
@@ -23,7 +23,9 @@ describe("useFinalizarEtapa", () => {
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
     );
 
     const mockParams = {
@@ -31,7 +33,6 @@ describe("useFinalizarEtapa", () => {
         body: {
             unidade_codigo_eol: "123456",
             dre_codigo_eol: "DRE-01",
-            motivo_encerramento_ue: "Encerrado pela direção",
         },
     };
 
@@ -50,7 +51,6 @@ describe("useFinalizarEtapa", () => {
                 nome_dre: "Diretoria X",
                 finalizado_diretor_em: "2023-10-07",
                 finalizado_diretor_por: "Fulano",
-                motivo_encerramento_ue: "Encerrado pela direção",
                 protocolo_da_intercorrencia: "Protocolo X",
                 status_display: "Finalizado",
                 status_extra: "Nenhum",
@@ -58,7 +58,7 @@ describe("useFinalizarEtapa", () => {
         };
 
         vi.mocked(finalizarEtapaModule.finalizarEtapa).mockResolvedValue(
-            mockResponse as never
+            mockResponse as never,
         );
 
         const { result } = renderHook(() => useFinalizarEtapa(), { wrapper });
@@ -71,7 +71,7 @@ describe("useFinalizarEtapa", () => {
 
         expect(finalizarEtapaModule.finalizarEtapa).toHaveBeenCalledWith(
             mockParams.ocorrenciaUuid,
-            mockParams.body
+            mockParams.body,
         );
         expect(result.current.data).toEqual(mockResponse);
     });
@@ -79,7 +79,9 @@ describe("useFinalizarEtapa", () => {
     it("deve retornar erro quando a mutation falhar", async () => {
         const mockError = new Error("Erro ao finalizar etapa");
 
-        vi.mocked(finalizarEtapaModule.finalizarEtapa).mockRejectedValue(mockError);
+        vi.mocked(finalizarEtapaModule.finalizarEtapa).mockRejectedValue(
+            mockError,
+        );
 
         const { result } = renderHook(() => useFinalizarEtapa(), { wrapper });
 
@@ -94,11 +96,11 @@ describe("useFinalizarEtapa", () => {
 
     it("deve ter isPending como true durante execução", async () => {
         const delayedPromise = new Promise((resolve) =>
-            setTimeout(() => resolve({ success: true, data: {} }), 150)
+            setTimeout(() => resolve({ success: true, data: {} }), 150),
         );
 
         vi.mocked(finalizarEtapaModule.finalizarEtapa).mockReturnValue(
-            delayedPromise as never
+            delayedPromise as never,
         );
 
         const { result } = renderHook(() => useFinalizarEtapa(), { wrapper });
@@ -121,7 +123,7 @@ describe("useFinalizarEtapa", () => {
         };
 
         vi.mocked(finalizarEtapaModule.finalizarEtapa).mockResolvedValue(
-            mockErrorResponse as never
+            mockErrorResponse as never,
         );
 
         const { result } = renderHook(() => useFinalizarEtapa(), { wrapper });

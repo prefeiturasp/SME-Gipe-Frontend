@@ -11,8 +11,7 @@ export type FormularioCompletoUEBody = {
     declarante: string;
     comunicacao_seguranca_publica: string;
     protocolo_acionado: string;
-    nome_pessoa_agressora?: string;
-    idade_pessoa_agressora?: number;
+    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia?: string[];
     genero_pessoa_agressora?: string;
     grupo_etnico_racial?: string;
@@ -22,13 +21,6 @@ export type FormularioCompletoUEBody = {
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;
-    cep?: string;
-    logradouro?: string;
-    numero_residencia?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
 };
 
 export type FormularioCompletoUEResponse = {
@@ -42,8 +34,7 @@ export type FormularioCompletoUEResponse = {
     tem_info_agressor_ou_vitima: string;
     comunicacao_seguranca_publica: string;
     protocolo_acionado: string;
-    nome_pessoa_agressora?: string;
-    idade_pessoa_agressora?: number;
+    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia?: string[];
     genero_pessoa_agressora?: string;
     grupo_etnico_racial?: string;
@@ -53,11 +44,4 @@ export type FormularioCompletoUEResponse = {
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;
-    cep?: string;
-    logradouro?: string;
-    numero_residencia?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
 };

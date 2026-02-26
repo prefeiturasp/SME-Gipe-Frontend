@@ -19,11 +19,17 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
 import { useDeclarantes } from "@/hooks/useDeclarantes";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, SecaoFinalData } from "./schema";
+
+const DESASTRES_CLIMATICOS_OPTIONS = new Set([
+    "Sim, com a Defesa civil",
+    "Sim, com o Bombeiro",
+]);
 
 export type SecaoFinalProps = {
     onNext?: () => void;
@@ -49,7 +55,23 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         } = useOcorrenciaFormStore();
         const { data: declarantes, isLoading: isLoadingDeclarantes } =
             useDeclarantes();
+        const tipoFormulario =
+            formData.tipoOcorrencia === "Sim" ? "PATRIMONIAL" : "GERAL";
+        const { data: tiposOcorrenciaDisponiveis, isLoading: isLoadingTipos } =
+            useTiposOcorrencia(tipoFormulario);
         const { mutate, isPending } = useAtualizarSecaoFinal();
+
+        const isDesastresClimaticos = useMemo(() => {
+            const selectedUuids = (formData.tiposOcorrencia as string[]) ?? [];
+
+            if (!tiposOcorrenciaDisponiveis || selectedUuids.length === 0)
+                return false;
+            return tiposOcorrenciaDisponiveis.some(
+                (tipo) =>
+                    selectedUuids.includes(tipo.uuid) &&
+                    tipo.nome === "Desastres climáticos",
+            );
+        }, [tiposOcorrenciaDisponiveis, formData.tiposOcorrencia]);
 
         const form = useForm<SecaoFinalData>({
             resolver: zodResolver(formSchema),
@@ -62,6 +84,20 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         });
 
         const { isValid } = form.formState;
+
+        useEffect(() => {
+            if (isLoadingTipos) return;
+
+            const currentValue = form.getValues("comunicacaoSeguranca");
+            if (
+                !isDesastresClimaticos &&
+                DESASTRES_CLIMATICOS_OPTIONS.has(currentValue)
+            ) {
+                form.setValue("comunicacaoSeguranca", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isDesastresClimaticos, isLoadingTipos, form]);
 
         // Expõe métodos para o componente pai via ref
         useImperativeHandle(ref, () => ({
@@ -81,6 +117,8 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
             const comunicacaoMap: Record<string, string> = {
                 "Sim, com a GCM": "sim_gcm",
                 "Sim, com a PM": "sim_pm",
+                "Sim, com a Defesa civil": "sim_dc",
+                "Sim, com o Bombeiro": "sim_cbm",
                 Não: "nao",
             };
 
@@ -147,7 +185,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         };
 
@@ -194,7 +232,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                                                 declarante.declarante
                                                             }
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -228,6 +266,17 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                                 <SelectItem value="Sim, com a PM">
                                                     Sim, com a PM
                                                 </SelectItem>
+                                                {isDesastresClimaticos && (
+                                                    <>
+                                                        <SelectItem value="Sim, com a Defesa civil">
+                                                            Sim, com a Defesa
+                                                            civil
+                                                        </SelectItem>
+                                                        <SelectItem value="Sim, com o Bombeiro">
+                                                            Sim, com o Bombeiro
+                                                        </SelectItem>
+                                                    </>
+                                                )}
                                                 <SelectItem value="Não">
                                                     Não
                                                 </SelectItem>
@@ -307,7 +356,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                 </form>
             </Form>
         );
-    }
+    },
 );
 
 SecaoFinal.displayName = "SecaoFinal";
