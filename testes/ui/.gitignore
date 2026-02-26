@@ -32,6 +32,22 @@ cypress-cloud/
 *.swo
 *~
 .DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
+
+# ========================================
+# BUILD E DISTRIBUTION
+# ========================================
+dist/
+build/
+out/
+target/
+coverage/
+.nyc_output/
+*.tsbuildinfo
 
 # ========================================
 # LOGS E OUTPUTS
@@ -62,6 +78,7 @@ token.json
 *.pem
 *.key
 credentials.json
+cypress/e2e/obter_token.cy.js
 
 # ========================================
 # SCRIPTS AUXILIARES TEMPORÁRIOS
@@ -76,6 +93,13 @@ testar-correcao-modal.bat
 testar-modal-v2.bat
 remove_emojis.py
 remove-emojis.ps1
+
+# Scripts PowerShell de homologação (temporários)
+executar-homologacao.ps1
+gerar-evidencias.ps1
+empacotar-evidencias.ps1
+executar-testes-homologacao.bat
+validar-ambiente.ps1
 
 # ========================================
 # DOCUMENTAÇÃO TEMPORÁRIA/INTERNA
@@ -97,6 +121,34 @@ CENARIOS_REMOVIDOS_CARGA.md
 CORRECOES_TIMEOUT_STATUS.md
 REFATORACAO_INTEGRACAO.md
 
+# Documentação de homologação gerada (temporária)
+PLANO_HOMOLOGACAO_GIPE.md
+GUIA_EXECUCAO_HOMOLOGACAO.md
+TERMO_ACEITE_UAT_TEMPLATE.md
+CHECKLIST_RAPIDO.md
+CHECKLIST_UAT_GIPE.md
+KIT_HOMOLOGACAO_INDEX.md
+RESUMO_EXECUTIVO_KIT.md
+ORDEM_EXECUCAO_TESTES.md
+RESUMO_CONSOLIDADO_TESTES.md
+EXECUTAR_AGORA.md
+
+# ========================================
+# EVIDÊNCIAS E RESULTADOS DE HOMOLOGAÇÃO
+# ========================================
+# Pastas de evidências geradas durante execução
+EVIDENCIAS_HOMOLOGACAO_*/
+EVIDENCIAS_*/
+evidencias/
+relatorios/
+resultados/
+
+# Pacotes de evidências
+*.zip
+*.7z
+*.tar.gz
+!fixtures/**/*.tar.gz
+
 # ========================================
 # CI/CD CONFIGURAÇÕES (se não utilizado)
 # ========================================
@@ -104,6 +156,18 @@ REFATORACAO_INTEGRACAO.md
 .gitlab-ci.yml
 azure-pipelines.yml
 JENKINS_SETUP.md
+.circleci/
+.travis.yml
+.jenkins/
+jenkins/
+pipeline/
+
+# ========================================
+# DOCKER (SE HOUVER)
+# ========================================
+docker-compose.override.yml
+.dockerignore
+Dockerfile.local
 
 # ========================================
 # ARQUIVOS TEMPORÁRIOS E BACKUPS
@@ -132,22 +196,29 @@ $RECYCLE.BIN/
 # FEATURES E STEPS EXPERIMENTAIS/NÃO FUNCIONAIS
 # ========================================
 # Features de teste avançado (experimentais - não 100% funcionais)
-cypress/e2e/ui/consulta_ocorrencia.feature
-cypress/e2e/ui/gipe_extra.feature
-cypress/e2e/ui/gipe_integracao.feature
-cypress/e2e/ui/gipe_seguranca.feature
-cypress/e2e/ui/gipe_unitario.feature
-cypress/e2e/ui/gipe_carga.feature
+#cypress/e2e/ui/consulta_ocorrencia.feature   # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_integracao.feature       # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_seguranca.feature        # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_unitario.feature         # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
 cypress/e2e/ui/gipe_stress.feature
 
 # Step definitions experimentais (não 100% funcionais)
-cypress/support/step_definitions/consulta_ocorrencia.js
-cypress/support/step_definitions/gipe_extra.js
-cypress/support/step_definitions/gipe_integracao.js
-cypress/support/step_definitions/gipe_seguranca.js
-cypress/support/step_definitions/gipe_unitario.js
-cypress/support/step_definitions/gipe_carga.js
+#cypress/support/step_definitions/consulta_ocorrencia.js   # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_integracao.js       # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_seguranca.js        # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_unitario.js         # <-- AGORA FUNCIONAL
 cypress/support/step_definitions/gipe_stress.js
+
+# ========================================
+# ARQUIVOS DE TESTE E DEBUG
+# ========================================
+# Arquivos gerados durante debug
+*.debug
+*.trace
+debug.log
+trace.log
+*.har
+*.heapsnapshot
 
 # ========================================
 # MANTER NO REPOSITÓRIO (100% FUNCIONAIS):
