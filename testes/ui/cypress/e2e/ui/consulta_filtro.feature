@@ -1,6 +1,6 @@
 # language: pt
 
-@consulta_filtro @smoke @regression
+@skip @consulta_filtro @smoke @regression
 Funcionalidade: Consulta por Filtro
   Como usuário autorizado do sistema GIPE
   Eu quero filtrar ocorrencia

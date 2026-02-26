@@ -24,7 +24,7 @@ module.exports = defineConfig({
     viewportHeight: 1050,
     video: false,
     screenshotOnRunFailure: false,
-    trashAssetsBeforeRuns: true,
+    trashAssetsBeforeRuns: false,
     chromeWebSecurity: false,
     experimentalRunAllSpecs: true,
     failOnStatusCode: false,

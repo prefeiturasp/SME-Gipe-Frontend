@@ -1,5 +1,5 @@
 #language: pt
-@skip @api @gipe_categorias
+ @skip @api @gipe_categorias
 Funcionalidade: API GIPE - Categorias Disponíveis
   Como usuário do GIPE
   Quero validar o endpoint de categorias disponíveis
