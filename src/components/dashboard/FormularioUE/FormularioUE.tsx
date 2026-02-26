@@ -36,6 +36,7 @@ export type FormularioUEProps = {
 export function FormularioUE({ onNext }: FormularioUEProps) {
     const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
+    const setFormData = useOcorrenciaFormStore((state) => state.setFormData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
         (state) => state.ocorrenciaUuid,
     );
@@ -54,6 +55,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const secaoNaoFurtoERouboRef = useRef<SecaoNaoFurtoERouboRef>(null);
     const informacoesAdicionaisRef = useRef<InformacoesAdicionaisRef>(null);
     const secaoFinalRef = useRef<SecaoFinalRef>(null);
+
+    // Ref para evitar loop infinito ao sincronizar tiposOcorrencia com o store
+    const lastSyncedTiposRef = useRef<string[]>(
+        (formData.tiposOcorrencia as string[]) ?? [],
+    );
 
     // Estados locais que refletem os valores dos formulários em tempo real
     const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
@@ -79,11 +85,32 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         }
     };
 
+    const syncTiposOcorrencia = (tipos: string[]) => {
+        const prev = lastSyncedTiposRef.current;
+        if (
+            prev.length !== tipos.length ||
+            prev.some((v, i) => v !== tipos[i])
+        ) {
+            lastSyncedTiposRef.current = tipos;
+            setFormData({ tiposOcorrencia: tipos });
+        }
+    };
+
+    const handleSecaoFurtoChange = (data: { tiposOcorrencia?: string[] }) => {
+        if (data.tiposOcorrencia !== undefined) {
+            syncTiposOcorrencia(data.tiposOcorrencia);
+        }
+    };
+
     const handleSecaoNaoFurtoChange = (data: {
         possuiInfoAgressorVitima?: string;
+        tiposOcorrencia?: string[];
     }) => {
         if (data.possuiInfoAgressorVitima !== undefined) {
             setCurrentPossuiInfoAgressor(data.possuiInfoAgressorVitima);
+        }
+        if (data.tiposOcorrencia !== undefined) {
+            syncTiposOcorrencia(data.tiposOcorrencia);
         }
     };
 
@@ -209,6 +236,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         const comunicacaoMap: Record<string, string> = {
             "Sim, com a GCM": "sim_gcm",
             "Sim, com a PM": "sim_pm",
+            "Sim, com a Defesa civil": "sim_dc",
+            "Sim, com o Bombeiro": "sim_cbm",
             Não: "nao",
         };
 
@@ -397,6 +426,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             <SecaoFurtoERoubo
                                 ref={secaoFurtoERouboRef}
                                 showButtons={false}
+                                onFormChange={handleSecaoFurtoChange}
                                 disabled={isReadOnly}
                             />
                         ) : (

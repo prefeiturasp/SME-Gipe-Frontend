@@ -33,11 +33,13 @@ function getValidSmartSampa(rawSmartSampa?: string): SimNao | undefined {
  * Converte valor de comunicação com segurança pública para formato do formulário
  */
 function getComunicacaoSeguranca(
-    comunicacao?: "sim_gcm" | "sim_pm" | "nao",
+    comunicacao?: "sim_gcm" | "sim_pm" | "sim_dc" | "sim_cbm" | "nao",
 ): string | undefined {
     const comunicacaoMap: Record<string, string> = {
         sim_gcm: "Sim, com a GCM",
         sim_pm: "Sim, com a PM",
+        sim_dc: "Sim, com a Defesa civil",
+        sim_cbm: "Sim, com o Bombeiro",
         nao: "Não",
     };
 

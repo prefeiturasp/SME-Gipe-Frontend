@@ -162,6 +162,8 @@ describe("transformOcorrenciaToFormData", () => {
         const testCases = [
             { input: "sim_gcm" as const, expected: "Sim, com a GCM" },
             { input: "sim_pm" as const, expected: "Sim, com a PM" },
+            { input: "sim_dc" as const, expected: "Sim, com a Defesa civil" },
+            { input: "sim_cbm" as const, expected: "Sim, com o Bombeiro" },
             { input: "nao" as const, expected: "Não" },
         ];
 

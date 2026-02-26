@@ -21,7 +21,13 @@ let capturedSecaoInicialCallback:
     | ((data: { tipoOcorrencia?: string }) => void)
     | null = null;
 let capturedSecaoNaoFurtoCallback:
-    | ((data: { possuiInfoAgressorVitima?: string }) => void)
+    | ((data: {
+          possuiInfoAgressorVitima?: string;
+          tiposOcorrencia?: string[];
+      }) => void)
+    | null = null;
+let capturedSecaoFurtoCallback:
+    | ((data: { tiposOcorrencia?: string[] }) => void)
     | null = null;
 
 const mockRouterPush = vi.fn();
@@ -101,7 +107,15 @@ vi.mock("../CadastrarOcorrencia/SecaoInicial", () => {
 });
 
 vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
-    const Mock = forwardRef<unknown>((_, ref) => {
+    const Mock = forwardRef<
+        unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { onFormChange?: (data: any) => void }
+    >((props, ref) => {
+        if (props.onFormChange) {
+            capturedSecaoFurtoCallback = props.onFormChange;
+        }
+
         useImperativeHandle(ref, () => ({
             getFormInstance: () => ({
                 trigger: mockSecaoFurtoTrigger,
@@ -110,7 +124,10 @@ vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
         }));
 
         return (
-            <div ref={ref as React.Ref<HTMLDivElement>}>
+            <div
+                ref={ref as React.Ref<HTMLDivElement>}
+                data-testid="mock-secao-furto"
+            >
                 Mock SecaoFurtoERoubo
             </div>
         );
@@ -228,12 +245,16 @@ vi.mock("../QuadroBranco/QuadroBranco", () => ({
     ),
 }));
 
+const mockSetFormData = vi.fn();
+
 const mockStoreState: {
     formData: Record<string, unknown>;
+    setFormData: typeof mockSetFormData;
     ocorrenciaUuid: string | null;
     reset: typeof mockReset;
 } = {
     formData: {},
+    setFormData: mockSetFormData,
     ocorrenciaUuid: "test-uuid",
     reset: mockReset,
 };
@@ -269,8 +290,10 @@ describe("FormularioUE", () => {
         mockInvalidateQueries.mockClear();
         mockToast.mockClear();
         mockMutate.mockClear();
+        mockSetFormData.mockClear();
         capturedSecaoInicialCallback = null;
         capturedSecaoNaoFurtoCallback = null;
+        capturedSecaoFurtoCallback = null;
 
         hookStates.isPending = false;
         hookStates.isAssistenteOuDiretor = false;
@@ -513,6 +536,58 @@ describe("FormularioUE", () => {
             });
         });
 
+        it("deve sincronizar tiposOcorrencia no store quando handleSecaoFurtoChange é chamado", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Sim" };
+            renderWithClient(<FormularioUE />);
+
+            await act(async () => {
+                if (capturedSecaoFurtoCallback) {
+                    capturedSecaoFurtoCallback({
+                        tiposOcorrencia: ["Furto", "Roubo"],
+                    });
+                }
+            });
+
+            await waitFor(() => {
+                expect(mockSetFormData).toHaveBeenCalledWith({
+                    tiposOcorrencia: ["Furto", "Roubo"],
+                });
+            });
+        });
+
+        it("não deve sincronizar tiposOcorrencia quando valores são iguais aos anteriores", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Sim",
+                tiposOcorrencia: ["Furto"],
+            };
+            renderWithClient(<FormularioUE />);
+            mockSetFormData.mockClear();
+
+            await act(async () => {
+                if (capturedSecaoFurtoCallback) {
+                    capturedSecaoFurtoCallback({
+                        tiposOcorrencia: ["Furto"],
+                    });
+                }
+            });
+
+            await act(async () => {
+                if (capturedSecaoFurtoCallback) {
+                    capturedSecaoFurtoCallback({
+                        tiposOcorrencia: ["Furto"],
+                    });
+                }
+            });
+
+            const tiposCalls = mockSetFormData.mock.calls.filter(
+                (call: unknown[]) =>
+                    call[0] &&
+                    typeof call[0] === "object" &&
+                    "tiposOcorrencia" in (call[0] as Record<string, unknown>),
+            );
+            expect(tiposCalls.length).toBeLessThanOrEqual(1);
+        });
+
         it("deve atualizar currentPossuiInfoAgressor quando handleSecaoNaoFurtoChange é chamado", async () => {
             mockStoreState.formData = {
                 tipoOcorrencia: "Não",
@@ -536,6 +611,29 @@ describe("FormularioUE", () => {
                 expect(
                     screen.getByText("Mock InformacoesAdicionais"),
                 ).toBeInTheDocument();
+            });
+        });
+
+        it("deve sincronizar tiposOcorrencia no store quando handleSecaoNaoFurtoChange envia tiposOcorrencia", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Não",
+            };
+            renderWithClient(<FormularioUE />);
+            mockSetFormData.mockClear();
+
+            await act(async () => {
+                if (capturedSecaoNaoFurtoCallback) {
+                    capturedSecaoNaoFurtoCallback({
+                        tiposOcorrencia: ["Agressão", "Ameaça"],
+                    });
+                }
+            });
+
+            await waitFor(() => {
+                expect(mockSetFormData).toHaveBeenCalledWith({
+                    tiposOcorrencia: ["Agressão", "Ameaça"],
+                });
             });
         });
     });
