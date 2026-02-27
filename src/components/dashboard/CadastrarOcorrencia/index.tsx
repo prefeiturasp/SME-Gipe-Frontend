@@ -1,11 +1,11 @@
 "use client";
 
 import QuadroBranco from "@/components/dashboard/QuadroBranco/QuadroBranco";
-import PageHeader from "../PageHeader/PageHeader";
 import { Stepper } from "@/components/stepper/Stepper";
-import { useState, useEffect } from "react";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import PageHeader from "../PageHeader/PageHeader";
 import StepRenderer from "./StepRenderer";
 
 type CadastrarOcorrenciaProps = {
@@ -18,10 +18,12 @@ export default function CadastrarOcorrencia({
     const [currentStep, setCurrentStep] = useState(initialStep);
     const formData = useOcorrenciaFormStore((state) => state.formData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
-        (state) => state.ocorrenciaUuid
+        (state) => state.ocorrenciaUuid,
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
+
+    const setFormData = useOcorrenciaFormStore((state) => state.setFormData);
 
     const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
         string | undefined
@@ -35,6 +37,15 @@ export default function CadastrarOcorrencia({
 
     const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
         if (data.tipoOcorrencia !== undefined) {
+            if (data.tipoOcorrencia !== currentTipoOcorrencia) {
+                setFormData({
+                    tiposOcorrencia: [],
+                    descricao: "",
+                    smartSampa: undefined,
+                    envolvidos: "",
+                    possuiInfoAgressorVitima: undefined,
+                });
+            }
             setCurrentTipoOcorrencia(data.tipoOcorrencia);
         }
     };

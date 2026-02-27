@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-import { finalizarEtapa } from "./finalizar-etapa";
 import { MotivoEncerramentoBody } from "@/types/finalizar-etapa";
+import { finalizarEtapa } from "./finalizar-etapa";
 
 import { AxiosError, AxiosRequestHeaders } from "axios";
 
@@ -20,7 +20,6 @@ describe("finalizarEtapa action", () => {
     const mockBody: MotivoEncerramentoBody = {
         unidade_codigo_eol: "0001",
         dre_codigo_eol: "01",
-        motivo_encerramento_ue: "Teste",
     };
 
     const mockAuthToken = "test-token";
@@ -40,7 +39,9 @@ describe("finalizarEtapa action", () => {
             },
         };
 
-        const putSpy = vi.spyOn(apiIntercorrencias, "put").mockResolvedValue(mockResponse);
+        const putSpy = vi
+            .spyOn(apiIntercorrencias, "put")
+            .mockResolvedValue(mockResponse);
 
         const result = await finalizarEtapa(uuid, mockBody);
 
@@ -57,7 +58,7 @@ describe("finalizarEtapa action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 

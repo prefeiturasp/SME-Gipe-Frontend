@@ -23,6 +23,10 @@ describe("useObterUsuarioGestao", () => {
             defaultOptions: {
                 queries: {
                     retry: false,
+                    staleTime: Infinity,
+                    refetchOnMount: false,
+                    refetchOnWindowFocus: false,
+                    refetchOnReconnect: false,
                 },
             },
         });

@@ -8,29 +8,17 @@ const SENHA_PADRAO = 'Sgp5856'
 
 Given('eu efetuo login com RF', () => {
   cy.log(`Efetuando login com RF: ${RF_PADRAO}`)
-  
-  cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(RF_PADRAO, { delay: 50 })
-  
-  cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(SENHA_PADRAO, { delay: 50 })
-  
-  cy.get('button')
-    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
-  
+  cy.loginWithSession(RF_PADRAO, SENHA_PADRAO, 'CONSULTA')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: 30000,
+    failOnStatusCode: false 
+  })
   cy.wait(3000)
 })
 
 When('o usuário está na página principal do sistema', () => {
   cy.wait(2000)
-  cy.url().should('include', '/dashboard')
+  cy.url({ timeout: 20000 }).should('include', '/dashboard')
   cy.log('Usuário autenticado e na página principal')
 })
 

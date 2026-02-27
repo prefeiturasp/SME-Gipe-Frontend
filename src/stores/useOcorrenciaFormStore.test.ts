@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useOcorrenciaFormStore } from "./useOcorrenciaFormStore";
 
 describe("useOcorrenciaFormStore", () => {
@@ -278,14 +278,14 @@ describe("useOcorrenciaFormStore", () => {
             result.current.setFormData({
                 tiposOcorrencia: ["Violência física"],
                 descricao: "Descrição da ocorrência",
-                smartSampa: "nao_faz_parte",
+                smartSampa: "Não",
             });
         });
 
         expect(result.current.formData).toEqual({
             tiposOcorrencia: ["Violência física"],
             descricao: "Descrição da ocorrência",
-            smartSampa: "nao_faz_parte",
+            smartSampa: "Não",
         });
     });
 

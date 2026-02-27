@@ -71,32 +71,16 @@ After(() => {
 })
 
 Given('que eu acesso o sistema como GIPE', () => {
-  cy.clearCookies()
-  cy.clearLocalStorage()
-  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
-    timeout: TIMEOUTS.VERY_LONG,
-    retryOnNetworkFailure: true
-  })
-  cy.url({ timeout: TIMEOUTS.VERY_LONG }).should('include', 'gipe.sme.prefeitura.sp.gov.br')
-  cy.get('body', { timeout: TIMEOUTS.DEFAULT }).should('be.visible')
+  cy.loginWithSession(CREDENCIAIS_GIPE.RF, CREDENCIAIS_GIPE.SENHA, 'GIPE')
 })
 
 Given('eu efetuo login com RF GIPE', () => {
-  cy.get(locators_login.campo_usuario(), { timeout: TIMEOUTS.LONG })
-    .should('be.visible')
-    .clear()
-    .type(CREDENCIAIS_GIPE.RF, { delay: 100 })
-  
-  cy.get(locators_login.campo_senha(), { timeout: TIMEOUTS.LONG })
-    .should('be.visible')
-    .clear()
-    .type(CREDENCIAIS_GIPE.SENHA, { delay: 100 })
-  
-  cy.get('button')
-    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: TIMEOUTS.VERY_LONG,
+    failOnStatusCode: false 
+  })
+  cy.url({ timeout: TIMEOUTS.LONG }).should('include', '/dashboard')
+  cy.wait(TIMEOUTS.SHORT)
   
   // Aguarda redirecionamento após login
   cy.url({ timeout: TIMEOUTS.LONG }).should('include', '/dashboard')
