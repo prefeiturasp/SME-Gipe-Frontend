@@ -8,7 +8,7 @@ export interface OcorrenciaGipeResponse {
     status_extra: string;
     envolve_arma_ataque: string;
     ameaca_realizada_qual_maneira: string;
-    envolvido: string;
+    envolvido: string[];
     motivacao_ocorrencia: string[];
     tipos_ocorrencia: string[];
     tipos_ocorrencia_detalhes: Array<{
@@ -25,7 +25,7 @@ export type OcorrenciaGipeBody = {
     dre_codigo_eol: string;
     envolve_arma_ataque: string;
     ameaca_realizada_qual_maneira: string;
-    envolvido: string;
+    envolvido: string[];
     motivacao_ocorrencia: string[];
     tipos_ocorrencia: string[];
     qual_ciclo_aprendizagem: string;
