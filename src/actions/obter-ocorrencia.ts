@@ -32,10 +32,10 @@ export type OcorrenciaDetalheAPI = {
         | "sim_cbm"
         | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
-    envolvido?: {
+    envolvido?: Array<{
         uuid: string;
         perfil_dos_envolvidos: string;
-    };
+    }>;
     tem_info_agressor_ou_vitima?: "sim" | "nao";
     pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;

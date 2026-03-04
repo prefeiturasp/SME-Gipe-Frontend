@@ -7,7 +7,7 @@ export const formSchema = z.object({
     ameacaRealizada: z.string({
         required_error: "Campo obrigatório",
     }),
-    envolvidos: z.string().min(1, "Selecione os envolvidos."),
+    envolvidos: z.array(z.string()).min(1, "Selecione ao menos um envolvido."),
     motivoOcorrencia: z
         .array(z.string())
         .min(1, { message: "Selecione pelo menos uma motivação" }),
