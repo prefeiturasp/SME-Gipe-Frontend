@@ -42,8 +42,8 @@ module.exports = defineConfig({
       TAGS: 'not @skip', // Ignora cenários marcados como @wip por padrão
       
       // Credenciais de Teste - Login
-      RF_VALIDO: '40450525856',
-      SENHA_VALIDA: 'Sgp5856',
+      RF_VALIDO: '7311559',
+      SENHA_VALIDA: 'Sgp1559',
       RF_INVALIDO: '6913261',
       SENHA_INVALIDA: 'Sgp326',
       

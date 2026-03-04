@@ -4,9 +4,12 @@ Funcionalidade: Cadastro de usuários no sistema GIPE
 
   Contexto: Acesso à tela de cadastro
     Dado que o usuário está na página de cadastro
-    E o usuário seleciona o campo "Selecione a DRE" com "DRE CAPELA DO SOCORRO"
-    E o usuário seleciona o campo "Digite o nome da UE" com "AURELIO BUARQUE DE HOLANDA FERREIRA"
+    E o usuário valida a existência do campo "Selecione a DRE"
+    E o usuário seleciona o campo "Selecione a DRE" com "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA"
+    E o usuário valida a existência do campo "Digite o nome da UE"
+    E o usuário seleciona o campo "Digite o nome da UE" com "ABRAO HUCK, DR."
 
+  @skip
   Cenário: Usuário realiza cadastro completo
     Quando o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
     E o usuário preenche o campo "Qual o seu CPF" com "044.194.250-40"

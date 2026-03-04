@@ -9,10 +9,18 @@ yarn.lock
 
 # ========================================
 # CYPRESS - OUTPUTS E RESULTADOS
-# ================================git========
+# ========================================
 cypress/screenshots/
 cypress/videos/
 cypress/downloads/
+
+# Screenshots e vídeos de evidências (qualquer localização)
+**/screenshots/**
+**/videos/**
+**/*-screenshot-*.png
+**/*-video-*.mp4
+**/ERRO_*.png
+**/FALHA_*.png
 
 # Relatórios de testes
 allure-report/
@@ -200,14 +208,14 @@ $RECYCLE.BIN/
 #cypress/e2e/ui/gipe_integracao.feature       # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
 #cypress/e2e/ui/gipe_seguranca.feature        # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
 #cypress/e2e/ui/gipe_unitario.feature         # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
-cypress/e2e/ui/gipe_stress.feature
+
 
 # Step definitions experimentais (não 100% funcionais)
 #cypress/support/step_definitions/consulta_ocorrencia.js   # <-- AGORA FUNCIONAL
 #cypress/support/step_definitions/gipe_integracao.js       # <-- AGORA FUNCIONAL
 #cypress/support/step_definitions/gipe_seguranca.js        # <-- AGORA FUNCIONAL
 #cypress/support/step_definitions/gipe_unitario.js         # <-- AGORA FUNCIONAL
-cypress/support/step_definitions/gipe_stress.js
+
 
 # ========================================
 # ARQUIVOS DE TESTE E DEBUG

@@ -565,9 +565,9 @@ Then('navegador não deve exibir avisos de segurança', () => {
 
 When('eu insiro senha e submeto o formulário', () => {
   cy.get(locators_login.campo_usuario(), { timeout: TIMEOUT_PADRAO })
-    .type('39411157076')
+    .type('7311559')
   cy.get(locators_login.campo_senha(), { timeout: TIMEOUT_PADRAO })
-    .type('Sgp7076')
+    .type('Sgp1559')
   cy.get('button').contains('Acessar').click({ force: true })
   cy.wait(1000)
 })
@@ -579,7 +579,7 @@ Then('a senha deve ser transmitida via HTTPS', () => {
 Then('a senha não deve aparecer em logs do cliente', () => {
   cy.window().then((win) => {
     const logs = JSON.stringify(win.performance.getEntriesByType('resource'))
-    expect(logs).to.not.include('Sgp7076')
+    expect(logs).to.not.include('Sgp1559')
   })
 })
 

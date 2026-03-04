@@ -204,7 +204,7 @@ Given('que tenho uma função de validação de RF', () => {
 
 When('chamo com RF válido', () => {
   cy.get('@funcaoRF').then((obj) => {
-    const resultado = obj.funcao('39411157076')
+    const resultado = obj.funcao('7311559')
     cy.wrap(resultado).as('resultado')
   })
 })

@@ -6,8 +6,8 @@ const locators = new Editar_Ocorrencia_Localizadores()
 const locators_login = new Login_Gipe_Localizadores()
 
 Given('eu efetuo login com RF', () => {
-  const RF = '40450525856'
-  const SENHA = 'Sgp5856'
+  const RF = '29379960000'
+  const SENHA = 'Sgp0000'
   
   cy.loginWithSession(RF, SENHA, 'EDITAR')
   cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
