@@ -271,10 +271,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
-                (secaoTipoData as { envolvidos?: string })?.envolvidos && {
+                (secaoTipoData as { envolvidos?: string[] })?.envolvidos && {
                     envolvido:
-                        (secaoTipoData as { envolvidos?: string })
-                            ?.envolvidos ?? "",
+                        (secaoTipoData as { envolvidos?: string[] })
+                            ?.envolvidos ?? [],
                 }),
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",

@@ -240,8 +240,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("combobox", {
-            name: /Quem são os envolvidos\?\*/i,
+        const envolvidosButton = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvidosButton);
 
@@ -314,8 +314,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("combobox", {
-            name: /Quem são os envolvidos\?\*/i,
+        const envolvidosButton = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvidosButton);
 
@@ -352,7 +352,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         ).mockReturnValue({
             formData: {
                 tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
-                envolvidos: "aluno",
+                envolvido: ["aluno"],
                 descricao: "Descrição inicial",
                 possuiInfoAgressorVitima: "Sim" as const,
             },
@@ -542,8 +542,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("combobox", {
-            name: /Quem são os envolvidos\?\*/i,
+        const envolvidosButton = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvidosButton);
 
@@ -619,8 +619,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         const descricaoInput = screen.getByPlaceholderText("Descreva aqui...");
         await user.type(descricaoInput, "Descrição de teste para error");
 
-        const envolvido = screen.getByRole("combobox", {
-            name: /quem são os envolvidos/i,
+        const envolvido = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvido);
         const envolvidoOption = await screen.findByRole("option", {
@@ -683,8 +683,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         await user.click(opcaoViolencia);
 
-        const envolvidosButton = screen.getByRole("combobox", {
-            name: /Quem são os envolvidos\?\*/i,
+        const envolvidosButton = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvidosButton);
 
@@ -758,8 +758,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         const descricaoInput = screen.getByPlaceholderText("Descreva aqui...");
         await user.type(descricaoInput, "Descrição de teste completa");
 
-        const envolvido = screen.getByRole("combobox", {
-            name: /quem são os envolvidos/i,
+        const envolvido = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         await user.click(envolvido);
         const envolvidoOption = await screen.findByRole("option", {
@@ -871,8 +871,8 @@ describe("SecaoNaoFurtoERoubo", () => {
             });
             await user.click(tipoOption);
 
-            const envolvidosButton = screen.getByRole("combobox", {
-                name: /Quem são os envolvidos\?\*/i,
+            const envolvidosButton = screen.getByRole("button", {
+                name: /Selecione os envolvidos/i,
             });
             await user.click(envolvidosButton);
 
@@ -930,7 +930,7 @@ describe("SecaoNaoFurtoERoubo", () => {
                         "uuid-invalido-de-outro-tipo",
                     ],
                     descricao: "Teste",
-                    envolvidos: "uuid-estudante",
+                    envolvido: "uuid-estudante",
                     possuiInfoAgressorVitima: "Não",
                 },
                 savedFormData: {},
@@ -984,8 +984,8 @@ describe("SecaoNaoFurtoERoubo", () => {
         });
         expect(tiposSelect).toBeDisabled();
 
-        const envolvidosSelect = screen.getByRole("combobox", {
-            name: /Quem são os envolvidos\?\*/i,
+        const envolvidosSelect = screen.getByRole("button", {
+            name: /Selecione os envolvidos/i,
         });
         expect(envolvidosSelect).toBeDisabled();
 

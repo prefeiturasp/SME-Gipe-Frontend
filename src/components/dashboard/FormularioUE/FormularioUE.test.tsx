@@ -321,7 +321,7 @@ describe("FormularioUE", () => {
         mockSecaoNaoFurtoGetData.mockReturnValue({
             tiposOcorrencia: ["Agressão"],
             descricao: "Descrição da agressão",
-            envolvidos: "Alunos",
+            envolvido: ["uuid-alunos"],
             possuiInfoAgressorVitima: "Sim",
         });
 
@@ -955,7 +955,7 @@ describe("FormularioUE", () => {
             mockSecaoNaoFurtoGetData.mockReturnValue({
                 tiposOcorrencia: ["Agressão"],
                 descricao: "Descrição da agressão",
-                envolvidos: "Alunos",
+                envolvidos: ["Alunos"],
                 possuiInfoAgressorVitima: "Não",
             });
 
@@ -963,7 +963,7 @@ describe("FormularioUE", () => {
                 expect(data.body).toMatchObject({
                     sobre_furto_roubo_invasao_depredacao: false,
                     smart_sampa_situacao: "nao",
-                    envolvido: "Alunos",
+                    envolvido: ["Alunos"],
                     tem_info_agressor_ou_vitima: "nao",
                 });
             });
@@ -1232,7 +1232,7 @@ describe("FormularioUE", () => {
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.envolvido).toBe("");
+                expect(data.body.envolvidos).toEqual([]);
             });
 
             renderWithClient(<FormularioUE />);
@@ -1308,7 +1308,7 @@ describe("FormularioUE", () => {
             });
         });
 
-        it("deve usar string vazia quando envolvidos é null em não furto/roubo", async () => {
+        it("deve usar array vazio quando envolvidos é null em não furto/roubo", async () => {
             mockStoreState.formData = { tipoOcorrencia: "Não" };
             mockSecaoNaoFurtoGetData.mockReturnValue({
                 tiposOcorrencia: ["Agressão"],
@@ -1318,7 +1318,7 @@ describe("FormularioUE", () => {
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.envolvido).toBe("");
+                expect(data.body.envolvidos).toEqual([]);
             });
 
             renderWithClient(<FormularioUE />);
@@ -1334,17 +1334,17 @@ describe("FormularioUE", () => {
         it("deve usar o valor de formData.envolvidos quando definido", async () => {
             mockStoreState.formData = {
                 tipoOcorrencia: "Não",
-                envolvidos: "estudantes",
+                envolvidos: ["uuid-estudantes"],
             };
             mockSecaoNaoFurtoGetData.mockReturnValue({
                 tiposOcorrencia: ["Agressão"],
                 descricao: "Descrição",
-                envolvidos: "alunos",
+                envolvidos: ["uuid-alunos"],
                 possuiInfoAgressorVitima: "Não",
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.envolvido).toBe("estudantes");
+                expect(data.body.envolvidos).toEqual(["uuid-estudantes"]);
             });
 
             renderWithClient(<FormularioUE />);
@@ -1370,15 +1370,15 @@ describe("FormularioUE", () => {
                     accessCount++;
                     // Primeira chamada (condição do spread): retorna truthy
                     // Segunda chamada (dentro do spread): retorna undefined
-                    return accessCount === 1 ? "alunos" : undefined;
+                    return accessCount === 1 ? ["uuid-alunos"] : undefined;
                 },
             };
 
             mockSecaoNaoFurtoGetData.mockReturnValue(mockData);
 
             mockMutate.mockImplementation((data) => {
-                // O fallback ?? "" deve ser usado
-                expect(data.body.envolvido).toBe("");
+                // O fallback ?? [] deve ser usado
+                expect(data.body.envolvidos).toEqual([]);
             });
 
             renderWithClient(<FormularioUE />);

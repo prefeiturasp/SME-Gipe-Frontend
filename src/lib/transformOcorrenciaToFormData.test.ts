@@ -204,15 +204,17 @@ describe("transformOcorrenciaToFormData", () => {
     it("deve incluir envolvidos quando presente", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
-            envolvido: {
-                uuid: "envolvido-uuid",
-                perfil_dos_envolvidos: "Apenas um estudante",
-            },
+            envolvido: [
+                {
+                    uuid: "envolvido-uuid",
+                    perfil_dos_envolvidos: "Apenas um estudante",
+                },
+            ],
         };
 
         const result = transformOcorrenciaToFormData(ocorrencia);
 
-        expect(result.envolvidos).toBe("envolvido-uuid");
+        expect(result.envolvidos).toEqual(["envolvido-uuid"]);
     });
 
     it("deve converter tem_info_agressor_ou_vitima corretamente", () => {
@@ -247,10 +249,12 @@ describe("transformOcorrenciaToFormData", () => {
             },
             comunicacao_seguranca_publica: "sim_gcm",
             protocolo_acionado: "ameaca",
-            envolvido: {
-                uuid: "envolvido-uuid",
-                perfil_dos_envolvidos: "Apenas um estudante",
-            },
+            envolvido: [
+                {
+                    uuid: "envolvido-uuid",
+                    perfil_dos_envolvidos: "Apenas um estudante",
+                },
+            ],
             tem_info_agressor_ou_vitima: "sim",
         };
 
@@ -268,7 +272,7 @@ describe("transformOcorrenciaToFormData", () => {
             declarante: "declarante-uuid",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "Ameaça",
-            envolvidos: "envolvido-uuid",
+            envolvidos: ["envolvido-uuid"],
             possuiInfoAgressorVitima: "Sim",
         });
     });

@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarOcorrenciaGipe } from "./atualizar-ocorrencia-gipe";
 import { OcorrenciaGipeBody } from "@/types/ocorrencia-gipe";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarOcorrenciaGipe } from "./atualizar-ocorrencia-gipe";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -24,7 +24,7 @@ describe("atualizarOcorrenciaGipe action", () => {
         dre_codigo_eol: "108500",
         envolve_arma_ataque: "sim",
         ameaca_realizada_qual_maneira: "virtualmente",
-        envolvido: "214e18a2-1599-4396-877f-70ea526d36a0",
+        envolvido: ["214e18a2-1599-4396-877f-70ea526d36a0"],
         motivacao_ocorrencia: ["bullying"],
         tipos_ocorrencia: ["001c9106-7cbd-4cb8-8658-ae9b7b0aaf34"],
         qual_ciclo_aprendizagem: "alfabetizacao",
@@ -52,7 +52,7 @@ describe("atualizarOcorrenciaGipe action", () => {
                 dre_codigo_eol: "108500",
                 envolve_arma_ataque: "sim",
                 ameaca_realizada_qual_maneira: "virtualmente",
-                envolvido: "214e18a2-1599-4396-877f-70ea526d36a0",
+                envolvido: ["214e18a2-1599-4396-877f-70ea526d36a0"],
                 motivacao_ocorrencia: ["bullying"],
                 tipos_ocorrencia: ["001c9106-7cbd-4cb8-8658-ae9b7b0aaf34"],
                 qual_ciclo_aprendizagem: "alfabetizacao",
@@ -72,7 +72,7 @@ describe("atualizarOcorrenciaGipe action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
 
         expect(result).toEqual({ success: true, data: mockResponse.data });
@@ -211,7 +211,7 @@ describe("atualizarOcorrenciaGipe action", () => {
         expect(putMock).toHaveBeenCalledWith(
             `/gipe/${mockUuid}/`,
             mockBody,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 });
