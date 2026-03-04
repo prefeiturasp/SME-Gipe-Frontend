@@ -27,7 +27,7 @@ describe("atualizarFormularioCompletoUE action", () => {
         tipos_ocorrencia: ["Furto"],
         descricao_ocorrencia: "Descrição do furto",
         smart_sampa_situacao: "monitorada",
-        envolvido: "",
+        envolvido: [],
         tem_info_agressor_ou_vitima: "nao",
         declarante: "Diretor",
         comunicacao_seguranca_publica: "sim_gcm",

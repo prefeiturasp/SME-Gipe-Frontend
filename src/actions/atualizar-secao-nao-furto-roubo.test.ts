@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarSecaoNaoFurtoRoubo } from "./atualizar-secao-nao-furto-roubo";
 import { SecaoNaoFurtoRouboBody } from "@/types/secao-nao-furto-roubo";
 import type { AxiosResponse } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { atualizarSecaoNaoFurtoRoubo } from "./atualizar-secao-nao-furto-roubo";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -20,7 +20,7 @@ describe("atualizarSecaoNaoFurtoRoubo", () => {
     const mockBody: SecaoNaoFurtoRouboBody = {
         tipos_ocorrencia: ["tipo-1", "tipo-2"],
         descricao_ocorrencia: "Descrição da ocorrência",
-        envolvido: "aluno",
+        envolvido: ["uuid-aluno"],
         tem_info_agressor_ou_vitima: "sim",
     };
 
@@ -56,7 +56,7 @@ describe("atualizarSecaoNaoFurtoRoubo", () => {
                 headers: {
                     Authorization: `Bearer ${mockToken}`,
                 },
-            }
+            },
         );
     });
 

@@ -661,7 +661,7 @@ describe("CadastrarOcorrencia - Orquestração e Integração", () => {
                     tiposOcorrencia: [],
                     descricao: "",
                     smartSampa: undefined,
-                    envolvidos: "",
+                    envolvidos: [],
                     possuiInfoAgressorVitima: undefined,
                 });
             });
