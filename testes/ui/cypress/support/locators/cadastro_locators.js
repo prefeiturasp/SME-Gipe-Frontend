@@ -1,12 +1,28 @@
 class Cadastro_Localizadores {
-  // Dropdown DRE (XPath)
-  select_dre() {
-    return '//div[label[contains(text(),"Selecione a DRE")]]//button[@role="combobox"]';
+  // Label "Selecione a DRE" (CSS)
+  label_dre() {
+    return 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > label';
   }
 
-  // Dropdown UE (XPath)
+  // Dropdown DRE - botão (CSS absoluto)
+  select_dre() {
+    return 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > button';
+  }
+
+  // Span do valor selecionado na DRE
+  select_dre_valor() {
+    return 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > button > span';
+  }
+
+  // Label "Digite o nome da UE" — usada com cy.contains('label', ...)
+  label_ue() {
+    return 'Digite o nome da UE';
+  }
+
+  // Campo UE: não usar seletor fixo — a função usa cy.contains('label') para localizar
+  // Este valor não é usado diretamente, a função selecionarDropdownUE navega pelo label
   select_ue() {
-    return '//div[label[contains(text(),"Digite o nome da UE")]]//button[@role="combobox"]';
+    return 'Digite o nome da UE';
   }
 
   // Nome completo (CSS)

@@ -4,8 +4,8 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 const locators_login = new Login_Gipe_Localizadores()
 
 const CREDENCIAIS_GIPE = {
-  RF: '39411157076',
-  SENHA: 'Sgp7076'
+  RF: '7311559',
+  SENHA: 'Sgp1559'
 }
 
 const TIMEOUTS = {

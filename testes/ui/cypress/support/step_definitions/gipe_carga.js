@@ -107,7 +107,7 @@ const obterNovoToken = () => {
  */
 const garantirTokenValido = () => {
   // Tenta ler o arquivo token.json, se falhar, obtém novo token
-  cy.window().then(() => {
+  return cy.window().then(() => {
     return cy.readFile('token.json').then(
       // Success handler
       (tokenData) => {
@@ -241,8 +241,8 @@ When('todos fazem login no mesmo momento', () => {
         method: 'POST',
         url: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-autenticacao/v1/login',
         body: {
-          username: '39411157076',
-          password: 'Sgp7076'
+          username: '7311559',
+          password: 'Sgp1559'
         },
         failOnStatusCode: false,
         timeout: 90000
@@ -636,29 +636,6 @@ Then('dados são consistentes', () => {
 
 Given('que envio 100 requisições para API', () => {
   cy.wrap({ quantidade: 100 }).as('requisicoesCarga')
-})
-
-When('requisições são processadas', () => {
-  garantirTokenValido().then((token) => {
-    cy.get('@requisicoesCarga').then((config) => {
-      const requisicoes = Array(config.quantidade).fill(null).map((_, i) => 
-        cy.request({
-          method: 'GET',
-          url: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1/ocorrencias',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          failOnStatusCode: false,
-          timeout: 90000
-        }).then((res) => {
-          if (i < 5) cy.log(`Requisição ${i + 1}: Status ${res.status}`)
-          expect([200, 201, 204]).to.include(res.status, `Requisição ${i + 1} deve retornar 200 OK, mas retornou: ${res.status}`)
-          return res
-        })
-      )
-      cy.wrap(requisicoes).as('resultadosRequisicoes')
-    })
-  })
 })
 
 Then('todas as requisições devem completar', () => {

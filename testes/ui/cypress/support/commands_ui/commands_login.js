@@ -25,8 +25,8 @@ Cypress.Commands.add('login_gipe_auto', () => {
     const doAuto = Cypress.env('AUTO_LOGIN') !== false
     if (!doAuto) return cy.log('Auto-login desabilitado por config')
 
-    const rf = Cypress.env('RF_VALIDO') || '39411157076'
-    const senha = Cypress.env('SENHA_VALIDA') || 'Sgp7076'
+    const rf = Cypress.env('RF_VALIDO') || '7311559'
+    const senha = Cypress.env('SENHA_VALIDA') || 'Sgp1559'
 
     cy.log('Tentando auto-login com credenciais de ambiente')
     cy.get(loginLocalizadores.campo_usuario(), { timeout: 20000 }).then(($el) => {
