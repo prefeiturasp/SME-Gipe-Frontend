@@ -103,12 +103,12 @@ describe("transformOcorrenciaToFormData", () => {
     it("deve validar e incluir smartSampa quando valor é válido", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
-            smart_sampa_situacao: "sim_com_dano",
+            smart_sampa_situacao: "sim",
         };
 
         const result = transformOcorrenciaToFormData(ocorrencia);
 
-        expect(result.smartSampa).toBe("sim_com_dano");
+        expect(result.smartSampa).toBe("Sim");
     });
 
     it("não deve incluir smartSampa quando valor é inválido", () => {
@@ -120,6 +120,28 @@ describe("transformOcorrenciaToFormData", () => {
         const result = transformOcorrenciaToFormData(ocorrencia);
 
         expect(result.smartSampa).toBeUndefined();
+    });
+
+    it("deve validar e incluir smartSampa como 'Não' quando valor é 'nao'", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            smart_sampa_situacao: "nao",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.smartSampa).toBe("Não");
+    });
+
+    it("deve incluir status quando presente", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            status: "em_preenchimento_diretor",
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.status).toBe("em_preenchimento_diretor");
     });
 
     it("deve incluir declarante quando presente", () => {
@@ -140,6 +162,8 @@ describe("transformOcorrenciaToFormData", () => {
         const testCases = [
             { input: "sim_gcm" as const, expected: "Sim, com a GCM" },
             { input: "sim_pm" as const, expected: "Sim, com a PM" },
+            { input: "sim_dc" as const, expected: "Sim, com a Defesa civil" },
+            { input: "sim_cbm" as const, expected: "Sim, com o Bombeiro" },
             { input: "nao" as const, expected: "Não" },
         ];
 
@@ -216,7 +240,7 @@ describe("transformOcorrenciaToFormData", () => {
             nome_unidade: "EMEF Teste",
             tipos_ocorrencia: [{ uuid: "tipo-1", nome: "Violência física" }],
             descricao_ocorrencia: "Descrição da ocorrência",
-            smart_sampa_situacao: "sim_com_dano",
+            smart_sampa_situacao: "sim",
             declarante_detalhes: {
                 uuid: "declarante-uuid",
                 declarante: "João Silva",
@@ -240,7 +264,7 @@ describe("transformOcorrenciaToFormData", () => {
             nomeUnidade: "EMEF Teste",
             tiposOcorrencia: ["tipo-1"],
             descricao: "Descrição da ocorrência",
-            smartSampa: "sim_com_dano",
+            smartSampa: "Sim",
             declarante: "declarante-uuid",
             comunicacaoSeguranca: "Sim, com a GCM",
             protocoloAcionado: "Ameaça",
@@ -250,26 +274,28 @@ describe("transformOcorrenciaToFormData", () => {
     });
 
     describe("Informações Adicionais - Dados Pessoais do Agressor", () => {
-        it("deve incluir nome do agressor quando presente", () => {
+        it("deve incluir pessoas agressoras quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                nome_pessoa_agressora: "João Silva",
+                pessoas_agressoras: [{ nome: "João Silva", idade: 25 }],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.nomeAgressor).toBe("João Silva");
+            expect(result.pessoasAgressoras).toEqual([
+                { nome: "João Silva", idade: "25" },
+            ]);
         });
 
-        it("deve converter idade do agressor para string quando presente", () => {
+        it("deve converter idade das pessoas agressoras para string", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Maria Santos", idade: 35 }],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.idadeAgressor).toBe("35");
+            expect(result.pessoasAgressoras?.[0].idade).toBe("35");
         });
 
         it("deve incluir gênero do agressor quando presente", () => {
@@ -292,110 +318,6 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.grupoEtnicoRacial).toBe("indigena");
-        });
-    });
-
-    describe("Informações Adicionais - Endereço do Agressor", () => {
-        it("deve incluir CEP quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cep: "13366-222",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.cep).toBe("13366-222");
-        });
-
-        it("deve incluir logradouro quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                logradouro: "Rua dos Enderessos",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.logradouro).toBe("Rua dos Enderessos");
-        });
-
-        it("deve incluir número da residência quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                numero_residencia: "428",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.numero).toBe("428");
-        });
-
-        it("deve incluir complemento quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                complemento: "Apto 101",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.complemento).toBe("Apto 101");
-        });
-
-        it("deve incluir estado quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                estado: "MA",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.estado).toBe("MA");
-        });
-
-        it("deve incluir cidade quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cidade: "Mato Grosso",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.cidade).toBe("Mato Grosso");
-        });
-
-        it("deve incluir bairro quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                bairro: "Aquele lá",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.bairro).toBe("Aquele lá");
-        });
-
-        it("deve incluir todos os campos de endereço quando presentes", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero_residencia: "428",
-                complemento: "Apto 101",
-                estado: "MA",
-                cidade: "Mato Grosso",
-                bairro: "Aquele lá",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result).toMatchObject({
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero: "428",
-                complemento: "Apto 101",
-                estado: "MA",
-                cidade: "Mato Grosso",
-                bairro: "Aquele lá",
-            });
         });
     });
 
@@ -446,7 +368,7 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.interacaoAmbienteEscolar).toBe(
-                "Como é a interação da pessoa agressora no ambiente escolar?"
+                "Como é a interação da pessoa agressora no ambiente escolar?",
             );
         });
 
@@ -532,8 +454,7 @@ describe("transformOcorrenciaToFormData", () => {
         it("deve transformar todos os campos de informações adicionais quando todos estão presentes", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                nome_pessoa_agressora: "Kleber Machado",
-                idade_pessoa_agressora: 35,
+                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
                 motivacao_ocorrencia_display: [
                     { value: "homofobia", label: "Homofobia" },
                     { value: "racismo", label: "Racismo" },
@@ -547,20 +468,12 @@ describe("transformOcorrenciaToFormData", () => {
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
                 acompanhado_naapa: false,
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero_residencia: "428",
-                complemento: "Rua da rua",
-                bairro: "Aquele lá",
-                cidade: "Mato Grosso",
-                estado: "MA",
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result).toMatchObject({
-                nomeAgressor: "Kleber Machado",
-                idadeAgressor: "35",
+                pessoasAgressoras: [{ nome: "Kleber Machado", idade: "35" }],
                 motivoOcorrencia: ["homofobia", "racismo"],
                 genero: "mulher_cis",
                 grupoEtnicoRacial: "indigena",
@@ -571,13 +484,6 @@ describe("transformOcorrenciaToFormData", () => {
                 redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
                 acompanhadoNAAPA: "Não",
-                cep: "13366-222",
-                logradouro: "Rua dos Enderessos",
-                numero: "428",
-                complemento: "Rua da rua",
-                bairro: "Aquele lá",
-                cidade: "Mato Grosso",
-                estado: "MA",
             });
         });
     });

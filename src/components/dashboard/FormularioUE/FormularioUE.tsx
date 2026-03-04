@@ -5,7 +5,9 @@ import { Stepper } from "@/components/stepper/Stepper";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,8 +36,9 @@ export type FormularioUEProps = {
 export function FormularioUE({ onNext }: FormularioUEProps) {
     const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
+    const setFormData = useOcorrenciaFormStore((state) => state.setFormData);
     const ocorrenciaUuid = useOcorrenciaFormStore(
-        (state) => state.ocorrenciaUuid
+        (state) => state.ocorrenciaUuid,
     );
     const queryClient = useQueryClient();
     const reset = useOcorrenciaFormStore((state) => state.reset);
@@ -53,6 +56,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const informacoesAdicionaisRef = useRef<InformacoesAdicionaisRef>(null);
     const secaoFinalRef = useRef<SecaoFinalRef>(null);
 
+    // Ref para evitar loop infinito ao sincronizar tiposOcorrencia com o store
+    const lastSyncedTiposRef = useRef<string[]>(
+        (formData.tiposOcorrencia as string[]) ?? [],
+    );
+
     // Estados locais que refletem os valores dos formulários em tempo real
     const [currentTipoOcorrencia, setCurrentTipoOcorrencia] = useState<
         string | undefined
@@ -65,6 +73,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
 
+    // Usa estado local (reativo) para buscar tipos corretos ao trocar o radio
+    const tipoFormulario = isFurtoRoubo ? "PATRIMONIAL" : "GERAL";
+    const { data: tiposOcorrenciaDisponiveis } =
+        useTiposOcorrencia(tipoFormulario);
+
     // Callbacks para receber mudanças dos formulários
     const handleSecaoInicialChange = (data: { tipoOcorrencia?: string }) => {
         if (data.tipoOcorrencia !== undefined) {
@@ -72,11 +85,32 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         }
     };
 
+    const syncTiposOcorrencia = (tipos: string[]) => {
+        const prev = lastSyncedTiposRef.current;
+        if (
+            prev.length !== tipos.length ||
+            prev.some((v, i) => v !== tipos[i])
+        ) {
+            lastSyncedTiposRef.current = tipos;
+            setFormData({ tiposOcorrencia: tipos });
+        }
+    };
+
+    const handleSecaoFurtoChange = (data: { tiposOcorrencia?: string[] }) => {
+        if (data.tiposOcorrencia !== undefined) {
+            syncTiposOcorrencia(data.tiposOcorrencia);
+        }
+    };
+
     const handleSecaoNaoFurtoChange = (data: {
         possuiInfoAgressorVitima?: string;
+        tiposOcorrencia?: string[];
     }) => {
         if (data.possuiInfoAgressorVitima !== undefined) {
             setCurrentPossuiInfoAgressor(data.possuiInfoAgressorVitima);
+        }
+        if (data.tiposOcorrencia !== undefined) {
+            syncTiposOcorrencia(data.tiposOcorrencia);
         }
     };
 
@@ -202,6 +236,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         const comunicacaoMap: Record<string, string> = {
             "Sim, com a GCM": "sim_gcm",
             "Sim, com a PM": "sim_pm",
+            "Sim, com a Defesa civil": "sim_dc",
+            "Sim, com o Bombeiro": "sim_cbm",
             Não: "nao",
         };
 
@@ -212,8 +248,15 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         };
 
         const dataHoraOcorrencia = new Date(
-            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`
+            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
         ).toISOString();
+
+        let smartSampaSituacao = "nao";
+        if (isFurtoRoubo) {
+            const smartSampaValue = (secaoTipoData as { smartSampa?: string })
+                ?.smartSampa;
+            smartSampaSituacao = smartSampaValue === "Sim" ? "sim" : "nao";
+        }
 
         return {
             data_ocorrencia: dataHoraOcorrencia,
@@ -221,12 +264,12 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
-            tipos_ocorrencia: secaoTipoData?.tiposOcorrencia ?? [],
+            tipos_ocorrencia: filterValidTiposOcorrencia(
+                secaoTipoData?.tiposOcorrencia ?? [],
+                tiposOcorrenciaDisponiveis,
+            ),
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
-            smart_sampa_situacao: isFurtoRoubo
-                ? (secaoTipoData as { smartSampa?: string })?.smartSampa ||
-                  "nao_faz_parte"
-                : "nao_faz_parte",
+            smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
                 (secaoTipoData as { envolvidos?: string })?.envolvidos && {
                     envolvido:
@@ -242,10 +285,13 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
                 "registro",
             ...(informacoesAdicionaisData && {
-                nome_pessoa_agressora: informacoesAdicionaisData.nomeAgressor,
-                idade_pessoa_agressora: Number(
-                    informacoesAdicionaisData.idadeAgressor
-                ),
+                pessoas_agressoras:
+                    informacoesAdicionaisData.pessoasAgressoras.map(
+                        (pessoa) => ({
+                            nome: pessoa.nome,
+                            idade: Number(pessoa.idade),
+                        }),
+                    ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
                 genero_pessoa_agressora: informacoesAdicionaisData.genero,
@@ -262,13 +308,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     "Sim",
                 acompanhado_naapa:
                     informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
-                cep: informacoesAdicionaisData.cep,
-                logradouro: informacoesAdicionaisData.logradouro,
-                numero_residencia: informacoesAdicionaisData.numero,
-                complemento: informacoesAdicionaisData.complemento,
-                bairro: informacoesAdicionaisData.bairro,
-                cidade: informacoesAdicionaisData.cidade,
-                estado: informacoesAdicionaisData.estado,
             }),
         };
     };
@@ -331,7 +370,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         } catch {
             toast({
@@ -387,6 +426,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             <SecaoFurtoERoubo
                                 ref={secaoFurtoERouboRef}
                                 showButtons={false}
+                                onFormChange={handleSecaoFurtoChange}
                                 disabled={isReadOnly}
                             />
                         ) : (

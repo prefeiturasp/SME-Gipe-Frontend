@@ -1,8 +1,8 @@
 "use server";
 
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { cookies } from "next/headers";
 import { AxiosError } from "axios";
+import { cookies } from "next/headers";
 
 export type OcorrenciaDetalheAPI = {
     id: number;
@@ -19,21 +19,25 @@ export type OcorrenciaDetalheAPI = {
     tipos_ocorrencia?: Array<{ uuid: string; nome: string }>;
     descricao_ocorrencia?: string;
     status?: string;
-    smart_sampa_situacao?: "sim_com_dano" | "sim_sem_dano" | "nao_faz_parte";
+    smart_sampa_situacao?: "sim" | "nao";
     smart_sampa_situacao_display?: string;
     declarante_detalhes?: {
         uuid: string;
         declarante: string;
     };
-    comunicacao_seguranca_publica?: "sim_gcm" | "sim_pm" | "nao";
+    comunicacao_seguranca_publica?:
+        | "sim_gcm"
+        | "sim_pm"
+        | "sim_dc"
+        | "sim_cbm"
+        | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
     envolvido?: {
         uuid: string;
         perfil_dos_envolvidos: string;
     };
     tem_info_agressor_ou_vitima?: "sim" | "nao";
-    nome_pessoa_agressora?: string;
-    idade_pessoa_agressora?: number;
+    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
     genero_pessoa_agressora?: string;
     grupo_etnico_racial?: string;
@@ -43,17 +47,10 @@ export type OcorrenciaDetalheAPI = {
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;
-    cep?: string;
-    logradouro?: string;
-    numero_residencia?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
 };
 
 export async function obterOcorrencia(
-    uuid: string
+    uuid: string,
 ): Promise<
     | { success: true; data: OcorrenciaDetalheAPI }
     | { success: false; error: string }
@@ -72,7 +69,7 @@ export async function obterOcorrencia(
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-            }
+            },
         );
         return { success: true, data };
     } catch (err) {

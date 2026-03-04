@@ -66,6 +66,18 @@ vi.mock("@/hooks/useAtualizarSecaoFinal", () => ({
     }),
 }));
 
+const mockTiposOcorrencia = [
+    { uuid: "uuid-desastres", nome: "Desastres climáticos" },
+    { uuid: "uuid-violencia", nome: "Violência física" },
+];
+
+vi.mock("@/hooks/useTiposOcorrencia", () => ({
+    useTiposOcorrencia: vi.fn(() => ({
+        data: mockTiposOcorrencia,
+        isLoading: false,
+    })),
+}));
+
 const queryClient = new QueryClient();
 
 describe("SecaoFinal", () => {
@@ -85,28 +97,28 @@ describe("SecaoFinal", () => {
 
     it("deve renderizar todos os campos corretamente", () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         expect(screen.getByText(/Quem é o declarante\?/i)).toBeInTheDocument();
         expect(
-            screen.getByText(/Houve comunicação com a segurança pública\?/i)
+            screen.getByText(/Houve comunicação com a segurança pública\?/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/Qual protocolo acionado\?/i)
+            screen.getByText(/Qual protocolo acionado\?/i),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /É possível imprimir uma cópia das respostas depois de enviá-las/i
-            )
+                /É possível imprimir uma cópia das respostas depois de enviá-las/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByRole("button", { name: /Anterior/i })
+            screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Próximo/i })
+            screen.getByRole("button", { name: /Próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -118,7 +130,7 @@ describe("SecaoFinal", () => {
         };
 
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const declaranteSelect = screen.getByRole("combobox", {
@@ -139,7 +151,7 @@ describe("SecaoFinal", () => {
 
     it("deve validar e habilitar o botão Próximo apenas quando todos os campos estiverem preenchidos", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -184,7 +196,7 @@ describe("SecaoFinal", () => {
 
     it("deve exibir todas as opções do campo declarante", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const declaranteSelect = screen.getByRole("combobox", {
@@ -194,29 +206,29 @@ describe("SecaoFinal", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByRole("option", { name: /Gabinete DRE/i })
-            ).toBeInTheDocument()
+                screen.getByRole("option", { name: /Gabinete DRE/i }),
+            ).toBeInTheDocument(),
         );
         expect(
-            screen.getByRole("option", { name: /^GCM$/i })
+            screen.getByRole("option", { name: /^GCM$/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("option", { name: /^GIPE$/i })
+            screen.getByRole("option", { name: /^GIPE$/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("option", { name: /NAAPA/i })
+            screen.getByRole("option", { name: /NAAPA/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("option", { name: /ProtegeEscola/i })
+            screen.getByRole("option", { name: /ProtegeEscola/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("option", { name: /Unidade Educacional/i })
+            screen.getByRole("option", { name: /Unidade Educacional/i }),
         ).toBeInTheDocument();
     });
 
     it("deve exibir todas as opções do campo comunicação com segurança", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const comunicacaoSelect = screen.getByRole("combobox", {
@@ -226,20 +238,20 @@ describe("SecaoFinal", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByRole("option", { name: /Sim, com a GCM/i })
-            ).toBeInTheDocument()
+                screen.getByRole("option", { name: /Sim, com a GCM/i }),
+            ).toBeInTheDocument(),
         );
         expect(
-            screen.getByRole("option", { name: /Sim, com a PM/i })
+            screen.getByRole("option", { name: /Sim, com a PM/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("option", { name: /^Não$/i })
+            screen.getByRole("option", { name: /^Não$/i }),
         ).toBeInTheDocument();
     });
 
     it("deve exibir todas as opções do campo protocolo acionado", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const protocoloSelect = screen.getByRole("combobox", {
@@ -249,22 +261,22 @@ describe("SecaoFinal", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByRole("option", { name: /^Ameaça$/i })
-            ).toBeInTheDocument()
+                screen.getByRole("option", { name: /^Ameaça$/i }),
+            ).toBeInTheDocument(),
         );
         expect(
-            screen.getByRole("option", { name: /^Alerta$/i })
+            screen.getByRole("option", { name: /^Alerta$/i }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole("option", {
                 name: /Apenas para registro\/não se aplica/i,
-            })
+            }),
         ).toBeInTheDocument();
     });
 
     it("deve chamar setFormData e onNext ao submeter o formulário com sucesso", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const declaranteSelect = screen.getByRole("combobox", {
@@ -311,7 +323,7 @@ describe("SecaoFinal", () => {
 
     it("deve chamar setFormData e onPrevious ao clicar no botão Anterior", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const previousButton = screen.getByRole("button", {
@@ -327,7 +339,7 @@ describe("SecaoFinal", () => {
 
     it("deve preservar valores ao clicar em Anterior e salvar no store", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const declaranteSelect = screen.getByRole("combobox", {
@@ -348,7 +360,7 @@ describe("SecaoFinal", () => {
             expect(setFormDataMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     declarante: "5818782c-f44e-4a55-ac8d-87ce64c5616a",
-                })
+                }),
             );
             expect(mockOnPrevious).toHaveBeenCalled();
         });
@@ -356,7 +368,7 @@ describe("SecaoFinal", () => {
 
     it("deve exibir mensagens de erro quando tentar submeter formulário incompleto", async () => {
         renderWithClient(
-            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+            <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -401,7 +413,7 @@ describe("SecaoFinal", () => {
         expect(result.success).toBe(false);
         if (!result.success) {
             const messages = result.error.issues.map(
-                (i: { message: string }) => i.message
+                (i: { message: string }) => i.message,
             );
             expect(messages).toContain("Selecione o declarante.");
         }
@@ -420,10 +432,10 @@ describe("SecaoFinal", () => {
         expect(result.success).toBe(false);
         if (!result.success) {
             const messages = result.error.issues.map(
-                (i: { message: string }) => i.message
+                (i: { message: string }) => i.message,
             );
             expect(messages).toContain(
-                "Informe se houve comunicação com a segurança pública."
+                "Informe se houve comunicação com a segurança pública.",
             );
         }
     });
@@ -441,7 +453,7 @@ describe("SecaoFinal", () => {
         expect(result.success).toBe(false);
         if (!result.success) {
             const messages = result.error.issues.map(
-                (i: { message: string }) => i.message
+                (i: { message: string }) => i.message,
             );
             expect(messages).toContain("Selecione o protocolo acionado.");
         }
@@ -473,7 +485,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const declaranteSelect = screen.getByRole("combobox", {
@@ -520,7 +532,7 @@ describe("SecaoFinal", () => {
                             protocolo_acionado: "alerta",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -538,7 +550,7 @@ describe("SecaoFinal", () => {
             };
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -570,7 +582,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const comunicacaoSelect = screen.getByRole("combobox", {
@@ -601,7 +613,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const declaranteSelect = screen.getByRole("combobox", {
@@ -644,7 +656,7 @@ describe("SecaoFinal", () => {
                             protocolo_acionado: "registro",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -661,7 +673,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const declaranteSelect = screen.getByRole("combobox", {
@@ -706,7 +718,7 @@ describe("SecaoFinal", () => {
                             protocolo_acionado: "ameaca",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -728,7 +740,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const comunicacaoSelect = screen.getByRole("combobox", {
@@ -768,7 +780,7 @@ describe("SecaoFinal", () => {
             });
 
             renderWithClient(
-                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
             );
 
             const comunicacaoSelect = screen.getByRole("combobox", {
@@ -913,7 +925,7 @@ describe("SecaoFinal", () => {
                 onNext={mockOnNext}
                 onPrevious={mockOnPrevious}
                 disabled={true}
-            />
+            />,
         );
 
         const selects = screen.getAllByRole("combobox");
@@ -923,5 +935,312 @@ describe("SecaoFinal", () => {
 
         const proximoButton = screen.getByRole("button", { name: /Próximo/i });
         expect(proximoButton).toBeInTheDocument();
+    });
+
+    describe("Opções condicionais de Desastres climáticos", () => {
+        it("deve exibir opções de Defesa civil e Bombeiro quando 'Desastres climáticos' estiver selecionado", async () => {
+            mockFormData = {
+                tiposOcorrencia: ["uuid-desastres"],
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", {
+                        name: /Sim, com a Defesa civil/i,
+                    }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.getByRole("option", {
+                    name: /Sim, com o Bombeiro/i,
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: /Sim, com a GCM/i }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: /Sim, com a PM/i }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", { name: /^Não$/i }),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir opções de Defesa civil e Bombeiro quando 'Desastres climáticos' não estiver selecionado", async () => {
+            mockFormData = {
+                tiposOcorrencia: ["uuid-violencia"],
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /Sim, com a GCM/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.queryByRole("option", {
+                    name: /Sim, com a Defesa civil/i,
+                }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole("option", {
+                    name: /Sim, com o Bombeiro/i,
+                }),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve usar tipoFormulario PATRIMONIAL quando tipoOcorrencia for 'Sim'", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Sim",
+                tiposOcorrencia: ["uuid-desastres"],
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", {
+                        name: /Sim, com a Defesa civil/i,
+                    }),
+                ).toBeInTheDocument(),
+            );
+        });
+
+        it("não deve exibir opções extras quando tiposOcorrencia estiver vazio", async () => {
+            mockFormData = {
+                tiposOcorrencia: [],
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /Sim, com a GCM/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.queryByRole("option", {
+                    name: /Sim, com a Defesa civil/i,
+                }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole("option", {
+                    name: /Sim, com o Bombeiro/i,
+                }),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve mapear 'Sim, com a Defesa civil' para 'sim_dc' na API", async () => {
+            mockFormData = {
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+                tiposOcorrencia: ["uuid-desastres"],
+            };
+            mockOcorrenciaUuid = "test-uuid-123";
+            mockSavedFormData = null;
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            fireEvent.click(declaranteSelect);
+            fireEvent.click(
+                await screen.findByRole("option", { name: /GIPE/i }),
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            fireEvent.click(
+                await screen.findByRole("option", {
+                    name: /Sim, com a Defesa civil/i,
+                }),
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+            fireEvent.click(
+                await screen.findByRole("option", { name: /Ameaça/i }),
+            );
+
+            const nextButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            comunicacao_seguranca_publica: "sim_dc",
+                        }),
+                    }),
+                    expect.any(Object),
+                );
+            });
+        });
+
+        it("deve limpar comunicacaoSeguranca quando tipo não é Desastres climáticos e valor é exclusivo", async () => {
+            mockFormData = {
+                tiposOcorrencia: ["uuid-violencia"],
+                comunicacaoSeguranca: "Sim, com a Defesa civil",
+            };
+
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(
+                <SecaoFinal
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            await waitFor(() => {
+                const formData = ref.current?.getFormData();
+                expect(formData?.comunicacaoSeguranca).toBe("");
+            });
+        });
+
+        it("não deve limpar comunicacaoSeguranca enquanto isLoadingTipos for true", async () => {
+            const { useTiposOcorrencia } =
+                await import("@/hooks/useTiposOcorrencia");
+            const mockedUseTipos = vi.mocked(useTiposOcorrencia);
+
+            mockedUseTipos.mockReturnValue({
+                data: undefined,
+                isLoading: true,
+            } as ReturnType<typeof useTiposOcorrencia>);
+
+            mockFormData = {
+                tiposOcorrencia: [],
+                comunicacaoSeguranca: "Sim, com a Defesa civil",
+            };
+
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(
+                <SecaoFinal
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            await waitFor(() => {
+                const formData = ref.current?.getFormData();
+                expect(formData?.comunicacaoSeguranca).toBe(
+                    "Sim, com a Defesa civil",
+                );
+            });
+
+            mockedUseTipos.mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+            } as ReturnType<typeof useTiposOcorrencia>);
+        });
+
+        it("deve mapear 'Sim, com o Bombeiro' para 'sim_cbm' na API", async () => {
+            mockFormData = {
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+                tiposOcorrencia: ["uuid-desastres"],
+            };
+            mockOcorrenciaUuid = "test-uuid-123";
+            mockSavedFormData = null;
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const declaranteSelect = screen.getByRole("combobox", {
+                name: /Quem é o declarante\?/i,
+            });
+            fireEvent.click(declaranteSelect);
+            fireEvent.click(
+                await screen.findByRole("option", { name: /GIPE/i }),
+            );
+
+            const comunicacaoSelect = screen.getByRole("combobox", {
+                name: /Houve comunicação com a segurança pública\?/i,
+            });
+            fireEvent.click(comunicacaoSelect);
+            fireEvent.click(
+                await screen.findByRole("option", {
+                    name: /Sim, com o Bombeiro/i,
+                }),
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+            fireEvent.click(
+                await screen.findByRole("option", { name: /Alerta/i }),
+            );
+
+            const nextButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
+            await waitFor(() => expect(nextButton).toBeEnabled());
+            fireEvent.click(nextButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            comunicacao_seguranca_publica: "sim_cbm",
+                        }),
+                    }),
+                    expect.any(Object),
+                );
+            });
+        });
     });
 });

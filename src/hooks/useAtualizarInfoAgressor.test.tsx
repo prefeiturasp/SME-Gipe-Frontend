@@ -42,14 +42,7 @@ describe("useAtualizarInfoAgressor", () => {
             "Como é a interação da pessoa agressora no ambiente escolar?",
         redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
-        acompanhado_naapa: false,
-        cep: "13366-222",
-        logradouro: "Rua dos Enderessos",
-        numero_residencia: "428",
-        complemento: "Rua da rua",
-        bairro: "Aquele lá",
-        cidade: "Mato Grosso",
-        estado: "MA",
+        acompanhado_naapa: false
     };
 
     beforeEach(() => {
@@ -73,14 +66,7 @@ describe("useAtualizarInfoAgressor", () => {
                 "Como é a interação da pessoa agressora no ambiente escolar?",
             redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false,
-            cep: "13366-222",
-            logradouro: "Rua dos Enderessos",
-            numero_residencia: "428",
-            complemento: "Rua da rua",
-            bairro: "Aquele lá",
-            cidade: "Mato Grosso",
-            estado: "MA",
+            acompanhado_naapa: false
         };
 
         vi.spyOn(
@@ -167,14 +153,7 @@ describe("useAtualizarInfoAgressor", () => {
                 "Como é a interação da pessoa agressora no ambiente escolar?",
             redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false,
-            cep: "13366-222",
-            logradouro: "Rua dos Enderessos",
-            numero_residencia: "428",
-            complemento: "Rua da rua",
-            bairro: "Aquele lá",
-            cidade: "Mato Grosso",
-            estado: "MA",
+            acompanhado_naapa: false
         };
 
         const spy = vi
