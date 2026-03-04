@@ -10,8 +10,8 @@ const API_CONFIG = {
 
 const CREDENTIALS = {
   valid: {
-    username: '39411157076',
-    password: 'Sgp7076'
+    username: '7311559',
+    password: 'Sgp1559'
   },
   invalid: {
     username: 'usuario_invalido',

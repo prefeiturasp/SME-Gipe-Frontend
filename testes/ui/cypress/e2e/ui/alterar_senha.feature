@@ -7,5 +7,5 @@ Funcionalidade: Alteração de senha
     E o usuário clica no botão "Meus dados"
     E clica no botão "Alterar senha"
     E o usuário preenche o campo Senha atual com "Ruby@142108"
-    E o usuário preenche o campo Nova senha com "Sgp0418"
-    E o usuário preenche o campo Confirmação da nova senha com "Sgp0418"
+    E o usuário preenche o campo Nova senha com "Sgp0418!"
+    E o usuário preenche o campo Confirmação da nova senha com "Sgp0418!"
