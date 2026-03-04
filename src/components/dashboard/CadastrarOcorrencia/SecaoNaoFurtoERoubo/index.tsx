@@ -12,13 +12,6 @@ import {
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
@@ -74,12 +67,18 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 label: tipo.nome,
             })) || [];
 
+        const envolvidosOptions =
+            envolvidos?.map((envolvido) => ({
+                value: envolvido.uuid,
+                label: envolvido.perfil_dos_envolvidos,
+            })) || [];
+
         const form = useForm<SecaoNaoFurtoERouboData>({
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
                 tiposOcorrencia: formData.tiposOcorrencia ?? [],
-                envolvidos: formData.envolvidos ?? "",
+                envolvidos: formData.envolvidos ?? [],
                 descricao: formData.descricao ?? "",
                 possuiInfoAgressorVitima:
                     formData.possuiInfoAgressorVitima ?? undefined,
@@ -219,35 +218,18 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                         <FormLabel disabled={disabled}>
                                             Quem são os envolvidos?*
                                         </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={
-                                                isLoadingEnvolvidos || disabled
-                                            }
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione os envolvidos" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {envolvidos?.map(
-                                                    (envolvido) => (
-                                                        <SelectItem
-                                                            key={envolvido.uuid}
-                                                            value={
-                                                                envolvido.uuid
-                                                            }
-                                                        >
-                                                            {
-                                                                envolvido.perfil_dos_envolvidos
-                                                            }
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <MultiSelect
+                                                options={envolvidosOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione os envolvidos"
+                                                disabled={
+                                                    isLoadingEnvolvidos ||
+                                                    disabled
+                                                }
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

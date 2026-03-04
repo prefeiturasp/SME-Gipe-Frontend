@@ -94,7 +94,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         defaultValues: {
             envolveArmaOuAtaque: formData.envolveArmaOuAtaque ?? undefined,
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
-            envolvidos: formData.envolvidos ?? "",
+            envolvidos: formData.envolvidos ?? [],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
             tiposOcorrencia: formData.tiposOcorrencia ?? [],
             cicloAprendizagem: formData.cicloAprendizagem ?? "",
@@ -232,33 +232,15 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                         <FormLabel>
                                             Quem são os envolvidos?*
                                         </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={isLoadingEnvolvidos}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {envolvidosOptions.map(
-                                                    (envolvido) => (
-                                                        <SelectItem
-                                                            key={
-                                                                envolvido.value
-                                                            }
-                                                            value={
-                                                                envolvido.value
-                                                            }
-                                                        >
-                                                            {envolvido.label}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <MultiSelect
+                                                options={envolvidosOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione"
+                                                disabled={isLoadingEnvolvidos}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
