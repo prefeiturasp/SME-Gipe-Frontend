@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from "next/navigation";
@@ -10,17 +11,20 @@ import ModalSemUnidade from "./ModalSemUnidade";
 export default function Header() {
     const user = useUserStore((state) => state.user);
     const reset = useOcorrenciaFormStore((state) => state.reset);
+    const { isAssistenteOuDiretor } = useUserPermissions();
 
     const hasUnidades = !!(user?.unidades && user.unidades.length > 0);
     const [openModal, setOpenModal] = useState(false);
     const router = useRouter();
 
     const handleNovaOcorrencia = () => {
-        if (hasUnidades) {
+        const needsUnidadeValidation = isAssistenteOuDiretor && !hasUnidades;
+
+        if (needsUnidadeValidation) {
+            setOpenModal(true);
+        } else {
             reset();
             router.push("/dashboard/cadastrar-ocorrencia");
-        } else {
-            setOpenModal(true);
         }
     };
 
