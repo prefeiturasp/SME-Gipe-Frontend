@@ -73,7 +73,7 @@ describe("Dashboard page", () => {
         });
     });
 
-    it("deve exibir Header com botão Nova ocorrência para perfil assistente ou diretor", async () => {
+    it("deve exibir Header com botão Nova ocorrência para todos os perfis", async () => {
         (useUserPermissions as Mock).mockReturnValue({
             isAssistenteOuDiretor: true,
             isGipe: false,
@@ -96,7 +96,7 @@ describe("Dashboard page", () => {
         ).toBeInTheDocument();
     });
 
-    it("não deve exibir Header para perfil GIPE", async () => {
+    it("deve exibir Header para perfil GIPE", async () => {
         (useUserPermissions as Mock).mockReturnValue({
             isAssistenteOuDiretor: false,
             isGipe: true,
@@ -113,16 +113,16 @@ describe("Dashboard page", () => {
         });
 
         expect(
-            screen.queryByText(
+            screen.getByText(
                 /Para registrar uma nova intercorrência institucional/i,
             ),
-        ).not.toBeInTheDocument();
+        ).toBeInTheDocument();
         expect(
-            screen.queryByRole("button", { name: /Nova ocorrência/i }),
-        ).not.toBeInTheDocument();
+            screen.getByRole("button", { name: /Nova ocorrência/i }),
+        ).toBeInTheDocument();
     });
 
-    it("não deve exibir Header para perfil Ponto Focal", async () => {
+    it("deve exibir Header para perfil Ponto Focal", async () => {
         (useUserPermissions as Mock).mockReturnValue({
             isAssistenteOuDiretor: false,
             isGipe: false,
@@ -139,12 +139,12 @@ describe("Dashboard page", () => {
         });
 
         expect(
-            screen.queryByText(
+            screen.getByText(
                 /Para registrar uma nova intercorrência institucional/i,
             ),
-        ).not.toBeInTheDocument();
+        ).toBeInTheDocument();
         expect(
-            screen.queryByRole("button", { name: /Nova ocorrência/i }),
-        ).not.toBeInTheDocument();
+            screen.getByRole("button", { name: /Nova ocorrência/i }),
+        ).toBeInTheDocument();
     });
 });
