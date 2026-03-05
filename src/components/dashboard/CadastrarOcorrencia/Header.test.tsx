@@ -30,6 +30,7 @@ interface MockUser {
 }
 
 let mockUser: MockUser | null = null;
+let mockIsAssistenteOuDiretor = true;
 
 vi.mock("@/stores/useUserStore", () => ({
     useUserStore: vi.fn(
@@ -38,6 +39,15 @@ vi.mock("@/stores/useUserStore", () => ({
             return selector ? selector(state) : state;
         },
     ),
+}));
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: vi.fn(() => ({
+        isAssistenteOuDiretor: mockIsAssistenteOuDiretor,
+        isGipe: false,
+        isPontoFocal: false,
+        isGipeAdmin: false,
+    })),
 }));
 
 const mockReset = vi.fn();
@@ -54,6 +64,7 @@ describe("Header - Nova Ocorrência", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUser = null;
+        mockIsAssistenteOuDiretor = true;
     });
 
     it('deve renderizar a mensagem e o botão "Nova ocorrência"', () => {
@@ -72,6 +83,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("deve redirecionar para cadastrar-ocorrencia quando usuario tem unidades", async () => {
+        mockIsAssistenteOuDiretor = true;
         mockUser = {
             unidades: [
                 { uuid: "123", nome: "EMEF Teste" },
@@ -95,6 +107,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("deve limpar o estado da store ao clicar em nova ocorrência", async () => {
+        mockIsAssistenteOuDiretor = true;
         mockUser = {
             unidades: [{ uuid: "123", nome: "EMEF Teste" }],
         };
@@ -113,6 +126,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("não deve limpar o estado da store quando usuario não tem unidades", async () => {
+        mockIsAssistenteOuDiretor = true;
         mockUser = {
             unidades: [],
         };
@@ -131,6 +145,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("deve abrir o modal quando usuario não tem unidades", async () => {
+        mockIsAssistenteOuDiretor = true;
         mockUser = {
             unidades: [],
         };
@@ -157,6 +172,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("não deve redirecionar quando hasUnidades=false", async () => {
+        mockIsAssistenteOuDiretor = true;
         render(<Header />);
 
         const button = screen.getByRole("button", {
@@ -171,6 +187,7 @@ describe("Header - Nova Ocorrência", () => {
     });
 
     it("deve fechar o modal ao clicar no botão Fechar", async () => {
+        mockIsAssistenteOuDiretor = true;
         render(<Header />);
 
         const button = screen.getByRole("button", {
@@ -189,6 +206,47 @@ describe("Header - Nova Ocorrência", () => {
         });
 
         fireEvent.click(fecharButton);
+
+        await waitFor(() => {
+            const modal = screen.getByTestId("modal-sem-unidade");
+            expect(modal).toHaveAttribute("data-open", "false");
+        });
+    });
+
+    it("deve redirecionar sem verificar unidades quando perfil não é assistente/diretor (GIPE)", async () => {
+        mockIsAssistenteOuDiretor = false;
+        mockUser = {
+            unidades: [],
+        };
+
+        render(<Header />);
+
+        const button = screen.getByRole("button", {
+            name: /\+ nova ocorrência/i,
+        });
+
+        fireEvent.click(button);
+
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledWith(
+                "/dashboard/cadastrar-ocorrencia",
+            );
+        });
+    });
+
+    it("não deve abrir modal quando perfil não é assistente/diretor mesmo sem unidades", async () => {
+        mockIsAssistenteOuDiretor = false;
+        mockUser = {
+            unidades: [],
+        };
+
+        render(<Header />);
+
+        const button = screen.getByRole("button", {
+            name: /\+ nova ocorrência/i,
+        });
+
+        fireEvent.click(button);
 
         await waitFor(() => {
             const modal = screen.getByTestId("modal-sem-unidade");
