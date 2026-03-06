@@ -25,7 +25,6 @@ import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -48,7 +47,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
-    const user = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
     const router = useRouter();
 
@@ -62,18 +60,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         formData.tipoOcorrencia === "Sim" ? "PATRIMONIAL" : "GERAL";
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia(tipoFormulario);
-
-    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
-        {
-            "DIRETOR DE ESCOLA": "diretor",
-            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
-            "PONTO FOCAL DRE": "dre",
-            GIPE: "gipe",
-        };
-
-    const perfilUsuario =
-        (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
-        "diretor";
 
     const envolvidosOptions =
         envolvidos?.map((envolvido) => ({
@@ -401,7 +387,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
                 onLoadingChange={setIsFinalizando}
-                perfilUsuario={perfilUsuario}
+                etapa="gipe"
             />
         </>
     );
