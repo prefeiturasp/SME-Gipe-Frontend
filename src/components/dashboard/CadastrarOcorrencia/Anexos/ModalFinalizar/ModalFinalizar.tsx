@@ -27,7 +27,7 @@ type ModalFinalizarEtapaProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
     onLoadingChange?: (loading: boolean) => void;
-    perfilUsuario: string;
+    etapa: string;
 };
 
 type CamposFinalizarEtapaProps = {
@@ -73,7 +73,7 @@ export default function ModalFinalizarEtapa({
     open,
     onOpenChange,
     onLoadingChange,
-    perfilUsuario,
+    etapa,
 }: Readonly<ModalFinalizarEtapaProps>) {
     const [success, setSuccess] = useState(false);
     const [apiData, setApiData] = useState<FinalizarOcorrenciaResponse | null>(
@@ -108,7 +108,7 @@ export default function ModalFinalizarEtapa({
         try {
             let response;
 
-            switch (perfilUsuario) {
+            switch (etapa) {
                 case "diretor":
                 case "assistente":
                     response = await finalizarEtapaUE({
@@ -159,7 +159,7 @@ export default function ModalFinalizarEtapa({
     }, [
         formData,
         ocorrenciaUuid,
-        perfilUsuario,
+        etapa,
         finalizarEtapaUE,
         finalizarEtapaDRE,
         finalizarEtapaGIPE,
@@ -198,11 +198,10 @@ export default function ModalFinalizarEtapa({
                         <strong>{apiData?.protocolo_da_intercorrencia}</strong>
                     </span>
                 </Aviso>
-
                 <Aviso>
                     <div className="text-[14px] leading-5 text-[#42474a]">
                         {camposFinalizarEtapa.map((campo) =>
-                            campo.perfisVisiveis.includes(perfilUsuario) ? (
+                            campo.perfisVisiveis.includes(etapa) ? (
                                 <p
                                     key={campo.key}
                                     data-testid={`campo-${campo.key}`}
