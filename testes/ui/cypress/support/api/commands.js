@@ -69,15 +69,17 @@ Cypress.Commands.add('api_obter_token_via_ui', () => {
       Cypress.log({ name: 'Token', message: 'TOKEN CAPTURADO DO COOKIE' });
       Cypress.log({ name: 'Token', message: `Token: ${token.substring(0, 50)}...` });
       
-      cy.writeFile('token.txt', token);
-      cy.writeFile('token.json', {
-        token: token,
-        capturedAt: new Date().toISOString(),
-        source: 'cookie:auth_token'
-      });
-      
       Cypress.env('authToken', token);
-      return token;
+      
+      return cy.writeFile('token.txt', token).then(() => {
+        return cy.writeFile('token.json', {
+          token: token,
+          capturedAt: new Date().toISOString(),
+          source: 'cookie:auth_token'
+        }).then(() => {
+          return token;
+        });
+      });
     } else {
       throw new Error('Cookie auth_token não encontrado');
     }
@@ -196,12 +198,11 @@ Cypress.Commands.add('api_autenticar', () => {
     });
   }
   
-  return cy.api_carregar_token_arquivo().then((tokenArquivo) => {
-    let tokenFinal = tokenArquivo || AUTH_TOKEN;
-    
-    Cypress.env('authToken', tokenFinal);
-    Cypress.log({ name: 'Autenticacao', message: 'Token configurado' });
-    return tokenFinal;
+  // ✓ CORREÇÃO: Usar api_obter_token_valido() que valida expiração e renova automaticamente
+  return cy.api_obter_token_valido().then((token) => {
+    Cypress.env('authToken', token);
+    Cypress.log({ name: 'Autenticacao', message: 'Token validado e configurado' });
+    return token;
   });
 });
 

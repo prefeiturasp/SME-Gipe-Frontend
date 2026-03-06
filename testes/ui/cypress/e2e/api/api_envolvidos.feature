@@ -1,5 +1,5 @@
 #language: pt
-@skip @api @envolvidos
+ @skip @api @envolvidos
 Funcionalidade: API GIPE - Tipos de Envolvidos
   Como usuário do sistema GIPE
   Quero validar o endpoint de tipos de envolvidos

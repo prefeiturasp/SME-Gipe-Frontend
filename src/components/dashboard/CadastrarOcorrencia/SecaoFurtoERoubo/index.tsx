@@ -15,7 +15,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
-import { hasFormDataChanged } from "@/lib/formUtils";
+import {
+    filterValidTiposOcorrencia,
+    hasFormDataChanged,
+} from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useEffect, useImperativeHandle } from "react";
@@ -45,7 +48,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             onFormChange,
             disabled = false,
         },
-        ref
+        ref,
     ) => {
         const {
             formData,
@@ -55,7 +58,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             ocorrenciaUuid,
         } = useOcorrenciaFormStore();
         const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
-            useTiposOcorrencia();
+            useTiposOcorrencia("PATRIMONIAL");
         const { mutate: atualizarSecaoFurtoRoubo } =
             useAtualizarSecaoFurtoRoubo();
 
@@ -76,6 +79,22 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
         });
 
         const { isValid } = form.formState;
+
+        // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
+        useEffect(() => {
+            if (!isLoadingTipos && tiposOcorrencia) {
+                const current = form.getValues("tiposOcorrencia");
+                const filtered = filterValidTiposOcorrencia(
+                    current,
+                    tiposOcorrencia,
+                );
+                if (filtered.length !== current.length) {
+                    form.setValue("tiposOcorrencia", filtered, {
+                        shouldValidate: true,
+                    });
+                }
+            }
+        }, [isLoadingTipos, tiposOcorrencia, form]);
 
         // Notifica mudanças em tempo real
         const watchedValues = form.watch();
@@ -111,13 +130,19 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                     return;
                 }
 
-                const smartSampaSituacao = data.smartSampa;
+                const smartSampaSituacao: "sim" | "nao" =
+                    data.smartSampa === "Sim" ? "sim" : "nao";
+
+                const tiposValidos = filterValidTiposOcorrencia(
+                    data.tiposOcorrencia,
+                    tiposOcorrencia,
+                );
 
                 atualizarSecaoFurtoRoubo(
                     {
                         uuid: ocorrenciaUuid,
                         body: {
-                            tipos_ocorrencia: data.tiposOcorrencia,
+                            tipos_ocorrencia: tiposValidos,
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },
@@ -145,7 +170,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                 variant: "error",
                             });
                         },
-                    }
+                    },
                 );
             } else {
                 setFormData(data);
@@ -199,8 +224,10 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 : "text-[#42474a]"
                                         }`}
                                     >
-                                        se houver informações sobre agressores
-                                        ou vítimas, preencher aqui
+                                        Descreva o que ocorreu, incluindo data,
+                                        local, caso existam pessoas envolvidas e
+                                        demais informações relevantes para o
+                                        registro.
                                     </p>
                                     <FormControl>
                                         <Textarea
@@ -222,8 +249,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
                                         Unidade Educacional é contemplada pelo
-                                        Smart Sampa? Se sim, houve dano às
-                                        câmeras do sistema?*
+                                        Smart Sampa?*
                                     </FormLabel>
                                     <FormControl>
                                         <div className="pt-2">
@@ -234,40 +260,15 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                                 disabled={disabled}
                                             >
                                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="sim_com_dano" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        Sim e houve dano
+                                                    <RadioGroupItem value="Sim" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Sim
                                                     </span>
                                                 </label>
                                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="sim_sem_dano" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        Sim, mas não houve dano
-                                                    </span>
-                                                </label>
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="nao_faz_parte" />
-                                                    <span
-                                                        className={`text-sm ${
-                                                            disabled
-                                                                ? "text-[#B0B0B0]"
-                                                                : "text-[#42474a]"
-                                                        }`}
-                                                    >
-                                                        A UE não faz parte do
-                                                        Smart Sampa
+                                                    <RadioGroupItem value="Não" />
+                                                    <span className="text-sm text-[#42474a]">
+                                                        Não
                                                     </span>
                                                 </label>
                                             </RadioGroup>
@@ -305,7 +306,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                 </form>
             </Form>
         );
-    }
+    },
 );
 
 SecaoFurtoERoubo.displayName = "SecaoFurtoERoubo";

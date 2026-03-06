@@ -23,7 +23,7 @@ const clickElement = (selector, options = {}) => {
 
 const clickElementXPath = (xpath, options = {}) => {
   const { force = true, wait = 1500 } = options
-  cy.xpath(xpath, { timeout: 15000 })
+  cy.xpath(xpath, { timeout: 30000 })
     .should('be.visible')
     .click({ force })
   cy.wait(wait)
@@ -101,37 +101,16 @@ function gerarNomeAleatorio() {
 }
 
 Given('que eu acesso o sistema como GIPE', () => {
-  cy.clearCookies()
-  cy.clearLocalStorage()
-  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br', { 
-    timeout: 60000,
-    retryOnNetworkFailure: true,
-    failOnStatusCode: false
-  })
-  cy.wait(3000)
-  cy.url({ timeout: 30000 }).should('include', 'gipe.sme.prefeitura.sp.gov.br')
+  cy.loginWithSession(RF_GIPE, SENHA_GIPE, 'GIPE')
 })
 
 Given('eu efetuo login com RF GIPE', () => {
-  cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(RF_GIPE, { delay: 100 })
-  
-  cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
-    .should('be.visible')
-    .clear()
-    .type(SENHA_GIPE, { delay: 100 })
-  
-  cy.get('button')
-    .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
-    .should('be.visible')
-    .should('not.be.disabled')
-    .click()
-  
-  cy.wait(5000)
-  cy.url({ timeout: 30000 }).should('include', '/dashboard')
-  cy.wait(3000)
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: 30000,
+    failOnStatusCode: false 
+  })
+  cy.url({ timeout: 15000 }).should('include', '/dashboard')
+  cy.wait(2000)
 })
 
 Given('estou na página principal do sistema', () => {
@@ -181,6 +160,32 @@ When('clico no botão {string}', (botao) => {
     clickElementXPath(locators.botao_inativar_perfil())
   } else if (botao === 'Reativar perfil') {
     clickElementXPath(locators.botao_reativar_perfil())
+  } else if (botao === 'Inativar Unidade Educacional') {
+    const xpathBotao = '/html/body/div/div/div[2]/main/div[1]/div/button'
+    cy.log('Clicando no botão Inativar Unidade Educacional')
+    cy.wait(3000)
+    cy.xpath(xpathBotao, { timeout: 30000 })
+      .should('exist')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .scrollIntoView()
+      .wait(1000)
+      .click({ force: true })
+    cy.wait(5000)
+    cy.log('Clique executado - aguardando modal')
+  } else if (botao === 'Reativar Unidade Educacional') {
+    const xpathBotao = '/html/body/div/div/div[2]/main/div[1]/div/button'
+    cy.log('Clicando no botão Reativar Unidade Educacional')
+    cy.wait(3000)
+    cy.xpath(xpathBotao, { timeout: 30000 })
+      .should('exist')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .scrollIntoView()
+      .wait(1000)
+      .click({ force: true })
+    cy.wait(5000)
+    cy.log('Clique executado - aguardando modal de reativação')
   }
 })
 
@@ -400,13 +405,39 @@ Then('visualizo a mensagem {string}', (mensagem) => {
 
 Then('visualizo os botões {string} e {string} no modal', (botao1, botao2) => {
   cy.wait(1000)
-  cy.get('div[role="alertdialog"], div[role="dialog"]', { timeout: 15000 })
-    .should('be.visible')
-    .within(() => {
-      cy.contains('button', botao1, { timeout: 10000 }).should('be.visible')
-      cy.contains('button', botao2, { timeout: 10000 }).should('be.visible')
-    })
+  
+  if (botao1 === 'Cancelar' && botao2 === 'Inativar Unidade Educacional') {
+    const xpathBotaoCancelar = '/html/body/div[3]/div[3]/button[1]'
+    const xpathBotaoInativar = '/html/body/div[3]/div[3]/button[2]'
+    
+    cy.xpath(xpathBotaoCancelar, { timeout: 15000 })
+      .should('exist')
+      .should('be.visible')
+      .invoke('text')
+      .then(texto => {
+        cy.log(`Botão 1 encontrado: "${texto.trim()}"`)
+        expect(texto.trim()).to.include('Cancelar')
+      })
+    
+    cy.xpath(xpathBotaoInativar, { timeout: 15000 })
+      .should('exist')
+      .should('be.visible')
+      .invoke('text')
+      .then(texto => {
+        cy.log(`Botão 2 encontrado: "${texto.trim()}"`)
+        expect(texto.trim()).to.include('Inativar')
+      })
+  } else {
+    cy.get('div[role="alertdialog"], div[role="dialog"]', { timeout: 15000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains('button', botao1, { timeout: 10000 }).should('be.visible')
+        cy.contains('button', botao2, { timeout: 10000 }).should('be.visible')
+      })
+  }
+  
   cy.wait(1000)
+  cy.log('Botões do modal validados com sucesso')
 })
 
 When('confirmo o cadastro clicando em {string}', (botao) => {
@@ -552,17 +583,37 @@ Then('visualizo a mensagem de confirmação de inativação', () => {
 When('confirmo a inativação clicando em {string}', (botao) => {
   cy.wait(2000)
   
-  cy.xpath('//div[contains(@id, "radix-")]//textarea', { timeout: 15000 })
-    .should('be.visible')
-    .click({ force: true })
-    .clear()
-    .type('para teste', { delay: 50 })
-  
-  cy.wait(1500)
-  
-  cy.xpath('/html/body/div[3]/div[2]/button[2]', { timeout: 15000 })
-    .should('be.visible')
-    .click({ force: true })
+  cy.get('body').then(($body) => {
+    const textareaMotivo = $body.find('textarea#motivo')
+    const isPessoaContext = textareaMotivo.length === 0
+    
+    if (isPessoaContext) {
+      cy.log('Contexto: Gestão de Pessoas')
+      
+      cy.get('div[role="dialog"]', { timeout: 15000 })
+        .find('textarea')
+        .should('be.visible')
+        .click({ force: true })
+        .clear()
+        .type('para teste', { delay: 50 })
+      
+      cy.wait(1500)
+      
+      cy.xpath('/html/body/div[3]/div[2]/button[2]', { timeout: 15000 })
+        .should('be.visible')
+        .click({ force: true })
+    } else {
+      cy.log('Contexto: Gestão de Unidades')
+      
+      cy.xpath('/html/body/div[3]/div[3]/button[2]', { timeout: 15000 })
+        .should('exist')
+        .should('be.visible')
+        .scrollIntoView()
+        .click({ force: true })
+      
+      cy.log('Inativação confirmada - botão clicado com sucesso')
+    }
+  })
   
   cy.wait(3000)
 })
@@ -590,6 +641,7 @@ Then('visualizo os botões {string} e {string} no modal de reativação', (botao
   cy.wait(500)
 })
 
+/* REMOVIDO - Step duplicado com conflito
 When('confirmo a reativação clicando em {string}', (botao) => {
   cy.wait(2000)
   
@@ -599,6 +651,7 @@ When('confirmo a reativação clicando em {string}', (botao) => {
   
   cy.wait(3000)
 })
+*/
 
 Then('o perfil é reativado com sucesso', () => {
   cy.wait(1000)

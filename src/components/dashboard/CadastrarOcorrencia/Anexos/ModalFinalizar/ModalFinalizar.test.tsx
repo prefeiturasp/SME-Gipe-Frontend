@@ -79,7 +79,7 @@ describe("ModalFinalizarEtapa", () => {
                 open={open}
                 onOpenChange={onOpenChange}
                 perfilUsuario={perfilUsuario}
-            />
+            />,
         );
     }
 
@@ -100,55 +100,32 @@ describe("ModalFinalizarEtapa", () => {
             },
             ocorrenciaUuid: "uuid-abc-123",
         };
-    });
 
-    it("Renderiza o modal corretamente na primeira fase", () => {
-        setup();
-        expect(screen.getByText("Conclusão de etapa")).toBeInTheDocument();
-        expect(screen.getByTestId("input-motivo")).toBeInTheDocument();
-    });
-
-    it("Mostra erro ao tentar enviar com texto insuficiente", async () => {
-        setup();
-        const input = screen.getByTestId("input-motivo");
-        const button = screen.getByRole("button", { name: /Finalizar/i });
-
-        await userEvent.type(input, "oi");
-        await userEvent.click(button);
-
-        expect(
-            await screen.findByText(
-                "O motivo deve ter pelo menos 5 caracteres."
-            )
-        ).toBeInTheDocument();
-    });
-
-    it("Habilita o botão quando o texto é válido", async () => {
-        setup();
-        const input = screen.getByTestId("input-motivo");
-        const button = screen.getByRole("button", { name: /Finalizar/i });
-
-        await userEvent.type(input, "Motivo válido");
-
-        await waitFor(() => {
-            expect(button).toBeEnabled();
-        });
-    });
-
-    // === UE ===
-    it("Chama mutateAsync UE com os parâmetros corretos", async () => {
         mutateAsyncMock.mockResolvedValue({
             success: true,
-            data: { protocolo_da_intercorrencia: "PROTO-123", uuid: "abc" },
+            data: {
+                uuid: "mock-uuid",
+                protocolo_da_intercorrencia: "PROTO-123",
+            },
         });
+        mutateAsyncDreMock.mockResolvedValue({
+            success: true,
+            data: {
+                uuid: "dre-uuid",
+                protocolo_da_intercorrencia: "PROTO-DRE",
+            },
+        });
+        mutateAsyncGipeMock.mockResolvedValue({
+            success: true,
+            data: {
+                uuid: "gipe-uuid",
+                protocolo_da_intercorrencia: "PROTO-GIPE",
+            },
+        });
+    });
 
+    it("chama a API automaticamente ao abrir o modal com perfil diretor", async () => {
         setup(true, "diretor");
-
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo válido");
-
-        const button = screen.getByRole("button", { name: /Finalizar/i });
-        await userEvent.click(button);
 
         await waitFor(() =>
             expect(mutateAsyncMock).toHaveBeenCalledWith({
@@ -156,37 +133,101 @@ describe("ModalFinalizarEtapa", () => {
                 body: {
                     unidade_codigo_eol: "123456",
                     dre_codigo_eol: "DRE-01",
-                    motivo_encerramento_ue: "Motivo válido",
                 },
-            })
+            }),
         );
     });
 
-    it("exibe toast de erro quando UE falha", async () => {
-        mutateAsyncMock.mockResolvedValue({
-            success: false,
-            error: "Falha no servidor",
-        });
+    it("chama a API automaticamente ao abrir o modal com perfil assistente", async () => {
+        setup(true, "assistente");
 
-        setup();
+        await waitFor(() =>
+            expect(mutateAsyncMock).toHaveBeenCalledWith({
+                ocorrenciaUuid: "uuid-abc-123",
+                body: {
+                    unidade_codigo_eol: "123456",
+                    dre_codigo_eol: "DRE-01",
+                },
+            }),
+        );
+    });
 
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo válido");
-        await userEvent.click(
-            screen.getByRole("button", { name: /Finalizar/i })
+    it("chama a API automaticamente ao abrir o modal com perfil dre", async () => {
+        setup(true, "dre");
+
+        await waitFor(() =>
+            expect(mutateAsyncDreMock).toHaveBeenCalledWith({
+                ocorrenciaUuid: "uuid-abc-123",
+                body: {
+                    unidade_codigo_eol: "123456",
+                    dre_codigo_eol: "DRE-01",
+                },
+            }),
+        );
+    });
+
+    it("chama a API automaticamente ao abrir o modal com perfil gipe", async () => {
+        setup(true, "gipe");
+
+        await waitFor(() =>
+            expect(mutateAsyncGipeMock).toHaveBeenCalledWith({
+                ocorrenciaUuid: "uuid-abc-123",
+                body: {
+                    unidade_codigo_eol: "123456",
+                    dre_codigo_eol: "DRE-01",
+                },
+            }),
+        );
+    });
+
+    it("notifica loading ao iniciar finalização", async () => {
+        mutateAsyncMock.mockReturnValue(new Promise(() => {}));
+        const onLoadingChange = vi.fn();
+        render(
+            <ModalFinalizar
+                open={true}
+                onOpenChange={onOpenChange}
+                perfilUsuario="diretor"
+                onLoadingChange={onLoadingChange}
+            />,
         );
 
         await waitFor(() => {
-            expect(mockToast).toHaveBeenCalledWith({
-                variant: "error",
-                title: "Erro ao finalizar etapa",
-                description: "Falha no servidor",
-            });
+            expect(onLoadingChange).toHaveBeenCalledWith(true);
         });
     });
 
-    // === DRE ===
-    it("retorna dados do mockDREApiResponse quando perfilUsuario é 'dre'", async () => {
+    it("exibe a tela de sucesso com protocolo após finalização UE", async () => {
+        mutateAsyncMock.mockResolvedValue({
+            success: true,
+            data: {
+                uuid: "mock-uuid",
+                protocolo_da_intercorrencia: "PROTO-123",
+                responsavel_nome: "Fulano",
+                responsavel_cpf: "12345678900",
+                responsavel_email: "fulano@test.com",
+                perfil_acesso: "diretor",
+                nome_dre: "DRE CENTRAL",
+                nome_unidade: "Escola XPTO",
+            },
+        });
+
+        setup(true, "diretor");
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Ocorrência registrada com sucesso!"),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("PROTO-123")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("campo-responsavel_nome"),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId("campo-nome_unidade")).toBeInTheDocument();
+    });
+
+    it("exibe a tela de sucesso com protocolo após finalização DRE", async () => {
         mutateAsyncDreMock.mockResolvedValue({
             success: true,
             data: {
@@ -201,58 +242,15 @@ describe("ModalFinalizarEtapa", () => {
 
         setup(true, "dre");
 
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo válido");
-
-        const finalizarButton = screen.getByRole("button", {
-            name: /Finalizar/i,
-        });
-        await userEvent.click(finalizarButton);
-
         await waitFor(() => {
             expect(
-                screen.getByText("Ocorrência registrada com sucesso!")
+                screen.getByText("Ocorrência registrada com sucesso!"),
             ).toBeInTheDocument();
             expect(screen.getByText("GIPE-2025/0099")).toBeInTheDocument();
         });
-
-        expect(mutateAsyncDreMock).toHaveBeenCalledWith({
-            ocorrenciaUuid: "uuid-abc-123",
-            body: {
-                unidade_codigo_eol: "123456",
-                dre_codigo_eol: "DRE-01",
-                motivo_encerramento_dre: "Motivo válido",
-            },
-        });
     });
 
-    it("exibe toast de erro quando DRE falha", async () => {
-        mutateAsyncDreMock.mockResolvedValue({
-            success: false,
-            error: "Falha no servidor DRE",
-        });
-
-        setup(true, "dre");
-
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo válido");
-
-        const finalizarButton = screen.getByRole("button", {
-            name: /Finalizar/i,
-        });
-        await userEvent.click(finalizarButton);
-
-        await waitFor(() => {
-            expect(mockToast).toHaveBeenCalledWith({
-                variant: "error",
-                title: "Erro ao finalizar etapa",
-                description: "Falha no servidor DRE",
-            });
-        });
-    });
-
-    // === GIPE ===
-    it("Chama mutateAsync GIPE com os parâmetros corretos", async () => {
+    it("exibe a tela de sucesso com protocolo após finalização GIPE", async () => {
         mutateAsyncGipeMock.mockResolvedValue({
             success: true,
             data: {
@@ -263,45 +261,59 @@ describe("ModalFinalizarEtapa", () => {
 
         setup(true, "gipe");
 
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo GIPE válido");
+        await waitFor(() => {
+            expect(
+                screen.getByText("Ocorrência registrada com sucesso!"),
+            ).toBeInTheDocument();
+            expect(screen.getByText("GIPE-2025/0100")).toBeInTheDocument();
+        });
+    });
 
-        const button = screen.getByRole("button", { name: /Finalizar/i });
-        await userEvent.click(button);
+    it("exibe toast de erro e fecha o modal quando UE falha", async () => {
+        mutateAsyncMock.mockResolvedValue({
+            success: false,
+            error: "Falha no servidor",
+        });
+
+        setup(true, "diretor");
 
         await waitFor(() => {
-            expect(mutateAsyncGipeMock).toHaveBeenCalledWith({
-                ocorrenciaUuid: "uuid-abc-123",
-                body: {
-                    unidade_codigo_eol: "123456",
-                    dre_codigo_eol: "DRE-01",
-                    motivo_encerramento_gipe: "Motivo GIPE válido",
-                },
+            expect(mockToast).toHaveBeenCalledWith({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: "Falha no servidor",
             });
         });
 
-        await waitFor(() =>
-            expect(
-                screen.getByText("Ocorrência registrada com sucesso!")
-            ).toBeInTheDocument()
-        );
-        expect(screen.getByText("GIPE-2025/0100")).toBeInTheDocument();
+        expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("exibe toast de erro quando GIPE falha", async () => {
+    it("exibe toast de erro e fecha o modal quando DRE falha", async () => {
+        mutateAsyncDreMock.mockResolvedValue({
+            success: false,
+            error: "Falha no servidor DRE",
+        });
+
+        setup(true, "dre");
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: "Falha no servidor DRE",
+            });
+        });
+
+        expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("exibe toast de erro e fecha o modal quando GIPE falha", async () => {
         mutateAsyncGipeMock.mockResolvedValue({
             success: false,
             error: "Falha no servidor GIPE",
         });
 
         setup(true, "gipe");
-
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo GIPE válido");
-
-        await userEvent.click(
-            screen.getByRole("button", { name: /Finalizar/i })
-        );
 
         await waitFor(() => {
             expect(mockToast).toHaveBeenCalledWith({
@@ -310,73 +322,37 @@ describe("ModalFinalizarEtapa", () => {
                 description: "Falha no servidor GIPE",
             });
         });
+
+        expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    // === Comportamento geral ===
-    it("não faz nada quando perfilUsuario não é reconhecido", async () => {
-        setup(true, "perfilInexistente");
+    it("exibe toast de erro quando a API lança exceção inesperada", async () => {
+        mutateAsyncMock.mockRejectedValue(new Error("Network error"));
 
-        const input = screen.getByTestId("input-motivo");
-        await userEvent.type(input, "Motivo válido");
-
-        await userEvent.click(
-            screen.getByRole("button", { name: /Finalizar/i })
-        );
+        setup(true, "diretor");
 
         await waitFor(() => {
-            expect(screen.getByText("Conclusão de etapa")).toBeInTheDocument();
+            expect(mockToast).toHaveBeenCalledWith({
+                variant: "error",
+                title: "Erro ao finalizar etapa",
+                description: "Ocorreu um erro inesperado. Tente novamente.",
+            });
         });
 
-        expect(mutateAsyncMock).not.toHaveBeenCalled();
-        expect(mutateAsyncDreMock).not.toHaveBeenCalled();
-        expect(mutateAsyncGipeMock).not.toHaveBeenCalled();
+        expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("O botão Finalizar fica desabilitado quando isPending=true", async () => {
-        isPendingFlag = true;
-        isPendingFlagDre = true;
-        isPendingFlagGipe = true;
+    it("não chama a API quando perfilUsuario não é reconhecido", async () => {
+        setup(true, "perfilInexistente");
 
-        setup();
-        const btn = screen.getByRole("button", { name: /Finalizar/i });
-        expect(btn).toBeDisabled();
+        await waitFor(() => {
+            expect(mutateAsyncMock).not.toHaveBeenCalled();
+            expect(mutateAsyncDreMock).not.toHaveBeenCalled();
+            expect(mutateAsyncGipeMock).not.toHaveBeenCalled();
+        });
     });
 
-    it("Fecha modal ao clicar em Voltar na primeira fase", async () => {
-        const onOpenChangeMock = vi.fn();
-
-        render(
-            <ModalFinalizar
-                open={true}
-                onOpenChange={onOpenChangeMock}
-                perfilUsuario="diretor"
-            />
-        );
-
-        const voltarButton = screen.getByRole("button", { name: /Voltar/i });
-        await userEvent.click(voltarButton);
-
-        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
-    });
-
-    it("Fecha modal ao clicar no X (botão de fechar do Dialog)", async () => {
-        const onOpenChangeMock = vi.fn();
-
-        render(
-            <ModalFinalizar
-                open={true}
-                onOpenChange={onOpenChangeMock}
-                perfilUsuario="diretor"
-            />
-        );
-
-        const closeButton = screen.getByRole("button", { name: /close/i });
-        await userEvent.click(closeButton);
-
-        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
-    });
-
-    it("Fecha modal ao clicar em Fechar na segunda fase", async () => {
+    it("fecha o modal e redireciona ao dashboard ao clicar em Fechar", async () => {
         mutateAsyncMock.mockResolvedValue({
             success: true,
             data: {
@@ -387,20 +363,11 @@ describe("ModalFinalizarEtapa", () => {
             },
         });
 
-        setup();
-
-        await userEvent.type(
-            screen.getByTestId("input-motivo"),
-            "Motivo válido para teste"
-        );
-
-        await userEvent.click(
-            screen.getByRole("button", { name: /Finalizar/i })
-        );
+        setup(true, "diretor");
 
         await waitFor(() => {
             expect(
-                screen.getByText("Ocorrência registrada com sucesso!")
+                screen.getByText("Ocorrência registrada com sucesso!"),
             ).toBeInTheDocument();
         });
 
@@ -408,5 +375,78 @@ describe("ModalFinalizarEtapa", () => {
 
         expect(onOpenChange).toHaveBeenCalledWith(false);
         expect(mockPush).toHaveBeenCalledWith("/dashboard");
+    });
+
+    it("não chama a API quando o modal está fechado", () => {
+        setup(false, "diretor");
+
+        expect(mutateAsyncMock).not.toHaveBeenCalled();
+    });
+
+    it("notifica fim do loading após finalização com sucesso", async () => {
+        const onLoadingChange = vi.fn();
+        render(
+            <ModalFinalizar
+                open={true}
+                onOpenChange={onOpenChange}
+                perfilUsuario="diretor"
+                onLoadingChange={onLoadingChange}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadingChange).toHaveBeenCalledWith(false);
+        });
+    });
+
+    it("notifica fim do loading após erro na finalização", async () => {
+        mutateAsyncMock.mockResolvedValue({
+            success: false,
+            error: "Falha no servidor",
+        });
+        const onLoadingChange = vi.fn();
+        render(
+            <ModalFinalizar
+                open={true}
+                onOpenChange={onOpenChange}
+                perfilUsuario="diretor"
+                onLoadingChange={onLoadingChange}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadingChange).toHaveBeenCalledWith(false);
+        });
+    });
+
+    it("chama onOpenChange(false) ao fechar o dialog pelo botão X", async () => {
+        mutateAsyncMock.mockResolvedValue({
+            success: true,
+            data: {
+                uuid: "mock-uuid",
+                protocolo_da_intercorrencia: "PROTO-XYZ",
+                responsavel_nome: "Fulano",
+            },
+        });
+
+        const onOpenChangeMock = vi.fn();
+        render(
+            <ModalFinalizar
+                open={true}
+                onOpenChange={onOpenChangeMock}
+                perfilUsuario="diretor"
+            />,
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Ocorrência registrada com sucesso!"),
+            ).toBeInTheDocument();
+        });
+
+        const closeButton = screen.getByRole("button", { name: /close/i });
+        await userEvent.click(closeButton);
+
+        expect(onOpenChangeMock).toHaveBeenCalledWith(false);
     });
 });

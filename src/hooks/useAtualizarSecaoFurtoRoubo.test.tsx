@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAtualizarSecaoFurtoRoubo } from "./useAtualizarSecaoFurtoRoubo";
 import * as atualizarSecaoFurtoRouboAction from "@/actions/atualizar-secao-furto-roubo";
 import { SecaoFurtoRouboBody } from "@/types/secao-furto-roubo";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAtualizarSecaoFurtoRoubo } from "./useAtualizarSecaoFurtoRoubo";
 
 vi.mock("@/actions/atualizar-secao-furto-roubo");
 
@@ -31,7 +31,7 @@ describe("useAtualizarSecaoFurtoRoubo", () => {
     const mockBody: SecaoFurtoRouboBody = {
         tipos_ocorrencia: ["tipo-uuid-1", "tipo-uuid-2"],
         descricao_ocorrencia: "Descrição da ocorrência",
-        smart_sampa_situacao: "sim_com_dano",
+        smart_sampa_situacao: "sim",
     };
 
     beforeEach(() => {
@@ -46,14 +46,14 @@ describe("useAtualizarSecaoFurtoRoubo", () => {
                 { uuid: "tipo-uuid-2", nome: "Roubo" },
             ],
             descricao_ocorrencia: "Descrição da ocorrência",
-            smart_sampa_situacao: "sim_com_dano" as const,
+            smart_sampa_situacao: "sim" as const,
             status_display: "Em andamento",
             status_extra: "Aguardando análise",
         };
 
         vi.spyOn(
             atualizarSecaoFurtoRouboAction,
-            "atualizarSecaoFurtoRoubo"
+            "atualizarSecaoFurtoRoubo",
         ).mockResolvedValue({
             success: true,
             data: mockResponse,
@@ -72,7 +72,7 @@ describe("useAtualizarSecaoFurtoRoubo", () => {
             data: mockResponse,
         });
         expect(
-            atualizarSecaoFurtoRouboAction.atualizarSecaoFurtoRoubo
+            atualizarSecaoFurtoRouboAction.atualizarSecaoFurtoRoubo,
         ).toHaveBeenCalledWith(mockUuid, mockBody);
     });
 
@@ -80,7 +80,7 @@ describe("useAtualizarSecaoFurtoRoubo", () => {
         const errorMessage = "Erro ao atualizar seção de furto e roubo";
         vi.spyOn(
             atualizarSecaoFurtoRouboAction,
-            "atualizarSecaoFurtoRoubo"
+            "atualizarSecaoFurtoRoubo",
         ).mockResolvedValue({
             success: false,
             error: errorMessage,
@@ -103,7 +103,7 @@ describe("useAtualizarSecaoFurtoRoubo", () => {
     it("deve lidar com erro de rede", async () => {
         vi.spyOn(
             atualizarSecaoFurtoRouboAction,
-            "atualizarSecaoFurtoRoubo"
+            "atualizarSecaoFurtoRoubo",
         ).mockRejectedValue(new Error("Network Error"));
 
         const { result } = renderHook(() => useAtualizarSecaoFurtoRoubo(), {

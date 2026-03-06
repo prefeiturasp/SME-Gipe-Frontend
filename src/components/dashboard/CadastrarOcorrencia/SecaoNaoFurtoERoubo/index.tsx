@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
+import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useEffect, useImperativeHandle } from "react";
@@ -55,12 +56,12 @@ const SecaoNaoFurtoERoubo = forwardRef<
             onFormChange,
             disabled = false,
         },
-        ref
+        ref,
     ) => {
         const { formData, setFormData, setSavedFormData, ocorrenciaUuid } =
             useOcorrenciaFormStore();
         const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
-            useTiposOcorrencia();
+            useTiposOcorrencia("GERAL");
         const { data: envolvidos, isLoading: isLoadingEnvolvidos } =
             useEnvolvidos();
 
@@ -86,6 +87,22 @@ const SecaoNaoFurtoERoubo = forwardRef<
         });
 
         const { isValid } = form.formState;
+
+        // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
+        useEffect(() => {
+            if (!isLoadingTipos && tiposOcorrencia) {
+                const current = form.getValues("tiposOcorrencia");
+                const filtered = filterValidTiposOcorrencia(
+                    current,
+                    tiposOcorrencia,
+                );
+                if (filtered.length !== current.length) {
+                    form.setValue("tiposOcorrencia", filtered, {
+                        shouldValidate: true,
+                    });
+                }
+            }
+        }, [isLoadingTipos, tiposOcorrencia, form]);
 
         // Notifica mudanças em tempo real
         const watchedValues = form.watch();
@@ -121,8 +138,13 @@ const SecaoNaoFurtoERoubo = forwardRef<
             const temInfo: "sim" | "nao" =
                 data.possuiInfoAgressorVitima === "Sim" ? "sim" : "nao";
 
+            const tiposValidos = filterValidTiposOcorrencia(
+                data.tiposOcorrencia,
+                tiposOcorrencia,
+            );
+
             const body = {
-                tipos_ocorrencia: data.tiposOcorrencia,
+                tipos_ocorrencia: tiposValidos,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
                 tem_info_agressor_ou_vitima: temInfo,
@@ -153,7 +175,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             variant: "error",
                         });
                     },
-                }
+                },
             );
         };
 
@@ -222,7 +244,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                                 envolvido.perfil_dos_envolvidos
                                                             }
                                                         </SelectItem>
-                                                    )
+                                                    ),
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -247,8 +269,10 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                 : "text-[#42474a]"
                                         }`}
                                     >
-                                        se houver informações sobre agressores
-                                        ou vítimas, preencher aqui
+                                        Descreva o que ocorreu, incluindo data,
+                                        local, caso existam pessoas envolvidas e
+                                        demais informações relevantes para o
+                                        registro.
                                     </p>
                                     <FormControl>
                                         <Textarea
@@ -327,7 +351,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 </form>
             </Form>
         );
-    }
+    },
 );
 
 SecaoNaoFurtoERoubo.displayName = "SecaoNaoFurtoERoubo";

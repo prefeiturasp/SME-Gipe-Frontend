@@ -1,50 +1,235 @@
-node_modules
-
+# ========================================
+# DEPENDÊNCIAS E CACHE
+# ========================================
+node_modules/
 package-lock.json
+.npm/
+.yarn/
+yarn.lock
 
-screenshots/
+# ========================================
+# CYPRESS - OUTPUTS E RESULTADOS
+# ================================git========
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
 
-videos/
-
-.vscode/
-
-# Relatórios gerados
+# Relatórios de testes
 allure-report/
 allure-results/
 allure-results-*.zip
 mochawesome-report/
 cypress-cloud/
-
-# Cache do Cypress Cloud
 .currents/
 .cypress-cloud/
 
+# ========================================
+# IDE E EDITORES
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
 
-# Testes complement (não subir)
-cypress/support/step_definitions/gestao_unidade.js
-cypress/support/locators/gestao_unidade_locators.js
-cypress/e2e/ui/gestao_unidade.feature
+# ========================================
+# BUILD E DISTRIBUTION
+# ========================================
+dist/
+build/
+out/
+target/
+coverage/
+.nyc_output/
+*.tsbuildinfo
 
-# Scripts auxiliares
+# ========================================
+# LOGS E OUTPUTS
+# ========================================
+*.log
+*.txt
+!README.txt
+run_log.txt
+test_output.txt
+test_output.log
+test_result.log
+test_results.log
+test_run_final.log
+run_gipe_*.log
+cypress.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================================
+# TOKENS E CREDENCIAIS
+# ========================================
 token.txt
 token.json
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+cypress/e2e/obter_token.cy.js
+
+# ========================================
+# SCRIPTS AUXILIARES TEMPORÁRIOS
+# ========================================
 run-api-tests.js
 run-api-tests.bat
 run-api-tests-smart.js
 run-validacao-tests.js
 run-validacao-tests.bat
 validate-token.js
-TOKEN-VALIDATION-README.md
+testar-correcao-modal.bat
+testar-modal-v2.bat
+remove_emojis.py
+remove-emojis.ps1
+
+# Scripts PowerShell de homologação (temporários)
+executar-homologacao.ps1
+gerar-evidencias.ps1
+empacotar-evidencias.ps1
+executar-testes-homologacao.bat
+validar-ambiente.ps1
+
+# ========================================
+# DOCUMENTAÇÃO TEMPORÁRIA/INTERNA
+# ========================================
+# Documentos de troubleshooting e análises temporárias
+DIAGNOSTICO_FALHA_API.md
+EVIDENCIAS_TESTES_CARGA.md
+EXEMPLO_MODAL_RAPIDO.md
+GESTAO_PESSOAS_README.md
+GESTAO_UNIDADES_SETUP.md
 GHERKIN_SYNTAX_CHECKLIST.md
-JENKINS_SETUP.md
+OTIMIZACAO_SESSION.md
+OTIMIZACAO_TESTES_CARGA_SUMMARY.md
+RELATORIO_LIMPEZA.md
+RESUMO_CORRECOES.md
+TROUBLESHOOTING_MODALS.md
+CENARIOS_ADICIONADOS_REQUISICOES.md
+CENARIOS_REMOVIDOS_CARGA.md
+CORRECOES_TIMEOUT_STATUS.md
+REFATORACAO_INTEGRACAO.md
+
+# Documentação de homologação gerada (temporária)
+PLANO_HOMOLOGACAO_GIPE.md
+GUIA_EXECUCAO_HOMOLOGACAO.md
+TERMO_ACEITE_UAT_TEMPLATE.md
+CHECKLIST_RAPIDO.md
+CHECKLIST_UAT_GIPE.md
+KIT_HOMOLOGACAO_INDEX.md
+RESUMO_EXECUTIVO_KIT.md
+ORDEM_EXECUCAO_TESTES.md
+RESUMO_CONSOLIDADO_TESTES.md
+EXECUTAR_AGORA.md
+
+# ========================================
+# EVIDÊNCIAS E RESULTADOS DE HOMOLOGAÇÃO
+# ========================================
+# Pastas de evidências geradas durante execução
+EVIDENCIAS_HOMOLOGACAO_*/
+EVIDENCIAS_*/
+evidencias/
+relatorios/
+resultados/
+
+# Pacotes de evidências
+*.zip
+*.7z
+*.tar.gz
+!fixtures/**/*.tar.gz
+
+# ========================================
+# CI/CD CONFIGURAÇÕES (se não utilizado)
+# ========================================
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
+JENKINS_SETUP.md
+.circleci/
+.travis.yml
+.jenkins/
+jenkins/
+pipeline/
 
-# Scripts de limpeza de código
-remove_emojis.py
-remove-emojis.ps1
-RELATORIO_LIMPEZA.md
+# ========================================
+# DOCKER (SE HOUVER)
+# ========================================
+docker-compose.override.yml
+.dockerignore
+Dockerfile.local
 
-# Documentação de testes específicos
-GESTAO_PESSOAS_README.md
+# ========================================
+# ARQUIVOS TEMPORÁRIOS E BACKUPS
+# ========================================
+*.bak
+*.tmp
+*.temp
+*_backup.*
+*_old.*
+*.backup
+.cache/
+.temp/
+
+# ========================================
+# SISTEMA OPERACIONAL
+# ========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ========================================
+# FEATURES E STEPS EXPERIMENTAIS/NÃO FUNCIONAIS
+# ========================================
+# Features de teste avançado (experimentais - não 100% funcionais)
+#cypress/e2e/ui/consulta_ocorrencia.feature   # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_integracao.feature       # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_seguranca.feature        # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+#cypress/e2e/ui/gipe_unitario.feature         # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+cypress/e2e/ui/gipe_stress.feature
+
+# Step definitions experimentais (não 100% funcionais)
+#cypress/support/step_definitions/consulta_ocorrencia.js   # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_integracao.js       # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_seguranca.js        # <-- AGORA FUNCIONAL
+#cypress/support/step_definitions/gipe_unitario.js         # <-- AGORA FUNCIONAL
+cypress/support/step_definitions/gipe_stress.js
+
+# ========================================
+# ARQUIVOS DE TESTE E DEBUG
+# ========================================
+# Arquivos gerados durante debug
+*.debug
+*.trace
+debug.log
+trace.log
+*.har
+*.heapsnapshot
+
+# ========================================
+# MANTER NO REPOSITÓRIO (100% FUNCIONAIS):
+# ========================================
+# ✅ package.json
+# ✅ cypress.config.js
+# ✅ currents.config.js
+# ✅ README.md (principal)
+# ✅ .env.example
+# ✅ cypress/e2e/**/*.feature (outras features funcionais)
+# ✅ cypress/support/**/*.js (outros steps funcionais)
+# ✅ cypress/fixtures/**
+# ✅ cypress/support/commands.js
+# ✅ cypress/support/locators/**

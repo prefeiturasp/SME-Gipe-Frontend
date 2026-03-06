@@ -89,14 +89,14 @@ describe("DetalhamentoDre", () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <DetalhamentoDre onPrevious={onPrevious} />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
     it("deve renderizar o título 'Continuação da ocorrência'", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("heading", { name: /continuação da ocorrência/i })
+            screen.getByRole("heading", { name: /continuação da ocorrência/i }),
         ).toBeInTheDocument();
     });
 
@@ -105,30 +105,30 @@ describe("DetalhamentoDre", () => {
 
         expect(
             screen.getByText(
-                /houve acionamento da secretaria de seguranças pública ou forças de segurança/i
-            )
+                /houve acionamento da secretaria de seguranças pública ou forças de segurança/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /houve interlocução com a supervisão técnica de saúde \(sts\)/i
-            )
+                /houve interlocução com a supervisão técnica de saúde \(sts\)/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /houve interlocução com a coordenação de políticas para criança e adolescente \(cpca\)/i
-            )
+                /houve interlocução com a coordenação de políticas para criança e adolescente \(cpca\)/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText(/houve interlocução com a supervisão escolar/i)
+            screen.getByText(/houve interlocução com a supervisão escolar/i),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /houve interlocução com o núcleo de apoio e acompanhamento para a aprendizagem \(naapa\)/i
-            )
+                /houve interlocução com o núcleo de apoio e acompanhamento para a aprendizagem \(naapa\)/i,
+            ),
         ).toBeInTheDocument();
     });
 
@@ -137,26 +137,26 @@ describe("DetalhamentoDre", () => {
 
         expect(
             screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o sts/i
-            )
+                /existe alguma informação complementar da atuação conjunta entre a dre e o sts/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o cpca/i
-            )
+                /existe alguma informação complementar da atuação conjunta entre a dre e o cpca/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o supervisão escolar/i
-            )
+                /existe alguma informação complementar da atuação conjunta entre a dre e o supervisão escolar/i,
+            ),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o naapa/i
-            )
+                /existe alguma informação complementar da atuação conjunta entre a dre e o naapa/i,
+            ),
         ).toBeInTheDocument();
     });
 
@@ -170,10 +170,10 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /anterior/i })
+            screen.getByRole("button", { name: /anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /próximo/i })
+            screen.getByRole("button", { name: /próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -253,7 +253,7 @@ describe("DetalhamentoDre", () => {
             "text-[20px]",
             "font-bold",
             "text-[#42474a]",
-            "mb-2"
+            "mb-2",
         );
     });
 
@@ -261,13 +261,15 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/acionamento da secretaria de seguranças pública/i)
+            screen.getByText(
+                /acionamento da secretaria de seguranças pública/i,
+            ),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/interlocução com a supervisão escolar/i)
+            screen.getByText(/interlocução com a supervisão escolar/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/interlocução com o núcleo de apoio/i)
+            screen.getByText(/interlocução com o núcleo de apoio/i),
         ).toBeInTheDocument();
     });
 
@@ -369,7 +371,7 @@ describe("DetalhamentoDre", () => {
                         info_complementar_naapa: "",
                     },
                 },
-                expect.any(Object)
+                expect.any(Object),
             );
         });
 
@@ -515,14 +517,14 @@ describe("DetalhamentoDre", () => {
         };
         vi.doMock("@/stores/useUserStore", () => ({
             useUserStore: (
-                selector: (state: { user: typeof mockUser }) => unknown
+                selector: (state: { user: typeof mockUser }) => unknown,
             ) => selector({ user: mockUser }),
         }));
 
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /próximo/i })
+            screen.getByRole("button", { name: /próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -536,7 +538,7 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /próximo/i })
+            screen.getByRole("button", { name: /próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -547,24 +549,24 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /finalizar/i })
+            screen.getByRole("button", { name: /finalizar/i }),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole("button", { name: /salvar informações/i })
+            screen.queryByRole("button", { name: /finalizar e enviar/i }),
         ).not.toBeInTheDocument();
     });
 
-    it("deve exibir botão 'Salvar informações' quando é Ponto Focal mas status é 'enviado_para_dre'", () => {
+    it("deve exibir botão 'Finalizar e enviar' quando é Ponto Focal e status é 'enviado_para_dre'", () => {
         mockIsPontoFocal.mockReturnValue(true);
         mockFormData.status = "enviado_para_dre";
 
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /salvar informações/i })
+            screen.getByRole("button", { name: /finalizar e enviar/i }),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole("button", { name: /próximo/i })
+            screen.queryByRole("button", { name: /próximo/i }),
         ).not.toBeInTheDocument();
     });
 
@@ -574,14 +576,14 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByRole("button", { name: /próximo/i })
+            screen.getByRole("button", { name: /próximo/i }),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole("button", { name: /salvar informações/i })
+            screen.queryByRole("button", { name: /finalizar e enviar/i }),
         ).not.toBeInTheDocument();
     });
 
-    it("deve chamar handleSubmit e abrir modal ao clicar em 'Salvar informações' quando é Ponto Focal", async () => {
+    it("deve chamar handleSubmit e abrir modal ao clicar em 'Finalizar e enviar' quando é Ponto Focal", async () => {
         const user = userEvent.setup();
         mockIsPontoFocal.mockReturnValue(true);
         mockFormData.status = "enviado_para_dre";
@@ -600,7 +602,7 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[9]);
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /finalizar e enviar/i,
         });
 
         await waitFor(() => {
@@ -614,7 +616,7 @@ describe("DetalhamentoDre", () => {
         });
     });
 
-    it("não deve chamar onNext ao clicar em 'Salvar informações'", async () => {
+    it("não deve chamar onNext ao clicar em 'Finalizar e enviar'", async () => {
         const user = userEvent.setup();
         const mockOnNext = vi.fn();
         mockIsPontoFocal.mockReturnValue(true);
@@ -627,7 +629,7 @@ describe("DetalhamentoDre", () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <DetalhamentoDre onNext={mockOnNext} />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
         const radios = screen.getAllByRole("radio");
@@ -638,7 +640,7 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[9]);
 
         const botaoSalvar = screen.getByRole("button", {
-            name: /salvar informações/i,
+            name: /finalizar e enviar/i,
         });
 
         await waitFor(() => {
@@ -666,7 +668,7 @@ describe("DetalhamentoDre", () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <DetalhamentoDre onNext={mockOnNext} />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
         const radios = screen.getAllByRole("radio");
@@ -705,7 +707,7 @@ describe("DetalhamentoDre", () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <DetalhamentoDre onNext={mockOnNext} />
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
         const radios = screen.getAllByRole("radio");

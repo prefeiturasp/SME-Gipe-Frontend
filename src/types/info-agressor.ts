@@ -1,8 +1,12 @@
+export type PessoaAgressora = {
+    nome: string;
+    idade: number;
+};
+
 export type InfoAgressorBody = {
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
-    nome_pessoa_agressora: string;
-    idade_pessoa_agressora: number;
+    pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
     genero_pessoa_agressora: string;
     grupo_etnico_racial: string;
@@ -12,21 +16,13 @@ export type InfoAgressorBody = {
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;
-    cep: string;
-    logradouro: string;
-    numero_residencia: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
 };
 
 export type InfoAgressorResponse = {
     uuid: string;
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
-    nome_pessoa_agressora: string;
-    idade_pessoa_agressora: number;
+    pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
     motivacao_ocorrencia_display: string;
     genero_pessoa_agressora: string;
@@ -37,11 +33,4 @@ export type InfoAgressorResponse = {
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;
-    cep: string;
-    logradouro: string;
-    numero_residencia: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
 };

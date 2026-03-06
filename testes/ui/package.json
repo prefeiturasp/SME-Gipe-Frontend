@@ -10,7 +10,15 @@
     "e2e": "cypress run --reporter mocha-allure-reporter",
     "report:allure": "allure generate allure-results --clean -o allure-report && allure open allure-report",
     "test:allure": "npm run e2e && npm run report:allure",
-    "preinstall": "npx npm-force-resolutions"
+    "preinstall": "npx npm-force-resolutions",
+    "test:unitarios": "cypress run --spec 'cypress/e2e/ui/*unitario*.feature' --env TAGS='@unitario and not @skip' --reporter mocha-allure-reporter",
+    "test:integracao": "cypress run --spec 'cypress/e2e/ui/*integracao*.feature' --env TAGS='@integracao and not @skip' --reporter mocha-allure-reporter",
+    "test:funcionais": "cypress run --spec 'cypress/e2e/ui/*.feature' --env TAGS='not @skip and not @unitario and not @integracao and not @seguranca and not @carga' --reporter mocha-allure-reporter",
+    "test:seguranca": "cypress run --spec 'cypress/e2e/ui/*seguranca*.feature' --env TAGS='@seguranca and not @skip' --reporter mocha-allure-reporter",
+    "test:carga": "cypress run --spec 'cypress/e2e/ui/*carga*.feature,cypress/e2e/ui/*stress*.feature' --env TAGS='@carga and not @skip' --reporter mocha-allure-reporter",
+    "test:homologacao": "powershell -ExecutionPolicy Bypass -File .\\executar-homologacao.ps1 -TipoTeste todos -GerarEvidencias -AbrirRelatorio",
+    "gerar:evidencias": "powershell -ExecutionPolicy Bypass -File .\\gerar-evidencias.ps1",
+    "empacotar:evidencias": "powershell -ExecutionPolicy Bypass -File .\\empacotar-evidencias.ps1"
   },
   "supportFile": "./support/e2e.js",
   "dependencies": {

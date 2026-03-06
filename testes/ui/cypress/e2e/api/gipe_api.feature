@@ -1,7 +1,7 @@
 #language: pt
 @skip @api @gipe_api_legacy
 Funcionalidade: API GIPE - Testes Legacy (Mantidos para compatibilidade)
-  # ⚠️ FEATURE DESABILITADA - Cenários duplicados em gipe_api_principais.feature
+  #  FEATURE DESABILITADA - Cenários duplicados em gipe_api_principais.feature
   # Esta feature contém testes legados. Para novos testes, use gipe_api_principais.feature
   # Mantida apenas para referência histórica e compatibilidade
 

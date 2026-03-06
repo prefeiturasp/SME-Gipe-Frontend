@@ -81,7 +81,7 @@ describe("SecaoFurtoERoubo", () => {
         vi.clearAllMocks();
 
         vi.mocked(
-            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
         ).mockReturnValue({
             formData: {},
             savedFormData: {},
@@ -100,7 +100,7 @@ describe("SecaoFurtoERoubo", () => {
 
         vi.spyOn(
             useAtualizarSecaoFurtoRouboHook,
-            "useAtualizarSecaoFurtoRoubo"
+            "useAtualizarSecaoFurtoRoubo",
         ).mockReturnValue({
             mutate: vi.fn(),
             mutateAsync: vi.fn(),
@@ -116,17 +116,17 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         expect(
-            screen.getByText("Qual o tipo de ocorrência?*")
+            screen.getByText("Qual o tipo de ocorrência?*"),
         ).toBeInTheDocument();
         expect(screen.getByText("Descreva a ocorrência*")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Unidade Educacional é contemplada pelo Smart Sampa? Se sim, houve dano às câmeras do sistema?*"
-            )
+                "Unidade Educacional é contemplada pelo Smart Sampa?*",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -137,7 +137,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const selectButton = screen.getByRole("button", {
@@ -147,22 +147,22 @@ describe("SecaoFurtoERoubo", () => {
 
         await waitFor(() => {
             expect(
-                screen.getByRole("option", { name: "Violência física" })
+                screen.getByRole("option", { name: "Violência física" }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole("option", { name: "Violência psicológica" })
+                screen.getByRole("option", { name: "Violência psicológica" }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole("option", { name: "Violência sexual" })
+                screen.getByRole("option", { name: "Violência sexual" }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole("option", { name: "Negligência" })
+                screen.getByRole("option", { name: "Negligência" }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole("option", { name: "Bullying" })
+                screen.getByRole("option", { name: "Bullying" }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole("option", { name: "Cyberbullying" })
+                screen.getByRole("option", { name: "Cyberbullying" }),
             ).toBeInTheDocument();
         });
     });
@@ -173,14 +173,11 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
-        expect(screen.getByText("Sim e houve dano")).toBeInTheDocument();
-        expect(screen.getByText("Sim, mas não houve dano")).toBeInTheDocument();
-        expect(
-            screen.getByText("A UE não faz parte do Smart Sampa")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Sim")).toBeInTheDocument();
+        expect(screen.getByText("Não")).toBeInTheDocument();
     });
 
     it("deve desabilitar o botão Próximo quando o formulário está inválido", () => {
@@ -189,7 +186,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const btnProximo = screen.getByRole("button", { name: /próximo/i });
@@ -203,7 +200,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const selectButton = screen.getByRole("button", {
@@ -219,10 +216,10 @@ describe("SecaoFurtoERoubo", () => {
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
         await user.type(textarea, "Descrição detalhada da ocorrência");
 
-        const radioNaoFazParte = screen.getByRole("radio", {
-            name: /a ue não faz parte do smart sampa/i,
+        const radioNao = screen.getByRole("radio", {
+            name: /não/i,
         });
-        await user.click(radioNaoFazParte);
+        await user.click(radioNao);
 
         await waitFor(() => {
             const btnProximo = screen.getByRole("button", {
@@ -237,7 +234,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const btnAnterior = screen.getByRole("button", { name: /anterior/i });
@@ -251,7 +248,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -261,8 +258,8 @@ describe("SecaoFurtoERoubo", () => {
         await waitFor(() => {
             expect(
                 screen.getByText(
-                    "A descrição deve ter pelo menos 10 caracteres."
-                )
+                    "A descrição deve ter pelo menos 10 caracteres.",
+                ),
             ).toBeInTheDocument();
         });
     });
@@ -274,7 +271,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const selectButton = screen.getByRole("button", {
@@ -290,13 +287,13 @@ describe("SecaoFurtoERoubo", () => {
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
         await user.type(
             textarea,
-            "Descrição detalhada da ocorrência com mais de dez caracteres"
+            "Descrição detalhada da ocorrência com mais de dez caracteres",
         );
 
-        const radioNaoFazParte = screen.getByRole("radio", {
-            name: /a ue não faz parte do smart sampa/i,
+        const radioNao = screen.getByRole("radio", {
+            name: /não/i,
         });
-        await user.click(radioNaoFazParte);
+        await user.click(radioNao);
 
         await waitFor(() => {
             const btnProximo = screen.getByRole("button", {
@@ -319,7 +316,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -327,10 +324,10 @@ describe("SecaoFurtoERoubo", () => {
             target: { value: "Descrição detalhada da ocorrência" },
         });
 
-        const radioNaoFazParte = screen.getByRole("radio", {
-            name: /a ue não faz parte do smart sampa/i,
+        const radioNao = screen.getByRole("radio", {
+            name: /não/i,
         });
-        fireEvent.click(radioNaoFazParte);
+        fireEvent.click(radioNao);
 
         await waitFor(() => {
             const btnProximo = screen.getByRole("button", {
@@ -353,7 +350,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const selectButton = screen.getByRole("button", {
@@ -376,11 +373,11 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         expect(
-            screen.getByText("Qual o tipo de ocorrência?*")
+            screen.getByText("Qual o tipo de ocorrência?*"),
         ).toBeInTheDocument();
 
         const selectButton = screen.getByRole("button", {
@@ -393,7 +390,7 @@ describe("SecaoFurtoERoubo", () => {
 
     it("deve carregar formulário com descricao vazia quando formData.descricao é undefined", () => {
         vi.mocked(
-            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
         ).mockReturnValue({
             formData: {
                 tiposOcorrencia: undefined,
@@ -412,7 +409,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -421,7 +418,7 @@ describe("SecaoFurtoERoubo", () => {
 
     it("deve carregar formulário com descricao preenchida quando formData.descricao existe", () => {
         vi.mocked(
-            useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+            useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
         ).mockReturnValue({
             formData: {
                 tiposOcorrencia: undefined,
@@ -440,7 +437,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
             />,
-            { wrapper: createWrapper() }
+            { wrapper: createWrapper() },
         );
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -457,17 +454,17 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -477,7 +474,7 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useAtualizarSecaoFurtoRouboHook,
-                "useAtualizarSecaoFurtoRoubo"
+                "useAtualizarSecaoFurtoRoubo",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -487,7 +484,7 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useTiposOcorrenciaHook,
-                "useTiposOcorrencia"
+                "useTiposOcorrencia",
             ).mockReturnValue({
                 data: mockTiposOcorrencia,
                 isLoading: false,
@@ -508,7 +505,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -532,10 +529,10 @@ describe("SecaoFurtoERoubo", () => {
                         body: expect.objectContaining({
                             descricao_ocorrencia:
                                 "Nova descrição da ocorrência",
-                            smart_sampa_situacao: "nao_faz_parte",
+                            smart_sampa_situacao: "nao",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -548,7 +545,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             await waitFor(() => {
@@ -582,13 +579,13 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
-            const radioSimHouveDano = screen.getByRole("radio", {
-                name: /sim e houve dano/i,
+            const radioSim = screen.getByRole("radio", {
+                name: /^sim$/i,
             });
-            await user.click(radioSimHouveDano);
+            await user.click(radioSim);
 
             await waitFor(() => {
                 const btnProximo = screen.getByRole("button", {
@@ -618,13 +615,13 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
-            const radioSimSemDano = screen.getByRole("radio", {
-                name: /sim, mas não houve dano/i,
+            const radioSim = screen.getByRole("radio", {
+                name: /^sim$/i,
             });
-            await user.click(radioSimSemDano);
+            await user.click(radioSim);
 
             await waitFor(() => {
                 const btnProximo = screen.getByRole("button", {
@@ -654,7 +651,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             // O botão mostra o nome do primeiro valor selecionado
@@ -691,7 +688,7 @@ describe("SecaoFurtoERoubo", () => {
                             ]),
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -701,17 +698,17 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: undefined,
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {
                     tiposOcorrencia: undefined,
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -728,7 +725,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const selectButton = screen.getByRole("button", {
@@ -761,7 +758,7 @@ describe("SecaoFurtoERoubo", () => {
                             ],
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -769,17 +766,17 @@ describe("SecaoFurtoERoubo", () => {
         it("deve avançar sem atualizar quando formData.tiposOcorrencia é undefined e nenhum tipo é selecionado", () => {
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: undefined,
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {
                     tiposOcorrencia: undefined,
                     descricao: "Descrição original da ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -792,7 +789,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const btnProximo = screen.getByRole("button", { name: /próximo/i });
@@ -804,17 +801,17 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição modificada localmente",
-                    smartSampa: "sim_com_dano",
+                    smartSampa: "Sim",
                 },
                 savedFormData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição original do backend",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -831,7 +828,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             await waitFor(() => {
@@ -849,10 +846,10 @@ describe("SecaoFurtoERoubo", () => {
                     expect.objectContaining({
                         uuid: "test-uuid-123",
                         body: expect.objectContaining({
-                            smart_sampa_situacao: "sim_com_dano",
+                            smart_sampa_situacao: "sim",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -862,12 +859,12 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: "Descrição da nova ocorrência",
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {},
                 setFormData: mockSetFormData,
@@ -881,7 +878,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             await waitFor(() => {
@@ -906,17 +903,17 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -929,7 +926,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -937,7 +934,7 @@ describe("SecaoFurtoERoubo", () => {
 
             await user.type(
                 textarea,
-                "Nova descrição com mais de dez caracteres"
+                "Nova descrição com mais de dez caracteres",
             );
 
             await waitFor(() => {
@@ -959,7 +956,7 @@ describe("SecaoFurtoERoubo", () => {
                                 "Nova descrição com mais de dez caracteres",
                         }),
                     }),
-                    expect.any(Object)
+                    expect.any(Object),
                 );
             });
         });
@@ -969,12 +966,12 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore"
+                "useOcorrenciaFormStore",
             ).mockReturnValue({
                 formData: {
                     tiposOcorrencia: ["1cd5b78c-3d8a-483c-a2c5-1346c44a4e97"],
                     descricao: undefined,
-                    smartSampa: "nao_faz_parte",
+                    smartSampa: "Não",
                 },
                 savedFormData: {},
                 setFormData: mockSetFormData,
@@ -988,7 +985,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onNext={mockOnNext}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const textarea = screen.getByPlaceholderText("Descreva aqui...");
@@ -996,7 +993,7 @@ describe("SecaoFurtoERoubo", () => {
 
             await user.type(
                 textarea,
-                "Descrição válida com mais de dez caracteres"
+                "Descrição válida com mais de dez caracteres",
             );
 
             await waitFor(() => {
@@ -1015,7 +1012,7 @@ describe("SecaoFurtoERoubo", () => {
                     expect.objectContaining({
                         descricao:
                             "Descrição válida com mais de dez caracteres",
-                    })
+                    }),
                 );
                 expect(mockOnNext).toHaveBeenCalledTimes(1);
             });
@@ -1031,7 +1028,7 @@ describe("SecaoFurtoERoubo", () => {
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const formData = ref.current?.getFormData();
@@ -1049,7 +1046,7 @@ describe("SecaoFurtoERoubo", () => {
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const formInstance = ref.current?.getFormInstance();
@@ -1069,7 +1066,7 @@ describe("SecaoFurtoERoubo", () => {
             });
 
             vi.mocked(
-                useOcorrenciaFormStoreModule.useOcorrenciaFormStore
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
             ).mockReturnValue({
                 formData: {},
                 savedFormData: {},
@@ -1081,7 +1078,7 @@ describe("SecaoFurtoERoubo", () => {
 
             vi.spyOn(
                 useAtualizarSecaoFurtoRouboHook,
-                "useAtualizarSecaoFurtoRoubo"
+                "useAtualizarSecaoFurtoRoubo",
             ).mockReturnValue({
                 mutate: mockMutate,
                 isPending: false,
@@ -1094,7 +1091,7 @@ describe("SecaoFurtoERoubo", () => {
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const selectButton = screen.getByRole("button", {
@@ -1111,13 +1108,13 @@ describe("SecaoFurtoERoubo", () => {
                 screen.getByPlaceholderText("Descreva aqui...");
             await user.type(
                 descricaoField,
-                "Esta é uma descrição detalhada com mais de dez caracteres"
+                "Esta é uma descrição detalhada com mais de dez caracteres",
             );
 
-            const radioNaoFazParte = screen.getByRole("radio", {
-                name: /a ue não faz parte do smart sampa/i,
+            const radioNao = screen.getByRole("radio", {
+                name: /não/i,
             });
-            await user.click(radioNaoFazParte);
+            await user.click(radioNao);
 
             await waitFor(async () => {
                 const result = await ref.current?.submitForm();
@@ -1135,7 +1132,7 @@ describe("SecaoFurtoERoubo", () => {
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             await waitFor(async () => {
@@ -1158,7 +1155,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onFormChange={mockOnFormChange}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const descricaoField =
@@ -1170,7 +1167,7 @@ describe("SecaoFurtoERoubo", () => {
                 expect(mockOnFormChange).toHaveBeenCalledWith(
                     expect.objectContaining({
                         descricao: expect.stringContaining("Nova descrição"),
-                    })
+                    }),
                 );
             });
         });
@@ -1185,7 +1182,7 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onFormChange={mockOnFormChange}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const selectButton = screen.getByRole("button", {
@@ -1204,7 +1201,7 @@ describe("SecaoFurtoERoubo", () => {
                         tiposOcorrencia: [
                             "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
                         ],
-                    })
+                    }),
                 );
             });
         });
@@ -1219,19 +1216,19 @@ describe("SecaoFurtoERoubo", () => {
                     onPrevious={mockOnPrevious}
                     onFormChange={mockOnFormChange}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
-            const radioSimComDano = screen.getByRole("radio", {
-                name: /sim e houve dano/i,
+            const radioSim = screen.getByRole("radio", {
+                name: /^sim$/i,
             });
-            await user.click(radioSimComDano);
+            await user.click(radioSim);
 
             await waitFor(() => {
                 expect(mockOnFormChange).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        smartSampa: "sim_com_dano",
-                    })
+                        smartSampa: "Sim",
+                    }),
                 );
             });
         });
@@ -1244,7 +1241,7 @@ describe("SecaoFurtoERoubo", () => {
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
                 />,
-                { wrapper: createWrapper() }
+                { wrapper: createWrapper() },
             );
 
             const descricaoField =
@@ -1257,6 +1254,103 @@ describe("SecaoFurtoERoubo", () => {
         });
     });
 
+    describe("filtragem de tiposOcorrencia inválidos", () => {
+        it("deve remover UUIDs que não pertencem ao tipo atual ao montar", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: [
+                        "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        "uuid-invalido-de-outro-tipo",
+                    ],
+                    descricao: "Teste",
+                    smartSampa: "Sim",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const formValues = ref.current?.getFormData();
+                expect(formValues?.tiposOcorrencia).toEqual([
+                    "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                ]);
+            });
+        });
+
+        it("não deve alterar tiposOcorrencia quando todos são válidos", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: [
+                        "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                        "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+                    ],
+                    descricao: "Teste",
+                    smartSampa: "Sim",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: mockTiposOcorrencia,
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const formValues = ref.current?.getFormData();
+                expect(formValues?.tiposOcorrencia).toEqual([
+                    "1cd5b78c-3d8a-483c-a2c5-1346c44a4e97",
+                    "f2a5b2d7-390d-4af9-ab1b-06551eec0dba",
+                ]);
+            });
+        });
+    });
+
     it("deve desabilitar todos os campos quando disabled=true", async () => {
         const user = userEvent.setup();
         render(
@@ -1264,7 +1358,7 @@ describe("SecaoFurtoERoubo", () => {
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
                 disabled={true}
-            />
+            />,
         );
 
         const selectButton = screen.getByRole("button", {
