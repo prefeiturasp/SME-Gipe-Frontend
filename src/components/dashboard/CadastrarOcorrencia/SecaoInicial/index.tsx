@@ -67,26 +67,22 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             ocorrenciaUuid,
         } = useOcorrenciaFormStore();
 
-        // Estado interno para rastrear o UUID da DRE (necessário para filtrar UEs via API)
         const [dreUuid, setDreUuid] = useState<string>(
             user?.unidades[0]?.dre?.dre_uuid ?? "",
         );
 
-        // Busca DREs ativas (apenas para GIPE)
         const {
             data: dresData,
             isLoading: isLoadingDres,
             isError: isErrorDres,
         } = useGetUnidades(true, undefined, "DRE");
 
-        // Busca UEs ativas da DRE selecionada (para Ponto Focal e GIPE)
         const {
             data: uesData,
             isLoading: isLoadingUes,
             isError: isErrorUes,
         } = useGetUnidades(true, dreUuid || undefined);
 
-        // Sincroniza dreUuid quando há DRE salva no formData (e.g., GIPE retornando ao form)
         useEffect(() => {
             if (isGipe && formData.dre && !dreUuid && dresData?.length) {
                 const matchingDre = dresData.find(
@@ -104,7 +100,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
         const dd = String(today.getDate()).padStart(2, "0");
         const maxDate = `${yyyy}-${mm}-${dd}`;
 
-        // Default values diferenciados por perfil
         const getDefaultDre = () => {
             if (formData.dre) return formData.dre;
             if (isAssistenteOuDiretor || isPontoFocal)
@@ -131,7 +126,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             },
         });
 
-        // Define se os campos devem ficar desabilitados com base no perfil e estado
         const isDreDisabled =
             disabled ||
             !!ocorrenciaUuid ||
@@ -143,13 +137,11 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
 
         const { isValid } = form.formState;
 
-        // Notifica mudanças em tempo real
         const watchedValues = form.watch();
         useEffect(() => {
             onFormChange?.(watchedValues);
         }, [watchedValues, onFormChange]);
 
-        // Expõe métodos para o componente pai via ref
         useImperativeHandle(ref, () => ({
             getFormData: () => form.getValues(),
             submitForm: async () => {
@@ -163,7 +155,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             getFormInstance: () => form,
         }));
 
-        // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: SecaoInicialData) => {
             setFormData(data);
 
@@ -234,7 +225,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
         const unidadeNome =
             formData.nomeUnidade ?? user?.unidades[0]?.ue?.nome ?? "";
 
-        // Opções para os selects dinâmicos
         const dresOptions =
             dresData?.map((dre: UnidadeEducacional) => ({
                 value: dre.codigo_eol,
@@ -248,7 +238,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 label: ue.nome,
             })) ?? [];
 
-        // Handlers para seleção de DRE e UE
         const handleDreChange = (
             value: string,
             fieldOnChange: (value: string) => void,
@@ -262,7 +251,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 setDreUuid(selectedDre.uuid);
                 setFormData({ nomeDre: selectedDre.label });
             }
-            // Limpa a UE ao trocar DRE
             form.setValue("unidadeEducacional", "", {
                 shouldValidate: true,
             });
@@ -282,7 +270,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             }
         };
 
-        // Placeholders dinâmicos
         const getDrePlaceholder = () => {
             if (isLoadingDres) return "Carregando...";
             if (isErrorDres) return "Erro ao carregar DREs";
