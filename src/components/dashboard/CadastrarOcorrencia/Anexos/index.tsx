@@ -380,7 +380,7 @@ export default function Anexos({
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
                 onLoadingChange={setIsFinalizando}
-                perfilUsuario={perfilUsuario}
+                etapa="diretor"
             />
         </div>
     );
