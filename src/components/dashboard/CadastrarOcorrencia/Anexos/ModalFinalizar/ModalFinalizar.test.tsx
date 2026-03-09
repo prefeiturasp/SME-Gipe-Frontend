@@ -73,12 +73,12 @@ vi.mock("@/hooks/useFinalizarEtapaGipe", () => ({
 describe("ModalFinalizarEtapa", () => {
     const onOpenChange = vi.fn();
 
-    function setup(open = true, perfilUsuario = "diretor") {
+    function setup(open = true, etapa = "diretor") {
         return render(
             <ModalFinalizar
                 open={open}
                 onOpenChange={onOpenChange}
-                perfilUsuario={perfilUsuario}
+                etapa={etapa}
             />,
         );
     }
@@ -187,7 +187,7 @@ describe("ModalFinalizarEtapa", () => {
             <ModalFinalizar
                 open={true}
                 onOpenChange={onOpenChange}
-                perfilUsuario="diretor"
+                etapa="diretor"
                 onLoadingChange={onLoadingChange}
             />,
         );
@@ -342,7 +342,7 @@ describe("ModalFinalizarEtapa", () => {
         expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("não chama a API quando perfilUsuario não é reconhecido", async () => {
+    it("não chama a API quando etapa não é reconhecido", async () => {
         setup(true, "perfilInexistente");
 
         await waitFor(() => {
@@ -389,7 +389,7 @@ describe("ModalFinalizarEtapa", () => {
             <ModalFinalizar
                 open={true}
                 onOpenChange={onOpenChange}
-                perfilUsuario="diretor"
+                etapa="diretor"
                 onLoadingChange={onLoadingChange}
             />,
         );
@@ -409,7 +409,7 @@ describe("ModalFinalizarEtapa", () => {
             <ModalFinalizar
                 open={true}
                 onOpenChange={onOpenChange}
-                perfilUsuario="diretor"
+                etapa="diretor"
                 onLoadingChange={onLoadingChange}
             />,
         );
@@ -434,7 +434,7 @@ describe("ModalFinalizarEtapa", () => {
             <ModalFinalizar
                 open={true}
                 onOpenChange={onOpenChangeMock}
-                perfilUsuario="diretor"
+                etapa="diretor"
             />,
         );
 
