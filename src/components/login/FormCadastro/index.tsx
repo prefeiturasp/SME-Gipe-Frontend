@@ -1,12 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import LogoGipe from "@/components/login/LogoGipe";
 import { Button } from "@/components/ui/button";
-import useCadastro from "@/hooks/useCadastro";
+import { Combobox } from "@/components/ui/Combobox";
 import {
     Form,
     FormControl,
@@ -16,21 +12,25 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input, InputMask } from "@/components/ui/input";
-import { Combobox } from "@/components/ui/Combobox";
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import useCadastro from "@/hooks/useCadastro";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
-import formSchema, { FormDataSignup } from "./schema";
-import Aviso from "./Aviso";
-import Finalizado from "./Finalizado";
-import ErrorMessage from "./ErrorMessage";
-import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
 import AlertSmall from "@/assets/icons/AlertSmall";
+import { useFetchDREs, useFetchUEs } from "@/hooks/useUnidades";
+import Aviso from "./Aviso";
+import ErrorMessage from "./ErrorMessage";
+import Finalizado from "./Finalizado";
+import formSchema, { FormDataSignup } from "./schema";
 
 export default function FormCadastro() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function FormCadastro() {
     const cadastroMutation = useCadastro();
     const { mutateAsync, isPending } = cadastroMutation;
     const isLoading = isPending;
-    
+
     const form = useForm<FormDataSignup>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -101,7 +101,7 @@ export default function FormCadastro() {
                 onSubmit={form.handleSubmit(tratarCadastro)}
             >
                 <div className="flex justify-start mb-4">
-                    <LogoGipe className="w-48" />
+                    <LogoGipe className="w-full max-w-[350px]" />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">
                     Faça o seu cadastro
@@ -144,7 +144,7 @@ export default function FormCadastro() {
                                                 >
                                                     {dre.nome}
                                                 </SelectItem>
-                                            )
+                                            ),
                                         )}
                                     </SelectContent>
                                 </Select>
@@ -172,7 +172,7 @@ export default function FormCadastro() {
                                         }) => ({
                                             label: ue.nome,
                                             value: ue.uuid,
-                                        })
+                                        }),
                                     )}
                                     value={field.value}
                                     onChange={field.onChange}
