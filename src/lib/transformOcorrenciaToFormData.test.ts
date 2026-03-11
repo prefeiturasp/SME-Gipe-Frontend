@@ -278,23 +278,51 @@ describe("transformOcorrenciaToFormData", () => {
     });
 
     describe("Informações Adicionais - Dados Pessoais do Agressor", () => {
-        it("deve incluir pessoas agressoras quando presente", () => {
+        it("deve incluir pessoas agressoras com todos os campos quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                pessoas_agressoras: [{ nome: "João Silva", idade: 25 }],
+                pessoas_agressoras: [
+                    {
+                        nome: "João Silva",
+                        idade: 25,
+                        genero: "masculino",
+                        grupo_etnico_racial: "branco",
+                        etapa_escolar: "ensino_fundamental_2",
+                        frequencia_escolar: "regular",
+                        interacao_ambiente_escolar: "Boa interação",
+                    },
+                ],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.pessoasAgressoras).toEqual([
-                { nome: "João Silva", idade: "25" },
+                {
+                    nome: "João Silva",
+                    idade: "25",
+                    genero: "masculino",
+                    grupoEtnicoRacial: "branco",
+                    etapaEscolar: "ensino_fundamental_2",
+                    frequenciaEscolar: "regular",
+                    interacaoAmbienteEscolar: "Boa interação",
+                },
             ]);
         });
 
         it("deve converter idade das pessoas agressoras para string", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                pessoas_agressoras: [{ nome: "Maria Santos", idade: 35 }],
+                pessoas_agressoras: [
+                    {
+                        nome: "Maria Santos",
+                        idade: 35,
+                        genero: "feminino",
+                        grupo_etnico_racial: "pardo",
+                        etapa_escolar: "ensino_medio",
+                        frequencia_escolar: "regular",
+                        interacao_ambiente_escolar: "Boa interação",
+                    },
+                ],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
@@ -302,26 +330,26 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.pessoasAgressoras?.[0].idade).toBe("35");
         });
 
-        it("deve incluir gênero do agressor quando presente", () => {
+        it("deve preencher campos vazios quando campos opcionais não estão presentes", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                genero_pessoa_agressora: "mulher_cis",
+                pessoas_agressoras: [
+                    {
+                        nome: "João",
+                        idade: 20,
+                        genero: "",
+                        grupo_etnico_racial: "",
+                        etapa_escolar: "",
+                        frequencia_escolar: "",
+                        interacao_ambiente_escolar: "",
+                    },
+                ],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.genero).toBe("mulher_cis");
-        });
-
-        it("deve incluir grupo étnico-racial quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                grupo_etnico_racial: "indigena",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.grupoEtnicoRacial).toBe("indigena");
+            expect(result.pessoasAgressoras?.[0].genero).toBe("");
+            expect(result.pessoasAgressoras?.[0].grupoEtnicoRacial).toBe("");
         });
     });
 
@@ -338,42 +366,6 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.motivoOcorrencia).toEqual(["homofobia", "racismo"]);
-        });
-
-        it("deve incluir etapa escolar quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                etapa_escolar: "ensino_medio",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.etapaEscolar).toBe("ensino_medio");
-        });
-
-        it("deve incluir frequência escolar quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                frequencia_escolar: "transferido_estadual",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.frequenciaEscolar).toBe("transferido_estadual");
-        });
-
-        it("deve incluir interação no ambiente escolar quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                interacao_ambiente_escolar:
-                    "Como é a interação da pessoa agressora no ambiente escolar?",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.interacaoAmbienteEscolar).toBe(
-                "Como é a interação da pessoa agressora no ambiente escolar?",
-            );
         });
 
         it("deve incluir redes de proteção quando presente", () => {
@@ -458,17 +450,22 @@ describe("transformOcorrenciaToFormData", () => {
         it("deve transformar todos os campos de informações adicionais quando todos estão presentes", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
+                pessoas_agressoras: [
+                    {
+                        nome: "Kleber Machado",
+                        idade: 35,
+                        genero: "mulher_cis",
+                        grupo_etnico_racial: "indigena",
+                        etapa_escolar: "ensino_medio",
+                        frequencia_escolar: "transferido_estadual",
+                        interacao_ambiente_escolar:
+                            "Como é a interação da pessoa agressora no ambiente escolar?",
+                    },
+                ],
                 motivacao_ocorrencia_display: [
                     { value: "homofobia", label: "Homofobia" },
                     { value: "racismo", label: "Racismo" },
                 ],
-                genero_pessoa_agressora: "mulher_cis",
-                grupo_etnico_racial: "indigena",
-                etapa_escolar: "ensino_medio",
-                frequencia_escolar: "transferido_estadual",
-                interacao_ambiente_escolar:
-                    "Como é a interação da pessoa agressora no ambiente escolar?",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
                 acompanhado_naapa: false,
@@ -477,14 +474,19 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result).toMatchObject({
-                pessoasAgressoras: [{ nome: "Kleber Machado", idade: "35" }],
+                pessoasAgressoras: [
+                    {
+                        nome: "Kleber Machado",
+                        idade: "35",
+                        genero: "mulher_cis",
+                        grupoEtnicoRacial: "indigena",
+                        etapaEscolar: "ensino_medio",
+                        frequenciaEscolar: "transferido_estadual",
+                        interacaoAmbienteEscolar:
+                            "Como é a interação da pessoa agressora no ambiente escolar?",
+                    },
+                ],
                 motivoOcorrencia: ["homofobia", "racismo"],
-                genero: "mulher_cis",
-                grupoEtnicoRacial: "indigena",
-                etapaEscolar: "ensino_medio",
-                frequenciaEscolar: "transferido_estadual",
-                interacaoAmbienteEscolar:
-                    "Como é a interação da pessoa agressora no ambiente escolar?",
                 redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
                 acompanhadoNAAPA: "Não",
