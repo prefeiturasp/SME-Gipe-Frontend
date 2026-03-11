@@ -291,9 +291,7 @@ describe("DetalhamentoGipe", () => {
             screen.getByText(/quem são os envolvidos\?/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(
-                /existe informações sobre as interações virtuais/i,
-            ),
+            screen.getByText(/Há informações sobre as interações virtuais/i),
         ).toBeInTheDocument();
     });
 
