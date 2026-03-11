@@ -37,29 +37,11 @@ describe("InformacoesAdicionais", () => {
         user: ReturnType<typeof userEvent.setup>,
     ) => {
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa agressora\?/i,
+            /Qual o nome da pessoa envolvida\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
-        const idadesInputs = screen.getAllByLabelText(
-            /Qual a idade da pessoa agressora\?/i,
-        );
+        const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
         await user.type(idadesInputs[0], "25");
-        await user.type(
-            screen.getByLabelText(/Como é a interação da pessoa agressora/i),
-            "Boa interação",
-        );
-        await user.type(
-            screen.getByLabelText(/Quais as redes de proteção/i),
-            "CRAS, NAAPA",
-        );
-
-        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-        await user.click(radioSim[0]);
-        await user.click(radioSim[1]);
-
-        const motivoButton = screen.getByRole("button", { name: /Selecione/i });
-        await user.click(motivoButton);
-        await user.click(await screen.findByText(/Bullying/i));
 
         const generoTrigger = screen.getByRole("combobox", {
             name: /Qual o gênero\?/i,
@@ -93,6 +75,23 @@ describe("InformacoesAdicionais", () => {
             name: /Regular/i,
         });
         await user.click(regularOptions.at(-1)!);
+
+        await user.type(
+            screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
+            "Boa interação",
+        );
+        await user.type(
+            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
+            "CRAS, NAAPA",
+        );
+
+        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        await user.click(radioSim[0]);
+        await user.click(radioSim[1]);
+
+        const motivoButton = screen.getByRole("button", { name: /Selecione/i });
+        await user.click(motivoButton);
+        await user.click(await screen.findByText(/Bullying/i));
 
         await waitFor(
             () => {
@@ -149,7 +148,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa agressora/i).length,
+            screen.getAllByLabelText(/nome da pessoa envolvida/i).length,
         ).toBeGreaterThanOrEqual(1);
         expect(
             screen.getByText(/O que motivou a ocorrência/i),
@@ -182,13 +181,18 @@ describe("InformacoesAdicionais", () => {
     it("deve preencher os campos com dados do store", () => {
         vi.mocked(useOcorrenciaFormStore).mockReturnValue({
             formData: {
-                pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
+                pessoasAgressoras: [
+                    {
+                        nome: "João Silva",
+                        idade: "25",
+                        genero: "masculino",
+                        grupoEtnicoRacial: "pardo",
+                        etapaEscolar: "ensino_fundamental_2",
+                        frequenciaEscolar: "regular",
+                        interacaoAmbienteEscolar: "Boa interação",
+                    },
+                ],
                 motivoOcorrencia: ["bullying"],
-                genero: "masculino",
-                grupoEtnicoRacial: "pardo",
-                etapaEscolar: "ensino_fundamental_2",
-                frequenciaEscolar: "regular",
-                interacaoAmbienteEscolar: "Boa interação",
                 redesProtecao: "CRAS",
                 notificadoConselhoTutelar: "Sim",
                 acompanhadoNAAPA: "Não",
@@ -199,12 +203,10 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa agressora\?/i,
+            /Qual o nome da pessoa envolvida\?/i,
         );
         expect(nomesInputs[0]).toHaveValue("João Silva");
-        const idadesInputs = screen.getAllByLabelText(
-            /Qual a idade da pessoa agressora\?/i,
-        );
+        const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
         expect(idadesInputs[0]).toHaveValue(25);
     });
 
@@ -216,7 +218,7 @@ describe("InformacoesAdicionais", () => {
         expect(proximoButton).toBeDisabled();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa agressora\?/i,
+            /Qual o nome da pessoa envolvida\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
 
@@ -247,19 +249,51 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa agressora\?/i,
+            /Qual o nome da pessoa envolvida\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
-        const idadesInputs = screen.getAllByLabelText(
-            /Qual a idade da pessoa agressora\?/i,
-        );
+        const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
         await user.type(idadesInputs[0], "25");
+
+        const generoTrigger = screen.getByRole("combobox", {
+            name: /Qual o gênero\?/i,
+        });
+        await user.click(generoTrigger);
+        await user.click(
+            await screen.findByRole("option", { name: /Masculino/i }),
+        );
+
+        const grupoTrigger = screen.getByRole("combobox", {
+            name: /Qual o grupo étnico-racial\?/i,
+        });
+        await user.click(grupoTrigger);
+        await user.click(await screen.findByRole("option", { name: /Pardo/i }));
+
+        const etapaTrigger = screen.getByRole("combobox", {
+            name: /Qual a etapa escolar\?/i,
+        });
+        await user.click(etapaTrigger);
+        await user.click(
+            await screen.findByRole("option", {
+                name: /Ensino Fundamental II/i,
+            }),
+        );
+
+        const frequenciaTrigger = screen.getByRole("combobox", {
+            name: /Qual a frequência escolar\?/i,
+        });
+        await user.click(frequenciaTrigger);
+        const regularOptions = await screen.findAllByRole("option", {
+            name: /Regular/i,
+        });
+        await user.click(regularOptions.at(-1)!);
+
         await user.type(
-            screen.getByLabelText(/Como é a interação da pessoa agressora/i),
+            screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação com todos",
         );
         await user.type(
-            screen.getByLabelText(/Quais as redes de proteção/i),
+            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
             "CRAS e Conselho Tutelar",
         );
 
@@ -271,42 +305,6 @@ describe("InformacoesAdicionais", () => {
         await user.click(motivoButton);
         const bullyingOption = await screen.findByText(/Bullying/i);
         await user.click(bullyingOption);
-
-        const generoTrigger = screen.getByRole("combobox", {
-            name: /Qual o gênero\?/i,
-        });
-        await user.click(generoTrigger);
-        const masculinoOption = await screen.findByRole("option", {
-            name: /Masculino/i,
-        });
-        await user.click(masculinoOption);
-
-        const grupoTrigger = screen.getByRole("combobox", {
-            name: /Qual o grupo étnico-racial\?/i,
-        });
-        await user.click(grupoTrigger);
-        const pardoOption = await screen.findByRole("option", {
-            name: /Pardo/i,
-        });
-        await user.click(pardoOption);
-
-        const etapaTrigger = screen.getByRole("combobox", {
-            name: /Qual a etapa escolar\?/i,
-        });
-        await user.click(etapaTrigger);
-        const fundamentalOption = await screen.findByRole("option", {
-            name: /Ensino Fundamental II/i,
-        });
-        await user.click(fundamentalOption);
-
-        const frequenciaTrigger = screen.getByRole("combobox", {
-            name: /Qual a frequência escolar\?/i,
-        });
-        await user.click(frequenciaTrigger);
-        const regularOptions = await screen.findAllByRole("option", {
-            name: /Regular/i,
-        });
-        await user.click(regularOptions.at(-1)!);
 
         await waitFor(
             () => {
@@ -324,7 +322,12 @@ describe("InformacoesAdicionais", () => {
         await waitFor(() => {
             expect(mockSetFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
+                    pessoasAgressoras: [
+                        expect.objectContaining({
+                            nome: "João Silva",
+                            idade: "25",
+                        }),
+                    ],
                 }),
             );
             expect(mockOnNext).toHaveBeenCalled();
@@ -386,10 +389,12 @@ describe("InformacoesAdicionais", () => {
                             unidade_codigo_eol: "123456",
                             dre_codigo_eol: "DRE-001",
                             pessoas_agressoras: [
-                                { nome: "João Silva", idade: 25 },
+                                expect.objectContaining({
+                                    nome: "João Silva",
+                                    idade: 25,
+                                }),
                             ],
                             motivacao_ocorrencia: ["bullying"],
-                            genero_pessoa_agressora: "masculino",
                             notificado_conselho_tutelar: true,
                             acompanhado_naapa: true,
                         }),
@@ -514,13 +519,18 @@ describe("InformacoesAdicionais", () => {
                     dre: "DRE-001",
                 },
                 savedFormData: {
-                    pessoasAgressoras: [{ nome: "João Silva", idade: "25" }],
+                    pessoasAgressoras: [
+                        {
+                            nome: "João Silva",
+                            idade: "25",
+                            genero: "masculino",
+                            grupoEtnicoRacial: "pardo",
+                            etapaEscolar: "ensino_fundamental_2",
+                            frequenciaEscolar: "regular",
+                            interacaoAmbienteEscolar: "Boa interação",
+                        },
+                    ],
                     motivoOcorrencia: ["bullying"],
-                    genero: "masculino",
-                    grupoEtnicoRacial: "pardo",
-                    etapaEscolar: "ensino_fundamental_2",
-                    frequenciaEscolar: "regular",
-                    interacaoAmbienteEscolar: "Boa interação",
                     redesProtecao: "CRAS, NAAPA",
                     notificadoConselhoTutelar: "Sim",
                     acompanhadoNAAPA: "Sim",
@@ -562,11 +572,6 @@ describe("InformacoesAdicionais", () => {
 
             expect(formData).toHaveProperty("pessoasAgressoras");
             expect(formData).toHaveProperty("motivoOcorrencia");
-            expect(formData).toHaveProperty("genero");
-            expect(formData).toHaveProperty("grupoEtnicoRacial");
-            expect(formData).toHaveProperty("etapaEscolar");
-            expect(formData).toHaveProperty("frequenciaEscolar");
-            expect(formData).toHaveProperty("interacaoAmbienteEscolar");
             expect(formData).toHaveProperty("redesProtecao");
             expect(formData).toHaveProperty("notificadoConselhoTutelar");
             expect(formData).toHaveProperty("acompanhadoNAAPA");
@@ -632,36 +637,14 @@ describe("InformacoesAdicionais", () => {
 
             await user.type(
                 screen.getAllByLabelText(
-                    /Qual o nome da pessoa agressora\?/i,
+                    /Qual o nome da pessoa envolvida\?/i,
                 )[0],
                 "João Silva",
             );
             await user.type(
-                screen.getAllByLabelText(
-                    /Qual a idade da pessoa agressora\?/i,
-                )[0],
+                screen.getAllByLabelText(/Qual a idade\?/i)[0],
                 "25",
             );
-            await user.type(
-                screen.getByLabelText(
-                    /Como é a interação da pessoa agressora/i,
-                ),
-                "Boa interação",
-            );
-            await user.type(
-                screen.getByLabelText(/Quais as redes de proteção/i),
-                "CRAS, NAAPA",
-            );
-
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
-
-            const motivoButton = screen.getByRole("button", {
-                name: /Selecione/i,
-            });
-            await user.click(motivoButton);
-            await user.click(await screen.findByText(/Bullying/i));
 
             const generoTrigger = screen.getByRole("combobox", {
                 name: /Qual o gênero\?/i,
@@ -697,6 +680,27 @@ describe("InformacoesAdicionais", () => {
                 name: /Regular/i,
             });
             await user.click(regularOptions.at(-1)!);
+
+            await user.type(
+                screen.getByLabelText(
+                    /Como é a interação da pessoa no ambiente/i,
+                ),
+                "Boa interação",
+            );
+            await user.type(
+                screen.getByLabelText(/Quais órgãos da rede de proteção/i),
+                "CRAS, NAAPA",
+            );
+
+            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+            await user.click(radioSim[0]);
+            await user.click(radioSim[1]);
+
+            const motivoButton = screen.getByRole("button", {
+                name: /Selecione/i,
+            });
+            await user.click(motivoButton);
+            await user.click(await screen.findByText(/Bullying/i));
 
             await waitFor(async () => {
                 const result = await ref.current?.submitForm();
@@ -743,11 +747,9 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomeInput = screen.getAllByLabelText(
-            /Qual o nome da pessoa agressora\?/i,
+            /Qual o nome da pessoa envolvida\?/i,
         )[0];
-        const idadeInput = screen.getAllByLabelText(
-            /Qual a idade da pessoa agressora\?/i,
-        )[0];
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
         expect(nomeInput).toBeDisabled();
         expect(idadeInput).toBeDisabled();
 

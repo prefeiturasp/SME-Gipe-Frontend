@@ -324,7 +324,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             <TextareaForm
                                 control={form.control}
                                 name="informacoesInteracoesVirtuais"
-                                label="Existe informações sobre as interações virtuais da pessoa agressora?"
+                                label="Há informações sobre as interações virtuais?"
                             />
 
                             <FormField

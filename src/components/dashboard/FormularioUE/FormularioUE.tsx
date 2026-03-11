@@ -290,17 +290,16 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                         (pessoa) => ({
                             nome: pessoa.nome,
                             idade: Number(pessoa.idade),
+                            genero: pessoa.genero,
+                            grupo_etnico_racial: pessoa.grupoEtnicoRacial,
+                            etapa_escolar: pessoa.etapaEscolar,
+                            frequencia_escolar: pessoa.frequenciaEscolar,
+                            interacao_ambiente_escolar:
+                                pessoa.interacaoAmbienteEscolar,
                         }),
                     ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
-                genero_pessoa_agressora: informacoesAdicionaisData.genero,
-                grupo_etnico_racial:
-                    informacoesAdicionaisData.grupoEtnicoRacial,
-                etapa_escolar: informacoesAdicionaisData.etapaEscolar,
-                frequencia_escolar: informacoesAdicionaisData.frequenciaEscolar,
-                interacao_ambiente_escolar:
-                    informacoesAdicionaisData.interacaoAmbienteEscolar,
                 redes_protecao_acompanhamento:
                     informacoesAdicionaisData.redesProtecao,
                 notificado_conselho_tutelar:
