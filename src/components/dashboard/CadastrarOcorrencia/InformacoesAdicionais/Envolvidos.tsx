@@ -51,7 +51,7 @@ export default function Envolvidos({
             {fields.map((field, index) => (
                 <div
                     key={field.id}
-                    className="rounded-sm border border-[#DADADA] p-4 flex flex-col gap-4"
+                    className="rounded-sm border bg-[#F5F6F8] p-4 flex flex-col gap-4"
                 >
                     <div className="grid grid-cols-1 gap-4 items-start md:grid-cols-3">
                         <FormField
