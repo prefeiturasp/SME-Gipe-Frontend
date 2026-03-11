@@ -987,10 +987,10 @@ describe("FormularioUE", () => {
             mockMutate.mockImplementation((data) => {
                 expect(data.body).toMatchObject({
                     tem_info_agressor_ou_vitima: "sim",
-                    pessoas_agressoras: [{ nome: "João", idade: 15 }],
+                    pessoas_agressoras: [
+                        expect.objectContaining({ nome: "João", idade: 15 }),
+                    ],
                     motivacao_ocorrencia: "Bullying",
-                    genero_pessoa_agressora: "Masculino",
-                    grupo_etnico_racial: "Branco",
                     notificado_conselho_tutelar: true,
                     acompanhado_naapa: false,
                 });
@@ -1014,15 +1014,26 @@ describe("FormularioUE", () => {
 
             mockInfoAdicionaisGetData.mockReturnValue({
                 pessoasAgressoras: [
-                    { nome: "João Silva", idade: "25" },
-                    { nome: "Maria Santos", idade: "30" },
+                    {
+                        nome: "João Silva",
+                        idade: "25",
+                        genero: "Masculino",
+                        grupoEtnicoRacial: "Branco",
+                        etapaEscolar: "Fundamental II",
+                        frequenciaEscolar: "Regular",
+                        interacaoAmbienteEscolar: "Boa",
+                    },
+                    {
+                        nome: "Maria Santos",
+                        idade: "30",
+                        genero: "Feminino",
+                        grupoEtnicoRacial: "Pardo",
+                        etapaEscolar: "Ensino Médio",
+                        frequenciaEscolar: "Regular",
+                        interacaoAmbienteEscolar: "Boa",
+                    },
                 ],
                 motivoOcorrencia: "Bullying",
-                genero: "Masculino",
-                grupoEtnicoRacial: "Branco",
-                etapaEscolar: "Fundamental II",
-                frequenciaEscolar: "Regular",
-                interacaoAmbienteEscolar: "Boa",
                 redesProtecao: ["CRAS"],
                 notificadoConselhoTutelar: "Sim",
                 acompanhadoNAAPA: "Não",
@@ -1030,8 +1041,14 @@ describe("FormularioUE", () => {
 
             mockMutate.mockImplementation((data) => {
                 expect(data.body.pessoas_agressoras).toEqual([
-                    { nome: "João Silva", idade: 25 },
-                    { nome: "Maria Santos", idade: 30 },
+                    expect.objectContaining({
+                        nome: "João Silva",
+                        idade: 25,
+                    }),
+                    expect.objectContaining({
+                        nome: "Maria Santos",
+                        idade: 30,
+                    }),
                 ]);
             });
 
