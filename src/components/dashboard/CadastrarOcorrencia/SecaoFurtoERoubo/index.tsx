@@ -2,6 +2,7 @@
 
 import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
 import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -298,13 +299,13 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                             disabled={disabled}
                                         />
                                     </FormControl>
-                                    <div className="bg-[#E8F0FE] rounded-md px-4 py-3 mt-2">
-                                        <p className="text-sm text-[#42474a]">
+                                    <Alert className="mt-2" variant="info">
+                                        <AlertDescription>
                                             <strong>Importante:</strong> Esse
                                             campo não exclui a necessidade de
                                             lavratura do boletim de ocorrência
-                                        </p>
-                                    </div>
+                                        </AlertDescription>
+                                    </Alert>
                                     <FormMessage />
                                 </FormItem>
                             )}
