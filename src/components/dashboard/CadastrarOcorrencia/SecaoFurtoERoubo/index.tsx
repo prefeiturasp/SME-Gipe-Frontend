@@ -298,6 +298,13 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                             disabled={disabled}
                                         />
                                     </FormControl>
+                                    <div className="bg-[#E8F0FE] rounded-md px-4 py-3 mt-2">
+                                        <p className="text-sm text-[#42474a]">
+                                            <strong>Importante:</strong> Esse
+                                            campo não exclui a necessidade de
+                                            lavratura do boletim de ocorrência
+                                        </p>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
