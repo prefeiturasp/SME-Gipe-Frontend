@@ -11,13 +11,6 @@ import {
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
@@ -26,7 +19,7 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
-import PessoasAgressoras from "./PessoasAgressoras";
+import Envolvidos from "./Envolvidos";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 export type InformacoesAdicionaisProps = {
@@ -61,13 +54,18 @@ const InformacoesAdicionais = forwardRef<
         defaultValues: {
             pessoasAgressoras: formData.pessoasAgressoras?.length
                 ? formData.pessoasAgressoras
-                : [{ nome: "", idade: "" }],
+                : [
+                      {
+                          nome: "",
+                          idade: "",
+                          genero: "",
+                          grupoEtnicoRacial: "",
+                          etapaEscolar: "",
+                          frequenciaEscolar: "",
+                          interacaoAmbienteEscolar: "",
+                      },
+                  ],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
-            genero: formData.genero ?? "",
-            grupoEtnicoRacial: formData.grupoEtnicoRacial ?? "",
-            etapaEscolar: formData.etapaEscolar ?? "",
-            frequenciaEscolar: formData.frequenciaEscolar ?? "",
-            interacaoAmbienteEscolar: formData.interacaoAmbienteEscolar ?? "",
             redesProtecao: formData.redesProtecao ?? "",
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
@@ -100,11 +98,6 @@ const InformacoesAdicionais = forwardRef<
                 !hasFormDataChanged(currentValues, savedFormData, [
                     "pessoasAgressoras",
                     "motivoOcorrencia",
-                    "genero",
-                    "grupoEtnicoRacial",
-                    "etapaEscolar",
-                    "frequenciaEscolar",
-                    "interacaoAmbienteEscolar",
                     "redesProtecao",
                     "notificadoConselhoTutelar",
                     "acompanhadoNAAPA",
@@ -124,15 +117,15 @@ const InformacoesAdicionais = forwardRef<
                             (pessoa) => ({
                                 nome: pessoa.nome,
                                 idade: Number.parseInt(pessoa.idade),
+                                genero: pessoa.genero,
+                                grupo_etnico_racial: pessoa.grupoEtnicoRacial,
+                                etapa_escolar: pessoa.etapaEscolar,
+                                frequencia_escolar: pessoa.frequenciaEscolar,
+                                interacao_ambiente_escolar:
+                                    pessoa.interacaoAmbienteEscolar,
                             }),
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
-                        genero_pessoa_agressora: data.genero,
-                        grupo_etnico_racial: data.grupoEtnicoRacial,
-                        etapa_escolar: data.etapaEscolar,
-                        frequencia_escolar: data.frequenciaEscolar,
-                        interacao_ambiente_escolar:
-                            data.interacaoAmbienteEscolar,
                         redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
@@ -177,9 +170,10 @@ const InformacoesAdicionais = forwardRef<
                 className="flex flex-col gap-4 mt-4"
             >
                 <fieldset className="contents">
-                    <PessoasAgressoras
+                    <Envolvidos
                         control={form.control}
                         disabled={disabled}
+                        categoriasDisponiveis={categoriasDisponiveis}
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,175 +205,7 @@ const InformacoesAdicionais = forwardRef<
                                 </FormItem>
                             )}
                         />
-
-                        <FormField
-                            control={form.control}
-                            name="genero"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Qual o gênero?*
-                                    </FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        disabled={disabled}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {categoriasDisponiveis?.genero.map(
-                                                (genero) => (
-                                                    <SelectItem
-                                                        key={genero.value}
-                                                        value={genero.value}
-                                                    >
-                                                        {genero.label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="grupoEtnicoRacial"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Qual o grupo étnico-racial?*
-                                    </FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        disabled={disabled}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {categoriasDisponiveis?.grupo_etnico_racial.map(
-                                                (grupo) => (
-                                                    <SelectItem
-                                                        key={grupo.value}
-                                                        value={grupo.value}
-                                                    >
-                                                        {grupo.label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="etapaEscolar"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Qual a etapa escolar?*
-                                    </FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        disabled={disabled}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {categoriasDisponiveis?.etapa_escolar.map(
-                                                (etapa) => (
-                                                    <SelectItem
-                                                        key={etapa.value}
-                                                        value={etapa.value}
-                                                    >
-                                                        {etapa.label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="frequenciaEscolar"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Qual a frequência escolar?*
-                                    </FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        disabled={disabled}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {categoriasDisponiveis?.frequencia_escolar.map(
-                                                (frequencia) => (
-                                                    <SelectItem
-                                                        key={frequencia.value}
-                                                        value={frequencia.value}
-                                                    >
-                                                        {frequencia.label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <FormField
-                        control={form.control}
-                        name="interacaoAmbienteEscolar"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Como é a interação da pessoa agressora no
-                                    ambiente escolar?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        disabled={disabled}
-                                        placeholder="Digite aqui..."
-                                        className="min-h-[100px]"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
 
                     <FormField
                         control={form.control}
@@ -387,8 +213,8 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    Quais as redes de proteção estão
-                                    acompanhando o caso?*
+                                    Quais órgãos da rede de proteção já
+                                    acompanham o estudante?*
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
