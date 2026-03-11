@@ -176,36 +176,33 @@ const InformacoesAdicionais = forwardRef<
                         categoriasDisponiveis={categoriasDisponiveis}
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="motivoOcorrencia"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        O que motivou a ocorrência?*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <MultiSelect
-                                            disabled={disabled}
-                                            options={
-                                                categoriasDisponiveis?.motivo_ocorrencia ||
-                                                []
-                                            }
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            placeholder="Selecione"
-                                        />
-                                    </FormControl>
-                                    <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                        Se necessário, selecione mais de uma
-                                        opção
-                                    </p>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+                    <FormField
+                        control={form.control}
+                        name="motivoOcorrencia"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel disabled={disabled}>
+                                    O que motivou a ocorrência?*
+                                </FormLabel>
+                                <FormControl>
+                                    <MultiSelect
+                                        disabled={disabled}
+                                        options={
+                                            categoriasDisponiveis?.motivo_ocorrencia ||
+                                            []
+                                        }
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder="Selecione"
+                                    />
+                                </FormControl>
+                                <p className="text-[12px] text-[#42474a] mt-1 mb-2">
+                                    Se necessário, selecione mais de uma opção
+                                </p>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
                     <FormField
                         control={form.control}
