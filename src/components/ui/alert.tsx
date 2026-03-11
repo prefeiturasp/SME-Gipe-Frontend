@@ -1,5 +1,5 @@
-import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -12,13 +12,14 @@ const alertVariants = cva(
                 destructive:
                     "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
                 aviso: "bg-[#F5F5F5] text-[#42474a] border-none",
+                info: "bg-[#E8F0FE] text-[#42474a] border-none px-3 py-2",
                 error: "bg-[rgba(180,12,49,0.1)] text-[#42474a] border-none",
             },
         },
         defaultVariants: {
             variant: "aviso",
         },
-    }
+    },
 );
 
 const Alert = React.forwardRef<
@@ -42,7 +43,7 @@ const AlertTitle = React.forwardRef<
         ref={ref}
         className={cn(
             "mb-1 font-medium leading-none tracking-tight",
-            className
+            className,
         )}
         {...props}
     />
@@ -76,4 +77,4 @@ const AlertDescription = React.forwardRef<
 });
 AlertDescription.displayName = "AlertDescription";
 
-export { Alert, AlertTitle, AlertDescription };
+export { Alert, AlertDescription, AlertTitle };
