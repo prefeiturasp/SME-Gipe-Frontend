@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -13,7 +13,6 @@ import {
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
@@ -237,44 +236,10 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             />
                         </div>
 
-                        <FormField
+                        <CampoDescricaoOcorrencia
                             control={form.control}
                             name="descricao"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Descreva a ocorrência*
-                                    </FormLabel>
-                                    <p
-                                        className={`text-sm mt-1 mb-2 ${
-                                            disabled
-                                                ? "text-[#B0B0B0]"
-                                                : "text-[#42474a]"
-                                        }`}
-                                    >
-                                        Descreva o que ocorreu, incluindo data,
-                                        local, caso existam pessoas envolvidas e
-                                        demais informações relevantes para o
-                                        registro.
-                                    </p>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Descreva aqui..."
-                                            className="min-h-[80px]"
-                                            {...field}
-                                            disabled={disabled}
-                                        />
-                                    </FormControl>
-                                    <Alert className="mt-2" variant="info">
-                                        <AlertDescription>
-                                            <strong>Importante:</strong> Esse
-                                            campo não exclui a necessidade de
-                                            lavratura do boletim de ocorrência
-                                        </AlertDescription>
-                                    </Alert>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            disabled={disabled}
                         />
 
                         <FormField
