@@ -1,5 +1,7 @@
 "use client";
 
+import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
+import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -10,7 +12,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
@@ -21,7 +22,7 @@ import {
 } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, SecaoFurtoERouboData } from "./schema";
 
@@ -73,10 +74,35 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             mode: "onChange",
             defaultValues: {
                 tiposOcorrencia: formData.tiposOcorrencia || [],
+                descricaoTipoOcorrencia: formData.descricaoTipoOcorrencia ?? "",
                 descricao: formData.descricao ?? "",
                 smartSampa: formData.smartSampa ?? undefined,
             },
         });
+
+        const shouldShowDescricaoTipo = useCallback(
+            (selectedValues: string[], options: MultiSelectOption[]) =>
+                options.some(
+                    (opt) =>
+                        selectedValues.includes(opt.value) &&
+                        ["outra", "outros"].includes(opt.label.toLowerCase()),
+                ),
+            [],
+        );
+
+        const tiposOcorrenciaSelecionados = form.watch("tiposOcorrencia");
+        const showDescricaoTipo = shouldShowDescricaoTipo(
+            tiposOcorrenciaSelecionados,
+            tiposOcorrenciaOptions,
+        );
+
+        useEffect(() => {
+            if (!showDescricaoTipo) {
+                form.setValue("descricaoTipoOcorrencia", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [showDescricaoTipo, form]);
 
         const { isValid } = form.formState;
 
@@ -118,6 +144,20 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
 
         // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: SecaoFurtoERouboData) => {
+            if (
+                shouldShowDescricaoTipo(
+                    data.tiposOcorrencia,
+                    tiposOcorrenciaOptions,
+                ) &&
+                (!data.descricaoTipoOcorrencia ||
+                    data.descricaoTipoOcorrencia.trim().length === 0)
+            ) {
+                form.setError("descricaoTipoOcorrencia", {
+                    message: "Descreva qual o tipo de ocorrência.",
+                });
+                return;
+            }
+
             const currentValues = form.getValues();
 
             if (ocorrenciaUuid) {
@@ -190,17 +230,38 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             name="tiposOcorrencia"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Qual o tipo de ocorrência?*
-                                    </FormLabel>
                                     <FormControl>
-                                        <MultiSelect
+                                        <MultiSelectWithOther
+                                            label="Qual o tipo de ocorrência?*"
                                             options={tiposOcorrenciaOptions}
                                             value={field.value}
                                             onChange={field.onChange}
                                             placeholder="Selecione os tipos de ocorrência"
                                             disabled={
                                                 isLoadingTipos || disabled
+                                            }
+                                            shouldShowTextField={
+                                                shouldShowDescricaoTipo
+                                            }
+                                            hint="Se necessário, selecione mais de uma opção."
+                                            textFieldLabel="Descreva qual o tipo de ocorrência*"
+                                            textFieldPlaceholder="Descreva aqui..."
+                                            textFieldValue={form.watch(
+                                                "descricaoTipoOcorrencia",
+                                            )}
+                                            onTextFieldChange={(val) =>
+                                                form.setValue(
+                                                    "descricaoTipoOcorrencia",
+                                                    val,
+                                                    {
+                                                        shouldValidate: true,
+                                                    },
+                                                )
+                                            }
+                                            textFieldError={
+                                                form.formState.errors
+                                                    .descricaoTipoOcorrencia
+                                                    ?.message
                                             }
                                         />
                                     </FormControl>
