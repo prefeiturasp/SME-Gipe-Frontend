@@ -88,13 +88,13 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
             pessoasAgressoras: ocorrencia.pessoas_agressoras.map((pessoa) => ({
                 nome: pessoa.nome,
                 idade: String(pessoa.idade),
+                genero: pessoa.genero || "",
+                grupoEtnicoRacial: pessoa.grupo_etnico_racial || "",
+                etapaEscolar: pessoa.etapa_escolar || "",
+                frequenciaEscolar: pessoa.frequencia_escolar || "",
+                interacaoAmbienteEscolar:
+                    pessoa.interacao_ambiente_escolar || "",
             })),
-        }),
-        ...(ocorrencia.genero_pessoa_agressora && {
-            genero: ocorrencia.genero_pessoa_agressora,
-        }),
-        ...(ocorrencia.grupo_etnico_racial && {
-            grupoEtnicoRacial: ocorrencia.grupo_etnico_racial,
         }),
     };
 }
@@ -114,15 +114,6 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     return {
         ...(motivoOcorrencia && {
             motivoOcorrencia,
-        }),
-        ...(ocorrencia.etapa_escolar && {
-            etapaEscolar: ocorrencia.etapa_escolar,
-        }),
-        ...(ocorrencia.frequencia_escolar && {
-            frequenciaEscolar: ocorrencia.frequencia_escolar,
-        }),
-        ...(ocorrencia.interacao_ambiente_escolar && {
-            interacaoAmbienteEscolar: ocorrencia.interacao_ambiente_escolar,
         }),
         ...(ocorrencia.redes_protecao_acompanhamento && {
             redesProtecao: ocorrencia.redes_protecao_acompanhamento,
