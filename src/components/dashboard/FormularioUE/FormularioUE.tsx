@@ -37,6 +37,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const { isAssistenteOuDiretor } = useUserPermissions();
     const formData = useOcorrenciaFormStore((state) => state.formData);
     const setFormData = useOcorrenciaFormStore((state) => state.setFormData);
+    const setSavedFormData = useOcorrenciaFormStore(
+        (state) => state.setSavedFormData,
+    );
     const ocorrenciaUuid = useOcorrenciaFormStore(
         (state) => state.ocorrenciaUuid,
     );
@@ -380,6 +383,19 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 {
                     onSuccess: (result) => {
                         if (result.success) {
+                            const allFormData = {
+                                ...secaoInicialRef.current?.getFormData(),
+                                ...(isFurtoRoubo
+                                    ? secaoFurtoERouboRef.current?.getFormData()
+                                    : secaoNaoFurtoERouboRef.current?.getFormData()),
+                                ...(hasAgressorVitimaInfo && !isFurtoRoubo
+                                    ? informacoesAdicionaisRef.current?.getFormData()
+                                    : {}),
+                                ...secaoFinalRef.current?.getFormData(),
+                            };
+                            setFormData(allFormData);
+                            setSavedFormData(allFormData);
+
                             queryClient
                                 .invalidateQueries({
                                     queryKey: ["ocorrencia", ocorrenciaUuid],

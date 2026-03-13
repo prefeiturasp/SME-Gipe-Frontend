@@ -439,7 +439,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Qual o ciclo de aprendizagem?*
+                                            Qual a etapa escolar?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
