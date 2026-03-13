@@ -193,7 +193,7 @@ const InformacoesAdicionais = forwardRef<
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
                         motivacao_ocorrencia_outros:
-                            data.descricaoMotivoOcorrencia || undefined,
+                            data.descricaoMotivoOcorrencia,
                         redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",

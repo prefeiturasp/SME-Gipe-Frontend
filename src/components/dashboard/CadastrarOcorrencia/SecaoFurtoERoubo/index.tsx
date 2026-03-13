@@ -202,7 +202,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                         body: {
                             tipos_ocorrencia: tiposValidos,
                             tipos_ocorrencia_outros:
-                                data.descricaoTipoOcorrencia || undefined,
+                                data.descricaoTipoOcorrencia,
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },

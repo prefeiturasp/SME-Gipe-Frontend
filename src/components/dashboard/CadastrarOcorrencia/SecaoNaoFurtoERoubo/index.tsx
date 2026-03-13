@@ -238,11 +238,10 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
             const body = {
                 tipos_ocorrencia: tiposValidos,
-                tipos_ocorrencia_outros:
-                    data.descricaoTipoOcorrencia || undefined,
+                tipos_ocorrencia_outros: data.descricaoTipoOcorrencia,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
-                envolvido_outros: data.descricaoEnvolvidos || undefined,
+                envolvido_outros: data.descricaoEnvolvidos,
                 tem_info_agressor_ou_vitima: temInfo,
             };
 
@@ -347,6 +346,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                 shouldShowTextField={
                                                     shouldShowDescricao
                                                 }
+                                                hint="Se necessário, selecione mais de uma opção"
                                                 textFieldLabel="Descreva quem são os envolvidos*"
                                                 textFieldPlaceholder="Descreva aqui..."
                                                 textFieldValue={form.watch(

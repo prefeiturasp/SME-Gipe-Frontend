@@ -227,13 +227,11 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     envolve_arma_ataque: data.envolveArmaOuAtaque,
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
                     envolvido: data.envolvidos,
-                    envolvido_outros: data.descricaoEnvolvidos || undefined,
+                    envolvido_outros: data.descricaoEnvolvidos,
                     motivacao_ocorrencia: data.motivoOcorrencia,
-                    motivacao_ocorrencia_outros:
-                        data.descricaoMotivoOcorrencia || undefined,
+                    motivacao_ocorrencia_outros: data.descricaoMotivoOcorrencia,
                     tipos_ocorrencia: tiposValidos,
-                    tipos_ocorrencia_outros:
-                        data.descricaoTipoOcorrencia || undefined,
+                    tipos_ocorrencia_outros: data.descricaoTipoOcorrencia,
                     etapa_escolar: data.etapaEscolar,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
@@ -320,6 +318,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 shouldShowTextField={
                                                     shouldShowDescricao
                                                 }
+                                                hint="Se necessário, selecione mais de uma opção"
                                                 textFieldLabel="Descreva quem são os envolvidos*"
                                                 textFieldPlaceholder="Descreva aqui..."
                                                 textFieldValue={form.watch(
