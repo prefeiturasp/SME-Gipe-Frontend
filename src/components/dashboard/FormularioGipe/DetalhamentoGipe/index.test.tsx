@@ -88,7 +88,7 @@ const mockCategoriasGipe = {
         { value: "cyberbullying", label: "Cyberbullying" },
         { value: "racismo", label: "Racismo" },
     ],
-    ciclo_aprendizagem: [
+    etapa_escolar: [
         { value: "alfabetizacao", label: "Alfabetização (1º ao 3º ano)" },
         { value: "interdisciplinar", label: "Interdisciplinar (4º ao 6º ano)" },
         { value: "autoral", label: "Autoral (7º ao 9º ano)" },
@@ -276,7 +276,7 @@ describe("DetalhamentoGipe", () => {
             screen.getByText(/qual o tipo da ocorrência\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/qual o ciclo de aprendizagem\?\*/i),
+            screen.getByText(/qual a etapa escolar\?\*/i),
         ).toBeInTheDocument();
         expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
     });
@@ -423,7 +423,7 @@ describe("DetalhamentoGipe", () => {
             expect(params.body).toHaveProperty("envolvido");
             expect(params.body).toHaveProperty("motivacao_ocorrencia");
             expect(params.body).toHaveProperty("tipos_ocorrencia");
-            expect(params.body).toHaveProperty("qual_ciclo_aprendizagem");
+            expect(params.body).toHaveProperty("etapa_escolar");
             expect(params.body).toHaveProperty(
                 "info_sobre_interacoes_virtuais_pessoa_agressora",
             );
@@ -525,7 +525,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -572,7 +572,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -621,7 +621,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -672,7 +672,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -866,5 +866,470 @@ describe("DetalhamentoGipe", () => {
                 tiposOcorrencia: ["tipo1"],
             }),
         );
+    });
+
+    describe("Validação do handleSubmit", () => {
+        it("deve mostrar erro quando 'Outros' está selecionado em envolvidos e descrição está vazia", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
+                data: [
+                    ...mockEnvolvidos,
+                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env-outro"],
+                    descricaoEnvolvidos: "",
+                    motivoOcorrencia: ["bullying"],
+                    tiposOcorrencia: ["tipo1"],
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva quem são os envolvidos."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+
+        it("deve mostrar erro quando 'Outros' está selecionado em motivo e descrição está vazia", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useCategoriasDisponiveisGipeModule,
+                "useCategoriasDisponiveisGipe",
+            ).mockReturnValue({
+                data: {
+                    ...mockCategoriasGipe,
+                    motivo_ocorrencia: [
+                        ...mockCategoriasGipe.motivo_ocorrencia,
+                        { value: "outros-motivo", label: "Outros" },
+                    ],
+                },
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env1"],
+                    motivoOcorrencia: ["outros-motivo"],
+                    descricaoMotivoOcorrencia: "",
+                    tiposOcorrencia: ["tipo1"],
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva o que motivou a ocorrência."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+
+        it("deve mostrar erro quando 'Outros' está selecionado em tipos de ocorrência e descrição está vazia", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useTiposOcorrenciaModule,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: [
+                    ...mockTiposOcorrencia,
+                    { uuid: "tipo-outros", nome: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env1"],
+                    motivoOcorrencia: ["bullying"],
+                    tiposOcorrencia: ["tipo-outros"],
+                    descricaoTipoOcorrencia: "",
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva qual o tipo de ocorrência."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+
+        it("deve mostrar erro quando 'Outros' está selecionado em envolvidos e descrição contém apenas espaços", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
+                data: [
+                    ...mockEnvolvidos,
+                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env-outro"],
+                    descricaoEnvolvidos: "   ",
+                    motivoOcorrencia: ["bullying"],
+                    tiposOcorrencia: ["tipo1"],
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva quem são os envolvidos."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+
+        it("deve mostrar erro quando 'Outros' está selecionado em motivo e descrição contém apenas espaços", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useCategoriasDisponiveisGipeModule,
+                "useCategoriasDisponiveisGipe",
+            ).mockReturnValue({
+                data: {
+                    ...mockCategoriasGipe,
+                    motivo_ocorrencia: [
+                        ...mockCategoriasGipe.motivo_ocorrencia,
+                        { value: "outros-motivo", label: "Outros" },
+                    ],
+                },
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env1"],
+                    motivoOcorrencia: ["outros-motivo"],
+                    descricaoMotivoOcorrencia: "   ",
+                    tiposOcorrencia: ["tipo1"],
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva o que motivou a ocorrência."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+
+        it("deve mostrar erro quando 'Outros' está selecionado em tipos de ocorrência e descrição contém apenas espaços", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useTiposOcorrenciaModule,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: [
+                    ...mockTiposOcorrencia,
+                    { uuid: "tipo-outros", nome: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolveArmaOuAtaque: "sim",
+                    ameacaRealizada: "presencialmente",
+                    envolvidos: ["env1"],
+                    motivoOcorrencia: ["bullying"],
+                    tiposOcorrencia: ["tipo-outros"],
+                    descricaoTipoOcorrencia: "   ",
+                    etapaEscolar: "alfabetizacao",
+                    informacoesInteracoesVirtuais: "",
+                    encaminhamentos: "Encaminhamentos do GIPE",
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            const botaoSalvar = screen.getByRole("button", {
+                name: /Finalizar/i,
+            });
+            await waitFor(() => {
+                expect(botaoSalvar).not.toBeDisabled();
+            });
+
+            await user.click(botaoSalvar);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva qual o tipo de ocorrência."),
+                ).toBeInTheDocument();
+            });
+
+            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("campos de descrição com opção Outros", () => {
+        it("deve exibir e preencher campo descricaoEnvolvidos quando 'Outros' está selecionado", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
+                data: [
+                    ...mockEnvolvidos,
+                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    envolvidos: ["env-outro"],
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva quem são os envolvidos*"),
+                ).toBeInTheDocument();
+            });
+
+            const textareas =
+                screen.getAllByPlaceholderText("Descreva aqui...");
+            const descricaoEnvolvidos = textareas[0];
+            await user.type(descricaoEnvolvidos, "Envolvidos personalizados");
+
+            expect(descricaoEnvolvidos).toHaveValue(
+                "Envolvidos personalizados",
+            );
+        });
+
+        it("deve exibir e preencher campo descricaoMotivoOcorrencia quando 'Outros' está selecionado", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useCategoriasDisponiveisGipeModule,
+                "useCategoriasDisponiveisGipe",
+            ).mockReturnValue({
+                data: {
+                    ...mockCategoriasGipe,
+                    motivo_ocorrencia: [
+                        ...mockCategoriasGipe.motivo_ocorrencia,
+                        { value: "outros-motivo", label: "Outros" },
+                    ],
+                },
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    motivoOcorrencia: ["outros-motivo"],
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva o que motivou a ocorrência*"),
+                ).toBeInTheDocument();
+            });
+
+            const textareas =
+                screen.getAllByPlaceholderText("Descreva aqui...");
+            const descricaoMotivo = textareas[0];
+            await user.type(descricaoMotivo, "Motivo personalizado");
+
+            expect(descricaoMotivo).toHaveValue("Motivo personalizado");
+        });
+
+        it("deve exibir e preencher campo descricaoTipoOcorrencia quando 'Outros' está selecionado", async () => {
+            const user = userEvent.setup();
+
+            vi.spyOn(
+                useTiposOcorrenciaModule,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: [
+                    ...mockTiposOcorrencia,
+                    { uuid: "tipo-outros", nome: "Outros" },
+                ],
+                isLoading: false,
+            } as never);
+
+            vi.spyOn(
+                useOcorrenciaFormStoreModule,
+                "useOcorrenciaFormStore",
+            ).mockReturnValue({
+                formData: {
+                    ...mockFormData,
+                    tipoOcorrencia: "Não",
+                    tiposOcorrencia: ["tipo-outros"],
+                },
+                setFormData: mockSetFormData,
+                ocorrenciaUuid: "test-uuid-gipe-123",
+            } as never);
+
+            renderComponent();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva qual o tipo de ocorrência*"),
+                ).toBeInTheDocument();
+            });
+
+            const textareas =
+                screen.getAllByPlaceholderText("Descreva aqui...");
+            const descricaoTipo = textareas[0];
+            await user.type(descricaoTipo, "Tipo personalizado");
+
+            expect(descricaoTipo).toHaveValue("Tipo personalizado");
+        });
     });
 });

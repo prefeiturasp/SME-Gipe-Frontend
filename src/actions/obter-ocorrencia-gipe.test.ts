@@ -49,7 +49,7 @@ describe("obterOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",
@@ -89,7 +89,7 @@ describe("obterOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",

@@ -35,7 +35,13 @@ describe("InformacoesAdicionais", () => {
 
     const preencherFormularioCompleto = async (
         user: ReturnType<typeof userEvent.setup>,
+        options?: {
+            motivoLabel?: RegExp;
+            descricaoMotivo?: string;
+        },
     ) => {
+        const motivoLabel = options?.motivoLabel ?? /Bullying/i;
+
         const nomesInputs = screen.getAllByLabelText(
             /Qual o nome da pessoa envolvida\?/i,
         );
@@ -91,7 +97,14 @@ describe("InformacoesAdicionais", () => {
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
-        await user.click(await screen.findByText(/Bullying/i));
+        await user.click(await screen.findByText(motivoLabel));
+
+        if (options?.descricaoMotivo) {
+            await user.type(
+                screen.getByPlaceholderText(/Descreva aqui/i),
+                options.descricaoMotivo,
+            );
+        }
 
         await waitFor(
             () => {
@@ -114,7 +127,10 @@ describe("InformacoesAdicionais", () => {
         });
         vi.mocked(useCategoriasDisponiveis).mockReturnValue({
             data: {
-                motivo_ocorrencia: [{ label: "Bullying", value: "bullying" }],
+                motivo_ocorrencia: [
+                    { label: "Bullying", value: "bullying" },
+                    { label: "Outros", value: "outros" },
+                ],
                 genero: [{ label: "Masculino", value: "masculino" }],
                 grupo_etnico_racial: [{ label: "Pardo", value: "pardo" }],
                 etapa_escolar: [
@@ -192,7 +208,8 @@ describe("InformacoesAdicionais", () => {
                         interacaoAmbienteEscolar: "Boa interação",
                     },
                 ],
-                motivoOcorrencia: ["bullying"],
+                motivoOcorrencia: ["outros"],
+                descricaoMotivoOcorrencia: "Motivação livre",
                 redesProtecao: "CRAS",
                 notificadoConselhoTutelar: "Sim",
                 acompanhadoNAAPA: "Não",
@@ -208,6 +225,7 @@ describe("InformacoesAdicionais", () => {
         expect(nomesInputs[0]).toHaveValue("João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
         expect(idadesInputs[0]).toHaveValue(25);
+        expect(screen.getByDisplayValue("Motivação livre")).toBeInTheDocument();
     });
 
     it("deve validar campos obrigatórios", async () => {
@@ -229,6 +247,19 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
         expect(
             screen.getByText(/Se necessário, selecione mais de uma opção/i),
+        ).toBeInTheDocument();
+    });
+
+    it("deve exibir campo de descrição ao selecionar Outros em motivo de ocorrência", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const motivoButton = screen.getByRole("button", { name: /Selecione/i });
+        await user.click(motivoButton);
+        await user.click(await screen.findByText(/Outros/i));
+
+        expect(
+            screen.getByText(/Descreva o que motivou a ocorrência/i),
         ).toBeInTheDocument();
     });
 
@@ -397,6 +428,37 @@ describe("InformacoesAdicionais", () => {
                             motivacao_ocorrencia: ["bullying"],
                             notificado_conselho_tutelar: true,
                             acompanhado_naapa: true,
+                        }),
+                    }),
+                    expect.any(Object),
+                );
+            });
+        });
+
+        it("deve enviar motivacao_ocorrencia_outros ao submeter com a opção Outros", async () => {
+            const user = userEvent.setup();
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderComponent();
+            await preencherFormularioCompleto(user, {
+                motivoLabel: /Outros/i,
+                descricaoMotivo: "Motivação livre",
+            });
+
+            const proximoButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
+            await user.click(proximoButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            motivacao_ocorrencia: ["outros"],
+                            motivacao_ocorrencia_outros: "Motivação livre",
                         }),
                     }),
                     expect.any(Object),
@@ -729,6 +791,112 @@ describe("InformacoesAdicionais", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
+
+        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição está vazia", async () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["outros"],
+                    descricaoMotivoOcorrencia: "",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(false);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva o que motivou a ocorrência."),
+                ).toBeInTheDocument();
+            });
+        });
+
+        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição contém apenas espaços", () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["outros"],
+                    descricaoMotivoOcorrencia: "   ",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(false);
+        });
+
+        it("deve retornar true via validateOutros quando 'Outros' não está selecionado", () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["bullying"],
+                    descricaoMotivoOcorrencia: "",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(true);
+        });
+    });
+
+    it("deve mostrar erro no handleSubmit quando 'Outros' está selecionado em motivo e descrição está vazia", async () => {
+        const user = userEvent.setup();
+
+        renderComponent();
+        await preencherFormularioCompleto(user, { motivoLabel: /Outros/i });
+
+        const proximoButton = screen.getByRole("button", { name: /Próximo/i });
+        await user.click(proximoButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Descreva o que motivou a ocorrência."),
+            ).toBeInTheDocument();
+        });
+
+        expect(mockMutate).not.toHaveBeenCalled();
+        expect(mockOnNext).not.toHaveBeenCalled();
     });
 
     it("deve desabilitar todos os campos quando disabled=true", async () => {

@@ -1,4 +1,6 @@
 "use client";
+import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
+import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -9,7 +11,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
@@ -17,7 +18,7 @@ import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import Envolvidos from "./Envolvidos";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
@@ -33,6 +34,7 @@ export type InformacoesAdicionaisRef = {
     getFormData: () => InformacoesAdicionaisData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
+    validateOutros: () => boolean;
 };
 
 const InformacoesAdicionais = forwardRef<
@@ -46,8 +48,15 @@ const InformacoesAdicionais = forwardRef<
         setSavedFormData,
         ocorrenciaUuid,
     } = useOcorrenciaFormStore();
-    const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
+    const {
+        data: categoriasDisponiveis,
+        isLoading: isLoadingCategoriasDisponiveis,
+    } = useCategoriasDisponiveis();
     const { mutate: atualizarInfoAgressor } = useAtualizarInfoAgressor();
+
+    const motivoOcorrenciaOptions =
+        categoriasDisponiveis?.motivo_ocorrencia || [];
+
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
         mode: "onChange",
@@ -66,12 +75,37 @@ const InformacoesAdicionais = forwardRef<
                       },
                   ],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
+            descricaoMotivoOcorrencia: formData.descricaoMotivoOcorrencia ?? "",
             redesProtecao: formData.redesProtecao ?? "",
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
             acompanhadoNAAPA: formData.acompanhadoNAAPA ?? undefined,
         },
     });
+
+    const shouldShowDescricao = useCallback(
+        (selectedValues: string[], options: MultiSelectOption[]) =>
+            options.some(
+                (opt) =>
+                    selectedValues.includes(opt.value) &&
+                    ["outra", "outros"].includes(opt.label.toLowerCase()),
+            ),
+        [],
+    );
+
+    const motivoSelecionado = form.watch("motivoOcorrencia");
+    const showDescricaoMotivo = shouldShowDescricao(
+        motivoSelecionado,
+        motivoOcorrenciaOptions,
+    );
+
+    useEffect(() => {
+        if (!isLoadingCategoriasDisponiveis && !showDescricaoMotivo) {
+            form.setValue("descricaoMotivoOcorrencia", "", {
+                shouldValidate: true,
+            });
+        }
+    }, [isLoadingCategoriasDisponiveis, showDescricaoMotivo, form]);
 
     const { isValid } = form.formState;
 
@@ -87,10 +121,41 @@ const InformacoesAdicionais = forwardRef<
             return true;
         },
         getFormInstance: () => form,
+        validateOutros: () => {
+            const data = form.getValues();
+            if (
+                shouldShowDescricao(
+                    data.motivoOcorrencia,
+                    motivoOcorrenciaOptions,
+                ) &&
+                (!data.descricaoMotivoOcorrencia ||
+                    data.descricaoMotivoOcorrencia.trim().length === 0)
+            ) {
+                form.setError("descricaoMotivoOcorrencia", {
+                    message: "Descreva o que motivou a ocorrência.",
+                });
+                return false;
+            }
+            return true;
+        },
     }));
 
     // Função de submit isolada para ser chamada programaticamente
     const handleSubmit = async (data: InformacoesAdicionaisData) => {
+        if (
+            shouldShowDescricao(
+                data.motivoOcorrencia,
+                motivoOcorrenciaOptions,
+            ) &&
+            (!data.descricaoMotivoOcorrencia ||
+                data.descricaoMotivoOcorrencia.trim().length === 0)
+        ) {
+            form.setError("descricaoMotivoOcorrencia", {
+                message: "Descreva o que motivou a ocorrência.",
+            });
+            return;
+        }
+
         const currentValues = form.getValues();
 
         if (ocorrenciaUuid) {
@@ -98,6 +163,7 @@ const InformacoesAdicionais = forwardRef<
                 !hasFormDataChanged(currentValues, savedFormData, [
                     "pessoasAgressoras",
                     "motivoOcorrencia",
+                    "descricaoMotivoOcorrencia",
                     "redesProtecao",
                     "notificadoConselhoTutelar",
                     "acompanhadoNAAPA",
@@ -126,6 +192,8 @@ const InformacoesAdicionais = forwardRef<
                             }),
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
+                        motivacao_ocorrencia_outros:
+                            data.descricaoMotivoOcorrencia,
                         redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
@@ -181,24 +249,42 @@ const InformacoesAdicionais = forwardRef<
                         name="motivoOcorrencia"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    O que motivou a ocorrência?*
-                                </FormLabel>
                                 <FormControl>
-                                    <MultiSelect
-                                        disabled={disabled}
-                                        options={
-                                            categoriasDisponiveis?.motivo_ocorrencia ||
-                                            []
+                                    <MultiSelectWithOther
+                                        label="O que motivou a ocorrência?*"
+                                        disabled={
+                                            disabled ||
+                                            isLoadingCategoriasDisponiveis
                                         }
+                                        options={motivoOcorrenciaOptions}
                                         value={field.value}
                                         onChange={field.onChange}
                                         placeholder="Selecione"
+                                        shouldShowTextField={
+                                            shouldShowDescricao
+                                        }
+                                        hint="Se necessário, selecione mais de uma opção"
+                                        textFieldLabel="Descreva o que motivou a ocorrência*"
+                                        textFieldPlaceholder="Descreva aqui..."
+                                        textFieldValue={form.watch(
+                                            "descricaoMotivoOcorrencia",
+                                        )}
+                                        onTextFieldChange={(val) =>
+                                            form.setValue(
+                                                "descricaoMotivoOcorrencia",
+                                                val,
+                                                {
+                                                    shouldValidate: true,
+                                                },
+                                            )
+                                        }
+                                        textFieldError={
+                                            form.formState.errors
+                                                .descricaoMotivoOcorrencia
+                                                ?.message
+                                        }
                                     />
                                 </FormControl>
-                                <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                    Se necessário, selecione mais de uma opção
-                                </p>
                                 <FormMessage />
                             </FormItem>
                         )}

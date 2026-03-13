@@ -38,6 +38,7 @@ export type SecaoFurtoERouboRef = {
     getFormData: () => SecaoFurtoERouboData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<SecaoFurtoERouboData>;
+    validateOutros: () => boolean;
 };
 
 const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
@@ -97,12 +98,12 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
         );
 
         useEffect(() => {
-            if (!showDescricaoTipo) {
+            if (!isLoadingTipos && !showDescricaoTipo) {
                 form.setValue("descricaoTipoOcorrencia", "", {
                     shouldValidate: true,
                 });
             }
-        }, [showDescricaoTipo, form]);
+        }, [isLoadingTipos, showDescricaoTipo, form]);
 
         const { isValid } = form.formState;
 
@@ -140,6 +141,23 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                 return true;
             },
             getFormInstance: () => form,
+            validateOutros: () => {
+                const data = form.getValues();
+                if (
+                    shouldShowDescricaoTipo(
+                        data.tiposOcorrencia,
+                        tiposOcorrenciaOptions,
+                    ) &&
+                    (!data.descricaoTipoOcorrencia ||
+                        data.descricaoTipoOcorrencia.trim().length === 0)
+                ) {
+                    form.setError("descricaoTipoOcorrencia", {
+                        message: "Descreva qual o tipo de ocorrência.",
+                    });
+                    return false;
+                }
+                return true;
+            },
         }));
 
         // Função de submit isolada para ser chamada programaticamente
@@ -183,6 +201,8 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                         uuid: ocorrenciaUuid,
                         body: {
                             tipos_ocorrencia: tiposValidos,
+                            tipos_ocorrencia_outros:
+                                data.descricaoTipoOcorrencia,
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },

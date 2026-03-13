@@ -1,8 +1,8 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import { useCategoriasDisponiveisGipe } from "./useCategoriasDisponiveisGipe";
 import * as categoriasGipeActions from "@/actions/categorias-disponiveis-gipe";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useCategoriasDisponiveisGipe } from "./useCategoriasDisponiveisGipe";
 
 vi.mock("@/actions/categorias-disponiveis-gipe");
 
@@ -43,7 +43,7 @@ describe("useCategoriasDisponiveisGipe", () => {
                     { value: "bullying", label: "Bullying" },
                     { value: "cyberbullying", label: "Cyberbullying" },
                 ],
-                ciclo_aprendizagem: [
+                etapa_escolar: [
                     {
                         value: "alfabetizacao",
                         label: "Alfabetização (1º ao 3º ano)",
@@ -57,7 +57,7 @@ describe("useCategoriasDisponiveisGipe", () => {
         };
 
         vi.mocked(
-            categoriasGipeActions.getCategoriasDisponiveisGipeAction
+            categoriasGipeActions.getCategoriasDisponiveisGipeAction,
         ).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useCategoriasDisponiveisGipe(), {
@@ -78,7 +78,7 @@ describe("useCategoriasDisponiveisGipe", () => {
         };
 
         vi.mocked(
-            categoriasGipeActions.getCategoriasDisponiveisGipeAction
+            categoriasGipeActions.getCategoriasDisponiveisGipeAction,
         ).mockResolvedValue(mockErrorResponse);
 
         const { result } = renderHook(() => useCategoriasDisponiveisGipe(), {
@@ -89,7 +89,7 @@ describe("useCategoriasDisponiveisGipe", () => {
             expect(result.current.isError).toBe(true);
             expect(result.current.error).toBeInstanceOf(Error);
             expect((result.current.error as Error).message).toBe(
-                "Erro ao buscar as categorias do GIPE"
+                "Erro ao buscar as categorias do GIPE",
             );
         });
     });
@@ -104,12 +104,12 @@ describe("useCategoriasDisponiveisGipe", () => {
                 envolve_arma_ou_ataque: [],
                 ameaca_foi_realizada_de_qual_maneira: [],
                 motivo_ocorrencia: [],
-                ciclo_aprendizagem: [],
+                etapa_escolar: [],
             },
         };
 
         vi.mocked(
-            categoriasGipeActions.getCategoriasDisponiveisGipeAction
+            categoriasGipeActions.getCategoriasDisponiveisGipeAction,
         ).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useCategoriasDisponiveisGipe(), {
@@ -136,12 +136,12 @@ describe("useCategoriasDisponiveisGipe", () => {
                 envolve_arma_ou_ataque: [],
                 ameaca_foi_realizada_de_qual_maneira: [],
                 motivo_ocorrencia: [],
-                ciclo_aprendizagem: [],
+                etapa_escolar: [],
             },
         };
 
         vi.mocked(
-            categoriasGipeActions.getCategoriasDisponiveisGipeAction
+            categoriasGipeActions.getCategoriasDisponiveisGipeAction,
         ).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useCategoriasDisponiveisGipe(), {
