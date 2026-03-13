@@ -4,9 +4,11 @@ export type FormularioCompletoUEBody = {
     dre_codigo_eol: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
     tipos_ocorrencia: string[];
+    tipos_ocorrencia_outros?: string;
     descricao_ocorrencia: string;
     smart_sampa_situacao: string;
     envolvido?: string[];
+    envolvido_outros?: string;
     tem_info_agressor_ou_vitima: string;
     declarante: string;
     comunicacao_seguranca_publica: string;
@@ -21,6 +23,7 @@ export type FormularioCompletoUEBody = {
         interacao_ambiente_escolar: string;
     }>;
     motivacao_ocorrencia?: string[];
+    motivacao_ocorrencia_outros?: string;
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;
