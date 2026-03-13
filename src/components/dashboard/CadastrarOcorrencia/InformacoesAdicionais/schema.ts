@@ -28,6 +28,7 @@ export const formSchema = z.object({
     motivoOcorrencia: z
         .array(z.string())
         .min(1, "Selecione pelo menos um motivo"),
+    descricaoMotivoOcorrencia: z.string().optional(),
     redesProtecao: z
         .string()
         .min(1, "Informação sobre redes de proteção é obrigatória")
