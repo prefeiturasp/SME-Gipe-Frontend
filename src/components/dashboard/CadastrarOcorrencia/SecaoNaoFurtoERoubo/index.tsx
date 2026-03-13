@@ -1,5 +1,7 @@
 "use client";
 
+import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
+import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
@@ -19,7 +20,7 @@ import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
@@ -78,12 +79,52 @@ const SecaoNaoFurtoERoubo = forwardRef<
             mode: "onChange",
             defaultValues: {
                 tiposOcorrencia: formData.tiposOcorrencia ?? [],
+                descricaoTipoOcorrencia: formData.descricaoTipoOcorrencia ?? "",
                 envolvidos: formData.envolvidos ?? [],
+                descricaoEnvolvidos: formData.descricaoEnvolvidos ?? "",
                 descricao: formData.descricao ?? "",
                 possuiInfoAgressorVitima:
                     formData.possuiInfoAgressorVitima ?? undefined,
             },
         });
+
+        const shouldShowDescricao = useCallback(
+            (selectedValues: string[], options: MultiSelectOption[]) =>
+                options.some(
+                    (opt) =>
+                        selectedValues.includes(opt.value) &&
+                        ["outra", "outros"].includes(opt.label.toLowerCase()),
+                ),
+            [],
+        );
+
+        const tiposOcorrenciaSelecionados = form.watch("tiposOcorrencia");
+        const showDescricaoTipo = shouldShowDescricao(
+            tiposOcorrenciaSelecionados,
+            tiposOcorrenciaOptions,
+        );
+
+        const envolvidosSelecionados = form.watch("envolvidos");
+        const showDescricaoEnvolvidos = shouldShowDescricao(
+            envolvidosSelecionados,
+            envolvidosOptions,
+        );
+
+        useEffect(() => {
+            if (!isLoadingTipos && !showDescricaoTipo) {
+                form.setValue("descricaoTipoOcorrencia", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isLoadingTipos, showDescricaoTipo, form]);
+
+        useEffect(() => {
+            if (!isLoadingEnvolvidos && !showDescricaoEnvolvidos) {
+                form.setValue("descricaoEnvolvidos", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isLoadingEnvolvidos, showDescricaoEnvolvidos, form]);
 
         const { isValid } = form.formState;
 
@@ -125,6 +166,31 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
         // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: SecaoNaoFurtoERouboData) => {
+            if (
+                shouldShowDescricao(
+                    data.tiposOcorrencia,
+                    tiposOcorrenciaOptions,
+                ) &&
+                (!data.descricaoTipoOcorrencia ||
+                    data.descricaoTipoOcorrencia.trim().length === 0)
+            ) {
+                form.setError("descricaoTipoOcorrencia", {
+                    message: "Descreva qual o tipo de ocorrência.",
+                });
+                return;
+            }
+
+            if (
+                shouldShowDescricao(data.envolvidos, envolvidosOptions) &&
+                (!data.descricaoEnvolvidos ||
+                    data.descricaoEnvolvidos.trim().length === 0)
+            ) {
+                form.setError("descricaoEnvolvidos", {
+                    message: "Descreva quem são os envolvidos.",
+                });
+                return;
+            }
+
             if (!ocorrenciaUuid) {
                 toast({
                     title: "Erro",
@@ -144,8 +210,11 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
             const body = {
                 tipos_ocorrencia: tiposValidos,
+                tipos_ocorrencia_outros:
+                    data.descricaoTipoOcorrencia || undefined,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
+                envolvido_outros: data.descricaoEnvolvidos || undefined,
                 tem_info_agressor_ou_vitima: temInfo,
             };
 
@@ -191,17 +260,38 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 name="tiposOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Qual o tipo de ocorrência?*
-                                        </FormLabel>
                                         <FormControl>
-                                            <MultiSelect
+                                            <MultiSelectWithOther
+                                                label="Qual o tipo de ocorrência?*"
                                                 options={tiposOcorrenciaOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 placeholder="Selecione os tipos de ocorrência"
                                                 disabled={
                                                     isLoadingTipos || disabled
+                                                }
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                hint="Se necessário, selecione mais de uma opção."
+                                                textFieldLabel="Descreva qual o tipo de ocorrência*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoTipoOcorrencia",
+                                                )}
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoTipoOcorrencia",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoTipoOcorrencia
+                                                        ?.message
                                                 }
                                             />
                                         </FormControl>
@@ -215,11 +305,9 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 name="envolvidos"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Quem são os envolvidos?*
-                                        </FormLabel>
                                         <FormControl>
-                                            <MultiSelect
+                                            <MultiSelectWithOther
+                                                label="Quem são os envolvidos?*"
                                                 options={envolvidosOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
@@ -227,6 +315,28 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                                 disabled={
                                                     isLoadingEnvolvidos ||
                                                     disabled
+                                                }
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                textFieldLabel="Descreva quem são os envolvidos*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoEnvolvidos",
+                                                )}
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoEnvolvidos",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoEnvolvidos
+                                                        ?.message
                                                 }
                                             />
                                         </FormControl>

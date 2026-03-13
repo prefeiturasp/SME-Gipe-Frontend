@@ -97,12 +97,12 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
         );
 
         useEffect(() => {
-            if (!showDescricaoTipo) {
+            if (!isLoadingTipos && !showDescricaoTipo) {
                 form.setValue("descricaoTipoOcorrencia", "", {
                     shouldValidate: true,
                 });
             }
-        }, [showDescricaoTipo, form]);
+        }, [isLoadingTipos, showDescricaoTipo, form]);
 
         const { isValid } = form.formState;
 
@@ -183,6 +183,8 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                         uuid: ocorrenciaUuid,
                         body: {
                             tipos_ocorrencia: tiposValidos,
+                            tipos_ocorrencia_outros:
+                                data.descricaoTipoOcorrencia || undefined,
                             descricao_ocorrencia: data.descricao,
                             smart_sampa_situacao: smartSampaSituacao,
                         },

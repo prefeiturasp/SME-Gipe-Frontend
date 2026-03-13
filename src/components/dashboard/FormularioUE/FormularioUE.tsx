@@ -268,6 +268,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 secaoTipoData?.tiposOcorrencia ?? [],
                 tiposOcorrenciaDisponiveis,
             ),
+            tipos_ocorrencia_outros:
+                (secaoTipoData as { descricaoTipoOcorrencia?: string })
+                    ?.descricaoTipoOcorrencia || undefined,
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
@@ -275,6 +278,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     envolvido:
                         (secaoTipoData as { envolvidos?: string[] })
                             ?.envolvidos ?? [],
+                    envolvido_outros:
+                        (secaoTipoData as { descricaoEnvolvidos?: string })
+                            ?.descricaoEnvolvidos || undefined,
                 }),
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",
@@ -300,6 +306,9 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
+                motivacao_ocorrencia_outros:
+                    informacoesAdicionaisData.descricaoMotivoOcorrencia ||
+                    undefined,
                 redes_protecao_acompanhamento:
                     informacoesAdicionaisData.redesProtecao,
                 notificado_conselho_tutelar:
