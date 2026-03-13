@@ -368,6 +368,17 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.motivoOcorrencia).toEqual(["homofobia", "racismo"]);
         });
 
+        it("deve incluir descricaoMotivoOcorrencia quando motivacao_ocorrencia_outros estiver presente", () => {
+            const ocorrencia: OcorrenciaDetalheAPI = {
+                ...baseOcorrencia,
+                motivacao_ocorrencia_outros: "Motivação livre",
+            };
+
+            const result = transformOcorrenciaToFormData(ocorrencia);
+
+            expect(result.descricaoMotivoOcorrencia).toBe("Motivação livre");
+        });
+
         it("deve incluir redes de proteção quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,

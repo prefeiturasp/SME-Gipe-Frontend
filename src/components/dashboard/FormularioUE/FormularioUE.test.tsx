@@ -984,6 +984,20 @@ describe("FormularioUE", () => {
                 possuiInfoAgressorVitima: "Sim",
             };
 
+            mockInfoAdicionaisGetData.mockReturnValue({
+                pessoasAgressoras: [{ nome: "João", idade: "15" }],
+                motivoOcorrencia: "Bullying",
+                descricaoMotivoOcorrencia: "Motivação livre",
+                genero: "Masculino",
+                grupoEtnicoRacial: "Branco",
+                etapaEscolar: "Fundamental II",
+                frequenciaEscolar: "Regular",
+                interacaoAmbienteEscolar: "Boa",
+                redesProtecao: ["CRAS"],
+                notificadoConselhoTutelar: "Sim",
+                acompanhadoNAAPA: "Não",
+            });
+
             mockMutate.mockImplementation((data) => {
                 expect(data.body).toMatchObject({
                     tem_info_agressor_ou_vitima: "sim",
@@ -991,6 +1005,7 @@ describe("FormularioUE", () => {
                         expect.objectContaining({ nome: "João", idade: 15 }),
                     ],
                     motivacao_ocorrencia: "Bullying",
+                    motivacao_ocorrencia_outros: "Motivação livre",
                     notificado_conselho_tutelar: true,
                     acompanhado_naapa: false,
                 });
