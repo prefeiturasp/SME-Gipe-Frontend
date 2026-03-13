@@ -267,6 +267,7 @@ describe("EditarOcorrenciaPage", () => {
             dre_codigo_eol: "108400",
             sobre_furto_roubo_invasao_depredacao: true,
             user_username: "20090388003",
+            status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
             tipos_ocorrencia: [
@@ -1182,5 +1183,58 @@ describe("EditarOcorrenciaPage", () => {
                 }),
             );
         });
+    });
+
+    it("deve exibir loading quando needsDre é true mas ocorrenciaDre ainda não chegou", () => {
+        mockUseGetOcorrencia.mockReturnValue({
+            data: {
+                id: 99,
+                uuid: "test-uuid-aguardando-dre",
+                data_ocorrencia: "2024-12-01T10:00:00Z",
+                unidade_codigo_eol: "123456",
+                dre_codigo_eol: "108300",
+                sobre_furto_roubo_invasao_depredacao: false,
+                user_username: "20090388003",
+                status: "aguardando_validacao",
+                criado_em: "2025-10-15T14:48:04.383569-03:00",
+                atualizado_em: "2025-10-15T14:48:04.383591-03:00",
+            },
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+
+        mockUseGetOcorrenciaDre.mockReturnValue({
+            data: undefined,
+            isLoading: true,
+            isError: false,
+            error: null,
+        });
+
+        const mockStoreState = {
+            setFormData: vi.fn(),
+            setSavedFormData: vi.fn(),
+            setOcorrenciaUuid: vi.fn(),
+            reset: vi.fn(),
+            formData: {},
+            savedFormData: {},
+            ocorrenciaUuid: null,
+        };
+
+        mockUseOcorrenciaFormStore.mockImplementation(
+            (selector?: (state: typeof mockStoreState) => unknown) => {
+                if (typeof selector === "function") {
+                    return selector(mockStoreState);
+                }
+                return mockStoreState;
+            },
+        );
+
+        renderWithClient(<EditarOcorrenciaPage />);
+
+        expect(
+            screen.getByText("Carregando ocorrência..."),
+        ).toBeInTheDocument();
+        expect(mockStoreState.setFormData).not.toHaveBeenCalled();
     });
 });

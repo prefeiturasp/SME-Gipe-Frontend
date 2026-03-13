@@ -791,6 +791,112 @@ describe("InformacoesAdicionais", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
+
+        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição está vazia", async () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["outros"],
+                    descricaoMotivoOcorrencia: "",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(false);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText("Descreva o que motivou a ocorrência."),
+                ).toBeInTheDocument();
+            });
+        });
+
+        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição contém apenas espaços", () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["outros"],
+                    descricaoMotivoOcorrencia: "   ",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(false);
+        });
+
+        it("deve retornar true via validateOutros quando 'Outros' não está selecionado", () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    motivoOcorrencia: ["bullying"],
+                    descricaoMotivoOcorrencia: "",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            const result = ref.current?.validateOutros();
+            expect(result).toBe(true);
+        });
+    });
+
+    it("deve mostrar erro no handleSubmit quando 'Outros' está selecionado em motivo e descrição está vazia", async () => {
+        const user = userEvent.setup();
+
+        renderComponent();
+        await preencherFormularioCompleto(user, { motivoLabel: /Outros/i });
+
+        const proximoButton = screen.getByRole("button", { name: /Próximo/i });
+        await user.click(proximoButton);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Descreva o que motivou a ocorrência."),
+            ).toBeInTheDocument();
+        });
+
+        expect(mockMutate).not.toHaveBeenCalled();
+        expect(mockOnNext).not.toHaveBeenCalled();
     });
 
     it("deve desabilitar todos os campos quando disabled=true", async () => {

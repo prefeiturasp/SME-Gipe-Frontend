@@ -1142,6 +1142,123 @@ describe("SecaoFurtoERoubo", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
+
+        it("deve retornar false via validateOutros quando 'Outra' está selecionada e descrição está vazia", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["outra-uuid-1234"],
+                    descricaoTipoOcorrencia: "",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: [
+                    ...mockTiposOcorrencia,
+                    { uuid: "outra-uuid-1234", nome: "Outra" },
+                ],
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const result = ref.current?.validateOutros();
+                expect(result).toBe(false);
+            });
+
+            expect(
+                screen.getByText("Descreva qual o tipo de ocorrência."),
+            ).toBeInTheDocument();
+        });
+
+        it("deve retornar false via validateOutros quando 'Outra' está selecionada e descrição contém apenas espaços", async () => {
+            vi.mocked(
+                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
+            ).mockReturnValue({
+                formData: {
+                    tiposOcorrencia: ["outra-uuid-1234"],
+                    descricaoTipoOcorrencia: "   ",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: vi.fn(),
+                ocorrenciaUuid: null,
+                clearFormData: mockClearFormData,
+            } as never);
+
+            vi.spyOn(
+                useTiposOcorrenciaHook,
+                "useTiposOcorrencia",
+            ).mockReturnValue({
+                data: [
+                    ...mockTiposOcorrencia,
+                    { uuid: "outra-uuid-1234", nome: "Outra" },
+                ],
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const result = ref.current?.validateOutros();
+                expect(result).toBe(false);
+            });
+
+            expect(
+                screen.getByText("Descreva qual o tipo de ocorrência."),
+            ).toBeInTheDocument();
+        });
+
+        it("deve retornar true via validateOutros quando nenhuma opção 'Outra/Outros' está selecionada", async () => {
+            const ref = React.createRef<SecaoFurtoERouboRef>();
+            render(
+                <SecaoFurtoERoubo
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() => {
+                const result = ref.current?.validateOutros();
+                expect(result).toBe(true);
+            });
+
+            expect(
+                screen.queryByText("Descreva qual o tipo de ocorrência."),
+            ).not.toBeInTheDocument();
+        });
     });
 
     describe("onFormChange callback", () => {

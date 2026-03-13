@@ -252,15 +252,18 @@ vi.mock("../QuadroBranco/QuadroBranco", () => ({
 }));
 
 const mockSetFormData = vi.fn();
+const mockSetSavedFormData = vi.fn();
 
 const mockStoreState: {
     formData: Record<string, unknown>;
     setFormData: typeof mockSetFormData;
+    setSavedFormData: typeof mockSetSavedFormData;
     ocorrenciaUuid: string | null;
     reset: typeof mockReset;
 } = {
     formData: {},
     setFormData: mockSetFormData,
+    setSavedFormData: mockSetSavedFormData,
     ocorrenciaUuid: "test-uuid",
     reset: mockReset,
 };
@@ -297,6 +300,7 @@ describe("FormularioUE", () => {
         mockToast.mockClear();
         mockMutate.mockClear();
         mockSetFormData.mockClear();
+        mockSetSavedFormData.mockClear();
         capturedSecaoInicialCallback = null;
         capturedSecaoNaoFurtoCallback = null;
         capturedSecaoFurtoCallback = null;
@@ -749,6 +753,63 @@ describe("FormularioUE", () => {
             });
         });
 
+        it("deve mostrar erro quando validateOutros falha no Formulário Patrimonial", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Sim" };
+            mockSecaoFurtoValidateOutros.mockReturnValue(false);
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Erro ao validar Formulário Patrimonial",
+                    description:
+                        'Preencha a descrição dos campos com "Outros" selecionado.',
+                    variant: "error",
+                });
+            });
+        });
+
+        it("deve mostrar erro quando validateOutros falha no Formulário Geral", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Não" };
+            mockSecaoNaoFurtoValidateOutros.mockReturnValue(false);
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Erro ao validar Formulário Geral",
+                    description:
+                        'Preencha a descrição dos campos com "Outros" selecionado.',
+                    variant: "error",
+                });
+            });
+        });
+
+        it("deve mostrar erro quando validateOutros falha nas Informações Adicionais", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+            mockInfoAdicionaisValidateOutros.mockReturnValue(false);
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Erro ao validar Informações Adicionais",
+                    description:
+                        'Preencha a descrição dos campos com "Outros" selecionado.',
+                    variant: "error",
+                });
+            });
+        });
+
         it("deve mostrar erro quando a validação da Seção Final falha", async () => {
             mockSecaoFinalTrigger.mockResolvedValue(false);
             renderWithClient(<FormularioUE />);
@@ -926,6 +987,54 @@ describe("FormularioUE", () => {
             });
 
             consoleErrorSpy.mockRestore();
+        });
+
+        it("deve incluir dados de SecaoFurtoERoubo no allFormData quando isFurtoRoubo é verdadeiro", async () => {
+            mockStoreState.formData = { tipoOcorrencia: "Sim" };
+            mockInvalidateQueries.mockResolvedValue(undefined);
+            mockMutate.mockImplementation((data, callbacks) => {
+                callbacks?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockSetFormData).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        tiposOcorrencia: ["Furto"],
+                        descricao: "Descrição do furto",
+                        smartSampa: "monitorada",
+                    }),
+                );
+            });
+        });
+
+        it("deve incluir dados de InformacoesAdicionais no allFormData quando hasAgressorVitimaInfo é verdadeiro", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+            mockInvalidateQueries.mockResolvedValue(undefined);
+            mockMutate.mockImplementation((data, callbacks) => {
+                callbacks?.onSuccess?.({ success: true });
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockSetFormData).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        pessoasAgressoras: [{ nome: "João", idade: "15" }],
+                        motivoOcorrencia: "Bullying",
+                    }),
+                );
+            });
         });
     });
 
