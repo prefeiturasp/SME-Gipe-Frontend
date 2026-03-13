@@ -23,7 +23,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",
@@ -34,7 +34,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
         expect(result).toEqual({
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais:
                 "Informações sobre interações virtuais",
             encaminhamentos: "Encaminhamentos realizados",
@@ -61,7 +61,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };
@@ -91,7 +91,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };
@@ -121,14 +121,14 @@ describe("transformOcorrenciaGipeToFormData", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "",
+            etapa_escolar: "",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "",
         };
 
         const result = transformOcorrenciaGipeToFormData(ocorrenciaGipe);
 
-        expect(result.cicloAprendizagem).toBe("");
+        expect(result.etapaEscolar).toBe("");
         expect(result.informacoesInteracoesVirtuais).toBe("");
         expect(result.encaminhamentos).toBe("");
     });
@@ -148,7 +148,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
             motivacao_ocorrencia: [],
             tipos_ocorrencia: [],
             tipos_ocorrencia_detalhes: [],
-            qual_ciclo_aprendizagem: "",
+            etapa_escolar: "",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "",
         };
@@ -158,7 +158,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
         expect(result).toEqual({
             envolveArmaOuAtaque: undefined,
             ameacaRealizada: undefined,
-            cicloAprendizagem: "",
+            etapaEscolar: "",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "",
         });

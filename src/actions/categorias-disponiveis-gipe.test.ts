@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, type Mock } from "vitest";
-import { getCategoriasDisponiveisGipeAction } from "./categorias-disponiveis-gipe";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { cookies } from "next/headers";
+import { describe, expect, it, vi, type Mock } from "vitest";
+import { getCategoriasDisponiveisGipeAction } from "./categorias-disponiveis-gipe";
 
 vi.mock("@/lib/axios-intercorrencias");
 vi.mock("next/headers", () => ({
@@ -25,7 +25,7 @@ describe("getCategoriasDisponiveisGipeAction", () => {
                 { value: "bullying", label: "Bullying" },
                 { value: "cyberbullying", label: "Cyberbullying" },
             ],
-            ciclo_aprendizagem: [
+            etapa_escolar: [
                 {
                     value: "alfabetizacao",
                     label: "Alfabetização (1º ao 3º ano)",
@@ -57,7 +57,7 @@ describe("getCategoriasDisponiveisGipeAction", () => {
                 headers: {
                     Authorization: "Bearer mock-token-123",
                 },
-            }
+            },
         );
     });
 

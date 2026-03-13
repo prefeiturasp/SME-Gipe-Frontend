@@ -17,7 +17,7 @@ export const formSchema = z.object({
         .array(z.string())
         .min(1, "Selecione pelo menos um tipo de ocorrência."),
     descricaoTipoOcorrencia: z.string().optional(),
-    cicloAprendizagem: z.string({
+    etapaEscolar: z.string({
         required_error: "Campo obrigatório",
     }),
     informacoesInteracoesVirtuais: z.string({

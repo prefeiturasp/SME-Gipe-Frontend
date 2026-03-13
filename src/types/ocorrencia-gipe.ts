@@ -18,7 +18,7 @@ export interface OcorrenciaGipeResponse {
         uuid: string;
         nome: string;
     }>;
-    qual_ciclo_aprendizagem: string;
+    etapa_escolar: string;
     info_sobre_interacoes_virtuais_pessoa_agressora: string;
     encaminhamentos_gipe: string;
 }
@@ -34,7 +34,7 @@ export type OcorrenciaGipeBody = {
     motivacao_ocorrencia_outros?: string;
     tipos_ocorrencia: string[];
     tipos_ocorrencia_outros?: string;
-    qual_ciclo_aprendizagem: string;
+    etapa_escolar: string;
     info_sobre_interacoes_virtuais_pessoa_agressora: string;
     encaminhamentos_gipe: string;
 };

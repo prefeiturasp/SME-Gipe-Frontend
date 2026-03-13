@@ -863,7 +863,7 @@ describe("EditarOcorrenciaPage", () => {
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "verbal",
             motivacao_ocorrencia: ["bullying"],
-            qual_ciclo_aprendizagem: "fundamental_i",
+            etapa_escolar: "fundamental_i",
             info_sobre_interacoes_virtuais_pessoa_agressora: "Info virtual",
             encaminhamentos_gipe: "Encaminhamentos GIPE",
         };
@@ -914,7 +914,7 @@ describe("EditarOcorrenciaPage", () => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
                     ameacaRealizada: "verbal",
-                    cicloAprendizagem: "fundamental_i",
+                    etapaEscolar: "fundamental_i",
                     encaminhamentos: "Encaminhamentos GIPE",
                     envolveArmaOuAtaque: "sim",
                     informacoesInteracoesVirtuais: "Info virtual",

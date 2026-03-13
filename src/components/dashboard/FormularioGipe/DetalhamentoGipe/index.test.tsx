@@ -88,7 +88,7 @@ const mockCategoriasGipe = {
         { value: "cyberbullying", label: "Cyberbullying" },
         { value: "racismo", label: "Racismo" },
     ],
-    ciclo_aprendizagem: [
+    etapa_escolar: [
         { value: "alfabetizacao", label: "Alfabetização (1º ao 3º ano)" },
         { value: "interdisciplinar", label: "Interdisciplinar (4º ao 6º ano)" },
         { value: "autoral", label: "Autoral (7º ao 9º ano)" },
@@ -423,7 +423,7 @@ describe("DetalhamentoGipe", () => {
             expect(params.body).toHaveProperty("envolvido");
             expect(params.body).toHaveProperty("motivacao_ocorrencia");
             expect(params.body).toHaveProperty("tipos_ocorrencia");
-            expect(params.body).toHaveProperty("qual_ciclo_aprendizagem");
+            expect(params.body).toHaveProperty("etapa_escolar");
             expect(params.body).toHaveProperty(
                 "info_sobre_interacoes_virtuais_pessoa_agressora",
             );
@@ -525,7 +525,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -572,7 +572,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -621,7 +621,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
@@ -672,7 +672,7 @@ describe("DetalhamentoGipe", () => {
             envolvidos: ["env1"],
             motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            cicloAprendizagem: "alfabetizacao",
+            etapaEscolar: "alfabetizacao",
             informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };

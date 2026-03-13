@@ -73,7 +73,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const ameacaRealizadaOptions =
         categoriasGipe?.ameaca_foi_realizada_de_qual_maneira || [];
     const motivacaoOptions = categoriasGipe?.motivo_ocorrencia || [];
-    const cicloAprendizagemOptions = categoriasGipe?.ciclo_aprendizagem || [];
+    const etapaEscolarOptions = categoriasGipe?.etapa_escolar || [];
 
     const tiposOcorrenciaOptions =
         tiposOcorrencia?.map((tipo) => ({
@@ -93,7 +93,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             descricaoMotivoOcorrencia: formData.descricaoMotivoOcorrencia ?? "",
             tiposOcorrencia: formData.tiposOcorrencia ?? [],
             descricaoTipoOcorrencia: formData.descricaoTipoOcorrencia ?? "",
-            cicloAprendizagem: formData.cicloAprendizagem ?? "",
+            etapaEscolar: formData.etapaEscolar ?? "",
             informacoesInteracoesVirtuais:
                 formData.informacoesInteracoesVirtuais ?? "",
             encaminhamentos: formData.encaminhamentos ?? "",
@@ -234,7 +234,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     tipos_ocorrencia: tiposValidos,
                     tipos_ocorrencia_outros:
                         data.descricaoTipoOcorrencia || undefined,
-                    qual_ciclo_aprendizagem: data.cicloAprendizagem,
+                    etapa_escolar: data.etapaEscolar,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
                     encaminhamentos_gipe: data.encaminhamentos,
@@ -435,7 +435,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="cicloAprendizagem"
+                                name="etapaEscolar"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
@@ -451,7 +451,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {cicloAprendizagemOptions.map(
+                                                {etapaEscolarOptions.map(
                                                     (ciclo) => (
                                                         <SelectItem
                                                             key={ciclo.value}
