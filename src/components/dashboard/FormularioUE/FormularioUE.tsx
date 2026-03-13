@@ -154,66 +154,97 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         });
     };
 
-    const validateAllForms = async () => {
-        // Valida a Seção Inicial
-        const secaoInicialValid = await secaoInicialRef.current
+    const showValidationError = (title: string, description: string) => {
+        toast({ title, description, variant: "error" });
+    };
+
+    const validateSecaoInicial = async () => {
+        const valid = await secaoInicialRef.current
             ?.getFormInstance()
             .trigger();
-
-        if (!secaoInicialValid) {
-            toast({
-                title: "Erro ao validar Seção Inicial",
-                description:
-                    "Verifique os campos da Seção Inicial e tente novamente.",
-                variant: "error",
-            });
-            return false;
+        if (!valid) {
+            showValidationError(
+                "Erro ao validar Seção Inicial",
+                "Verifique os campos da Seção Inicial e tente novamente.",
+            );
         }
+        return !!valid;
+    };
 
-        // Valida seção de furto/roubo ou não furto/roubo
-        const secaoTipoValid = isFurtoRoubo
+    const validateSecaoTipo = async () => {
+        const valid = isFurtoRoubo
             ? await secaoFurtoERouboRef.current?.getFormInstance().trigger()
             : await secaoNaoFurtoERouboRef.current?.getFormInstance().trigger();
 
-        if (!secaoTipoValid) {
-            toast({
-                title: isFurtoRoubo
-                    ? "Erro ao validar Formulário Patrimonial"
-                    : "Erro ao validar Formulário Geral",
-                description: "Verifique os campos e tente novamente.",
-                variant: "error",
-            });
+        const titulo = isFurtoRoubo
+            ? "Erro ao validar Formulário Patrimonial"
+            : "Erro ao validar Formulário Geral";
+
+        if (!valid) {
+            showValidationError(
+                titulo,
+                "Verifique os campos e tente novamente.",
+            );
             return false;
         }
 
-        // Valida Informações Adicionais (se houver)
-        if (hasAgressorVitimaInfo && !isFurtoRoubo) {
-            const infoAdicionaisValid = await informacoesAdicionaisRef.current
-                ?.getFormInstance()
-                .trigger();
-            if (!infoAdicionaisValid) {
-                toast({
-                    title: "Erro ao validar Informações Adicionais",
-                    description: "Verifique os campos e tente novamente.",
-                    variant: "error",
-                });
-                return false;
-            }
+        const outrosValid = isFurtoRoubo
+            ? secaoFurtoERouboRef.current?.validateOutros()
+            : secaoNaoFurtoERouboRef.current?.validateOutros();
+
+        if (!outrosValid) {
+            showValidationError(
+                titulo,
+                'Preencha a descrição dos campos com "Outros" selecionado.',
+            );
+            return false;
         }
 
-        // Valida Seção Final
-        const secaoFinalValid = await secaoFinalRef.current
+        return true;
+    };
+
+    const validateInformacoesAdicionais = async () => {
+        if (!hasAgressorVitimaInfo || isFurtoRoubo) return true;
+
+        const valid = await informacoesAdicionaisRef.current
             ?.getFormInstance()
             .trigger();
-        if (!secaoFinalValid) {
-            toast({
-                title: "Erro ao validar Seção Final",
-                description: "Verifique os campos e tente novamente.",
-                variant: "error",
-            });
+        if (!valid) {
+            showValidationError(
+                "Erro ao validar Informações Adicionais",
+                "Verifique os campos e tente novamente.",
+            );
             return false;
         }
 
+        const outrosValid = informacoesAdicionaisRef.current?.validateOutros();
+        if (!outrosValid) {
+            showValidationError(
+                "Erro ao validar Informações Adicionais",
+                'Preencha a descrição dos campos com "Outros" selecionado.',
+            );
+            return false;
+        }
+
+        return true;
+    };
+
+    const validateSecaoFinal = async () => {
+        const valid = await secaoFinalRef.current?.getFormInstance().trigger();
+        if (!valid) {
+            showValidationError(
+                "Erro ao validar Seção Final",
+                "Verifique os campos e tente novamente.",
+            );
+        }
+        return !!valid;
+    };
+
+    const validateAllForms = async () => {
+        if (!(await validateSecaoInicial())) return false;
+        if (!(await validateSecaoTipo())) return false;
+        if (!(await validateInformacoesAdicionais())) return false;
+        if (!(await validateSecaoFinal())) return false;
         return true;
     };
 

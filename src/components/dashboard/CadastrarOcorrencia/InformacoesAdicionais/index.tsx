@@ -34,6 +34,7 @@ export type InformacoesAdicionaisRef = {
     getFormData: () => InformacoesAdicionaisData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
+    validateOutros: () => boolean;
 };
 
 const InformacoesAdicionais = forwardRef<
@@ -120,6 +121,23 @@ const InformacoesAdicionais = forwardRef<
             return true;
         },
         getFormInstance: () => form,
+        validateOutros: () => {
+            const data = form.getValues();
+            if (
+                shouldShowDescricao(
+                    data.motivoOcorrencia,
+                    motivoOcorrenciaOptions,
+                ) &&
+                (!data.descricaoMotivoOcorrencia ||
+                    data.descricaoMotivoOcorrencia.trim().length === 0)
+            ) {
+                form.setError("descricaoMotivoOcorrencia", {
+                    message: "Descreva o que motivou a ocorrência.",
+                });
+                return false;
+            }
+            return true;
+        },
     }));
 
     // Função de submit isolada para ser chamada programaticamente

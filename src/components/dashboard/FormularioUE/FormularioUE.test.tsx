@@ -16,6 +16,9 @@ const mockInfoAdicionaisTrigger = vi.fn();
 const mockInfoAdicionaisGetData = vi.fn();
 const mockSecaoFinalTrigger = vi.fn();
 const mockSecaoFinalGetData = vi.fn();
+const mockSecaoFurtoValidateOutros = vi.fn();
+const mockSecaoNaoFurtoValidateOutros = vi.fn();
+const mockInfoAdicionaisValidateOutros = vi.fn();
 
 let capturedSecaoInicialCallback:
     | ((data: { tipoOcorrencia?: string }) => void)
@@ -121,6 +124,7 @@ vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
                 trigger: mockSecaoFurtoTrigger,
             }),
             getFormData: mockSecaoFurtoGetData,
+            validateOutros: mockSecaoFurtoValidateOutros,
         }));
 
         return (
@@ -151,6 +155,7 @@ vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
                 trigger: mockSecaoNaoFurtoTrigger,
             }),
             getFormData: mockSecaoNaoFurtoGetData,
+            validateOutros: mockSecaoNaoFurtoValidateOutros,
         }));
 
         return (
@@ -190,6 +195,7 @@ vi.mock("../CadastrarOcorrencia/InformacoesAdicionais", () => {
                 trigger: mockInfoAdicionaisTrigger,
             }),
             getFormData: mockInfoAdicionaisGetData,
+            validateOutros: mockInfoAdicionaisValidateOutros,
         }));
 
         return (
@@ -303,6 +309,9 @@ describe("FormularioUE", () => {
         mockSecaoNaoFurtoTrigger.mockResolvedValue(true);
         mockInfoAdicionaisTrigger.mockResolvedValue(true);
         mockSecaoFinalTrigger.mockResolvedValue(true);
+        mockSecaoFurtoValidateOutros.mockReturnValue(true);
+        mockSecaoNaoFurtoValidateOutros.mockReturnValue(true);
+        mockInfoAdicionaisValidateOutros.mockReturnValue(true);
 
         mockSecaoInicialGetData.mockReturnValue({
             dataOcorrencia: "2024-01-01",

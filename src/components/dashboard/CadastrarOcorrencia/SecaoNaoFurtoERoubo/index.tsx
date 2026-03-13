@@ -36,6 +36,7 @@ export type SecaoNaoFurtoERouboRef = {
     getFormData: () => SecaoNaoFurtoERouboData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<SecaoNaoFurtoERouboData>;
+    validateOutros: () => boolean;
 };
 
 const SecaoNaoFurtoERoubo = forwardRef<
@@ -162,6 +163,33 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 return true;
             },
             getFormInstance: () => form,
+            validateOutros: () => {
+                const data = form.getValues();
+                if (
+                    shouldShowDescricao(
+                        data.tiposOcorrencia,
+                        tiposOcorrenciaOptions,
+                    ) &&
+                    (!data.descricaoTipoOcorrencia ||
+                        data.descricaoTipoOcorrencia.trim().length === 0)
+                ) {
+                    form.setError("descricaoTipoOcorrencia", {
+                        message: "Descreva qual o tipo de ocorrência.",
+                    });
+                    return false;
+                }
+                if (
+                    shouldShowDescricao(data.envolvidos, envolvidosOptions) &&
+                    (!data.descricaoEnvolvidos ||
+                        data.descricaoEnvolvidos.trim().length === 0)
+                ) {
+                    form.setError("descricaoEnvolvidos", {
+                        message: "Descreva quem são os envolvidos.",
+                    });
+                    return false;
+                }
+                return true;
+            },
         }));
 
         // Função de submit isolada para ser chamada programaticamente
