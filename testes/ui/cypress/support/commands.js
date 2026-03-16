@@ -118,3 +118,46 @@ Cypress.Commands.add('debugPage', () => {
     cy.log('======================')
   })
 })
+
+Cypress.Commands.add(
+  'selectRadixRandom',
+  ({ scope = 'body', comboIndex = 0 } = {}) => {
+    cy.get(scope)
+      .find('button[role="combobox"]')
+      .eq(comboIndex)
+      .as('combo')
+
+    cy.get('@combo')
+      .invoke('attr', 'aria-controls')
+      .then((listboxId) => {
+        cy.get('@combo').then(($btn) => {
+          if ($btn.attr('data-state') !== 'open') {
+            cy.wrap($btn).click({ force: true })
+          }
+        })
+        cy.get('@combo').should('have.attr', 'data-state', 'open')
+
+        cy.get(`[id="${listboxId}"][role="listbox"]`, { timeout: 10000 })
+          .should('be.visible')
+
+        cy.get(`[id="${listboxId}"][role="listbox"] [role="option"]`)
+          .filter((i, el) => {
+            const $el = Cypress.$(el)
+            return !(
+              $el.attr('aria-disabled') === 'true' ||
+              $el.attr('data-disabled') !== undefined ||
+              $el.is(':disabled')
+            )
+          })
+          .then(($options) => {
+            expect($options.length, 'opções habilitadas').to.be.greaterThan(0)
+            const idx = Cypress._.random(0, $options.length - 1)
+            const $choice = $options.eq(idx)
+            cy.log(`Opção selecionada [${idx}]: ${$choice.text().trim()}`)
+            cy.wrap($choice).scrollIntoView().click({ force: true })
+            cy.get('@combo').should('have.attr', 'data-state', 'closed')
+            cy.wrap($choice).as('selectedOption')
+          })
+      })
+  }
+)

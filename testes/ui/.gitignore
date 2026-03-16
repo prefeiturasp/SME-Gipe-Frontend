@@ -208,6 +208,13 @@ $RECYCLE.BIN/
 #cypress/e2e/ui/gipe_integracao.feature       # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
 #cypress/e2e/ui/gipe_seguranca.feature        # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
 #cypress/e2e/ui/gipe_unitario.feature         # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
+cypress/e2e/ui/cadastra_ue_desastres_climatico.feature
+cypress/e2e/ui/cadast_ocorrenc_dre.feature
+cypress/e2e/ui/cadastr_ocorrenc_GIPE.feature
+
+# Features desabilitadas / legacy / simuladas (não executam testes reais)
+cypress/e2e/api/gipe_api.feature
+cypress/e2e/api/validacao_api.feature
 
 
 # Step definitions experimentais (não 100% funcionais)
@@ -215,6 +222,13 @@ $RECYCLE.BIN/
 #cypress/support/step_definitions/gipe_integracao.js       # <-- AGORA FUNCIONAL
 #cypress/support/step_definitions/gipe_seguranca.js        # <-- AGORA FUNCIONAL
 #cypress/support/step_definitions/gipe_unitario.js         # <-- AGORA FUNCIONAL
+cypress/support/step_definitions/cadast_ocorrenc_DRE.js
+
+# Steps exclusivos de features desabilitadas / simuladas
+
+
+# Locators relacionados (não 100% funcionais)
+cypress/support/locators/cadast_ocorrenc_dre_locators.js
 
 
 # ========================================

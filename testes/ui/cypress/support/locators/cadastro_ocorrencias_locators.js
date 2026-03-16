@@ -1,7 +1,7 @@
 class Cadastro_ocorrencias_Localizadores {
   // Botão Nova Ocorrência
   btn_nova_ocorrencia() {
-    return '/html/body/div[1]/div/div[2]/main/div/div[2]/div/a';
+    return '/html/body/div/div/div[2]/main/div/div[2]/div/button';
   }
 
     input_data_ocorrencia() {

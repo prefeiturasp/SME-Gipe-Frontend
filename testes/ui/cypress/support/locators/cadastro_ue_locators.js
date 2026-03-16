@@ -47,7 +47,7 @@ class CadastroUeLocalizadores {
   }
 
   btn_campo_motivacao() {
-    return '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[4]/div[1]/button'
+    return '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[2]/div[1]/button'
   }
 
   opcao_cyberbullying() {
@@ -132,7 +132,7 @@ class CadastroUeLocalizadores {
 
   // Botão próximo da aba 3
   btn_proximo_aba3() {
-    return '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[10]/button[2]'
+    return '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[8]/button[2]'
   }
 
   // ==================== ABA 5: ANEXOS ====================

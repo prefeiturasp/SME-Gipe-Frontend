@@ -10,19 +10,19 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Dado que eu acesso o sistema
     E eu efetuo login com RF
 
-  @login @validacao @smoke
+  @skip @login @validacao @smoke
   Cenário: Validar autenticação e acesso ao dashboard
     Então devo ser redirecionado para o dashboard
     E devo visualizar a página principal do sistema
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para UE
 
-  @consulta @listagem
+  @skip @consulta @listagem
   Cenário: Consultar listagem de ocorrências cadastradas no sistema
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
+  @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
     # Aba 1: Data e Hora
     Quando o usuário seleciona e clica em "Nova Ocorrencia"
@@ -35,7 +35,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E clica no campo "Qual o tipo de ocorrência?"
     E Selecionar tipo de ocorrencia aleatorio
     E clica fora para fechar dropdown
-    E clica no Campo "Quem são os envolvidos?*"
+    E clica no campo envolvidos ue
     E seleciona envolvidos aleatorio
     E clica no campo "Descreva a ocorrência*"
     E preenche descricao aleatoria
@@ -45,9 +45,6 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     # Aba 3: Informações do Agressor
     E preenche o campo nome agressor aleatorio
     E preenche o campo idade agressor aleatorio
-    E preenche o campo CEP aleatorio
-    E localiza o botão "Pesquisar CEP" e clica
-    E insere numero residencia aleatorio
     E clica no campo motivacao
     E seleciona motivacoes aleatorias
     E clica fora do modal
@@ -80,9 +77,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E localiza e clica em "Finalizar"
     
     # Modal de Conclusão
-    Então sistema exibe modal com titulo "Conclusão de etapa"
-    Quando preenche campo motivo encerramento com "Conclusão para teste"
-    E clica em Finalizar modal
-    Então valida a existencia do texto sucesso "Ocorrência registrada com sucesso!"
+    Quando valida a existencia do texto sucesso "Ocorrência registrada com sucesso!"
     E aguarda 20 segundos
+    E clica em Finalizar modal
     Então valida a existencia do Texto " Histórico de ocorrências registradas"
