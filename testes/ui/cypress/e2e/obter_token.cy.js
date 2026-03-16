@@ -15,12 +15,12 @@ describe.skip('Obter Token', () => {
     cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
       .should('be.visible')
       .clear()
-      .type('05481179342', { delay: 100 })
+      .type('7311559', { delay: 100 })
     
     cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
       .should('be.visible')
       .clear()
-      .type('Sgp9342', { delay: 100 })
+      .type('Sgp1559', { delay: 100 })
     
     // Clicar no botão de login
     cy.get('button')

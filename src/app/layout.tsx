@@ -1,6 +1,6 @@
+import ReactQueryProvider from "@/lib/ReactQueryProvider";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import ReactQueryProvider from "@/lib/ReactQueryProvider";
 import { Toaster } from "sonner";
 
 import "@/styles/globals.scss";
@@ -13,7 +13,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
     title: "GIPE",
-    description: "Gabinete integrado de Proteção Escolar",
+    description: "Gestão de Intercorrências de Proteção Escolar",
 };
 
 export default function RootLayout({

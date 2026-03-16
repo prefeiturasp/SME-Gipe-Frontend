@@ -62,7 +62,7 @@ const queryClient = new QueryClient();
 
 const renderWithClient = (ui: React.ReactElement) => {
     return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
     );
 };
 
@@ -76,8 +76,8 @@ describe("FormularioGipePage", () => {
 
         expect(
             screen.getByText(
-                "Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar (GIPE)"
-            )
+                "Detalhes da Intercorrência - Gestão de Intercorrências de Proteção Escolar (GIPE)",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -85,7 +85,7 @@ describe("FormularioGipePage", () => {
         renderWithClient(<FormularioGipePage onPrevious={mockOnPrevious} />);
 
         expect(
-            screen.getByTestId("mock-detalhamento-gipe")
+            screen.getByTestId("mock-detalhamento-gipe"),
         ).toBeInTheDocument();
     });
 

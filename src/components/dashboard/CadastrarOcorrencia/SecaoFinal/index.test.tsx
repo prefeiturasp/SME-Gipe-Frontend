@@ -1243,4 +1243,206 @@ describe("SecaoFinal", () => {
             });
         });
     });
+
+    describe("Opção Ameaça condicional para tipo patrimonial", () => {
+        it("não deve exibir opção Ameaça quando tipoOcorrencia for 'Sim' (PATRIMONIAL)", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Sim",
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /^Alerta$/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.queryByRole("option", { name: /^Ameaça$/i }),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir opção Ameaça quando tipoOcorrencia não for 'Sim' (GERAL)", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Não",
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /^Ameaça$/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.getByRole("option", { name: /^Alerta$/i }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("option", {
+                    name: /Apenas para registro\/não se aplica/i,
+                }),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir apenas Alerta e Registro quando tipo for patrimonial", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Sim",
+            };
+
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /^Alerta$/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.getByRole("option", {
+                    name: /Apenas para registro\/não se aplica/i,
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole("option", { name: /^Ameaça$/i }),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve limpar protocoloAcionado quando tipo for patrimonial e valor atual for 'Ameaça'", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Sim",
+                protocoloAcionado: "Ameaça",
+            };
+
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(
+                <SecaoFinal
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            await waitFor(() => {
+                const formData = ref.current?.getFormData();
+                expect(formData?.protocoloAcionado).toBe("");
+            });
+        });
+
+        it("não deve limpar protocoloAcionado quando tipo for GERAL e valor for 'Ameaça'", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Não",
+                protocoloAcionado: "Ameaça",
+            };
+
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(
+                <SecaoFinal
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            await waitFor(() => {
+                const formData = ref.current?.getFormData();
+                expect(formData?.protocoloAcionado).toBe("Ameaça");
+            });
+        });
+
+        it("não deve exibir Ameaça quando isPatrimonial é passado via prop como true", async () => {
+            mockFormData = {};
+
+            renderWithClient(
+                <SecaoFinal
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={true}
+                />,
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /^Alerta$/i }),
+                ).toBeInTheDocument(),
+            );
+            expect(
+                screen.queryByRole("option", { name: /^Ameaça$/i }),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir Ameaça quando isPatrimonial é passado via prop como false", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Sim",
+            };
+
+            renderWithClient(
+                <SecaoFinal
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={false}
+                />,
+            );
+
+            const protocoloSelect = screen.getByRole("combobox", {
+                name: /Qual protocolo acionado\?/i,
+            });
+            fireEvent.click(protocoloSelect);
+
+            await waitFor(() =>
+                expect(
+                    screen.getByRole("option", { name: /^Ameaça$/i }),
+                ).toBeInTheDocument(),
+            );
+        });
+
+        it("deve priorizar a prop isPatrimonial sobre o valor do store", async () => {
+            mockFormData = {
+                tipoOcorrencia: "Não",
+                protocoloAcionado: "Ameaça",
+            };
+
+            const ref = React.createRef<SecaoFinalRef>();
+
+            renderWithClient(
+                <SecaoFinal
+                    ref={ref}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={true}
+                />,
+            );
+
+            await waitFor(() => {
+                const formData = ref.current?.getFormData();
+                expect(formData?.protocoloAcionado).toBe("");
+            });
+        });
+    });
 });

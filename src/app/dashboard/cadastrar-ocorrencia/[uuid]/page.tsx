@@ -11,7 +11,7 @@ import { transformOcorrenciaToFormData } from "@/lib/transformOcorrenciaToFormDa
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LoadingSpinner = () => <div>Carregando ocorrência...</div>;
 
@@ -49,9 +49,12 @@ export default function EditarOcorrenciaPage() {
     const { setFormData, setSavedFormData, setOcorrenciaUuid, reset } =
         useOcorrenciaFormStore();
 
+    const isStoreInitializedRef = useRef(false);
+
     useEffect(() => {
         return () => {
             reset();
+            isStoreInitializedRef.current = false;
             setIsStoreReady(false);
             queryClient.invalidateQueries({
                 queryKey: ["ocorrencia", ocorrenciaId],
@@ -66,17 +69,23 @@ export default function EditarOcorrenciaPage() {
     }, [reset, queryClient, ocorrenciaId]);
 
     useEffect(() => {
-        if (!ocorrencia) return;
+        if (!ocorrencia || isStoreInitializedRef.current) return;
+
+        const needsDre = !isEmPreenchimento;
+        const needsGipe = isEnviadaGipe;
+
+        if (needsDre && !ocorrenciaDre) return;
+        if (needsGipe && !ocorrenciaGipe) return;
 
         const formDataUe = transformOcorrenciaToFormData(ocorrencia);
         let combinedFormData = formDataUe;
 
-        if (!isEmPreenchimento && ocorrenciaDre) {
+        if (needsDre && ocorrenciaDre) {
             const formDataDre = transformOcorrenciaDreToFormData(ocorrenciaDre);
             combinedFormData = { ...formDataUe, ...formDataDre };
         }
 
-        if (isEnviadaGipe && ocorrenciaGipe) {
+        if (needsGipe && ocorrenciaGipe) {
             const formDataGipe =
                 transformOcorrenciaGipeToFormData(ocorrenciaGipe);
             combinedFormData = { ...combinedFormData, ...formDataGipe };
@@ -86,6 +95,7 @@ export default function EditarOcorrenciaPage() {
         setFormData(combinedFormData);
         setSavedFormData(combinedFormData);
         setIsStoreReady(true);
+        isStoreInitializedRef.current = true;
     }, [
         ocorrencia,
         ocorrenciaDre,

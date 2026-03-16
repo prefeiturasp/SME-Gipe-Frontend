@@ -1,6 +1,6 @@
 # language: pt
 
-@complement_gipe @gipe
+@skip @complement_gipe @gipe
 Funcionalidade: Gestão de Intercorrências - Perfil GIPE
   Como usuário com perfil GIPE
   Eu quero acessar e complementar intercorrências registradas

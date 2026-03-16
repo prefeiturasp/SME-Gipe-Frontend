@@ -12,7 +12,7 @@ export default function FormularioGipePage({
 }>) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
-        (state) => state.ocorrenciaUuid
+        (state) => state.ocorrenciaUuid,
     );
     const queryClient = useQueryClient();
 
@@ -27,7 +27,7 @@ export default function FormularioGipePage({
     return (
         <div>
             <PageHeader
-                title="Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar (GIPE)"
+                title="Detalhes da Intercorrência - Gestão de Intercorrências de Proteção Escolar (GIPE)"
                 onClickBack={handleClickBack}
             />
             <DetalhamentoGipe onPrevious={onPrevious} />

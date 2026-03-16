@@ -3,8 +3,8 @@ import Cadastro_ocorrencias_Localizadores from '../locators/cadastro_ocorrencias
 
 const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
 
-const RF_PADRAO = '40450525856'
-const SENHA_PADRAO = 'Sgp5856'
+const RF_PADRAO = '29379960000'
+const SENHA_PADRAO = 'Sgp0000'
 
 // ==================== FUNÇÕES AUXILIARES ====================
 

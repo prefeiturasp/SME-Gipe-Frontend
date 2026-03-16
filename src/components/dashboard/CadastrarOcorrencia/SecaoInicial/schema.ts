@@ -14,10 +14,10 @@ export const formSchema = z.object({
             },
             {
                 message: "A data da ocorrência não pode ser no futuro.",
-            }
+            },
         ),
     horaOcorrencia: z.string().min(1, "O horário da ocorrência é obrigatório."),
-    dre: z.string(),
+    dre: z.string().min(1, "Selecione uma DRE."),
     unidadeEducacional: z.string().min(1, "Selecione uma unidade."),
     tipoOcorrencia: z.enum(["Sim", "Não"], {
         required_error: "Selecione uma opção.",

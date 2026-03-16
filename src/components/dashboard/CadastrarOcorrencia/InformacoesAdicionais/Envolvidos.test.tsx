@@ -1,13 +1,44 @@
+import { CategoriasDisponiveisAPI } from "@/actions/categorias-disponiveis";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FormProvider, useForm } from "react-hook-form";
 import { describe, expect, it } from "vitest";
-import PessoasAgressoras from "./PessoasAgressoras";
+import Envolvidos from "./Envolvidos";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 const queryClient = new QueryClient();
+
+const mockCategorias: CategoriasDisponiveisAPI = {
+    motivo_ocorrencia: [{ label: "Bullying", value: "bullying" }],
+    genero: [
+        { label: "Masculino", value: "masculino" },
+        { label: "Feminino", value: "feminino" },
+    ],
+    grupo_etnico_racial: [
+        { label: "Branco", value: "branco" },
+        { label: "Pardo", value: "pardo" },
+    ],
+    etapa_escolar: [
+        { label: "Ensino Fundamental II", value: "ensino_fundamental_2" },
+        { label: "Interdisciplinar", value: "interdisciplinar" },
+    ],
+    frequencia_escolar: [
+        { label: "Regular", value: "regular" },
+        { label: "Inferior a 50%", value: "inferior_50" },
+    ],
+};
+
+const EMPTY_PESSOA = {
+    nome: "",
+    idade: "",
+    genero: "",
+    grupoEtnicoRacial: "",
+    etapaEscolar: "",
+    frequenciaEscolar: "",
+    interacaoAmbienteEscolar: "",
+};
 
 function Wrapper({
     defaultValues,
@@ -20,13 +51,8 @@ function Wrapper({
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            pessoasAgressoras: defaultValues ?? [{ nome: "", idade: "" }],
+            pessoasAgressoras: defaultValues ?? [EMPTY_PESSOA],
             motivoOcorrencia: [],
-            genero: "",
-            grupoEtnicoRacial: "",
-            etapaEscolar: "",
-            frequenciaEscolar: "",
-            interacaoAmbienteEscolar: "",
             redesProtecao: "",
             notificadoConselhoTutelar: undefined,
             acompanhadoNAAPA: undefined,
@@ -37,9 +63,10 @@ function Wrapper({
         <QueryClientProvider client={queryClient}>
             <FormProvider {...form}>
                 <form>
-                    <PessoasAgressoras
+                    <Envolvidos
                         control={form.control}
                         disabled={disabled}
+                        categoriasDisponiveis={mockCategorias}
                     />
                 </form>
             </FormProvider>
@@ -47,15 +74,24 @@ function Wrapper({
     );
 }
 
-describe("PessoasAgressoras", () => {
-    it("deve renderizar um par de campos nome/idade por padrão", () => {
+describe("Envolvidos", () => {
+    it("deve renderizar os campos de uma pessoa envolvida por padrão", () => {
         render(<Wrapper />);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa agressora/i),
+            screen.getAllByLabelText(/nome da pessoa envolvida/i),
+        ).toHaveLength(1);
+        expect(screen.getAllByLabelText(/Qual a idade\?/i)).toHaveLength(1);
+        expect(screen.getAllByText(/Qual o gênero\?/i)).toHaveLength(1);
+        expect(
+            screen.getAllByText(/Qual o grupo étnico-racial\?/i),
+        ).toHaveLength(1);
+        expect(screen.getAllByText(/Qual a etapa escolar\?/i)).toHaveLength(1);
+        expect(
+            screen.getAllByText(/Qual a frequência escolar\?/i),
         ).toHaveLength(1);
         expect(
-            screen.getAllByLabelText(/idade da pessoa agressora/i),
+            screen.getAllByText(/Como é a interação da pessoa no ambiente/i),
         ).toHaveLength(1);
     });
 
@@ -77,11 +113,9 @@ describe("PessoasAgressoras", () => {
         await user.click(addButton);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa agressora/i),
+            screen.getAllByLabelText(/nome da pessoa envolvida/i),
         ).toHaveLength(2);
-        expect(
-            screen.getAllByLabelText(/idade da pessoa agressora/i),
-        ).toHaveLength(2);
+        expect(screen.getAllByLabelText(/Qual a idade\?/i)).toHaveLength(2);
     });
 
     it("deve remover campos ao clicar no botão de remover", async () => {
@@ -89,14 +123,22 @@ describe("PessoasAgressoras", () => {
         render(
             <Wrapper
                 defaultValues={[
-                    { nome: "João", idade: "25" },
-                    { nome: "Maria", idade: "30" },
+                    {
+                        ...EMPTY_PESSOA,
+                        nome: "João",
+                        idade: "25",
+                    },
+                    {
+                        ...EMPTY_PESSOA,
+                        nome: "Maria",
+                        idade: "30",
+                    },
                 ]}
             />,
         );
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa agressora/i),
+            screen.getAllByLabelText(/nome da pessoa envolvida/i),
         ).toHaveLength(2);
 
         const removeButtons = screen.getAllByRole("button", {
@@ -105,7 +147,7 @@ describe("PessoasAgressoras", () => {
         await user.click(removeButtons[0]);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa agressora/i),
+            screen.getAllByLabelText(/nome da pessoa envolvida/i),
         ).toHaveLength(1);
     });
 
@@ -121,11 +163,9 @@ describe("PessoasAgressoras", () => {
         render(<Wrapper disabled={true} />);
 
         const nomeInput = screen.getAllByLabelText(
-            /nome da pessoa agressora/i,
+            /nome da pessoa envolvida/i,
         )[0];
-        const idadeInput = screen.getAllByLabelText(
-            /idade da pessoa agressora/i,
-        )[0];
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
         const addButton = screen.getByRole("button", {
             name: /Adicionar pessoa/i,
         });
@@ -139,17 +179,24 @@ describe("PessoasAgressoras", () => {
         render(
             <Wrapper
                 defaultValues={[
-                    { nome: "Gabriel Araujo de Almeida", idade: "14" },
+                    {
+                        nome: "Gabriel Araujo de Almeida",
+                        idade: "14",
+                        genero: "masculino",
+                        grupoEtnicoRacial: "branco",
+                        etapaEscolar: "ensino_fundamental_2",
+                        frequenciaEscolar: "regular",
+                        interacaoAmbienteEscolar:
+                            "Boa interação com todos os colegas",
+                    },
                 ]}
             />,
         );
 
         const nomeInput = screen.getAllByLabelText(
-            /nome da pessoa agressora/i,
+            /nome da pessoa envolvida/i,
         )[0];
-        const idadeInput = screen.getAllByLabelText(
-            /idade da pessoa agressora/i,
-        )[0];
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
 
         expect(nomeInput).toHaveValue("Gabriel Araujo de Almeida");
         expect(idadeInput).toHaveValue(14);

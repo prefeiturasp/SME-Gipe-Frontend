@@ -17,6 +17,7 @@ export type OcorrenciaDetalheAPI = {
     criado_em: string;
     atualizado_em: string;
     tipos_ocorrencia?: Array<{ uuid: string; nome: string }>;
+    tipos_ocorrencia_outros?: string;
     descricao_ocorrencia?: string;
     status?: string;
     smart_sampa_situacao?: "sim" | "nao";
@@ -32,18 +33,23 @@ export type OcorrenciaDetalheAPI = {
         | "sim_cbm"
         | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
-    envolvido?: {
+    envolvido?: Array<{
         uuid: string;
         perfil_dos_envolvidos: string;
-    };
+    }>;
+    envolvido_outros?: string;
     tem_info_agressor_ou_vitima?: "sim" | "nao";
-    pessoas_agressoras?: Array<{ nome: string; idade: number }>;
+    pessoas_agressoras?: Array<{
+        nome: string;
+        idade: number;
+        genero: string;
+        grupo_etnico_racial: string;
+        etapa_escolar: string;
+        frequencia_escolar: string;
+        interacao_ambiente_escolar: string;
+    }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
-    genero_pessoa_agressora?: string;
-    grupo_etnico_racial?: string;
-    etapa_escolar?: string;
-    frequencia_escolar?: string;
-    interacao_ambiente_escolar?: string;
+    motivacao_ocorrencia_outros?: string;
     redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
     acompanhado_naapa?: boolean;

@@ -9,8 +9,8 @@ const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
 
 const TIMEOUT_PADRAO = 20000
 const DELAY_DIGITACAO = 50
-const RF_VALIDO = '39411157076'
-const SENHA_VALIDA = 'Sgp7076'
+const RF_VALIDO = '7311559'
+const SENHA_VALIDA = 'Sgp1559'
 const BASE_URL = 'https://qa-gipe.sme.prefeitura.sp.gov.br'
 
 // =============== HELPERS PARA INTEGRAÇÃO ===============

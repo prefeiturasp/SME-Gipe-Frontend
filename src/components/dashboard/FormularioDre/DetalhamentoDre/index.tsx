@@ -6,7 +6,6 @@ import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -31,23 +30,10 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
     const [isFinalizando, setIsFinalizando] = useState(false);
     const { isPontoFocal } = useUserPermissions();
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
-    const user = useUserStore((state) => state.user);
     const router = useRouter();
     const queryClient = useQueryClient();
 
     const { mutate: atualizarOcorrenciaDre } = useAtualizarOcorrenciaDre();
-
-    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
-        {
-            "DIRETOR DE ESCOLA": "diretor",
-            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
-            "PONTO FOCAL DRE": "dre",
-            GIPE: "gipe",
-        };
-
-    const perfilUsuario =
-        (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
-        "diretor";
 
     const form = useForm<FormularioDreData>({
         resolver: zodResolver(formSchema),
@@ -252,7 +238,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
                 onLoadingChange={setIsFinalizando}
-                perfilUsuario={perfilUsuario}
+                etapa="dre"
             />
         </>
     );

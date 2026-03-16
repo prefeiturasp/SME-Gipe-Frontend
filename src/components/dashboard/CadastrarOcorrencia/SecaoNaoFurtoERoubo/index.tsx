@@ -1,5 +1,8 @@
 "use client";
 
+import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
+import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
+import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -10,23 +13,14 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
@@ -42,6 +36,7 @@ export type SecaoNaoFurtoERouboRef = {
     getFormData: () => SecaoNaoFurtoERouboData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<SecaoNaoFurtoERouboData>;
+    validateOutros: () => boolean;
 };
 
 const SecaoNaoFurtoERoubo = forwardRef<
@@ -74,17 +69,63 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 label: tipo.nome,
             })) || [];
 
+        const envolvidosOptions =
+            envolvidos?.map((envolvido) => ({
+                value: envolvido.uuid,
+                label: envolvido.perfil_dos_envolvidos,
+            })) || [];
+
         const form = useForm<SecaoNaoFurtoERouboData>({
             resolver: zodResolver(formSchema),
             mode: "onChange",
             defaultValues: {
                 tiposOcorrencia: formData.tiposOcorrencia ?? [],
-                envolvidos: formData.envolvidos ?? "",
+                descricaoTipoOcorrencia: formData.descricaoTipoOcorrencia ?? "",
+                envolvidos: formData.envolvidos ?? [],
+                descricaoEnvolvidos: formData.descricaoEnvolvidos ?? "",
                 descricao: formData.descricao ?? "",
                 possuiInfoAgressorVitima:
                     formData.possuiInfoAgressorVitima ?? undefined,
             },
         });
+
+        const shouldShowDescricao = useCallback(
+            (selectedValues: string[], options: MultiSelectOption[]) =>
+                options.some(
+                    (opt) =>
+                        selectedValues.includes(opt.value) &&
+                        ["outra", "outros"].includes(opt.label.toLowerCase()),
+                ),
+            [],
+        );
+
+        const tiposOcorrenciaSelecionados = form.watch("tiposOcorrencia");
+        const showDescricaoTipo = shouldShowDescricao(
+            tiposOcorrenciaSelecionados,
+            tiposOcorrenciaOptions,
+        );
+
+        const envolvidosSelecionados = form.watch("envolvidos");
+        const showDescricaoEnvolvidos = shouldShowDescricao(
+            envolvidosSelecionados,
+            envolvidosOptions,
+        );
+
+        useEffect(() => {
+            if (!isLoadingTipos && !showDescricaoTipo) {
+                form.setValue("descricaoTipoOcorrencia", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isLoadingTipos, showDescricaoTipo, form]);
+
+        useEffect(() => {
+            if (!isLoadingEnvolvidos && !showDescricaoEnvolvidos) {
+                form.setValue("descricaoEnvolvidos", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isLoadingEnvolvidos, showDescricaoEnvolvidos, form]);
 
         const { isValid } = form.formState;
 
@@ -122,10 +163,62 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 return true;
             },
             getFormInstance: () => form,
+            validateOutros: () => {
+                const data = form.getValues();
+                if (
+                    shouldShowDescricao(
+                        data.tiposOcorrencia,
+                        tiposOcorrenciaOptions,
+                    ) &&
+                    (!data.descricaoTipoOcorrencia ||
+                        data.descricaoTipoOcorrencia.trim().length === 0)
+                ) {
+                    form.setError("descricaoTipoOcorrencia", {
+                        message: "Descreva qual o tipo de ocorrência.",
+                    });
+                    return false;
+                }
+                if (
+                    shouldShowDescricao(data.envolvidos, envolvidosOptions) &&
+                    (!data.descricaoEnvolvidos ||
+                        data.descricaoEnvolvidos.trim().length === 0)
+                ) {
+                    form.setError("descricaoEnvolvidos", {
+                        message: "Descreva quem são os envolvidos.",
+                    });
+                    return false;
+                }
+                return true;
+            },
         }));
 
         // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: SecaoNaoFurtoERouboData) => {
+            if (
+                shouldShowDescricao(
+                    data.tiposOcorrencia,
+                    tiposOcorrenciaOptions,
+                ) &&
+                (!data.descricaoTipoOcorrencia ||
+                    data.descricaoTipoOcorrencia.trim().length === 0)
+            ) {
+                form.setError("descricaoTipoOcorrencia", {
+                    message: "Descreva qual o tipo de ocorrência.",
+                });
+                return;
+            }
+
+            if (
+                shouldShowDescricao(data.envolvidos, envolvidosOptions) &&
+                (!data.descricaoEnvolvidos ||
+                    data.descricaoEnvolvidos.trim().length === 0)
+            ) {
+                form.setError("descricaoEnvolvidos", {
+                    message: "Descreva quem são os envolvidos.",
+                });
+                return;
+            }
+
             if (!ocorrenciaUuid) {
                 toast({
                     title: "Erro",
@@ -145,8 +238,10 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
             const body = {
                 tipos_ocorrencia: tiposValidos,
+                tipos_ocorrencia_outros: data.descricaoTipoOcorrencia,
                 descricao_ocorrencia: data.descricao,
                 envolvido: data.envolvidos,
+                envolvido_outros: data.descricaoEnvolvidos,
                 tem_info_agressor_ou_vitima: temInfo,
             };
 
@@ -192,17 +287,38 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 name="tiposOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Qual o tipo de ocorrência?*
-                                        </FormLabel>
                                         <FormControl>
-                                            <MultiSelect
+                                            <MultiSelectWithOther
+                                                label="Qual o tipo de ocorrência?*"
                                                 options={tiposOcorrenciaOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 placeholder="Selecione os tipos de ocorrência"
                                                 disabled={
                                                     isLoadingTipos || disabled
+                                                }
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                hint="Se necessário, selecione mais de uma opção."
+                                                textFieldLabel="Descreva qual o tipo de ocorrência*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoTipoOcorrencia",
+                                                )}
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoTipoOcorrencia",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoTipoOcorrencia
+                                                        ?.message
                                                 }
                                             />
                                         </FormControl>
@@ -216,75 +332,52 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 name="envolvidos"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Quem são os envolvidos?*
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={
-                                                isLoadingEnvolvidos || disabled
-                                            }
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione os envolvidos" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {envolvidos?.map(
-                                                    (envolvido) => (
-                                                        <SelectItem
-                                                            key={envolvido.uuid}
-                                                            value={
-                                                                envolvido.uuid
-                                                            }
-                                                        >
-                                                            {
-                                                                envolvido.perfil_dos_envolvidos
-                                                            }
-                                                        </SelectItem>
-                                                    ),
+                                        <FormControl>
+                                            <MultiSelectWithOther
+                                                label="Quem são os envolvidos?*"
+                                                options={envolvidosOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione os envolvidos"
+                                                disabled={
+                                                    isLoadingEnvolvidos ||
+                                                    disabled
+                                                }
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                hint="Se necessário, selecione mais de uma opção"
+                                                textFieldLabel="Descreva quem são os envolvidos*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoEnvolvidos",
                                                 )}
-                                            </SelectContent>
-                                        </Select>
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoEnvolvidos",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoEnvolvidos
+                                                        ?.message
+                                                }
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
 
-                        <FormField
+                        <CampoDescricaoOcorrencia
                             control={form.control}
                             name="descricao"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Descreva a ocorrência*
-                                    </FormLabel>
-                                    <p
-                                        className={`text-sm mt-1 mb-2 ${
-                                            disabled
-                                                ? "text-[#B0B0B0]"
-                                                : "text-[#42474a]"
-                                        }`}
-                                    >
-                                        Descreva o que ocorreu, incluindo data,
-                                        local, caso existam pessoas envolvidas e
-                                        demais informações relevantes para o
-                                        registro.
-                                    </p>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Descreva aqui..."
-                                            className="min-h-[80px]"
-                                            {...field}
-                                            disabled={disabled}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            disabled={disabled}
                         />
 
                         <FormField

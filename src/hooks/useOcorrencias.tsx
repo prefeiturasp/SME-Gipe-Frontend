@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { getOcorrenciasAction } from "@/actions/ocorrencias";
 import { useUserStore } from "@/stores/useUserStore";
 import { Ocorrencia } from "@/types/ocorrencia";
-import { getOcorrenciasAction } from "@/actions/ocorrencias";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useQuery } from "@tanstack/react-query";
 
 const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
     const response = await getOcorrenciasAction();
@@ -36,30 +35,10 @@ const fetchAndTransformOcorrencias = async (): Promise<Ocorrencia[]> => {
 
 export const useOcorrencias = () => {
     const user = useUserStore((state) => state.user);
-    const { isPontoFocal, isGipe } = useUserPermissions();
 
     return useQuery<Ocorrencia[]>({
         queryKey: ["ocorrencias", user?.username],
-        queryFn: async () => {
-            const ocorrencias = await fetchAndTransformOcorrencias();
-
-            if (isPontoFocal) {
-                return ocorrencias.filter(
-                    (ocorrencia) =>
-                        ocorrencia.statusId !== "em_preenchimento_diretor"
-                );
-            }
-
-            if (isGipe) {
-                return ocorrencias.filter(
-                    (ocorrencia) =>
-                        ocorrencia.statusId === "enviado_para_gipe" ||
-                        ocorrencia.statusId === "finalizada"
-                );
-            }
-
-            return ocorrencias;
-        },
+        queryFn: fetchAndTransformOcorrencias,
         enabled: !!user,
     });
 };
