@@ -36,6 +36,7 @@ export type SecaoFinalProps = {
     onPrevious?: () => void;
     showButtons?: boolean;
     disabled?: boolean;
+    isPatrimonial?: boolean;
 };
 
 export type SecaoFinalRef = {
@@ -45,7 +46,16 @@ export type SecaoFinalRef = {
 };
 
 const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
-    ({ onNext, onPrevious, showButtons = true, disabled = false }, ref) => {
+    (
+        {
+            onNext,
+            onPrevious,
+            showButtons = true,
+            disabled = false,
+            isPatrimonial: isPatrimonialProp,
+        },
+        ref,
+    ) => {
         const {
             formData,
             setFormData,
@@ -60,6 +70,11 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         const { data: tiposOcorrenciaDisponiveis, isLoading: isLoadingTipos } =
             useTiposOcorrencia(tipoFormulario);
         const { mutate, isPending } = useAtualizarSecaoFinal();
+
+        const isPatrimonial = useMemo(
+            () => isPatrimonialProp ?? formData.tipoOcorrencia === "Sim",
+            [isPatrimonialProp, formData.tipoOcorrencia],
+        );
 
         const isDesastresClimaticos = useMemo(() => {
             const selectedUuids = (formData.tiposOcorrencia as string[]) ?? [];
@@ -98,6 +113,15 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                 });
             }
         }, [isDesastresClimaticos, isLoadingTipos, form]);
+
+        useEffect(() => {
+            const currentValue = form.getValues("protocoloAcionado");
+            if (isPatrimonial && currentValue === "Ameaça") {
+                form.setValue("protocoloAcionado", "", {
+                    shouldValidate: true,
+                });
+            }
+        }, [isPatrimonial, form]);
 
         // Expõe métodos para o componente pai via ref
         useImperativeHandle(ref, () => ({
@@ -305,9 +329,11 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Ameaça">
-                                                    Ameaça
-                                                </SelectItem>
+                                                {!isPatrimonial && (
+                                                    <SelectItem value="Ameaça">
+                                                        Ameaça
+                                                    </SelectItem>
+                                                )}
                                                 <SelectItem value="Alerta">
                                                     Alerta
                                                 </SelectItem>
