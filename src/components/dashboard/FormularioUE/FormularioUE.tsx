@@ -508,6 +508,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             ref={secaoFinalRef}
                             showButtons={false}
                             disabled={isReadOnly}
+                            isPatrimonial={isFurtoRoubo}
                         />
                     </div>
 
