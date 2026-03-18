@@ -1,5 +1,5 @@
 #language: pt
- @skip @api @diretor
+@skip @api @diretor
 Funcionalidade: API Diretor - Endpoint Diretor
   Como diretor de escola
   Quero gerenciar intercorrências através da API
@@ -21,7 +21,7 @@ Funcionalidade: API Diretor - Endpoint Diretor
     E que estou autenticado na API
 
   # GET /api-intercorrencias/v1/diretor/
-  @skip @smoke @listagem
+  @smoke @listagem
   Cenário: Listar todas as intercorrências do diretor
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -29,7 +29,7 @@ Funcionalidade: API Diretor - Endpoint Diretor
     E a lista não deve estar vazia
  
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @estrutura_listagem
+  @validacao @estrutura_listagem
   Cenário: Validar estrutura de resposta da listagem de intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -53,17 +53,17 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | descricao_ocorrencia                 |
  
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @envolvidos
+  @validacao @envolvidos
   Cenário: Validar estrutura de envolvidos nas intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E as intercorrências com envolvidos devem ter:
-      | campo                  |
-      | envolvido.uuid         |
+      | campo                           |
+      | envolvido.uuid                  |
       | envolvido.perfil_dos_envolvidos |
 
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @tipos_ocorrencia
+  @validacao @tipos_ocorrencia
   Cenário: Validar estrutura de tipos de ocorrência
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
@@ -74,49 +74,49 @@ Funcionalidade: API Diretor - Endpoint Diretor
       | nome  |
 
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @declarante
+  @validacao @declarante
   Cenário: Validar estrutura de declarante nas intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E as intercorrências com declarante devem ter:
-      | campo                      |
-      | declarante_detalhes.uuid   |
+      | campo                        |
+      | declarante_detalhes.uuid     |
       | declarante_detalhes.declarante |
   
   # GET /api-intercorrencias/v1/diretor/categorias-disponiveis/
-  @skip @validacao @categorias
+  @validacao @categorias
   Cenário: Listar categorias disponíveis para diretor
     Quando eu faço uma requisição GET para "/diretor/categorias-disponiveis/"
     Então o status code da resposta deve ser 200
     E a resposta deve conter categorias disponíveis
  
   # GET /api-intercorrencias/v1/diretor/ - NEGATIVO
-  @skip @negativo @sem_autenticacao
+  @negativo @sem_autenticacao
   Cenário: Tentar acessar endpoint sem autenticação
     Dado que não estou autenticado
     Quando eu tento acessar "/diretor/" sem token
     Então o status da resposta deve ser 401 ou 403
 
   # GET /api-intercorrencias/v1/diretor/ - PERFORMANCE
-  @skip @performance
+  @performance
   Cenário: Validar tempo de resposta da listagem
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E o tempo de resposta deve ser menor que 5000 milissegundos
  
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @quantidade_minima
+  @validacao @quantidade_minima
   Cenário: Validar quantidade mínima de intercorrências
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E a resposta deve conter pelo menos 1 intercorrências
  
   # GET /api-intercorrencias/v1/diretor/
-  @skip @validacao @codigos_eol
+  @validacao @codigos_eol
   Cenário: Validar códigos EOL de unidade e DRE
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E cada intercorrência deve ter códigos EOL válidos
     E o código DRE deve ter 6 dígitos
     E o código unidade deve ter 6 dígitos
- 
+

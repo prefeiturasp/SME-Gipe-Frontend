@@ -265,3 +265,73 @@ Then('cada intercorrência deve ter campos info_complementar opcionais', () => {
     Cypress.log({ name: 'Validação', message: ` Todas as ${res.body.length} intercorrências têm campos info_complementar` })
   })
 })
+
+// ==================== STEPS USADOS PELO FEATURE (sem dataTable) ====================
+
+Then('a resposta deve conter os campos obrigatórios da DRE', () => {
+  cy.get('@response').then((res) => {
+    const camposObrigatorios = ['uuid', 'status', 'status_extra', 'unidade_codigo_eol', 'dre_codigo_eol']
+    const body = Array.isArray(res.body) ? res.body : [res.body]
+    body.forEach((intercorrencia, index) => {
+      camposObrigatorios.forEach((campo) => {
+        expect(intercorrencia, `Intercorrência ${index} deve ter "${campo}"`).to.have.property(campo)
+      })
+    })
+    Cypress.log({ name: 'Validação', message: ` Campos obrigatórios da DRE verificados em ${body.length} registros` })
+  })
+})
+
+Then('os campos booleanos devem retornar true ou false', () => {
+  cy.get('@response').then((res) => {
+    const camposBooleanos = [
+      'acionamento_seguranca_publica',
+      'interlocucao_sts',
+      'interlocucao_cpca',
+      'interlocucao_supervisao_escolar',
+      'interlocucao_naapa'
+    ]
+    const body = Array.isArray(res.body) ? res.body : [res.body]
+    body.forEach((intercorrencia, index) => {
+      camposBooleanos.forEach((campo) => {
+        if (Object.prototype.hasOwnProperty.call(intercorrencia, campo)) {
+          expect(intercorrencia[campo], `Campo "${campo}" na intercorrência ${index}`).to.be.a('boolean')
+        }
+      })
+    })
+    Cypress.log({ name: 'Validação', message: ` Campos booleanos verificados em ${body.length} registros` })
+  })
+})
+
+Then('o campo status_extra deve estar presente nas intercorrências', () => {
+  cy.get('@response').then((res) => {
+    const body = Array.isArray(res.body) ? res.body : [res.body]
+    body.forEach((intercorrencia, index) => {
+      expect(intercorrencia, `Intercorrência ${index} deve ter "status_extra"`).to.have.property('status_extra')
+    })
+    Cypress.log({ name: 'Validação', message: ` Campo status_extra presente em ${body.length} registros` })
+  })
+})
+
+Then('os campos info_complementar podem ser nulos ou vazios', () => {
+  cy.get('@response').then((res) => {
+    const camposInfoComplementar = [
+      'info_complementar_sts',
+      'info_complementar_cpca',
+      'info_complementar_supervisao_escolar',
+      'info_complementar_naapa'
+    ]
+    const body = Array.isArray(res.body) ? res.body : [res.body]
+    body.forEach((intercorrencia, index) => {
+      camposInfoComplementar.forEach((campo) => {
+        if (Object.prototype.hasOwnProperty.call(intercorrencia, campo)) {
+          const valor = intercorrencia[campo]
+          expect(
+            valor === null || valor === '' || typeof valor === 'string',
+            `Campo "${campo}" na intercorrência ${index} deve ser nulo, vazio ou string`
+          ).to.be.true
+        }
+      })
+    })
+    Cypress.log({ name: 'Validação', message: ` Campos info_complementar verificados em ${body.length} registros` })
+  })
+})

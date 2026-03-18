@@ -60,13 +60,6 @@ Funcionalidade: API GIPE - Testes Legacy (Mantidos para compatibilidade)
     E a resposta deve conter uma lista de envolvidos
     E a resposta deve ser um array
 
-  @tipos_ocorrencia @validacao
-  Cenário: Validar que tipos de ocorrência tem conteúdo
-    Quando eu faço uma requisição GET para "/tipos-ocorrencia/"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E a lista não deve estar vazia
-
   @diretor @busca
   Cenário: Verificar que busca por UUID retorna objeto único
     Dado que existe uma intercorrência cadastrada

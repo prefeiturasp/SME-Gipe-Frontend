@@ -128,3 +128,38 @@ Then('o status da resposta deve ser 401 ou 403', () => {
     Cypress.log({ name: 'Validação', message: ` Acesso negado - Status: ${res.status}` })
   })
 })
+
+// ==================== STEPS USADOS PELO FEATURE ATUAL ====================
+
+Then('a resposta deve ser um objeto com categorias', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.be.an('object')
+    const categorias = Object.keys(res.body)
+    expect(categorias.length).to.be.greaterThan(0)
+    Cypress.log({ name: 'Validação', message: ` Resposta é objeto com ${categorias.length} categorias` })
+  })
+})
+
+Then('a categoria envolve_arma_ou_ataque deve estar presente', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.have.property('envolve_arma_ou_ataque')
+    expect(res.body['envolve_arma_ou_ataque']).to.be.an('array')
+    Cypress.log({ name: 'Validação', message: ' Categoria envolve_arma_ou_ataque presente' })
+  })
+})
+
+Then('a categoria ameaca_foi_realizada_de_qual_maneira deve estar presente', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.have.property('ameaca_foi_realizada_de_qual_maneira')
+    expect(res.body['ameaca_foi_realizada_de_qual_maneira']).to.be.an('array')
+    Cypress.log({ name: 'Validação', message: ' Categoria ameaca_foi_realizada_de_qual_maneira presente' })
+  })
+})
+
+Then('a categoria motivo_ocorrencia deve estar presente', () => {
+  cy.get('@response').then((res) => {
+    expect(res.body).to.have.property('motivo_ocorrencia')
+    expect(res.body['motivo_ocorrencia']).to.be.an('array')
+    Cypress.log({ name: 'Validação', message: ' Categoria motivo_ocorrencia presente' })
+  })
+})
