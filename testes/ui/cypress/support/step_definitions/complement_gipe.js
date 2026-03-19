@@ -267,11 +267,11 @@ Then('devo visualizar o formulário da aba 3 GIPE', () => {
   cy.get('body', { timeout: TIMEOUTS.DEFAULT }).then(($body) => {
     const textoCorpo = $body.text()
     
-    if (textoCorpo.includes('Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar')) {
-      cy.contains('Detalhes da Intercorrência - Gabinete Integrado de Proteção Escolar', { timeout: TIMEOUTS.LONG })
+    if (textoCorpo.includes('Detalhes da Intercorrência - Gestão de Intercorrências de Proteção Escolar')) {
+      cy.contains('Detalhes da Intercorrência - Gestão de Intercorrências de Proteção Escolar', { timeout: TIMEOUTS.LONG })
         .should('be.visible')
-    } else if (textoCorpo.includes('Gabinete Integrado de Proteção Escolar')) {
-      cy.contains('Gabinete Integrado de Proteção Escolar', { timeout: TIMEOUTS.LONG })
+    } else if (textoCorpo.includes('Gestão de Intercorrências de Proteção Escolar')) {
+      cy.contains('Gestão de Intercorrências de Proteção Escolar', { timeout: TIMEOUTS.LONG })
         .should('be.visible')
     }
   })

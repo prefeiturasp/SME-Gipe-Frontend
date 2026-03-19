@@ -18,7 +18,11 @@
     "test:carga": "cypress run --spec 'cypress/e2e/ui/*carga*.feature,cypress/e2e/ui/*stress*.feature' --env TAGS='@carga and not @skip' --reporter mocha-allure-reporter",
     "test:homologacao": "powershell -ExecutionPolicy Bypass -File .\\executar-homologacao.ps1 -TipoTeste todos -GerarEvidencias -AbrirRelatorio",
     "gerar:evidencias": "powershell -ExecutionPolicy Bypass -File .\\gerar-evidencias.ps1",
-    "empacotar:evidencias": "powershell -ExecutionPolicy Bypass -File .\\empacotar-evidencias.ps1"
+    "empacotar:evidencias": "powershell -ExecutionPolicy Bypass -File .\\empacotar-evidencias.ps1",
+    "cy:token": "cypress run --spec \"cypress/e2e/obter_token.cy.js\"",
+    "precy:api": "npm run cy:token",
+    "cy:api": "cypress run --spec \"cypress/e2e/api/**/*.feature\"",
+    "cy:api:only": "cypress run --spec \"cypress/e2e/api/**/*.feature\""
   },
   "supportFile": "./support/e2e.js",
   "dependencies": {

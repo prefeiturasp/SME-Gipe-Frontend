@@ -63,13 +63,6 @@ coverage/
 *.log
 *.txt
 !README.txt
-run_log.txt
-test_output.txt
-test_output.log
-test_result.log
-test_results.log
-test_run_final.log
-run_gipe_*.log
 cypress.log
 npm-debug.log*
 yarn-debug.log*
@@ -86,60 +79,6 @@ token.json
 *.pem
 *.key
 credentials.json
-cypress/e2e/obter_token.cy.js
-
-# ========================================
-# SCRIPTS AUXILIARES TEMPORÁRIOS
-# ========================================
-run-api-tests.js
-run-api-tests.bat
-run-api-tests-smart.js
-run-validacao-tests.js
-run-validacao-tests.bat
-validate-token.js
-testar-correcao-modal.bat
-testar-modal-v2.bat
-remove_emojis.py
-remove-emojis.ps1
-
-# Scripts PowerShell de homologação (temporários)
-executar-homologacao.ps1
-gerar-evidencias.ps1
-empacotar-evidencias.ps1
-executar-testes-homologacao.bat
-validar-ambiente.ps1
-
-# ========================================
-# DOCUMENTAÇÃO TEMPORÁRIA/INTERNA
-# ========================================
-# Documentos de troubleshooting e análises temporárias
-DIAGNOSTICO_FALHA_API.md
-EVIDENCIAS_TESTES_CARGA.md
-EXEMPLO_MODAL_RAPIDO.md
-GESTAO_PESSOAS_README.md
-GESTAO_UNIDADES_SETUP.md
-GHERKIN_SYNTAX_CHECKLIST.md
-OTIMIZACAO_SESSION.md
-OTIMIZACAO_TESTES_CARGA_SUMMARY.md
-RELATORIO_LIMPEZA.md
-RESUMO_CORRECOES.md
-TROUBLESHOOTING_MODALS.md
-CENARIOS_ADICIONADOS_REQUISICOES.md
-CENARIOS_REMOVIDOS_CARGA.md
-CORRECOES_TIMEOUT_STATUS.md
-REFATORACAO_INTEGRACAO.md
-
-# Documentação de homologação gerada (temporária)
-PLANO_HOMOLOGACAO_GIPE.md
-GUIA_EXECUCAO_HOMOLOGACAO.md
-TERMO_ACEITE_UAT_TEMPLATE.md
-CHECKLIST_RAPIDO.md
-CHECKLIST_UAT_GIPE.md
-KIT_HOMOLOGACAO_INDEX.md
-RESUMO_EXECUTIVO_KIT.md
-ORDEM_EXECUCAO_TESTES.md
-RESUMO_CONSOLIDADO_TESTES.md
-EXECUTAR_AGORA.md
 
 # ========================================
 # EVIDÊNCIAS E RESULTADOS DE HOMOLOGAÇÃO
@@ -163,7 +102,6 @@ resultados/
 .github/
 .gitlab-ci.yml
 azure-pipelines.yml
-JENKINS_SETUP.md
 .circleci/
 .travis.yml
 .jenkins/
@@ -199,23 +137,6 @@ $RECYCLE.BIN/
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# ========================================
-# FEATURES E STEPS EXPERIMENTAIS/NÃO FUNCIONAIS
-# ========================================
-# Features de teste avançado (experimentais - não 100% funcionais)
-#cypress/e2e/ui/consulta_ocorrencia.feature   # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
-#cypress/e2e/ui/gipe_integracao.feature       # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
-#cypress/e2e/ui/gipe_seguranca.feature        # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
-#cypress/e2e/ui/gipe_unitario.feature         # <-- AGORA FUNCIONAL - REMOVIDO DO IGNORE
-
-
-# Step definitions experimentais (não 100% funcionais)
-#cypress/support/step_definitions/consulta_ocorrencia.js   # <-- AGORA FUNCIONAL
-#cypress/support/step_definitions/gipe_integracao.js       # <-- AGORA FUNCIONAL
-#cypress/support/step_definitions/gipe_seguranca.js        # <-- AGORA FUNCIONAL
-#cypress/support/step_definitions/gipe_unitario.js         # <-- AGORA FUNCIONAL
-
 
 # ========================================
 # ARQUIVOS DE TESTE E DEBUG
