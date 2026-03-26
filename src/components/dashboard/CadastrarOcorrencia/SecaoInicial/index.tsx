@@ -11,6 +11,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     Select,
@@ -19,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { useSecaoInicial } from "@/hooks/useSecaoInicial";
@@ -123,6 +125,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 dre: getDefaultDre(),
                 unidadeEducacional: getDefaultUe(),
                 tipoOcorrencia: formData.tipoOcorrencia ?? undefined,
+                foraHorarioFuncionamento:
+                    formData.foraHorarioFuncionamento ?? false,
             },
         });
 
@@ -134,6 +138,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
         const dreValue = form.watch("dre");
         const isUeDisabled =
             disabled || !!ocorrenciaUuid || isAssistenteOuDiretor || !dreValue;
+        const foraHorario = form.watch("foraHorarioFuncionamento");
+        const isSwitchDisabled = disabled;
 
         const { isValid } = form.formState;
 
@@ -158,6 +164,10 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
         const handleSubmit = async (data: SecaoInicialData) => {
             setFormData(data);
 
+            const horaParaEnvio = data.foraHorarioFuncionamento
+                ? "00:00"
+                : data.horaOcorrencia;
+
             if (ocorrenciaUuid) {
                 if (!hasFormDataChanged(data, savedFormData)) {
                     onSuccess?.();
@@ -165,7 +175,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 }
 
                 const dataHoraOcorrencia = new Date(
-                    `${data.dataOcorrencia}T${data.horaOcorrencia}`,
+                    `${data.dataOcorrencia}T${horaParaEnvio}`,
                 ).toISOString();
 
                 const response = await atualizarOcorrencia({
@@ -176,6 +186,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                         dre_codigo_eol: data.dre,
                         sobre_furto_roubo_invasao_depredacao:
                             data.tipoOcorrencia === "Sim",
+                        fora_horario_funcionamento_ue:
+                            data.foraHorarioFuncionamento,
                     },
                 });
 
@@ -194,7 +206,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
             }
 
             const dataHoraOcorrencia = new Date(
-                `${data.dataOcorrencia}T${data.horaOcorrencia}`,
+                `${data.dataOcorrencia}T${horaParaEnvio}`,
             ).toISOString();
 
             const response = await criarOcorrencia({
@@ -203,6 +215,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 dre_codigo_eol: data.dre,
                 sobre_furto_roubo_invasao_depredacao:
                     data.tipoOcorrencia === "Sim",
+                fora_horario_funcionamento_ue: data.foraHorarioFuncionamento,
             });
 
             if (!response.success) {
@@ -303,9 +316,11 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                             <DateTimeInput
                                                 dateValue={field.value}
                                                 timeValue={
-                                                    form.watch(
-                                                        "horaOcorrencia",
-                                                    ) || ""
+                                                    foraHorario
+                                                        ? ""
+                                                        : form.watch(
+                                                              "horaOcorrencia",
+                                                          ) || ""
                                                 }
                                                 onDateChange={field.onChange}
                                                 onTimeChange={(value) =>
@@ -319,12 +334,62 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                 }
                                                 maxDate={maxDate}
                                                 disabled={disabled}
+                                                timeDisabled={foraHorario}
                                             />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="foraHorarioFuncionamento"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col justify-end">
+                                        <div className="flex items-start gap-3 p-3 mt-5">
+                                            <Switch
+                                                id="fora-horario"
+                                                checked={field.value}
+                                                onCheckedChange={(checked) => {
+                                                    field.onChange(checked);
+                                                    if (checked) {
+                                                        form.setValue(
+                                                            "horaOcorrencia",
+                                                            "",
+                                                            {
+                                                                shouldValidate: true,
+                                                            },
+                                                        );
+                                                    }
+                                                }}
+                                                disabled={isSwitchDisabled}
+                                                className="mt-2 shrink-0"
+                                            />
+                                            <div className="flex flex-col gap-0.5">
+                                                <Label
+                                                    htmlFor="fora-horario"
+                                                    className={
+                                                        isSwitchDisabled
+                                                            ? "text-sm font-bold text-[#B0B0B0]"
+                                                            : "text-sm font-bold text-[#42474a] cursor-pointer"
+                                                    }
+                                                >
+                                                    Fora do horário de
+                                                    funcionamento
+                                                </Label>
+                                                <span className="text-xs text-muted-foreground text-[#42474a]">
+                                                    Indique se ocorreu fora do
+                                                    funcionamento da unidade
+                                                    educacional.
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control}
                                 name="dre"
@@ -394,79 +459,83 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                     </FormItem>
                                 )}
                             />
-                        </div>
-                        <FormField
-                            control={form.control}
-                            name="unidadeEducacional"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={isUeDisabled}>
-                                        Qual a Unidade Educacional?*
-                                    </FormLabel>
-                                    <Select
-                                        key={field.value}
-                                        onValueChange={
-                                            (isPontoFocal || isGipe) &&
-                                            !ocorrenciaUuid
-                                                ? (value) =>
-                                                      handleUeChange(
-                                                          value,
-                                                          field.onChange,
+                            <FormField
+                                control={form.control}
+                                name="unidadeEducacional"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel disabled={isUeDisabled}>
+                                            Qual a Unidade Educacional?*
+                                        </FormLabel>
+                                        <Select
+                                            key={field.value}
+                                            onValueChange={
+                                                (isPontoFocal || isGipe) &&
+                                                !ocorrenciaUuid
+                                                    ? (value) =>
+                                                          handleUeChange(
+                                                              value,
+                                                              field.onChange,
+                                                          )
+                                                    : field.onChange
+                                            }
+                                            value={field.value}
+                                            disabled={isUeDisabled}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue
+                                                        placeholder={
+                                                            isPontoFocal ||
+                                                            isGipe
+                                                                ? getUePlaceholder()
+                                                                : "Selecione a unidade"
+                                                        }
+                                                    />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {(isPontoFocal || isGipe) &&
+                                                !ocorrenciaUuid
+                                                    ? uesOptions.map(
+                                                          (ue: {
+                                                              value: string;
+                                                              label: string;
+                                                          }) => (
+                                                              <SelectItem
+                                                                  key={ue.value}
+                                                                  value={
+                                                                      ue.value
+                                                                  }
+                                                              >
+                                                                  {ue.label}
+                                                              </SelectItem>
+                                                          ),
                                                       )
-                                                : field.onChange
-                                        }
-                                        value={field.value}
-                                        disabled={isUeDisabled}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue
-                                                    placeholder={
-                                                        isPontoFocal || isGipe
-                                                            ? getUePlaceholder()
-                                                            : "Selecione a unidade"
-                                                    }
-                                                />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {(isPontoFocal || isGipe) &&
-                                            !ocorrenciaUuid
-                                                ? uesOptions.map(
-                                                      (ue: {
-                                                          value: string;
-                                                          label: string;
-                                                      }) => (
+                                                    : field.value &&
+                                                      unidadeNome && (
                                                           <SelectItem
-                                                              key={ue.value}
-                                                              value={ue.value}
+                                                              value={
+                                                                  field.value
+                                                              }
                                                           >
-                                                              {ue.label}
+                                                              {unidadeNome}
                                                           </SelectItem>
-                                                      ),
-                                                  )
-                                                : field.value &&
-                                                  unidadeNome && (
-                                                      <SelectItem
-                                                          value={field.value}
-                                                      >
-                                                          {unidadeNome}
-                                                      </SelectItem>
-                                                  )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                                      )}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                         <FormField
                             control={form.control}
                             name="tipoOcorrencia"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        A ocorrência é sobre furto, roubo,
-                                        invasão ou depredação?*
+                                        A ocorrência é:
                                     </FormLabel>
                                     <FormControl>
                                         <div className="pt-2">
@@ -485,7 +554,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                                 : "text-sm text-[#42474a]"
                                                         }
                                                     >
-                                                        Sim
+                                                        Patrimonial
                                                     </span>
                                                 </label>
                                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
@@ -497,7 +566,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                                                 : "text-sm text-[#42474a]"
                                                         }
                                                     >
-                                                        Não
+                                                        Interpessoal
                                                     </span>
                                                 </label>
                                             </RadioGroup>
