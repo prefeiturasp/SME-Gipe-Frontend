@@ -33,7 +33,7 @@ function getValidSmartSampa(rawSmartSampa?: string): SimNao | undefined {
  * Converte valor de comunicação com segurança pública para formato do formulário
  */
 function getComunicacaoSeguranca(
-    comunicacao?: "sim_gcm" | "sim_pm" | "sim_dc" | "sim_cbm" | "nao",
+    comunicacao?: "sim" | "nao",
 ): string | undefined {
     if (!comunicacao) return undefined;
     if (comunicacao === "nao") return "Não";

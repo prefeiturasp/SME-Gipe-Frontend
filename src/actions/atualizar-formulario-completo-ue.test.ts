@@ -30,7 +30,7 @@ describe("atualizarFormularioCompletoUE action", () => {
         envolvido: [],
         tem_info_agressor_ou_vitima: "nao",
         declarante: "Diretor",
-        comunicacao_seguranca_publica: "sim_gcm",
+        comunicacao_seguranca_publica: "sim",
         protocolo_acionado: "ameaca",
     };
     const mockAuthToken = "test-token";
@@ -53,7 +53,7 @@ describe("atualizarFormularioCompletoUE action", () => {
                 descricao_ocorrencia: "Descrição do furto",
                 smart_sampa_situacao: "monitorada",
                 tem_info_agressor_ou_vitima: "nao",
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
             },
         };

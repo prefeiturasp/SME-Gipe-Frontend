@@ -26,7 +26,7 @@ type AtualizarSecaoFinalResponse = {
     dre_codigo_eol: string;
     declarante_detalhes: DeclaranteDetalhes;
     comunicacao_seguranca_publica: string;
-    protocolo_acionado: string;
+    protocolo_acionado?: string;
     status_display: string;
     status_extra: string;
 };
