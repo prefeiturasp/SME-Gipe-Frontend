@@ -3,6 +3,7 @@ export type FormularioCompletoUEBody = {
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
+    fora_horario_funcionamento_ue?: boolean;
     tipos_ocorrencia: string[];
     tipos_ocorrencia_outros?: string;
     descricao_ocorrencia: string;
