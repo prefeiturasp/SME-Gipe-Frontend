@@ -299,6 +299,18 @@ describe("transformOcorrenciaToFormData", () => {
         });
     });
 
+    it("deve definir horaOcorrencia como '00:00' quando fora_horario_funcionamento_ue é true", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            fora_horario_funcionamento_ue: true,
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.horaOcorrencia).toBe("00:00");
+        expect(result.foraHorarioFuncionamento).toBe(true);
+    });
+
     describe("Informações Adicionais - Dados Pessoais do Agressor", () => {
         it("deve incluir pessoas agressoras com todos os campos quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {

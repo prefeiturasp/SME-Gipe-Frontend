@@ -13,6 +13,7 @@ export type OcorrenciaDetalheAPI = {
     nome_dre?: string;
     nome_unidade?: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
+    fora_horario_funcionamento_ue?: boolean;
     user_username: string;
     criado_em: string;
     atualizado_em: string;

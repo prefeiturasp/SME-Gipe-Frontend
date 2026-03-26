@@ -12,6 +12,7 @@ export interface DateTimeInputProps {
     timePlaceholder?: string;
     className?: string;
     disabled?: boolean;
+    timeDisabled?: boolean;
 }
 
 const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
@@ -26,19 +27,18 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
             timePlaceholder = "Digite o horário",
             className,
             disabled = false,
+            timeDisabled = false,
         },
-        ref
+        ref,
     ) => {
         return (
-            <div
-                ref={ref}
-                className={cn(
-                    "flex items-center gap-0 border rounded-md overflow-hidden bg-background",
-                    disabled ? "border-[#B0B0B0]" : "border-input",
-                    className
-                )}
-            >
-                <div className="flex-1">
+            <div ref={ref} className={cn("flex items-center gap-2", className)}>
+                <div
+                    className={cn(
+                        "flex-1 border rounded-md overflow-hidden bg-background",
+                        disabled ? "border-[#B0B0B0]" : "border-input",
+                    )}
+                >
                     <Input
                         type="date"
                         placeholder={datePlaceholder}
@@ -49,27 +49,34 @@ const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps>(
                         className={cn(
                             "border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar",
                             disabled &&
-                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50"
+                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50",
                         )}
                     />
                 </div>
-                <div className="flex-1">
+                <div
+                    className={cn(
+                        "flex-1 border rounded-md overflow-hidden bg-background",
+                        disabled || timeDisabled
+                            ? "border-[#DADADA]"
+                            : "border-input",
+                    )}
+                >
                     <Input
                         type="time"
                         placeholder={timePlaceholder}
                         value={timeValue}
-                        readOnly={disabled}
+                        readOnly={disabled || timeDisabled}
                         onChange={(e) => onTimeChange?.(e.target.value)}
                         className={cn(
                             "border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 has-calendar",
-                            disabled &&
-                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50"
+                            (disabled || timeDisabled) &&
+                                "text-[#B0B0B0] cursor-not-allowed pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-50",
                         )}
                     />
                 </div>
             </div>
         );
-    }
+    },
 );
 
 DateTimeInput.displayName = "DateTimeInput";

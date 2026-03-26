@@ -282,7 +282,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         };
 
         const dataHoraOcorrencia = new Date(
-            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
+            `${secaoInicialData?.dataOcorrencia}T${
+                secaoInicialData?.foraHorarioFuncionamento
+                    ? "00:00"
+                    : secaoInicialData?.horaOcorrencia
+            }`,
         ).toISOString();
 
         let smartSampaSituacao = "nao";
@@ -298,6 +302,8 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
+            fora_horario_funcionamento_ue:
+                secaoInicialData?.foraHorarioFuncionamento ?? false,
             tipos_ocorrencia: filterValidTiposOcorrencia(
                 secaoTipoData?.tiposOcorrencia ?? [],
                 tiposOcorrenciaDisponiveis,

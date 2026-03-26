@@ -171,8 +171,8 @@ describe("SecaoInicial", () => {
         expect(screen.getAllByText(/DRE Teste/i).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/EMEF Teste/i).length).toBeGreaterThan(0);
 
-        expect(screen.getByText(/Sim/)).toBeInTheDocument();
-        expect(screen.getByText(/Não/)).toBeInTheDocument();
+        expect(screen.getByText(/Patrimonial/)).toBeInTheDocument();
+        expect(screen.getByText(/Interpessoal/)).toBeInTheDocument();
 
         expect(
             screen.getByRole("button", { name: /Anterior/i }),
@@ -190,7 +190,9 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        const radioPatrimonial = screen.getByRole("radio", {
+            name: /Patrimonial/,
+        });
 
         await act(async () => {
             fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
@@ -207,10 +209,10 @@ describe("SecaoInicial", () => {
         expect(nextButton).toBeDisabled();
 
         await act(async () => {
-            fireEvent.click(radioSim);
+            fireEvent.click(radioPatrimonial);
         });
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true"),
+            expect(radioPatrimonial).toHaveAttribute("aria-checked", "true"),
         );
 
         await waitFor(() => expect(nextButton).toBeEnabled(), {
@@ -295,6 +297,46 @@ describe("SecaoInicial", () => {
         }
     });
 
+    it("schema exige hora quando foraHorarioFuncionamento é false e hora está vazia", async () => {
+        const mod = await import("./schema");
+        const formSchema = mod.formSchema;
+
+        const result = formSchema.safeParse({
+            dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+            foraHorarioFuncionamento: false,
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            const messages = result.error.issues.map(
+                (i: { message: string }) => i.message,
+            );
+            expect(messages).toContain(
+                "O horário da ocorrência é obrigatório.",
+            );
+        }
+    });
+
+    it("schema aceita hora vazia quando foraHorarioFuncionamento é true", async () => {
+        const mod = await import("./schema");
+        const formSchema = mod.formSchema;
+
+        const result = formSchema.safeParse({
+            dataOcorrencia: "2025-10-02",
+            horaOcorrencia: "",
+            dre: "001",
+            unidadeEducacional: "0001",
+            tipoOcorrencia: "Sim",
+            foraHorarioFuncionamento: true,
+        });
+
+        expect(result.success).toBe(true);
+    });
+
     it("exibe toast quando submissão falha", async () => {
         const onSuccess = vi.fn();
         mockCriarOcorrencia.mockResolvedValue({
@@ -306,7 +348,9 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        const radioPatrimonial = screen.getByRole("radio", {
+            name: /Patrimonial/,
+        });
 
         await act(async () => {
             fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
@@ -319,11 +363,11 @@ describe("SecaoInicial", () => {
         });
 
         await act(async () => {
-            fireEvent.click(radioSim);
+            fireEvent.click(radioPatrimonial);
         });
 
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true"),
+            expect(radioPatrimonial).toHaveAttribute("aria-checked", "true"),
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -352,7 +396,9 @@ describe("SecaoInicial", () => {
 
         const dateInput = screen.getByPlaceholderText("Selecione a data");
         const timeInput = screen.getByPlaceholderText("Digite o horário");
-        const radioSim = screen.getByRole("radio", { name: /Sim/ });
+        const radioPatrimonial = screen.getByRole("radio", {
+            name: /Patrimonial/,
+        });
 
         await act(async () => {
             fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
@@ -365,11 +411,11 @@ describe("SecaoInicial", () => {
         });
 
         await act(async () => {
-            fireEvent.click(radioSim);
+            fireEvent.click(radioPatrimonial);
         });
 
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true"),
+            expect(radioPatrimonial).toHaveAttribute("aria-checked", "true"),
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -452,6 +498,7 @@ describe("SecaoInicial", () => {
             dre: "001",
             unidadeEducacional: "0001",
             tipoOcorrencia: "Sim",
+            foraHorarioFuncionamento: false,
         };
 
         const mockSetFormData = vi.fn();
@@ -623,6 +670,7 @@ describe("SecaoInicial", () => {
                 unidade_codigo_eol: "0001",
                 dre_codigo_eol: "001",
                 sobre_furto_roubo_invasao_depredacao: true,
+                fora_horario_funcionamento_ue: false,
             },
         });
         expect(mockMutateCreate).not.toHaveBeenCalled();
@@ -729,6 +777,71 @@ describe("SecaoInicial", () => {
         expect(onSuccess).not.toHaveBeenCalled();
     });
 
+    it("ao ativar o switch fora do horário, o campo de hora é limpo", async () => {
+        const user = userEvent.setup();
+        renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
+
+        const timeInput = screen.getByPlaceholderText("Digite o horário");
+        await act(async () => {
+            fireEvent.change(timeInput, { target: { value: "14:30" } });
+        });
+        expect(timeInput).toHaveValue("14:30");
+
+        const switchEl = screen.getByRole("switch");
+        await user.click(switchEl);
+
+        await waitFor(() => expect(timeInput).toHaveValue(""));
+    });
+
+    it("submete com hora 00:00 quando foraHorarioFuncionamento está ativo", async () => {
+        const user = userEvent.setup();
+        const onSuccess = vi.fn();
+        mockCriarOcorrencia.mockResolvedValue({
+            success: true,
+            data: { uuid: "fora-horario-uuid" },
+        });
+
+        renderWithClient(<SecaoInicial onSuccess={onSuccess} />);
+
+        const dateInput = screen.getByPlaceholderText("Selecione a data");
+        await act(async () => {
+            fireEvent.change(dateInput, { target: { value: "2025-10-02" } });
+        });
+
+        const switchEl = screen.getByRole("switch");
+        await user.click(switchEl);
+
+        const radioPatrimonial = screen.getByRole("radio", {
+            name: /Patrimonial/,
+        });
+        await act(async () => {
+            fireEvent.click(radioPatrimonial);
+        });
+
+        await waitFor(() =>
+            expect(radioPatrimonial).toHaveAttribute("aria-checked", "true"),
+        );
+
+        const nextButton = screen.getByRole("button", { name: /Próximo/i });
+        await waitFor(() => expect(nextButton).toBeEnabled(), {
+            timeout: 3000,
+        });
+
+        await act(async () => {
+            fireEvent.click(nextButton);
+        });
+
+        await waitFor(() =>
+            expect(mockCriarOcorrencia).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    fora_horario_funcionamento_ue: true,
+                    data_ocorrencia: expect.any(String),
+                }),
+            ),
+        );
+        await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    });
+
     describe("métodos expostos via ref", () => {
         it("deve retornar dados do formulário via getFormData", () => {
             const ref = React.createRef<SecaoInicialRef>();
@@ -771,7 +884,7 @@ describe("SecaoInicial", () => {
 
             const dateInput = screen.getByPlaceholderText("Selecione a data");
             const timeInput = screen.getByPlaceholderText("Digite o horário");
-            const simRadio = screen.getByLabelText("Sim");
+            const simRadio = screen.getByLabelText("Patrimonial");
 
             await act(async () => {
                 fireEvent.change(dateInput, {

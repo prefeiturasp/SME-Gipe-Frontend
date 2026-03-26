@@ -137,6 +137,19 @@ function extractInfoAdicionais(ocorrencia: OcorrenciaDetalheAPI) {
 }
 
 /**
+ * Retorna o horário a ser exibido no formulário considerando se a ocorrência
+ * foi registrada fora do horário de funcionamento da UE.
+ * Nesse caso, o horário padrão "00:00" é utilizado.
+ */
+function resolveHoraOcorrencia(
+    horaExtracted: string,
+    foraHorario?: boolean,
+): string {
+    if (foraHorario) return "00:00";
+    return horaExtracted;
+}
+
+/**
  * Transforma dados da API de ocorrência para o formato esperado pelo formulário
  */
 export function transformOcorrenciaToFormData(
@@ -167,10 +180,15 @@ export function transformOcorrenciaToFormData(
 
     return {
         dataOcorrencia,
-        horaOcorrencia,
+        horaOcorrencia: resolveHoraOcorrencia(
+            horaOcorrencia,
+            ocorrencia.fora_horario_funcionamento_ue,
+        ),
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,
+        foraHorarioFuncionamento:
+            ocorrencia.fora_horario_funcionamento_ue ?? false,
         ...(ocorrencia.status && { status: ocorrencia.status }),
         ...(ocorrencia.nome_dre && { nomeDre: ocorrencia.nome_dre }),
         ...(ocorrencia.nome_unidade && {
