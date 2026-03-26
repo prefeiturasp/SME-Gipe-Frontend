@@ -268,10 +268,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 ?.possuiInfoAgressorVitima === "Sim";
 
         const comunicacaoMap: Record<string, string> = {
-            "Sim, com a GCM": "sim_gcm",
-            "Sim, com a PM": "sim_pm",
-            "Sim, com a Defesa civil": "sim_dc",
-            "Sim, com o Bombeiro": "sim_cbm",
+            Sim: "sim",
             Não: "nao",
         };
 
@@ -327,9 +324,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             comunicacao_seguranca_publica:
                 comunicacaoMap[secaoFinalData?.comunicacaoSeguranca ?? ""] ||
                 "nao",
-            protocolo_acionado:
-                protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
-                "registro",
+            ...(!isFurtoRoubo && {
+                protocolo_acionado:
+                    protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
+                    "registro",
+            }),
             ...(informacoesAdicionaisData && {
                 pessoas_agressoras:
                     informacoesAdicionaisData.pessoasAgressoras.map(

@@ -19,17 +19,15 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
 import { useDeclarantes } from "@/hooks/useDeclarantes";
-import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle, useMemo } from "react";
+import { forwardRef, useImperativeHandle, useMemo } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
-import { formSchema, SecaoFinalData } from "./schema";
-
-const DESASTRES_CLIMATICOS_OPTIONS = new Set([
-    "Sim, com a Defesa civil",
-    "Sim, com o Bombeiro",
-]);
+import {
+    interpessoalSchema,
+    patrimonialSchema,
+    SecaoFinalData,
+} from "./schema";
 
 export type SecaoFinalProps = {
     onNext?: () => void;
@@ -65,10 +63,6 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         } = useOcorrenciaFormStore();
         const { data: declarantes, isLoading: isLoadingDeclarantes } =
             useDeclarantes();
-        const tipoFormulario =
-            formData.tipoOcorrencia === "Sim" ? "PATRIMONIAL" : "GERAL";
-        const { data: tiposOcorrenciaDisponiveis, isLoading: isLoadingTipos } =
-            useTiposOcorrencia(tipoFormulario);
         const { mutate, isPending } = useAtualizarSecaoFinal();
 
         const isPatrimonial = useMemo(
@@ -76,20 +70,11 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
             [isPatrimonialProp, formData.tipoOcorrencia],
         );
 
-        const isDesastresClimaticos = useMemo(() => {
-            const selectedUuids = (formData.tiposOcorrencia as string[]) ?? [];
-
-            if (!tiposOcorrenciaDisponiveis || selectedUuids.length === 0)
-                return false;
-            return tiposOcorrenciaDisponiveis.some(
-                (tipo) =>
-                    selectedUuids.includes(tipo.uuid) &&
-                    tipo.nome === "Desastres climáticos",
-            );
-        }, [tiposOcorrenciaDisponiveis, formData.tiposOcorrencia]);
-
         const form = useForm<SecaoFinalData>({
-            resolver: zodResolver(formSchema),
+            resolver: (values, ctx, opts) =>
+                zodResolver(
+                    isPatrimonial ? patrimonialSchema : interpessoalSchema,
+                )(values, ctx, opts),
             mode: "onChange",
             defaultValues: {
                 declarante: formData.declarante ?? "",
@@ -99,29 +84,6 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         });
 
         const { isValid } = form.formState;
-
-        useEffect(() => {
-            if (isLoadingTipos) return;
-
-            const currentValue = form.getValues("comunicacaoSeguranca");
-            if (
-                !isDesastresClimaticos &&
-                DESASTRES_CLIMATICOS_OPTIONS.has(currentValue)
-            ) {
-                form.setValue("comunicacaoSeguranca", "", {
-                    shouldValidate: true,
-                });
-            }
-        }, [isDesastresClimaticos, isLoadingTipos, form]);
-
-        useEffect(() => {
-            const currentValue = form.getValues("protocoloAcionado");
-            if (isPatrimonial && currentValue === "Ameaça") {
-                form.setValue("protocoloAcionado", "", {
-                    shouldValidate: true,
-                });
-            }
-        }, [isPatrimonial, form]);
 
         // Expõe métodos para o componente pai via ref
         useImperativeHandle(ref, () => ({
@@ -139,17 +101,14 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
 
         const mapFormDataToApi = (data: SecaoFinalData) => {
             const comunicacaoMap: Record<string, string> = {
-                "Sim, com a GCM": "sim_gcm",
-                "Sim, com a PM": "sim_pm",
-                "Sim, com a Defesa civil": "sim_dc",
-                "Sim, com o Bombeiro": "sim_cbm",
+                Sim: "sim",
                 Não: "nao",
             };
 
             const protocoloMap: Record<string, string> = {
-                Ameaça: "ameaca",
                 Alerta: "alerta",
                 "Apenas para registro/não se aplica": "registro",
+                Ameaça: "ameaca",
             };
 
             return {
@@ -158,7 +117,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                 declarante: data.declarante,
                 comunicacao_seguranca_publica:
                     comunicacaoMap[data.comunicacaoSeguranca],
-                protocolo_acionado: protocoloMap[data.protocoloAcionado],
+                ...(!isPatrimonial && {
+                    protocolo_acionado: protocoloMap[data.protocoloAcionado!],
+                }),
             };
         };
 
@@ -170,8 +131,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                 currentData.declarante !== savedFormData.declarante ||
                 currentData.comunicacaoSeguranca !==
                     savedFormData.comunicacaoSeguranca ||
-                currentData.protocoloAcionado !==
-                    savedFormData.protocoloAcionado
+                (!isPatrimonial &&
+                    currentData.protocoloAcionado !==
+                        savedFormData.protocoloAcionado)
             );
         };
 
@@ -220,7 +182,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                     className="flex flex-col gap-6 mt-4"
                 >
                     <fieldset className="contents">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div
+                            className={`grid grid-cols-1 gap-6 ${isPatrimonial ? "md:grid-cols-2" : "md:grid-cols-3"}`}
+                        >
                             <FormField
                                 control={form.control}
                                 name="declarante"
@@ -270,8 +234,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
-                                            Houve comunicação com a segurança
-                                            pública?*
+                                            A segurança pública foi comunicada?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
@@ -284,23 +247,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Sim, com a GCM">
-                                                    Sim, com a GCM
+                                                <SelectItem value="Sim">
+                                                    Sim
                                                 </SelectItem>
-                                                <SelectItem value="Sim, com a PM">
-                                                    Sim, com a PM
-                                                </SelectItem>
-                                                {isDesastresClimaticos && (
-                                                    <>
-                                                        <SelectItem value="Sim, com a Defesa civil">
-                                                            Sim, com a Defesa
-                                                            civil
-                                                        </SelectItem>
-                                                        <SelectItem value="Sim, com o Bombeiro">
-                                                            Sim, com o Bombeiro
-                                                        </SelectItem>
-                                                    </>
-                                                )}
                                                 <SelectItem value="Não">
                                                     Não
                                                 </SelectItem>
@@ -310,43 +259,43 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="protocoloAcionado"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel disabled={disabled}>
-                                            Qual protocolo acionado?*
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={disabled}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione o protocolo" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {!isPatrimonial && (
+                            {!isPatrimonial && (
+                                <FormField
+                                    control={form.control}
+                                    name="protocoloAcionado"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel disabled={disabled}>
+                                                Qual protocolo acionado?*
+                                            </FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                disabled={disabled}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione o protocolo" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
                                                     <SelectItem value="Ameaça">
                                                         Ameaça
                                                     </SelectItem>
-                                                )}
-                                                <SelectItem value="Alerta">
-                                                    Alerta
-                                                </SelectItem>
-                                                <SelectItem value="Apenas para registro/não se aplica">
-                                                    Apenas para registro/não se
-                                                    aplica
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                                    <SelectItem value="Alerta">
+                                                        Alerta
+                                                    </SelectItem>
+                                                    <SelectItem value="Apenas para registro/não se aplica">
+                                                        Apenas para registro/não
+                                                        se aplica
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </div>
                         <div className="p-4 bg-[#F5F5F5] border border-[#DADADA] rounded-md mt-2">
                             <p className="text-[14px] font-bold text-[#42474a] m-0">
