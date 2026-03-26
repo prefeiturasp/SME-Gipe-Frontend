@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarSecaoInicial } from "./atualizar-secao-inicial";
 import { SecaoInicialBody } from "@/types/secao-inicial";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarSecaoInicial } from "./atualizar-secao-inicial";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -24,6 +24,7 @@ describe("atualizarSecaoInicial action", () => {
         unidade_codigo_eol: "12345",
         dre_codigo_eol: "DRE-ABC",
         sobre_furto_roubo_invasao_depredacao: true,
+        fora_horario_funcionamento_ue: false,
     };
     const mockAuthToken = "test-token";
 
@@ -49,7 +50,7 @@ describe("atualizarSecaoInicial action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 
@@ -161,5 +162,25 @@ describe("atualizarSecaoInicial action", () => {
             success: false,
             error: "Erro ao atualizar ocorrência",
         });
+    });
+
+    it("deve atualizar ocorrência com fora_horario_funcionamento_ue: true", async () => {
+        const bodyComFora: SecaoInicialBody = {
+            ...mockBody,
+            fora_horario_funcionamento_ue: true,
+        };
+        const mockResponse = { data: { uuid: mockUuid } };
+        vi.mocked(apiIntercorrencias.put).mockResolvedValue(mockResponse);
+
+        const result = await atualizarSecaoInicial(mockUuid, bodyComFora);
+
+        expect(result).toEqual({ success: true, data: { uuid: mockUuid } });
+        expect(apiIntercorrencias.put).toHaveBeenCalledWith(
+            `/diretor/${mockUuid}/secao-inicial/`,
+            bodyComFora,
+            expect.objectContaining({
+                headers: { Authorization: `Bearer ${mockAuthToken}` },
+            }),
+        );
     });
 });

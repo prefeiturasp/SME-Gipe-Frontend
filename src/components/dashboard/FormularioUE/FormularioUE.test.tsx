@@ -1540,6 +1540,32 @@ describe("FormularioUE", () => {
                 expect(mockMutate).toHaveBeenCalled();
             });
         });
+
+        it("deve usar '00:00' na data_ocorrencia quando foraHorarioFuncionamento é true", async () => {
+            mockSecaoInicialGetData.mockReturnValue({
+                dataOcorrencia: "2024-01-02",
+                horaOcorrencia: "15:30",
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+                tipoOcorrencia: "Sim",
+                foraHorarioFuncionamento: true,
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.fora_horario_funcionamento_ue).toBe(true);
+                expect(data.body.data_ocorrencia).toEqual(expect.any(String));
+                expect(data.body.data_ocorrencia).not.toContain("15:30");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
     });
 
     describe("Botões baseados em permissões", () => {
