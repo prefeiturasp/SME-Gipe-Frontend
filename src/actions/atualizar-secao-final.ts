@@ -1,8 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { AxiosError } from "axios";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
+import { AxiosError } from "axios";
+import { cookies } from "next/headers";
 
 type AtualizarSecaoFinalParams = {
     uuid: string;
@@ -11,7 +11,7 @@ type AtualizarSecaoFinalParams = {
         dre_codigo_eol: string;
         declarante: string;
         comunicacao_seguranca_publica: string;
-        protocolo_acionado: string;
+        protocolo_acionado?: string;
     };
 };
 
@@ -57,7 +57,7 @@ export async function atualizarSecaoFinal({
                     headers: {
                         Authorization: `Bearer ${authToken}`,
                     },
-                }
+                },
             );
 
         return { success: true, data: response.data };
