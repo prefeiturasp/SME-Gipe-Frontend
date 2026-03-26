@@ -576,7 +576,7 @@ describe("EditarOcorrenciaPage", () => {
             status: "em_preenchimento_diretor",
             criado_em: "2025-10-15T14:48:04.383569-03:00",
             atualizado_em: "2025-10-15T14:48:04.383591-03:00",
-            comunicacao_seguranca_publica: "sim_pm" as const,
+            comunicacao_seguranca_publica: "sim" as const,
             protocolo_acionado: "alerta" as const,
             declarante_detalhes: {
                 uuid: "declarante-uuid-456",
@@ -614,7 +614,7 @@ describe("EditarOcorrenciaPage", () => {
 
         expect(mockStoreState.setFormData).toHaveBeenCalledWith(
             expect.objectContaining({
-                comunicacaoSeguranca: "Sim, com a PM",
+                comunicacaoSeguranca: "Sim",
                 protocoloAcionado: "Alerta",
                 declarante: "declarante-uuid-456",
             }),

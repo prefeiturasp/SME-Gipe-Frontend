@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarSecaoFinal } from "./atualizar-secao-final";
 import { AxiosError } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { atualizarSecaoFinal } from "./atualizar-secao-final";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -21,8 +21,7 @@ describe("atualizarSecaoFinal", () => {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-01",
         declarante: "declarante-uuid",
-        comunicacao_seguranca_publica: "sim_gcm",
-        protocolo_acionado: "ameaca",
+        comunicacao_seguranca_publica: "sim",
     };
 
     const mockResponse = {
@@ -33,8 +32,8 @@ describe("atualizarSecaoFinal", () => {
             uuid: "declarante-uuid",
             declarante: "Diretor",
         },
-        comunicacao_seguranca_publica: "sim_gcm",
-        protocolo_acionado: "ameaca",
+        comunicacao_seguranca_publica: "sim",
+        protocolo_acionado: "alerta",
         status_display: "Em andamento",
         status_extra: "Pendente",
     };
@@ -69,7 +68,7 @@ describe("atualizarSecaoFinal", () => {
                 headers: {
                     Authorization: `Bearer ${mockToken}`,
                 },
-            }
+            },
         );
     });
 

@@ -353,7 +353,7 @@ describe("FormularioUE", () => {
 
         mockSecaoFinalGetData.mockReturnValue({
             declarante: "Diretor",
-            comunicacaoSeguranca: "Sim, com a GCM",
+            comunicacaoSeguranca: "Sim",
             protocoloAcionado: "Ameaça",
         });
     });
@@ -1053,8 +1053,7 @@ describe("FormularioUE", () => {
                     envolvido: "",
                     tem_info_agressor_ou_vitima: "nao",
                     declarante: "Diretor",
-                    comunicacao_seguranca_publica: "sim_gcm",
-                    protocolo_acionado: "ameaca",
+                    comunicacao_seguranca_publica: "sim",
                 });
             });
 
@@ -1198,12 +1197,12 @@ describe("FormularioUE", () => {
         it("deve mapear comunicacao_seguranca_publica corretamente", async () => {
             mockSecaoFinalGetData.mockReturnValue({
                 declarante: "Diretor",
-                comunicacaoSeguranca: "Sim, com a PM",
+                comunicacaoSeguranca: "Sim",
                 protocoloAcionado: "Alerta",
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.comunicacao_seguranca_publica).toBe("sim_pm");
+                expect(data.body.comunicacao_seguranca_publica).toBe("sim");
                 expect(data.body.protocolo_acionado).toBe("alerta");
             });
 
@@ -1648,7 +1647,7 @@ describe("FormularioUE", () => {
 
             mockSecaoFinalGetData.mockReturnValue({
                 declarante: "Diretor",
-                comunicacaoSeguranca: "Sim, com a GCM",
+                comunicacaoSeguranca: "Sim",
                 protocoloAcionado: "Ameaça",
             });
 

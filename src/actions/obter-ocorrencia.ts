@@ -27,12 +27,7 @@ export type OcorrenciaDetalheAPI = {
         uuid: string;
         declarante: string;
     };
-    comunicacao_seguranca_publica?:
-        | "sim_gcm"
-        | "sim_pm"
-        | "sim_dc"
-        | "sim_cbm"
-        | "nao";
+    comunicacao_seguranca_publica?: "sim" | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
     envolvido?: Array<{
         uuid: string;

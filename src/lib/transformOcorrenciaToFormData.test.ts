@@ -182,10 +182,7 @@ describe("transformOcorrenciaToFormData", () => {
 
     it("deve converter comunicacao_seguranca_publica corretamente", () => {
         const testCases = [
-            { input: "sim_gcm" as const, expected: "Sim, com a GCM" },
-            { input: "sim_pm" as const, expected: "Sim, com a PM" },
-            { input: "sim_dc" as const, expected: "Sim, com a Defesa civil" },
-            { input: "sim_cbm" as const, expected: "Sim, com o Bombeiro" },
+            { input: "sim" as const, expected: "Sim" },
             { input: "nao" as const, expected: "Não" },
         ];
 
@@ -269,7 +266,7 @@ describe("transformOcorrenciaToFormData", () => {
                 uuid: "declarante-uuid",
                 declarante: "João Silva",
             },
-            comunicacao_seguranca_publica: "sim_gcm",
+            comunicacao_seguranca_publica: "sim",
             protocolo_acionado: "ameaca",
             envolvido: [
                 {
@@ -292,7 +289,7 @@ describe("transformOcorrenciaToFormData", () => {
             descricao: "Descrição da ocorrência",
             smartSampa: "Sim",
             declarante: "declarante-uuid",
-            comunicacaoSeguranca: "Sim, com a GCM",
+            comunicacaoSeguranca: "Sim",
             protocoloAcionado: "Ameaça",
             envolvidos: ["envolvido-uuid"],
             possuiInfoAgressorVitima: "Sim",
