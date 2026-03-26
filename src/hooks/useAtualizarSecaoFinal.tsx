@@ -1,5 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
 import { atualizarSecaoFinal } from "@/actions/atualizar-secao-final";
+import { useMutation } from "@tanstack/react-query";
 
 type AtualizarSecaoFinalParams = {
     uuid: string;
@@ -8,7 +8,7 @@ type AtualizarSecaoFinalParams = {
         dre_codigo_eol: string;
         declarante: string;
         comunicacao_seguranca_publica: string;
-        protocolo_acionado: string;
+        protocolo_acionado?: string;
     };
 };
 
