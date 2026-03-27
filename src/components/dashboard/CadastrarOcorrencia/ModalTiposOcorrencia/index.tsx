@@ -1,4 +1,5 @@
 import type { TipoOcorrenciaAPI } from "@/actions/tipos-ocorrencia";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -7,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useState } from "react";
 
 type ModalTiposOcorrenciaProps = {
     readonly open: boolean;
@@ -60,5 +62,39 @@ export function ModalTiposOcorrencia({
                 </div>
             </DialogContent>
         </Dialog>
+    );
+}
+
+type AlertTiposOcorrenciaProps = {
+    readonly tiposOcorrencia: TipoOcorrenciaAPI[];
+};
+
+export function AlertTiposOcorrencia({
+    tiposOcorrencia,
+}: AlertTiposOcorrenciaProps) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <Alert variant="info" className="mt-[-16px]">
+                <AlertDescription>
+                    Precisa de ajuda para entender os tipos de ocorrência?{" "}
+                    <button
+                        type="button"
+                        onClick={() => setOpen(true)}
+                        className="font-semibold underline cursor-pointer text-[#717FC7]"
+                    >
+                        Clique aqui
+                    </button>{" "}
+                    e confira a descrição de cada uma.
+                </AlertDescription>
+            </Alert>
+
+            <ModalTiposOcorrencia
+                open={open}
+                onOpenChange={setOpen}
+                tiposOcorrencia={tiposOcorrencia}
+            />
+        </>
     );
 }

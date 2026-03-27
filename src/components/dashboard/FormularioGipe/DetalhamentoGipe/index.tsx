@@ -1,9 +1,8 @@
 "use client";
 
-import { ModalTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
+import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
 import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
 import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -49,7 +48,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
-    const [openModalTipos, setOpenModalTipos] = useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const queryClient = useQueryClient();
     const router = useRouter();
@@ -436,26 +434,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             />
 
                             <div className="col-span-1 md:col-span-2">
-                                <Alert variant="info" className="mt-[-16px]">
-                                    <AlertDescription>
-                                        Precisa de ajuda para entender os tipos
-                                        de ocorrência?{" "}
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setOpenModalTipos(true)
-                                            }
-                                            className="font-semibold underline cursor-pointer"
-                                        >
-                                            Clique aqui
-                                        </button>{" "}
-                                        e confira a descrição de cada uma.
-                                    </AlertDescription>
-                                </Alert>
-
-                                <ModalTiposOcorrencia
-                                    open={openModalTipos}
-                                    onOpenChange={setOpenModalTipos}
+                                <AlertTiposOcorrencia
                                     tiposOcorrencia={tiposOcorrencia ?? []}
                                 />
                             </div>
