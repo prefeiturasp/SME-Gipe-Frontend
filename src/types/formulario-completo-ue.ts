@@ -13,7 +13,7 @@ export type FormularioCompletoUEBody = {
     tem_info_agressor_ou_vitima: string;
     declarante: string;
     comunicacao_seguranca_publica: string;
-    protocolo_acionado: string;
+    protocolo_acionado?: string;
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
@@ -40,7 +40,7 @@ export type FormularioCompletoUEResponse = {
     smart_sampa_situacao: string;
     tem_info_agressor_ou_vitima: string;
     comunicacao_seguranca_publica: string;
-    protocolo_acionado: string;
+    protocolo_acionado?: string;
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
