@@ -436,7 +436,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             />
 
                             <div className="col-span-1 md:col-span-2">
-                                <Alert variant="info">
+                                <Alert variant="info" className="mt-[-16px]">
                                     <AlertDescription>
                                         Precisa de ajuda para entender os tipos
                                         de ocorrência?{" "}

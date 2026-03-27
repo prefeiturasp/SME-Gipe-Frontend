@@ -300,7 +300,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             )}
                         />
 
-                        <Alert variant="info">
+                        <Alert variant="info" className="mt-[-16px]">
                             <AlertDescription>
                                 Precisa de ajuda para entender os tipos de
                                 ocorrência?{" "}

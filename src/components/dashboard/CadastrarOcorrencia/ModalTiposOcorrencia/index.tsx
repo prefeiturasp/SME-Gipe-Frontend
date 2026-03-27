@@ -21,9 +21,9 @@ export function ModalTiposOcorrencia({
 }: ModalTiposOcorrenciaProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-6 rounded-[4px] w-full max-w-[640px]">
+            <DialogContent className="p-6 rounded-[4px] w-full max-w-[780px]">
                 <DialogHeader>
-                    <DialogTitle className="text-[18px] font-bold text-[#42474a]">
+                    <DialogTitle className="text-[20px] font-bold text-[#42474a]">
                         Tipos de ocorrência
                     </DialogTitle>
                 </DialogHeader>
@@ -32,17 +32,17 @@ export function ModalTiposOcorrencia({
                     Entenda o que é cada um dos tipos de ocorrências.
                 </DialogDescription>
 
-                <div className="flex flex-col gap-4 mt-2 max-h-[60vh] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-4 mt-2 max-h-[60vh] overflow-y-auto pr-1 pb-2">
                     {tiposOcorrencia.map((tipo) => (
                         <div
                             key={tipo.uuid}
-                            className="bg-[#F5F5F5] rounded-[4px] p-3"
+                            className="rounded-[4px] p-3 border border-[#DADADA]"
                         >
                             <p className="text-sm font-bold text-[#42474a]">
                                 {tipo.nome}:
                             </p>
                             {tipo.descricao && (
-                                <p className="text-sm text-[#42474a] mt-1">
+                                <p className="text-sm text-[#86858D] mt-1">
                                     {tipo.descricao}
                                 </p>
                             )}
@@ -52,7 +52,7 @@ export function ModalTiposOcorrencia({
 
                 <div className="flex justify-end mt-2">
                     <Button
-                        variant="customOutline"
+                        variant="submit"
                         onClick={() => onOpenChange(false)}
                     >
                         Fechar
