@@ -3,6 +3,8 @@
 import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
 import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
+import { ModalTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -20,7 +22,13 @@ import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useState,
+} from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
@@ -62,6 +70,8 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
         const { mutate: atualizarSecao, isPending } =
             useAtualizarSecaoNaoFurtoRoubo();
+
+        const [openModalTipos, setOpenModalTipos] = useState(false);
 
         const tiposOcorrenciaOptions =
             tiposOcorrencia?.map((tipo) => ({
@@ -373,6 +383,27 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 )}
                             />
                         </div>
+
+                        <Alert variant="info">
+                            <AlertDescription>
+                                Precisa de ajuda para entender os tipos de
+                                ocorrência?{" "}
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenModalTipos(true)}
+                                    className="font-semibold underline cursor-pointer"
+                                >
+                                    Clique aqui
+                                </button>{" "}
+                                e confira a descrição de cada uma.
+                            </AlertDescription>
+                        </Alert>
+
+                        <ModalTiposOcorrencia
+                            open={openModalTipos}
+                            onOpenChange={setOpenModalTipos}
+                            tiposOcorrencia={tiposOcorrencia ?? []}
+                        />
 
                         <CampoDescricaoOcorrencia
                             control={form.control}
