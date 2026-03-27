@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
 import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
 import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { Button } from "@/components/ui/button";
@@ -431,6 +432,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                     </FormItem>
                                 )}
                             />
+
+                            <div className="col-span-1 md:col-span-2">
+                                <AlertTiposOcorrencia
+                                    tiposOcorrencia={tiposOcorrencia ?? []}
+                                />
+                            </div>
 
                             <FormField
                                 control={form.control}

@@ -1332,4 +1332,42 @@ describe("DetalhamentoGipe", () => {
             expect(descricaoTipo).toHaveValue("Tipo personalizado");
         });
     });
+
+    describe("Alert de ajuda e modal de tipos de ocorrência", () => {
+        it("deve renderizar o alert de ajuda abaixo do campo de tipos de ocorrência", () => {
+            renderComponent();
+            expect(
+                screen.getByText(
+                    /Precisa de ajuda para entender os tipos de ocorrência\?/i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            ).toBeInTheDocument();
+        });
+
+        it("deve abrir o modal ao clicar em 'Clique aqui'", async () => {
+            renderComponent();
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+        });
+
+        it("deve fechar o modal ao clicar no botão Fechar", async () => {
+            renderComponent();
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+            await userEvent.click(
+                screen.getByRole("button", { name: /^fechar$/i }),
+            );
+            await waitFor(() => {
+                expect(
+                    screen.queryByText("Tipos de ocorrência"),
+                ).not.toBeInTheDocument();
+            });
+        });
+    });
 });

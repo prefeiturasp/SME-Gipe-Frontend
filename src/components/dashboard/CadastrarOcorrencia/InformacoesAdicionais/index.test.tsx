@@ -3,7 +3,7 @@ import * as useAtualizarInfoAgressorHook from "@/hooks/useAtualizarInfoAgressor"
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -805,27 +805,31 @@ describe("InformacoesAdicionais", () => {
             });
 
             const ref = React.createRef<InformacoesAdicionaisRef>();
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <InformacoesAdicionais
-                        ref={ref}
-                        onNext={mockOnNext}
-                        onPrevious={mockOnPrevious}
-                    />
-                </QueryClientProvider>,
-            );
+            await act(async () => {
+                render(
+                    <QueryClientProvider client={queryClient}>
+                        <InformacoesAdicionais
+                            ref={ref}
+                            onNext={mockOnNext}
+                            onPrevious={mockOnPrevious}
+                        />
+                    </QueryClientProvider>,
+                );
+            });
+            await act(async () => {});
 
-            const result = ref.current?.validateOutros();
+            let result: boolean | undefined;
+            await act(async () => {
+                result = ref.current?.validateOutros();
+            });
             expect(result).toBe(false);
 
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva o que motivou a ocorrência."),
-                ).toBeInTheDocument();
-            });
+            expect(
+                screen.getByText("Descreva o que motivou a ocorrência."),
+            ).toBeInTheDocument();
         });
 
-        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição contém apenas espaços", () => {
+        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição contém apenas espaços", async () => {
             vi.mocked(useOcorrenciaFormStore).mockReturnValue({
                 formData: {
                     motivoOcorrencia: ["outros"],
@@ -838,17 +842,23 @@ describe("InformacoesAdicionais", () => {
             });
 
             const ref = React.createRef<InformacoesAdicionaisRef>();
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <InformacoesAdicionais
-                        ref={ref}
-                        onNext={mockOnNext}
-                        onPrevious={mockOnPrevious}
-                    />
-                </QueryClientProvider>,
-            );
+            await act(async () => {
+                render(
+                    <QueryClientProvider client={queryClient}>
+                        <InformacoesAdicionais
+                            ref={ref}
+                            onNext={mockOnNext}
+                            onPrevious={mockOnPrevious}
+                        />
+                    </QueryClientProvider>,
+                );
+            });
+            await act(async () => {});
 
-            const result = ref.current?.validateOutros();
+            let result: boolean | undefined;
+            await act(async () => {
+                result = ref.current?.validateOutros();
+            });
             expect(result).toBe(false);
         });
 

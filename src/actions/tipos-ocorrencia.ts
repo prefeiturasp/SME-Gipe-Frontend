@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 export type TipoOcorrenciaAPI = {
     uuid: string;
     nome: string;
+    descricao?: string;
 };
 
 export type TipoFormulario = "PATRIMONIAL" | "GERAL" | "TODOS";

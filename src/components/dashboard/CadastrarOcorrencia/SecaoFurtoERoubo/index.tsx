@@ -3,6 +3,7 @@
 import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
 import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
+import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -288,6 +289,10 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                                     <FormMessage />
                                 </FormItem>
                             )}
+                        />
+
+                        <AlertTiposOcorrencia
+                            tiposOcorrencia={tiposOcorrencia ?? []}
                         />
 
                         <CampoDescricaoOcorrencia
