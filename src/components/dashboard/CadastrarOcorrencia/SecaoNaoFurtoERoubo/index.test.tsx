@@ -1589,4 +1589,60 @@ describe("SecaoNaoFurtoERoubo", () => {
         await user.type(textarea, "Teste");
         expect(textarea).toHaveValue("");
     });
+
+    describe("Alert de ajuda e modal de tipos de ocorrência", () => {
+        it("deve renderizar o alert de ajuda abaixo do campo de tipos de ocorrência", () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() },
+            );
+            expect(
+                screen.getByText(
+                    /Precisa de ajuda para entender os tipos de ocorrência\?/i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            ).toBeInTheDocument();
+        });
+
+        it("deve abrir o modal ao clicar em 'Clique aqui'", async () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() },
+            );
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+        });
+
+        it("deve fechar o modal ao clicar no botão Fechar", async () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() },
+            );
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+            await userEvent.click(
+                screen.getByRole("button", { name: /^fechar$/i }),
+            );
+            await waitFor(() => {
+                expect(
+                    screen.queryByText("Tipos de ocorrência"),
+                ).not.toBeInTheDocument();
+            });
+        });
+    });
 });
