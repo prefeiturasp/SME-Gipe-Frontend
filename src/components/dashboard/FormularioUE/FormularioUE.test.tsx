@@ -337,9 +337,8 @@ describe("FormularioUE", () => {
             etapaEscolar: "Fundamental II",
             frequenciaEscolar: "Regular",
             interacaoAmbienteEscolar: "Boa",
-            redesProtecao: ["CRAS"],
             notificadoConselhoTutelar: "Sim",
-            acompanhadoNAAPA: "Não",
+            acompanhadoNAAPA: "naapa",
         });
 
         mockSecaoFinalGetData.mockReturnValue({
@@ -1043,9 +1042,8 @@ describe("FormularioUE", () => {
                 etapaEscolar: "Fundamental II",
                 frequenciaEscolar: "Regular",
                 interacaoAmbienteEscolar: "Boa",
-                redesProtecao: ["CRAS"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             });
 
             mockMutate.mockImplementation((data) => {
@@ -1056,7 +1054,7 @@ describe("FormularioUE", () => {
                     ],
                     motivacao_ocorrencia: "Bullying",
                     notificado_conselho_tutelar: true,
-                    acompanhado_naapa: false,
+                    ocorrencia_acompanhada_pelo: "naapa",
                 });
             });
 
@@ -1098,9 +1096,8 @@ describe("FormularioUE", () => {
                     },
                 ],
                 motivoOcorrencia: "Bullying",
-                redesProtecao: ["CRAS"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             });
 
             mockMutate.mockImplementation((data) => {

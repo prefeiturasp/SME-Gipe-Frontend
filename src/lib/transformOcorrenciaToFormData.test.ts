@@ -299,6 +299,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "ensino_fundamental_2",
                         frequencia_escolar: "regular",
                         interacao_ambiente_escolar: "Boa interação",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: true,
                     },
                 ],
             };
@@ -314,6 +316,8 @@ describe("transformOcorrenciaToFormData", () => {
                     etapaEscolar: "ensino_fundamental_2",
                     frequenciaEscolar: "regular",
                     interacaoAmbienteEscolar: "Boa interação",
+                    nacionalidade: "Brasileira",
+                    pessoaComDeficiencia: "Sim",
                 },
             ]);
         });
@@ -330,6 +334,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "ensino_medio",
                         frequencia_escolar: "regular",
                         interacao_ambiente_escolar: "Boa interação",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
             };
@@ -351,6 +357,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "",
                         frequencia_escolar: "",
                         interacao_ambiente_escolar: "",
+                        nacionalidade: "",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
             };
@@ -377,15 +385,15 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.motivoOcorrencia).toEqual(["homofobia", "racismo"]);
         });
 
-        it("deve incluir redes de proteção quando presente", () => {
+        it("deve incluir ocorrencia_acompanhada_pelo quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
+                ocorrencia_acompanhada_pelo: "naapa",
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.redesProtecao).toBe("CRAS, NAAPA");
+            expect(result.acompanhadoNAAPA).toBe("naapa");
         });
 
         it("deve converter notificado_conselho_tutelar para 'Sim' quando true", () => {
@@ -410,26 +418,26 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.notificadoConselhoTutelar).toBe("Não");
         });
 
-        it("deve converter acompanhado_naapa para 'Sim' quando true", () => {
+        it("deve converter acompanhado_naapa para o valor de ocorrencia_acompanhada_pelo", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                acompanhado_naapa: true,
+                ocorrencia_acompanhada_pelo: "comissao_mediacao_conflitos",
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("Sim");
+            expect(result.acompanhadoNAAPA).toBe("comissao_mediacao_conflitos");
         });
 
-        it("deve converter acompanhado_naapa para 'Não' quando false", () => {
+        it("não deve incluir acompanhadoNAAPA quando ocorrencia_acompanhada_pelo é undefined", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: undefined,
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("Não");
+            expect(result.acompanhadoNAAPA).toBeUndefined();
         });
 
         it("não deve incluir notificadoConselhoTutelar quando undefined", () => {
@@ -441,17 +449,6 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.notificadoConselhoTutelar).toBeUndefined();
-        });
-
-        it("não deve incluir acompanhadoNAAPA quando undefined", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                acompanhado_naapa: undefined,
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.acompanhadoNAAPA).toBeUndefined();
         });
     });
 
@@ -469,15 +466,16 @@ describe("transformOcorrenciaToFormData", () => {
                         frequencia_escolar: "transferido_estadual",
                         interacao_ambiente_escolar:
                             "Como é a interação da pessoa agressora no ambiente escolar?",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
                 motivacao_ocorrencia_display: [
                     { value: "homofobia", label: "Homofobia" },
                     { value: "racismo", label: "Racismo" },
                 ],
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: "naapa",
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
@@ -493,12 +491,13 @@ describe("transformOcorrenciaToFormData", () => {
                         frequenciaEscolar: "transferido_estadual",
                         interacaoAmbienteEscolar:
                             "Como é a interação da pessoa agressora no ambiente escolar?",
+                        nacionalidade: "Brasileira",
+                        pessoaComDeficiencia: "Não",
                     },
                 ],
                 motivoOcorrencia: ["homofobia", "racismo"],
-                redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             });
         });
     });

@@ -41,12 +41,13 @@ describe("useAtualizarInfoAgressor", () => {
                 frequencia_escolar: "transferido_estadual",
                 interacao_ambiente_escolar:
                     "Como é a interação da pessoa agressora no ambiente escolar?",
+                nacionalidade: "Brasileira",
+                pessoa_com_deficiencia: false,
             },
         ],
         motivacao_ocorrencia: ["homofobia", "racismo"],
-        redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
-        acompanhado_naapa: false,
+        ocorrencia_acompanhada_pelo: "naapa",
     };
 
     beforeEach(() => {
@@ -68,15 +69,15 @@ describe("useAtualizarInfoAgressor", () => {
                     frequencia_escolar: "transferido_estadual",
                     interacao_ambiente_escolar:
                         "Como é a interação da pessoa agressora no ambiente escolar?",
+                    nacionalidade: "Brasileira",
+                    pessoa_com_deficiencia: false,
                 },
             ],
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
-            redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false,
+            ocorrencia_acompanhada_pelo: "naapa",
         };
-
         vi.spyOn(
             atualizarInfoAgressorAction,
             "atualizarInfoAgressor",
@@ -159,15 +160,15 @@ describe("useAtualizarInfoAgressor", () => {
                     frequencia_escolar: "transferido_estadual",
                     interacao_ambiente_escolar:
                         "Como é a interação da pessoa agressora no ambiente escolar?",
+                    nacionalidade: "Brasileira",
+                    pessoa_com_deficiencia: false,
                 },
             ],
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
-            redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false,
+            ocorrencia_acompanhada_pelo: "naapa",
         };
-
         const spy = vi
             .spyOn(atualizarInfoAgressorAction, "atualizarInfoAgressor")
             .mockResolvedValue({

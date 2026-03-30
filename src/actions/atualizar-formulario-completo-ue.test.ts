@@ -222,12 +222,13 @@ describe("atualizarFormularioCompletoUE action", () => {
                     etapa_escolar: "Fundamental II",
                     frequencia_escolar: "Regular",
                     interacao_ambiente_escolar: "Boa",
+                    nacionalidade: "Brasileira",
+                    pessoa_com_deficiencia: false,
                 },
             ],
             motivacao_ocorrencia: ["Bullying"],
-            redes_protecao_acompanhamento: "CRAS",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false,
+            ocorrencia_acompanhada_pelo: "naapa",
         };
 
         const mockResponse = {
