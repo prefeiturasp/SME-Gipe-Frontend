@@ -34,6 +34,8 @@ const EMPTY_PESSOA = {
     etapaEscolar: "",
     frequenciaEscolar: "",
     interacaoAmbienteEscolar: "",
+    nacionalidade: "",
+    pessoaComDeficiencia: "",
 };
 
 export default function Envolvidos({
@@ -60,7 +62,7 @@ export default function Envolvidos({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        Qual o nome da pessoa envolvida?*
+                                        Qual o nome da pessoa?*
                                     </FormLabel>
                                     <FormControl>
                                         <Input
@@ -139,7 +141,7 @@ export default function Envolvidos({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        Qual o grupo étnico-racial?*
+                                        Raça/cor auto declarada*
                                     </FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
@@ -236,6 +238,61 @@ export default function Envolvidos({
                                             )}
                                         </SelectContent>
                                     </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 items-start md:grid-cols-3">
+                        <FormField
+                            control={control}
+                            name={`pessoasAgressoras.${index}.pessoaComDeficiencia`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel disabled={disabled}>
+                                        Pessoa com deficiência?*
+                                    </FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        disabled={disabled}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Sim">
+                                                Sim
+                                            </SelectItem>
+                                            <SelectItem value="Não">
+                                                Não
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={control}
+                            name={`pessoasAgressoras.${index}.nacionalidade`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel disabled={disabled}>
+                                        Qual a nacionalidade?*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            disabled={disabled}
+                                            placeholder="Digite aqui..."
+                                            maxLength={100}
+                                            {...field}
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}

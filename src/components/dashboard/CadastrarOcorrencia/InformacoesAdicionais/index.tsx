@@ -11,7 +11,6 @@ import {
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
@@ -70,10 +69,11 @@ const InformacoesAdicionais = forwardRef<
                           etapaEscolar: "",
                           frequenciaEscolar: "",
                           interacaoAmbienteEscolar: "",
+                          nacionalidade: "",
+                          pessoaComDeficiencia: "",
                       },
                   ],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
-            redesProtecao: formData.redesProtecao ?? "",
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
             acompanhadoNAAPA: formData.acompanhadoNAAPA ?? undefined,
@@ -105,7 +105,6 @@ const InformacoesAdicionais = forwardRef<
                 !hasFormDataChanged(currentValues, savedFormData, [
                     "pessoasAgressoras",
                     "motivoOcorrencia",
-                    "redesProtecao",
                     "notificadoConselhoTutelar",
                     "acompanhadoNAAPA",
                 ])
@@ -130,13 +129,15 @@ const InformacoesAdicionais = forwardRef<
                                 frequencia_escolar: pessoa.frequenciaEscolar,
                                 interacao_ambiente_escolar:
                                     pessoa.interacaoAmbienteEscolar,
+                                nacionalidade: pessoa.nacionalidade,
+                                pessoa_com_deficiencia:
+                                    pessoa.pessoaComDeficiencia === "Sim",
                             }),
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
-                        redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
-                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim",
+                        ocorrencia_acompanhada_pelo: data.acompanhadoNAAPA,
                     },
                 },
                 {
@@ -210,34 +211,12 @@ const InformacoesAdicionais = forwardRef<
 
                     <FormField
                         control={form.control}
-                        name="redesProtecao"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Quais órgãos da rede de proteção já
-                                    acompanham o estudante?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        disabled={disabled}
-                                        placeholder="Digite aqui..."
-                                        className="min-h-[100px]"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
                         name="notificadoConselhoTutelar"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência foi notificada ao Conselho
-                                    Tutelar?*
+                                    A ocorrência foi notificada ao CT (Conselho
+                                    Tutelar)?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -285,7 +264,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência é acompanhada pelo NAAPA?*
+                                    A ocorrência está sendo acompanhada pelo:
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -296,7 +275,7 @@ const InformacoesAdicionais = forwardRef<
                                             className="flex flex-col space-y-2"
                                         >
                                             <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Sim" />
+                                                <RadioGroupItem value="naapa" />
                                                 <span
                                                     className={
                                                         disabled
@@ -304,11 +283,11 @@ const InformacoesAdicionais = forwardRef<
                                                             : "text-sm text-[#42474a]"
                                                     }
                                                 >
-                                                    Sim
+                                                    NAAPA
                                                 </span>
                                             </label>
                                             <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Não" />
+                                                <RadioGroupItem value="comissao_mediacao_conflitos" />
                                                 <span
                                                     className={
                                                         disabled
@@ -316,7 +295,32 @@ const InformacoesAdicionais = forwardRef<
                                                             : "text-sm text-[#42474a]"
                                                     }
                                                 >
-                                                    Não
+                                                    Comissão de Mediação de
+                                                    Conflitos
+                                                </span>
+                                            </label>
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
+                                                <RadioGroupItem value="supervisao_escolar" />
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
+                                                    Supervisão Escolar
+                                                </span>
+                                            </label>
+                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
+                                                <RadioGroupItem value="cefai" />
+                                                <span
+                                                    className={
+                                                        disabled
+                                                            ? "text-sm text-[#B0B0B0]"
+                                                            : "text-sm text-[#42474a]"
+                                                    }
+                                                >
+                                                    CEFAI
                                                 </span>
                                             </label>
                                         </RadioGroup>
