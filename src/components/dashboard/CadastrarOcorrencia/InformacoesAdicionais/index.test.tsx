@@ -86,10 +86,7 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação",
         );
-        await user.type(
-            screen.getByLabelText(/Qual a nacionalidade\?/i),
-            "Brasileira",
-        );
+        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
 
         const deficienciaTrigger = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -308,10 +305,7 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação com todos",
         );
-        await user.type(
-            screen.getByLabelText(/Qual a nacionalidade\?/i),
-            "Brasileira",
-        );
+        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
 
         const deficienciaTrigger2 = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -710,7 +704,7 @@ describe("InformacoesAdicionais", () => {
                 "Boa interação",
             );
             await user.type(
-                screen.getByLabelText(/Qual a nacionalidade\?/i),
+                screen.getByPlaceholderText(/Digite a nacionalidade/i),
                 "Brasileira",
             );
 

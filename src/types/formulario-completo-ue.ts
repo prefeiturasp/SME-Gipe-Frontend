@@ -25,7 +25,11 @@ export type FormularioCompletoUEBody = {
     }>;
     motivacao_ocorrencia?: string[];
     notificado_conselho_tutelar?: boolean;
-    ocorrencia_acompanhada_pelo?: string;
+    ocorrencia_acompanhada_pelo?:
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai";
 };
 
 export type FormularioCompletoUEResponse = {
@@ -52,5 +56,9 @@ export type FormularioCompletoUEResponse = {
     }>;
     motivacao_ocorrencia?: string[];
     notificado_conselho_tutelar?: boolean;
-    ocorrencia_acompanhada_pelo?: string;
+    ocorrencia_acompanhada_pelo?:
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai";
 };

@@ -1,4 +1,5 @@
 import { CategoriasDisponiveisAPI } from "@/actions/categorias-disponiveis";
+import InfoTooltip from "@/components/login/InfoTooltip";
 import { Button } from "@/components/ui/button";
 import {
     FormControl,
@@ -283,12 +284,15 @@ export default function Envolvidos({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        Qual a nacionalidade?*
+                                        <span className="flex items-center gap-1">
+                                            Nacionalidade*
+                                            <InfoTooltip content="A nacionalidade se refere ao país ao qual a pessoa pertence." />
+                                        </span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             disabled={disabled}
-                                            placeholder="Digite aqui..."
+                                            placeholder="Digite a nacionalidade..."
                                             maxLength={100}
                                             {...field}
                                         />
