@@ -12,15 +12,5 @@ export function transformOcorrenciaGipeToFormData(
             ocorrenciaGipe.info_sobre_interacoes_virtuais_pessoa_agressora ||
             "",
         encaminhamentos: ocorrenciaGipe.encaminhamentos_gipe || "",
-        ...(ocorrenciaGipe.envolvido_outros && {
-            descricaoEnvolvidos: ocorrenciaGipe.envolvido_outros,
-        }),
-        ...(ocorrenciaGipe.motivacao_ocorrencia_outros && {
-            descricaoMotivoOcorrencia:
-                ocorrenciaGipe.motivacao_ocorrencia_outros,
-        }),
-        ...(ocorrenciaGipe.tipos_ocorrencia_outros && {
-            descricaoTipoOcorrencia: ocorrenciaGipe.tipos_ocorrencia_outros,
-        }),
     };
 }
