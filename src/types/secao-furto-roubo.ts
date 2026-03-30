@@ -1,6 +1,5 @@
 export type SecaoFurtoRouboBody = {
     tipos_ocorrencia: string[];
-    tipos_ocorrencia_outros?: string;
     descricao_ocorrencia: string;
     smart_sampa_situacao: "sim" | "nao";
 };
