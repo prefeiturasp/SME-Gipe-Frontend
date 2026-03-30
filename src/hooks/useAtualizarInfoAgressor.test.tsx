@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAtualizarInfoAgressor } from "./useAtualizarInfoAgressor";
 import * as atualizarInfoAgressorAction from "@/actions/atualizar-info-agressor";
 import { InfoAgressorBody } from "@/types/info-agressor";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAtualizarInfoAgressor } from "./useAtualizarInfoAgressor";
 
 vi.mock("@/actions/atualizar-info-agressor");
 
@@ -31,18 +31,22 @@ describe("useAtualizarInfoAgressor", () => {
     const mockBody: InfoAgressorBody = {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-001",
-        nome_pessoa_agressora: "Kleber Machado",
-        idade_pessoa_agressora: 35,
+        pessoas_agressoras: [
+            {
+                nome: "Kleber Machado",
+                idade: 35,
+                genero: "mulher_cis",
+                grupo_etnico_racial: "indigena",
+                etapa_escolar: "ensino_medio",
+                frequencia_escolar: "transferido_estadual",
+                interacao_ambiente_escolar:
+                    "Como é a interação da pessoa agressora no ambiente escolar?",
+            },
+        ],
         motivacao_ocorrencia: ["homofobia", "racismo"],
-        genero_pessoa_agressora: "mulher_cis",
-        grupo_etnico_racial: "indigena",
-        etapa_escolar: "ensino_medio",
-        frequencia_escolar: "transferido_estadual",
-        interacao_ambiente_escolar:
-            "Como é a interação da pessoa agressora no ambiente escolar?",
         redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
-        acompanhado_naapa: false
+        acompanhado_naapa: false,
     };
 
     beforeEach(() => {
@@ -54,24 +58,28 @@ describe("useAtualizarInfoAgressor", () => {
             uuid: mockUuid,
             unidade_codigo_eol: "123456",
             dre_codigo_eol: "DRE-001",
-            nome_pessoa_agressora: "Kleber Machado",
-            idade_pessoa_agressora: 35,
+            pessoas_agressoras: [
+                {
+                    nome: "Kleber Machado",
+                    idade: 35,
+                    genero: "mulher_cis",
+                    grupo_etnico_racial: "indigena",
+                    etapa_escolar: "ensino_medio",
+                    frequencia_escolar: "transferido_estadual",
+                    interacao_ambiente_escolar:
+                        "Como é a interação da pessoa agressora no ambiente escolar?",
+                },
+            ],
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
-            genero_pessoa_agressora: "mulher_cis",
-            grupo_etnico_racial: "indigena",
-            etapa_escolar: "ensino_medio",
-            frequencia_escolar: "transferido_estadual",
-            interacao_ambiente_escolar:
-                "Como é a interação da pessoa agressora no ambiente escolar?",
             redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false
+            acompanhado_naapa: false,
         };
 
         vi.spyOn(
             atualizarInfoAgressorAction,
-            "atualizarInfoAgressor"
+            "atualizarInfoAgressor",
         ).mockResolvedValue({
             success: true,
             data: mockResponse,
@@ -90,7 +98,7 @@ describe("useAtualizarInfoAgressor", () => {
             data: mockResponse,
         });
         expect(
-            atualizarInfoAgressorAction.atualizarInfoAgressor
+            atualizarInfoAgressorAction.atualizarInfoAgressor,
         ).toHaveBeenCalledWith(mockUuid, mockBody);
     });
 
@@ -98,7 +106,7 @@ describe("useAtualizarInfoAgressor", () => {
         const errorMessage = "Erro ao atualizar informações adicionais";
         vi.spyOn(
             atualizarInfoAgressorAction,
-            "atualizarInfoAgressor"
+            "atualizarInfoAgressor",
         ).mockResolvedValue({
             success: false,
             error: errorMessage,
@@ -121,7 +129,7 @@ describe("useAtualizarInfoAgressor", () => {
     it("deve lidar com erro de rede", async () => {
         vi.spyOn(
             atualizarInfoAgressorAction,
-            "atualizarInfoAgressor"
+            "atualizarInfoAgressor",
         ).mockRejectedValue(new Error("Network Error"));
 
         const { result } = renderHook(() => useAtualizarInfoAgressor(), {
@@ -141,19 +149,23 @@ describe("useAtualizarInfoAgressor", () => {
             uuid: mockUuid,
             unidade_codigo_eol: "123456",
             dre_codigo_eol: "DRE-001",
-            nome_pessoa_agressora: "Kleber Machado",
-            idade_pessoa_agressora: 35,
+            pessoas_agressoras: [
+                {
+                    nome: "Kleber Machado",
+                    idade: 35,
+                    genero: "mulher_cis",
+                    grupo_etnico_racial: "indigena",
+                    etapa_escolar: "ensino_medio",
+                    frequencia_escolar: "transferido_estadual",
+                    interacao_ambiente_escolar:
+                        "Como é a interação da pessoa agressora no ambiente escolar?",
+                },
+            ],
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
-            genero_pessoa_agressora: "mulher_cis",
-            grupo_etnico_racial: "indigena",
-            etapa_escolar: "ensino_medio",
-            frequencia_escolar: "transferido_estadual",
-            interacao_ambiente_escolar:
-                "Como é a interação da pessoa agressora no ambiente escolar?",
             redes_protecao_acompanhamento: "CRAS, NAAPA",
             notificado_conselho_tutelar: true,
-            acompanhado_naapa: false
+            acompanhado_naapa: false,
         };
 
         const spy = vi
@@ -169,8 +181,6 @@ describe("useAtualizarInfoAgressor", () => {
 
         const customBody: InfoAgressorBody = {
             ...mockBody,
-            nome_pessoa_agressora: "João Silva",
-            idade_pessoa_agressora: 25,
         };
 
         result.current.mutate({ uuid: "custom-uuid", body: customBody });

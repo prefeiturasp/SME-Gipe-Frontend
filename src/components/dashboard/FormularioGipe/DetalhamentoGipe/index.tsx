@@ -1,5 +1,7 @@
 "use client";
 
+import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
+import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -10,7 +12,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { MultiSelect } from "@/components/ui/multi-select";
 import {
     Select,
     SelectContent,
@@ -25,12 +26,11 @@ import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
-import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
@@ -48,7 +48,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
-    const user = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
     const router = useRouter();
 
@@ -63,18 +62,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const { data: tiposOcorrencia, isLoading: isLoadingTipos } =
         useTiposOcorrencia(tipoFormulario);
 
-    const perfilMap: Record<string, "diretor" | "assistente" | "dre" | "gipe"> =
-        {
-            "DIRETOR DE ESCOLA": "diretor",
-            "ASSISTENTE DE DIRETOR DE ESCOLA": "assistente",
-            "PONTO FOCAL DRE": "dre",
-            GIPE: "gipe",
-        };
-
-    const perfilUsuario =
-        (user?.perfil_acesso?.nome && perfilMap[user.perfil_acesso.nome]) ||
-        "diretor";
-
     const envolvidosOptions =
         envolvidos?.map((envolvido) => ({
             value: envolvido.uuid,
@@ -86,7 +73,13 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     const ameacaRealizadaOptions =
         categoriasGipe?.ameaca_foi_realizada_de_qual_maneira || [];
     const motivacaoOptions = categoriasGipe?.motivo_ocorrencia || [];
-    const cicloAprendizagemOptions = categoriasGipe?.ciclo_aprendizagem || [];
+    const etapaEscolarOptions = categoriasGipe?.etapa_escolar || [];
+
+    const tiposOcorrenciaOptions =
+        tiposOcorrencia?.map((tipo) => ({
+            value: tipo.uuid,
+            label: tipo.nome,
+        })) || [];
 
     const form = useForm<FormularioGipeData>({
         resolver: zodResolver(formSchema),
@@ -94,15 +87,70 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         defaultValues: {
             envolveArmaOuAtaque: formData.envolveArmaOuAtaque ?? undefined,
             ameacaRealizada: formData.ameacaRealizada ?? undefined,
-            envolvidos: formData.envolvidos ?? "",
+            envolvidos: formData.envolvidos ?? [],
+            descricaoEnvolvidos: formData.descricaoEnvolvidos ?? "",
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
+            descricaoMotivoOcorrencia: formData.descricaoMotivoOcorrencia ?? "",
             tiposOcorrencia: formData.tiposOcorrencia ?? [],
-            cicloAprendizagem: formData.cicloAprendizagem ?? "",
+            descricaoTipoOcorrencia: formData.descricaoTipoOcorrencia ?? "",
+            etapaEscolar: formData.etapaEscolar ?? "",
             informacoesInteracoesVirtuais:
                 formData.informacoesInteracoesVirtuais ?? "",
             encaminhamentos: formData.encaminhamentos ?? "",
         },
     });
+
+    const shouldShowDescricao = useCallback(
+        (selectedValues: string[], options: MultiSelectOption[]) =>
+            options.some(
+                (opt) =>
+                    selectedValues.includes(opt.value) &&
+                    ["outra", "outros"].includes(opt.label.toLowerCase()),
+            ),
+        [],
+    );
+
+    const envolvidosSelecionados = form.watch("envolvidos");
+    const showDescricaoEnvolvidos = shouldShowDescricao(
+        envolvidosSelecionados,
+        envolvidosOptions,
+    );
+
+    const motivoSelecionados = form.watch("motivoOcorrencia");
+    const showDescricaoMotivo = shouldShowDescricao(
+        motivoSelecionados,
+        motivacaoOptions,
+    );
+
+    const tiposSelecionados = form.watch("tiposOcorrencia");
+    const showDescricaoTipo = shouldShowDescricao(
+        tiposSelecionados,
+        tiposOcorrenciaOptions,
+    );
+
+    useEffect(() => {
+        if (!isLoadingEnvolvidos && !showDescricaoEnvolvidos) {
+            form.setValue("descricaoEnvolvidos", "", {
+                shouldValidate: true,
+            });
+        }
+    }, [isLoadingEnvolvidos, showDescricaoEnvolvidos, form]);
+
+    useEffect(() => {
+        if (!isLoadingCategoriasGipe && !showDescricaoMotivo) {
+            form.setValue("descricaoMotivoOcorrencia", "", {
+                shouldValidate: true,
+            });
+        }
+    }, [isLoadingCategoriasGipe, showDescricaoMotivo, form]);
+
+    useEffect(() => {
+        if (!isLoadingTipos && !showDescricaoTipo) {
+            form.setValue("descricaoTipoOcorrencia", "", {
+                shouldValidate: true,
+            });
+        }
+    }, [isLoadingTipos, showDescricaoTipo, form]);
 
     const { isValid } = form.formState;
 
@@ -132,6 +180,39 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
     }, [isLoadingTipos, tiposOcorrencia, form]);
 
     const handleSubmit = async (data: FormularioGipeData) => {
+        if (
+            shouldShowDescricao(data.envolvidos, envolvidosOptions) &&
+            (!data.descricaoEnvolvidos ||
+                data.descricaoEnvolvidos.trim().length === 0)
+        ) {
+            form.setError("descricaoEnvolvidos", {
+                message: "Descreva quem são os envolvidos.",
+            });
+            return;
+        }
+
+        if (
+            shouldShowDescricao(data.motivoOcorrencia, motivacaoOptions) &&
+            (!data.descricaoMotivoOcorrencia ||
+                data.descricaoMotivoOcorrencia.trim().length === 0)
+        ) {
+            form.setError("descricaoMotivoOcorrencia", {
+                message: "Descreva o que motivou a ocorrência.",
+            });
+            return;
+        }
+
+        if (
+            shouldShowDescricao(data.tiposOcorrencia, tiposOcorrenciaOptions) &&
+            (!data.descricaoTipoOcorrencia ||
+                data.descricaoTipoOcorrencia.trim().length === 0)
+        ) {
+            form.setError("descricaoTipoOcorrencia", {
+                message: "Descreva qual o tipo de ocorrência.",
+            });
+            return;
+        }
+
         const tiposValidos = filterValidTiposOcorrencia(
             data.tiposOcorrencia,
             tiposOcorrencia,
@@ -146,9 +227,12 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                     envolve_arma_ataque: data.envolveArmaOuAtaque,
                     ameaca_realizada_qual_maneira: data.ameacaRealizada,
                     envolvido: data.envolvidos,
+                    envolvido_outros: data.descricaoEnvolvidos,
                     motivacao_ocorrencia: data.motivoOcorrencia,
+                    motivacao_ocorrencia_outros: data.descricaoMotivoOcorrencia,
                     tipos_ocorrencia: tiposValidos,
-                    qual_ciclo_aprendizagem: data.cicloAprendizagem,
+                    tipos_ocorrencia_outros: data.descricaoTipoOcorrencia,
+                    etapa_escolar: data.etapaEscolar,
                     info_sobre_interacoes_virtuais_pessoa_agressora:
                         data.informacoesInteracoesVirtuais,
                     encaminhamentos_gipe: data.encaminhamentos,
@@ -191,12 +275,6 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
         setFormData(data);
     };
 
-    const tiposOcorrenciaOptions =
-        tiposOcorrencia?.map((tipo) => ({
-            value: tipo.uuid,
-            label: tipo.nome,
-        })) || [];
-
     return (
         <>
             <Form {...form}>
@@ -229,36 +307,39 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 name="envolvidos"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            Quem são os envolvidos?*
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            disabled={isLoadingEnvolvidos}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecione" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {envolvidosOptions.map(
-                                                    (envolvido) => (
-                                                        <SelectItem
-                                                            key={
-                                                                envolvido.value
-                                                            }
-                                                            value={
-                                                                envolvido.value
-                                                            }
-                                                        >
-                                                            {envolvido.label}
-                                                        </SelectItem>
-                                                    ),
+                                        <FormControl>
+                                            <MultiSelectWithOther
+                                                label="Quem são os envolvidos?*"
+                                                options={envolvidosOptions}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Selecione"
+                                                disabled={isLoadingEnvolvidos}
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                hint="Se necessário, selecione mais de uma opção"
+                                                textFieldLabel="Descreva quem são os envolvidos*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoEnvolvidos",
                                                 )}
-                                            </SelectContent>
-                                        </Select>
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoEnvolvidos",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoEnvolvidos
+                                                        ?.message
+                                                }
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -269,11 +350,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 name="motivoOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            O que motivou a ocorrência?*
-                                        </FormLabel>
                                         <FormControl>
-                                            <MultiSelect
+                                            <MultiSelectWithOther
+                                                label="O que motivou a ocorrência?*"
                                                 options={motivacaoOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
@@ -281,12 +360,31 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 disabled={
                                                     isLoadingCategoriasGipe
                                                 }
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                hint="Se necessário, selecione mais de uma opção"
+                                                textFieldLabel="Descreva o que motivou a ocorrência*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoMotivoOcorrencia",
+                                                )}
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoMotivoOcorrencia",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoMotivoOcorrencia
+                                                        ?.message
+                                                }
                                             />
                                         </FormControl>
-                                        <p className="text-[12px] text-[#42474a] mt-1 mb-2">
-                                            Se necessário, selecione mais de uma
-                                            opção
-                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -297,16 +395,36 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 name="tiposOcorrencia"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            Qual o tipo da ocorrência?*
-                                        </FormLabel>
                                         <FormControl>
-                                            <MultiSelect
+                                            <MultiSelectWithOther
+                                                label="Qual o tipo da ocorrência?*"
                                                 options={tiposOcorrenciaOptions}
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 placeholder="Selecione os tipos de ocorrência"
                                                 disabled={isLoadingTipos}
+                                                shouldShowTextField={
+                                                    shouldShowDescricao
+                                                }
+                                                textFieldLabel="Descreva qual o tipo de ocorrência*"
+                                                textFieldPlaceholder="Descreva aqui..."
+                                                textFieldValue={form.watch(
+                                                    "descricaoTipoOcorrencia",
+                                                )}
+                                                onTextFieldChange={(val) =>
+                                                    form.setValue(
+                                                        "descricaoTipoOcorrencia",
+                                                        val,
+                                                        {
+                                                            shouldValidate: true,
+                                                        },
+                                                    )
+                                                }
+                                                textFieldError={
+                                                    form.formState.errors
+                                                        .descricaoTipoOcorrencia
+                                                        ?.message
+                                                }
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -316,11 +434,11 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
 
                             <FormField
                                 control={form.control}
-                                name="cicloAprendizagem"
+                                name="etapaEscolar"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Qual o ciclo de aprendizagem?*
+                                            Qual a etapa escolar?*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
@@ -332,7 +450,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {cicloAprendizagemOptions.map(
+                                                {etapaEscolarOptions.map(
                                                     (ciclo) => (
                                                         <SelectItem
                                                             key={ciclo.value}
@@ -356,7 +474,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             <TextareaForm
                                 control={form.control}
                                 name="informacoesInteracoesVirtuais"
-                                label="Existe informações sobre as interações virtuais da pessoa agressora?"
+                                label="Há informações sobre as interações virtuais?"
                             />
 
                             <FormField
@@ -419,7 +537,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                 open={openModalFinalizarEtapa}
                 onOpenChange={setOpenModalFinalizarEtapa}
                 onLoadingChange={setIsFinalizando}
-                perfilUsuario={perfilUsuario}
+                etapa="gipe"
             />
         </>
     );

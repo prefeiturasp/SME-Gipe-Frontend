@@ -42,7 +42,7 @@ export default function CadastrarOcorrencia({
                     tiposOcorrencia: [],
                     descricao: "",
                     smartSampa: undefined,
-                    envolvidos: "",
+                    envolvidos: [],
                     possuiInfoAgressorVitima: undefined,
                 });
             }

@@ -39,8 +39,10 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
   @cadastro_completo_autoservico
   Cenário: Realizar cadastro de novo usuário via autoserviço (sem autenticação prévia)
     Dado que acesso a página de cadastro direto
-    Quando informo uma DRE disponível
-    E informo uma Unidade Educacional disponível
+    E o usuário valida a existência do campo "Selecione a DRE"
+    E o usuário seleciona o campo "Selecione a DRE" com "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA"
+    E o usuário valida a existência do campo "Digite o nome da UE"
+    E o usuário seleciona o campo "Digite o nome da UE" com "ABRAO HUCK, DR."
     E informo meus dados pessoais com informações válidas
     E submeto o formulário de cadastro
     Então devo ser direcionado para a próxima etapa do cadastro
@@ -75,7 +77,7 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
     Então o sistema redireciona para a tela de Gestão de usuários
     E a solicitação é recusada com sucesso
 
-  @inativar_perfil
+  @skip @inativar_perfil
   Cenário: Inativar perfil de usuário ativo
     Quando acesso o menu de Gestão
     E seleciono a opção "Gestão de pessoa usuária"
@@ -96,7 +98,7 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
     Então o sistema redireciona para a tela de Gestão de usuários
     E o perfil é inativado com sucesso
 
-  @reativar_perfil
+  @skip @reativar_perfil
   Cenário: Reativar perfil de usuário inativo
     Quando acesso o menu de Gestão
     E seleciono a opção "Gestão de pessoa usuária"

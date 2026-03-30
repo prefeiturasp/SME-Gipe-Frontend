@@ -8,6 +8,7 @@ import {
     screen,
     waitFor,
 } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import SecaoInicial, { SecaoInicialRef } from "./index";
 
@@ -20,15 +21,17 @@ vi.mock("next/navigation", () => ({
 const fakeUser = {
     nome: "Usuário Teste",
     username: "382888888",
-    perfil_acesso: { nome: "DRE Teste", codigo: 123 },
+    perfil_acesso: { nome: "DRE Teste", codigo: 3360 },
     unidades: [
         {
             dre: {
+                dre_uuid: "dre-uuid-001",
                 codigo_eol: "001",
                 nome: "DRE Teste",
                 sigla: "DRT",
             },
             ue: {
+                ue_uuid: "ue-uuid-0001",
                 codigo_eol: "0001",
                 nome: "EMEF Teste",
                 sigla: "EMEF",
@@ -41,8 +44,10 @@ const fakeUser = {
 
 type UseUserSelector = (state: { user: typeof fakeUser }) => unknown;
 
+let mockUser: typeof fakeUser = fakeUser;
+
 vi.mock("@/stores/useUserStore", () => ({
-    useUserStore: (selector: UseUserSelector) => selector({ user: fakeUser }),
+    useUserStore: (selector: UseUserSelector) => selector({ user: mockUser }),
 }));
 
 const setFormDataMock = vi.fn();
@@ -85,11 +90,43 @@ vi.mock("@/components/ui/headless-toast", () => ({
     toast: (opts: unknown) => toastMock(opts),
 }));
 
+let mockPermissions = {
+    isGipe: false,
+    isPontoFocal: false,
+    isAssistenteOuDiretor: true,
+    isGipeAdmin: false,
+};
+
+vi.mock("@/hooks/useUserPermissions", () => ({
+    useUserPermissions: () => mockPermissions,
+}));
+
+type GetUnidadesReturn = {
+    data: unknown[];
+    isLoading: boolean;
+    isError: boolean;
+};
+
+let mockGetUnidadesImpl: (
+    _ativa?: boolean,
+    _dre?: string,
+    _tipo?: string,
+) => GetUnidadesReturn = () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+});
+
+vi.mock("@/hooks/useGetUnidades", () => ({
+    useGetUnidades: (ativa?: boolean, dre?: string, tipo_unidade?: string) =>
+        mockGetUnidadesImpl(ativa, dre, tipo_unidade),
+}));
+
 const queryClient = new QueryClient();
 
 const renderWithClient = (ui: React.ReactElement) => {
     return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
     );
 };
 
@@ -103,20 +140,32 @@ describe("SecaoInicial", () => {
         setFormDataMock.mockClear();
         setSavedFormDataMock.mockClear();
         setOcorrenciaIdMock.mockClear();
+        mockUser = fakeUser;
+        mockPermissions = {
+            isGipe: false,
+            isPontoFocal: false,
+            isAssistenteOuDiretor: true,
+            isGipeAdmin: false,
+        };
+        mockGetUnidadesImpl = () => ({
+            data: [],
+            isLoading: false,
+            isError: false,
+        });
     });
 
     it("deve renderizar os campos corretamente com os valores do usuário", () => {
         renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
 
         expect(
-            screen.getByText(/Quando a ocorrência aconteceu\?\*/i)
+            screen.getByText(/Quando a ocorrência aconteceu\?\*/i),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByPlaceholderText("Selecione a data")
+            screen.getByPlaceholderText("Selecione a data"),
         ).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText("Digite o horário")
+            screen.getByPlaceholderText("Digite o horário"),
         ).toBeInTheDocument();
 
         expect(screen.getAllByText(/DRE Teste/i).length).toBeGreaterThan(0);
@@ -126,10 +175,10 @@ describe("SecaoInicial", () => {
         expect(screen.getByText(/Não/)).toBeInTheDocument();
 
         expect(
-            screen.getByRole("button", { name: /Anterior/i })
+            screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: /Próximo/i })
+            screen.getByRole("button", { name: /Próximo/i }),
         ).toBeInTheDocument();
     });
 
@@ -161,7 +210,7 @@ describe("SecaoInicial", () => {
             fireEvent.click(radioSim);
         });
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true")
+            expect(radioSim).toHaveAttribute("aria-checked", "true"),
         );
 
         await waitFor(() => expect(nextButton).toBeEnabled(), {
@@ -192,7 +241,7 @@ describe("SecaoInicial", () => {
         expect(timeInput).toHaveValue("14:30");
 
         const error = await screen.findByText(
-            /A data da ocorrência não pode ser no futuro\./i
+            /A data da ocorrência não pode ser no futuro\./i,
         );
         expect(error).toBeInTheDocument();
 
@@ -201,7 +250,7 @@ describe("SecaoInicial", () => {
 
     it("exibe erro quando a data é inválida (NaN)", async () => {
         const { container } = renderWithClient(
-            <SecaoInicial onSuccess={() => vi.fn()} />
+            <SecaoInicial onSuccess={() => vi.fn()} />,
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -216,7 +265,7 @@ describe("SecaoInicial", () => {
         fireEvent.submit(formEl);
 
         const error = await screen.findByText(
-            /A data da ocorrência é obrigatória\.|A data da ocorrência não pode ser no futuro\./i
+            /A data da ocorrência é obrigatória\.|A data da ocorrência não pode ser no futuro\./i,
         );
         expect(error).toBeInTheDocument();
 
@@ -238,10 +287,10 @@ describe("SecaoInicial", () => {
         expect(result.success).toBe(false);
         if (!result.success) {
             const messages = result.error.issues.map(
-                (i: { message: string }) => i.message
+                (i: { message: string }) => i.message,
             );
             expect(messages).toContain(
-                "A data da ocorrência não pode ser no futuro."
+                "A data da ocorrência não pode ser no futuro.",
             );
         }
     });
@@ -274,7 +323,7 @@ describe("SecaoInicial", () => {
         });
 
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true")
+            expect(radioSim).toHaveAttribute("aria-checked", "true"),
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -320,7 +369,7 @@ describe("SecaoInicial", () => {
         });
 
         await waitFor(() =>
-            expect(radioSim).toHaveAttribute("aria-checked", "true")
+            expect(radioSim).toHaveAttribute("aria-checked", "true"),
         );
 
         const nextButton = screen.getByRole("button", { name: /Próximo/i });
@@ -365,6 +414,23 @@ describe("SecaoInicial", () => {
             useAtualizarSecaoInicial: () => ({
                 mutateAsync: vi.fn(),
                 isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useUserPermissions", () => ({
+            useUserPermissions: () => ({
+                isGipe: false,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: true,
+                isGipeAdmin: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useGetUnidades", () => ({
+            useGetUnidades: () => ({
+                data: [],
+                isLoading: false,
+                isError: false,
             }),
         }));
 
@@ -413,6 +479,23 @@ describe("SecaoInicial", () => {
             useAtualizarSecaoInicial: () => ({
                 mutateAsync: mockMutateUpdate,
                 isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useUserPermissions", () => ({
+            useUserPermissions: () => ({
+                isGipe: false,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: true,
+                isGipeAdmin: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useGetUnidades", () => ({
+            useGetUnidades: () => ({
+                data: [],
+                isLoading: false,
+                isError: false,
             }),
         }));
 
@@ -484,6 +567,23 @@ describe("SecaoInicial", () => {
             useAtualizarSecaoInicial: () => ({
                 mutateAsync: mockMutateUpdate,
                 isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useUserPermissions", () => ({
+            useUserPermissions: () => ({
+                isGipe: false,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: true,
+                isGipeAdmin: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useGetUnidades", () => ({
+            useGetUnidades: () => ({
+                data: [],
+                isLoading: false,
+                isError: false,
             }),
         }));
 
@@ -569,6 +669,23 @@ describe("SecaoInicial", () => {
             useAtualizarSecaoInicial: () => ({
                 mutateAsync: mockMutateUpdate,
                 isPending: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useUserPermissions", () => ({
+            useUserPermissions: () => ({
+                isGipe: false,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: true,
+                isGipeAdmin: false,
+            }),
+        }));
+
+        vi.doMock("@/hooks/useGetUnidades", () => ({
+            useGetUnidades: () => ({
+                data: [],
+                isLoading: false,
+                isError: false,
             }),
         }));
 
@@ -700,7 +817,7 @@ describe("SecaoInicial", () => {
 
     it("deve desabilitar todos os campos quando disabled=true", async () => {
         renderWithClient(
-            <SecaoInicial onSuccess={() => vi.fn()} disabled={true} />
+            <SecaoInicial onSuccess={() => vi.fn()} disabled={true} />,
         );
 
         const dataInput = screen.getByPlaceholderText("Selecione a data");
@@ -711,6 +828,383 @@ describe("SecaoInicial", () => {
         const radioButtons = screen.getAllByRole("radio");
         radioButtons.forEach((radio) => {
             expect(radio).toBeDisabled();
+        });
+    });
+
+    describe("comportamento por perfil de usuário", () => {
+        const fakeDres = [
+            {
+                id: 1,
+                uuid: "dre-uuid-100",
+                nome: "DRE Norte",
+                tipo_unidade: "DRE",
+                rede_label: "Municipal",
+                codigo_eol: "100",
+                dre_nome: "",
+                sigla: "DRN",
+                status: "Ativa",
+            },
+            {
+                id: 2,
+                uuid: "dre-uuid-200",
+                nome: "DRE Sul",
+                tipo_unidade: "DRE",
+                rede_label: "Municipal",
+                codigo_eol: "200",
+                dre_nome: "",
+                sigla: "DRS",
+                status: "Ativa",
+            },
+        ];
+
+        const fakeUes = [
+            {
+                id: 10,
+                uuid: "ue-uuid-1001",
+                nome: "EMEF Alpha",
+                tipo_unidade: "EMEF",
+                rede_label: "Municipal",
+                codigo_eol: "1001",
+                dre_nome: "DRE Norte",
+                sigla: "EMEF",
+                status: "Ativa",
+            },
+            {
+                id: 11,
+                uuid: "ue-uuid-1002",
+                nome: "EMEF Beta",
+                tipo_unidade: "EMEF",
+                rede_label: "Municipal",
+                codigo_eol: "1002",
+                dre_nome: "DRE Norte",
+                sigla: "EMEF",
+                status: "Ativa",
+            },
+        ];
+
+        it("deve exibir DRE desabilitada e UE habilitada para Ponto Focal", () => {
+            mockPermissions = {
+                isGipe: false,
+                isPontoFocal: true,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: [], isLoading: false, isError: false };
+                }
+                return {
+                    data: fakeUes,
+                    isLoading: false,
+                    isError: false,
+                };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const dreTrigger = comboboxes[0];
+            expect(dreTrigger).toBeDisabled();
+
+            const ueTrigger = comboboxes[1];
+            expect(ueTrigger).not.toBeDisabled();
+        });
+
+        it("deve exibir DRE e UE habilitadas para GIPE", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return {
+                        data: fakeDres,
+                        isLoading: false,
+                        isError: false,
+                    };
+                }
+                return { data: [], isLoading: false, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const dreTrigger = comboboxes[0];
+            expect(dreTrigger).not.toBeDisabled();
+
+            const ueTrigger = comboboxes[1];
+            expect(ueTrigger).toBeDisabled();
+        });
+
+        it("deve desabilitar DRE e UE quando ocorrenciaUuid existe para GIPE", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockOcorrenciaUuid = "uuid-existente";
+            mockFormData = {
+                dre: "001",
+                unidadeEducacional: "0001",
+                dataOcorrencia: "2025-10-02",
+                horaOcorrencia: "14:30",
+                tipoOcorrencia: "Sim",
+            };
+            mockGetUnidadesImpl = () => ({
+                data: fakeDres,
+                isLoading: false,
+                isError: false,
+            });
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const dreTrigger = comboboxes[0];
+            const ueTrigger = comboboxes[1];
+
+            expect(dreTrigger).toBeDisabled();
+            expect(ueTrigger).toBeDisabled();
+        });
+
+        it("deve manter DRE e UE desabilitadas para Diretor/Assistente", () => {
+            renderWithClient(<SecaoInicial onSuccess={() => vi.fn()} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const dreTrigger = comboboxes[0];
+            const ueTrigger = comboboxes[1];
+
+            expect(dreTrigger).toBeDisabled();
+            expect(ueTrigger).toBeDisabled();
+        });
+
+        it("deve sincronizar o dreUuid ao retornar ao form com DRE preenchida (GIPE)", async () => {
+            mockUser = {
+                ...fakeUser,
+                perfil_acesso: { nome: "GIPE", codigo: 0 },
+                unidades: [
+                    {
+                        ...fakeUser.unidades[0],
+                        dre: {
+                            ...fakeUser.unidades[0].dre,
+                            dre_uuid: "",
+                        },
+                    },
+                ],
+            };
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockFormData = { dre: "100" };
+            const mockSpy = vi.fn(
+                (_ativa?: boolean, _dre?: string, tipo_unidade?: string) => {
+                    if (tipo_unidade === "DRE") {
+                        return {
+                            data: fakeDres,
+                            isLoading: false,
+                            isError: false,
+                        };
+                    }
+                    return { data: [], isLoading: false, isError: false };
+                },
+            );
+            mockGetUnidadesImpl = mockSpy;
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            await waitFor(() => {
+                const calls = mockSpy.mock.calls;
+                const ueCall = calls.find((c) => c[1] === "dre-uuid-100");
+                expect(ueCall).toBeDefined();
+            });
+        });
+
+        it("deve chamar handleDreChange ao selecionar DRE para GIPE", async () => {
+            const user = userEvent.setup();
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return {
+                        data: fakeDres,
+                        isLoading: false,
+                        isError: false,
+                    };
+                }
+                return { data: [], isLoading: false, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const dreTrigger = comboboxes[0];
+
+            await user.click(dreTrigger);
+
+            const dreOptions = await screen.findAllByText("DRE Norte");
+            await user.click(dreOptions[dreOptions.length - 1]);
+
+            await waitFor(() => {
+                expect(setFormDataMock).toHaveBeenCalledWith(
+                    expect.objectContaining({ nomeDre: "DRE Norte" }),
+                );
+            });
+        });
+
+        it("deve chamar handleUeChange ao selecionar UE para Ponto Focal", async () => {
+            const user = userEvent.setup();
+            mockPermissions = {
+                isGipe: false,
+                isPontoFocal: true,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: fakeDres, isLoading: false, isError: false };
+                }
+                return { data: fakeUes, isLoading: false, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const comboboxes = screen.getAllByRole("combobox");
+            const ueTrigger = comboboxes[1];
+
+            await user.click(ueTrigger);
+
+            const ueOptions = await screen.findAllByText("EMEF Alpha");
+            await user.click(ueOptions[ueOptions.length - 1]);
+
+            await waitFor(() => {
+                expect(setFormDataMock).toHaveBeenCalledWith(
+                    expect.objectContaining({ nomeUnidade: "EMEF Alpha" }),
+                );
+            });
+        });
+
+        it("deve exibir placeholder de carregamento para DRE (GIPE)", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: [], isLoading: true, isError: false };
+                }
+                return { data: [], isLoading: false, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            expect(screen.getByText("Carregando...")).toBeInTheDocument();
+        });
+
+        it("deve exibir mensagem de erro no placeholder para DRE (GIPE)", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: [], isLoading: false, isError: true };
+                }
+                return { data: [], isLoading: false, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            expect(
+                screen.getByText("Erro ao carregar DREs"),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir placeholder de carregamento para UE quando DRE está selecionada (GIPE)", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockFormData = { dre: "100" };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: fakeDres, isLoading: false, isError: false };
+                }
+                return { data: [], isLoading: true, isError: false };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            const allCarregando = screen.queryAllByText("Carregando...");
+            expect(allCarregando.length).toBeGreaterThan(0);
+        });
+
+        it("deve exibir mensagem de erro no placeholder para UE quando DRE está selecionada (GIPE)", () => {
+            mockPermissions = {
+                isGipe: true,
+                isPontoFocal: false,
+                isAssistenteOuDiretor: false,
+                isGipeAdmin: false,
+            };
+            mockFormData = { dre: "100" };
+            mockGetUnidadesImpl = (
+                _ativa?: boolean,
+                _dre?: string,
+                tipo_unidade?: string,
+            ) => {
+                if (tipo_unidade === "DRE") {
+                    return { data: fakeDres, isLoading: false, isError: false };
+                }
+                return { data: [], isLoading: false, isError: true };
+            };
+
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            expect(
+                screen.getByText("Erro ao carregar unidades"),
+            ).toBeInTheDocument();
         });
     });
 });

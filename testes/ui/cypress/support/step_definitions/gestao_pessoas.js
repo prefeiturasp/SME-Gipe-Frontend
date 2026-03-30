@@ -3,8 +3,8 @@ import Gestao_Pessoas_Localizadores from '../locators/gestao_pessoas_locators'
 
 const locators = new Gestao_Pessoas_Localizadores()
 
-const RF_GIPE = '29379962727'
-const SENHA_GIPE = 'Sgp2727'
+const RF_GIPE = '7311559'
+const SENHA_GIPE = 'Sgp1559'
 
 const waitAndGet = (selector, options = {}) => {
   const { timeout = 15000, wait = 2000, checkEnabled = true } = options
@@ -751,69 +751,175 @@ When('informo a DRE {string}', (dre) => {
 })
 
 When('informo uma DRE disponível', () => {
-  const dre = 'DRE CAPELA DO SOCORRO'
-  cy.wait(2000)
-  
-  const selectorDRE = 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > button'
-  
-  cy.get(selectorDRE, { timeout: 15000 })
+  const dre = 'DIRETORIA REGIONAL DE EDUCACAO IPIRANGA'
+  const selectorLabel = 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > label'
+  const selectorBotao = 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > button'
+  const selectorSpan  = 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div.space-y-2.mb-4.mt-4 > button > span'
+
+  // 1. Validar existência da label
+  cy.get(selectorLabel, { timeout: 15000 })
+    .should('be.visible')
+    .and('contain.text', 'Selecione a DRE')
+  cy.log('✅ Label "Selecione a DRE" validada')
+
+  // 2. Validar existência do botão e clicar
+  cy.get(selectorBotao, { timeout: 15000 })
     .should('be.visible')
     .click({ force: true })
-  
-  cy.wait(1500)
-  cy.get('body').then($body => {
-    const opcaoRole = $body.find(`[role="option"]:contains("${dre}")`)
-    const opcaoTexto = $body.find(`*:contains("${dre}")`).filter(':visible')
-    
-    if (opcaoRole.length > 0) {
-      cy.get(`[role="option"]`).contains(dre).first().click({ force: true })
-    } else if (opcaoTexto.length > 0) {
-      cy.contains(dre).first().click({ force: true })
-    } else {
-      cy.get(selectorDRE).type(dre.substring(0, 10), { force: true })
-      cy.wait(1000)
-      cy.contains(dre).first().click({ force: true })
-    }
-  })
-  
+
+  cy.wait(3000)
+
+  // 3. Buscar opção pelo texto EXATO
+  cy.get('body')
+    .find('span, li')
+    .filter(':visible')
+    .then($els => {
+      const alvo = [...$els].find(el => Cypress.$(el).text().trim().toUpperCase() === dre)
+      if (alvo) {
+        cy.log(`✅ Clicando na opção DRE: ${dre}`)
+        cy.wrap(alvo).scrollIntoView().click({ force: true })
+      } else {
+        cy.log(`⚠️ Fallback: cy.contains`)
+        cy.contains(dre).first().scrollIntoView().click({ force: true })
+      }
+    })
+
   cy.wait(2000)
+
+  // 4. Validar seleção pelo span interno
+  cy.get(selectorSpan, { timeout: 10000 })
+    .invoke('text')
+    .then(txt => {
+      cy.log(`✅ DRE selecionada: ${txt.trim()}`)
+      expect(txt.trim().toUpperCase()).to.include('IPIRANGA')
+    })
+
+  cy.wait(1000)
 })
 
 When('informo uma Unidade Educacional disponível', () => {
-  cy.wait(2000)
-  
-  const selectorUE = 'body > div > div.w-full.md\\:w-1\\/2.flex.flex-col.bg-white.overflow-y-auto.justify-center > div > form > div:nth-child(6) > button'
-  
-  cy.get(selectorUE, { timeout: 15000 })
+  // Opções disponíveis para seleção aleatória
+  const opcoesUE = ['ABRAO HUCK', 'SENA MADUREIRA', 'ANTONIO RUBBO']
+  const termosBusca = {
+    'ABRAO HUCK':    'ABRAO HUCK, DR.',
+    'SENA MADUREIRA': 'SENA MADUREIRA',
+    'ANTONIO RUBBO': 'ANTONIO RUBBO MULLER, PROF.'
+  }
+  const termoBusca = opcoesUE[Math.floor(Math.random() * opcoesUE.length)]
+  const nomeCompleto = termosBusca[termoBusca]
+  cy.log(`🎲 UE sorteada: ${nomeCompleto} (busca: "${termoBusca}")`)
+
+  // Seletor da label: busca pela label que contenha "UE" dentro do form
+  const selectorLabel = 'label[class*="required"][class*="text-\\[\\#42474a\\]"]'
+  // Seletor do input: usa o placeholder único do campo UE
+  const selectorInput = 'input[placeholder*="EMEF"], input[placeholder*="João da Silva"], input[placeholder*="Exemplo"]'
+
+  // 1. Validar existência da label "Digite o nome da UE"
+  cy.contains('label', 'Digite o nome da UE', { timeout: 15000 })
     .should('be.visible')
-    .click({ force: true })
-  
+  cy.log('✅ Label "Digite o nome da UE" validada')
+
+  cy.wait(500)
+
+  // 2. Digitar no input de busca para disparar o autocomplete
+  cy.get(selectorInput, { timeout: 15000 })
+    .should('be.visible')
+    .clear()
+    .type(termoBusca, { delay: 80 })
+
+  cy.wait(3000)
+
+  // 3. Aguardar e clicar na opção do autocomplete
+  // O autocomplete renderiza em uma lista — buscar pelo texto da opção
+  cy.get('body')
+    .find('li, [role="option"], [cmdk-item], [data-value]')
+    .filter(':visible')
+    .then($els => {
+      const alvo = [...$els].find(el => {
+        const txt = Cypress.$(el).text().trim().toUpperCase()
+        return txt.includes(termoBusca.toUpperCase())
+      })
+      if (alvo) {
+        cy.log(`✅ Clicando na opção UE: ${Cypress.$(alvo).text().trim()}`)
+        cy.wrap(alvo).scrollIntoView().click({ force: true })
+      } else {
+        // Fallback: buscar em qualquer elemento visível com o termo
+        cy.log(`⚠️ Fallback: buscando por contains("${termoBusca}")`)
+        cy.contains(termoBusca, { timeout: 5000 })
+          .filter(':visible')
+          .first()
+          .scrollIntoView()
+          .click({ force: true })
+      }
+    })
+
   cy.wait(2000)
-  cy.get('body').then($body => {
-    const opcoesRole = $body.find('[role="option"]:visible')
-    const opcoesData = $body.find('div[data-radix-collection-item]:visible')
-    const opcoesDivs = $body.find('div[class*="cursor-pointer"]:visible, div[data-value]:visible')
-    
-    if (opcoesRole.length > 0) {
-      cy.wrap(opcoesRole.first()).scrollIntoView().click({ force: true })
-    } else if (opcoesData.length > 0) {
-      cy.wrap(opcoesData.first()).scrollIntoView().click({ force: true })
-    } else if (opcoesDivs.length > 0) {
-      cy.wrap(opcoesDivs.first()).scrollIntoView().click({ force: true })
-    } else {
-      cy.get(selectorUE).type('CEU', { force: true })
-      cy.wait(1500)
-      cy.get('[role="option"]:visible').first().click({ force: true })
-    }
-  })
-  
+
+  // 4. Validar que o input foi preenchido (não está vazio)
+  cy.get(selectorInput, { timeout: 10000 })
+    .invoke('val')
+    .then(val => {
+      cy.log(`✅ Input UE preenchido com: "${val}"`)
+      expect(val.trim()).to.not.be.empty
+    })
+
   cy.wait(1000)
 })
 
 When('informo meus dados pessoais com informações válidas', () => {
   const nome = gerarNomeAleatorio()
   const cpf = gerarCPFValido()
-  const email = 'testesgipe3@sme.prefeitura.sp.gov.br'
+
+  // Gera e-mail único com timestamp — garantia de nunca repetir
+  function gerarEmailUnico() {
+    const ts = Date.now()
+    const rand = Math.floor(Math.random() * 9999)
+    return `testesgipe.auto${ts}${rand}@sme.prefeitura.sp.gov.br`
+  }
+
+  // Pool de 35 e-mails predefinidos + 1 gerado dinamicamente com timestamp
+  // O e-mail dinâmico garante que mesmo se todos os 35 já foram cadastrados,
+  // o teste nunca ficará bloqueado
+  const emailsDisponiveis = [
+    'testesgipe1@sme.prefeitura.sp.gov.br',
+    'testesgipe2@sme.prefeitura.sp.gov.br',
+    'testesgipe3@sme.prefeitura.sp.gov.br',
+    'testesgipe4@sme.prefeitura.sp.gov.br',
+    'testesgipe5@sme.prefeitura.sp.gov.br',
+    'testesgipe6@sme.prefeitura.sp.gov.br',
+    'testesgipe7@sme.prefeitura.sp.gov.br',
+    'testesgipe8@sme.prefeitura.sp.gov.br',
+    'testesgipe9@sme.prefeitura.sp.gov.br',
+    'testesgipe10@sme.prefeitura.sp.gov.br',
+    'testesgipe11@sme.prefeitura.sp.gov.br',
+    'testesgipe12@sme.prefeitura.sp.gov.br',
+    'testesgipe13@sme.prefeitura.sp.gov.br',
+    'testesgipe14@sme.prefeitura.sp.gov.br',
+    'testesgipe15@sme.prefeitura.sp.gov.br',
+    'testesgipe16@sme.prefeitura.sp.gov.br',
+    'testesgipe17@sme.prefeitura.sp.gov.br',
+    'testesgipe18@sme.prefeitura.sp.gov.br',
+    'testesgipe19@sme.prefeitura.sp.gov.br',
+    'testesgipe20@sme.prefeitura.sp.gov.br',
+    'testesgipe21@sme.prefeitura.sp.gov.br',
+    'testesgipe22@sme.prefeitura.sp.gov.br',
+    'testesgipe23@sme.prefeitura.sp.gov.br',
+    'testesgipe24@sme.prefeitura.sp.gov.br',
+    'testesgipe25@sme.prefeitura.sp.gov.br',
+    'testesgipe26@sme.prefeitura.sp.gov.br',
+    'testesgipe27@sme.prefeitura.sp.gov.br',
+    'testesgipe28@sme.prefeitura.sp.gov.br',
+    'testesgipe29@sme.prefeitura.sp.gov.br',
+    'testesgipe30@sme.prefeitura.sp.gov.br',
+    'testesgipe31@sme.prefeitura.sp.gov.br',
+    'testesgipe32@sme.prefeitura.sp.gov.br',
+    'testesgipe33@sme.prefeitura.sp.gov.br',
+    'testesgipe34@sme.prefeitura.sp.gov.br',
+    'testesgipe35@sme.prefeitura.sp.gov.br',
+    gerarEmailUnico(), // e-mail dinâmico baseado em timestamp — sempre inédito
+  ]
+  const email = emailsDisponiveis[Math.floor(Math.random() * emailsDisponiveis.length)]
+  cy.log(`📧 E-mail sorteado: ${email}`)
   
   cy.get('input[placeholder="Exemplo: Maria Clara Medeiros"]', { timeout: 15000 })
     .should('be.visible')

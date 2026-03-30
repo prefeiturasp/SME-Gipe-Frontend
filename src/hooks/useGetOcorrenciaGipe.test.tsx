@@ -1,8 +1,8 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
-import { useGetOcorrenciaGipe } from "./useGetOcorrenciaGipe";
 import { obterOcorrenciaGipe } from "@/actions/obter-ocorrencia-gipe";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { useGetOcorrenciaGipe } from "./useGetOcorrenciaGipe";
 
 vi.mock("@/actions/obter-ocorrencia-gipe");
 
@@ -58,7 +58,7 @@ describe("useGetOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",
@@ -137,7 +137,7 @@ describe("useGetOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };
@@ -154,7 +154,7 @@ describe("useGetOcorrenciaGipe", () => {
                 }),
             {
                 wrapper: createWrapper(),
-            }
+            },
         );
 
         // Como enabled é false, a query não deve ser executada
@@ -182,7 +182,7 @@ describe("useGetOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };

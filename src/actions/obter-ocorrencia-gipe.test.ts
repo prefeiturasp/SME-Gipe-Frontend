@@ -1,7 +1,7 @@
-import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { obterOcorrenciaGipe } from "./obter-ocorrencia-gipe";
 import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { obterOcorrenciaGipe } from "./obter-ocorrencia-gipe";
 
 vi.mock("@/lib/axios-intercorrencias");
 vi.mock("next/headers", () => ({
@@ -40,7 +40,7 @@ describe("obterOcorrenciaGipe", () => {
             status_extra: "",
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "presencialmente",
-            envolvido: "env-uuid-123",
+            envolvido: ["env-uuid-123"],
             motivacao_ocorrencia: ["bullying", "racismo"],
             tipos_ocorrencia: ["tipo-uuid-1"],
             tipos_ocorrencia_detalhes: [
@@ -49,7 +49,7 @@ describe("obterOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",
@@ -80,7 +80,7 @@ describe("obterOcorrenciaGipe", () => {
             status_extra: "",
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "presencialmente",
-            envolvido: "env-uuid-123",
+            envolvido: ["env-uuid-123"],
             motivacao_ocorrencia: ["bullying", "racismo"],
             tipos_ocorrencia: ["tipo-uuid-1"],
             tipos_ocorrencia_detalhes: [
@@ -89,7 +89,7 @@ describe("obterOcorrenciaGipe", () => {
                     nome: "Tipo A",
                 },
             ],
-            qual_ciclo_aprendizagem: "alfabetizacao",
+            etapa_escolar: "alfabetizacao",
             info_sobre_interacoes_virtuais_pessoa_agressora:
                 "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",

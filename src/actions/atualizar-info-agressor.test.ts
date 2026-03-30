@@ -22,14 +22,20 @@ describe("atualizarInfoAgressor action", () => {
     const mockBody: InfoAgressorBody = {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-001",
-        pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
+        pessoas_agressoras: [
+            {
+                nome: "Kleber Machado",
+                idade: 35,
+                genero: "mulher_cis",
+                grupo_etnico_racial: "indigena",
+                etapa_escolar: "ensino_medio",
+                frequencia_escolar: "transferido_estadual",
+                interacao_ambiente_escolar:
+                    "Como é a interação da pessoa agressora no ambiente escolar?",
+            },
+        ],
         motivacao_ocorrencia: ["homofobia", "racismo"],
-        genero_pessoa_agressora: "mulher_cis",
-        grupo_etnico_racial: "indigena",
-        etapa_escolar: "ensino_medio",
-        frequencia_escolar: "transferido_estadual",
-        interacao_ambiente_escolar:
-            "Como é a interação da pessoa agressora no ambiente escolar?",
+        motivacao_ocorrencia_outros: "Motivação livre",
         redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
         acompanhado_naapa: false,
@@ -49,15 +55,21 @@ describe("atualizarInfoAgressor action", () => {
                 uuid: mockUuid,
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-001",
-                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
+                pessoas_agressoras: [
+                    {
+                        nome: "Kleber Machado",
+                        idade: 35,
+                        genero: "mulher_cis",
+                        grupo_etnico_racial: "indigena",
+                        etapa_escolar: "ensino_medio",
+                        frequencia_escolar: "transferido_estadual",
+                        interacao_ambiente_escolar:
+                            "Como é a interação da pessoa agressora no ambiente escolar?",
+                    },
+                ],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
                 motivacao_ocorrencia_display: "Homofobia, Racismo",
-                genero_pessoa_agressora: "mulher_cis",
-                grupo_etnico_racial: "indigena",
-                etapa_escolar: "ensino_medio",
-                frequencia_escolar: "transferido_estadual",
-                interacao_ambiente_escolar:
-                    "Como é a interação da pessoa agressora no ambiente escolar?",
+                motivacao_ocorrencia_outros: "Motivação livre",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
                 acompanhado_naapa: false,
@@ -207,14 +219,14 @@ describe("atualizarInfoAgressor action", () => {
             expect.objectContaining({
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-001",
-                pessoas_agressoras: [{ nome: "Kleber Machado", idade: 35 }],
+                pessoas_agressoras: [
+                    expect.objectContaining({
+                        nome: "Kleber Machado",
+                        idade: 35,
+                    }),
+                ],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
-                genero_pessoa_agressora: "mulher_cis",
-                grupo_etnico_racial: "indigena",
-                etapa_escolar: "ensino_medio",
-                frequencia_escolar: "transferido_estadual",
-                interacao_ambiente_escolar:
-                    "Como é a interação da pessoa agressora no ambiente escolar?",
+                motivacao_ocorrencia_outros: "Motivação livre",
                 redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
                 acompanhado_naapa: false,

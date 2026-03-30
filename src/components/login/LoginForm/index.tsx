@@ -1,13 +1,13 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
-import LogoGipe from "@/components/login/LogoGipe";
-import Link from "next/link";
 import ClosedEye from "@/assets/icons/CloseEye";
 import OpenEye from "@/assets/icons/OpenEye";
+import LogoGipe from "@/components/login/LogoGipe";
+import LogoPrefeituraSP from "@/components/login/LogoPrefeituraSP";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +21,8 @@ import {
 import { Input, InputMask } from "@/components/ui/input";
 import useLogin from "@/hooks/useLogin";
 
-import formSchema, { FormDataLogin } from "./schema";
 import InfoTooltip from "../InfoTooltip";
+import formSchema, { FormDataLogin } from "./schema";
 
 export default function LoginForm() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -56,7 +56,7 @@ export default function LoginForm() {
                 onSubmit={form.handleSubmit(handleLogin)}
             >
                 <div className="flex justify-center mb-6">
-                    <LogoGipe />
+                    <LogoGipe className="w-full max-w-[350px]" />
                 </div>
 
                 <FormField
@@ -72,9 +72,12 @@ export default function LoginForm() {
                                     align="start"
                                     content={
                                         <>
-                                            Se você é de uma unidade direta utilize o RF para realizar o login.
+                                            Se você é de uma unidade direta
+                                            utilize o RF para realizar o login.
                                             <br />
-                                            Se for de uma unidade indireta/parceira utilize o CPF para realizar o login.
+                                            Se for de uma unidade
+                                            indireta/parceira utilize o CPF para
+                                            realizar o login.
                                         </>
                                     }
                                 />
@@ -108,9 +111,13 @@ export default function LoginForm() {
                                         align="start"
                                         content={
                                             <>
-                                                Se você é de uma unidade direta utilize sua senha institucional.
+                                                Se você é de uma unidade direta
+                                                utilize sua senha institucional.
                                                 <br />
-                                                Se for de uma unidade indireta/parceira clique em &quot;Cadastre-se&quot; para criar sua senha.
+                                                Se for de uma unidade
+                                                indireta/parceira clique em
+                                                &quot;Cadastre-se&quot; para
+                                                criar sua senha.
                                             </>
                                         }
                                     />

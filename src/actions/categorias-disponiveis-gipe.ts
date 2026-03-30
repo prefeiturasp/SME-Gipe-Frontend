@@ -13,7 +13,7 @@ export type CategoriasDisponiveisGipeAPI = {
     envolve_arma_ou_ataque: CategoriaItem[];
     ameaca_foi_realizada_de_qual_maneira: CategoriaItem[];
     motivo_ocorrencia: CategoriaItem[];
-    ciclo_aprendizagem: CategoriaItem[];
+    etapa_escolar: CategoriaItem[];
 };
 
 export const getCategoriasDisponiveisGipeAction = async (): Promise<
@@ -35,7 +35,7 @@ export const getCategoriasDisponiveisGipeAction = async (): Promise<
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
-                }
+                },
             );
 
         return { success: true, data };

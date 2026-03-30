@@ -7,7 +7,7 @@ export default function Finalizado() {
         <div className="min-h-[80vh] flex flex-col justify-between items-center w-full max-w-md mx-auto px-4 py-8">
             <div className="w-full flex flex-col items-center">
                 <div className="flex mb-6 mt-2 w-full">
-                    <LogoGipe className="w-48" />
+                    <LogoGipe className="w-full max-w-[350px]" />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-3 w-full">
                     Solicitação de acesso enviada!
