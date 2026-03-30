@@ -109,9 +109,6 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
         ...(motivoOcorrencia && {
             motivoOcorrencia,
         }),
-        ...(ocorrencia.motivacao_ocorrencia_outros && {
-            descricaoMotivoOcorrencia: ocorrencia.motivacao_ocorrencia_outros,
-        }),
         ...(ocorrencia.redes_protecao_acompanhamento && {
             redesProtecao: ocorrencia.redes_protecao_acompanhamento,
         }),
@@ -189,9 +186,6 @@ export function transformOcorrenciaToFormData(
             nomeUnidade: ocorrencia.nome_unidade,
         }),
         ...(tiposOcorrencia && { tiposOcorrencia }),
-        ...(ocorrencia.tipos_ocorrencia_outros && {
-            descricaoTipoOcorrencia: ocorrencia.tipos_ocorrencia_outros,
-        }),
         ...(ocorrencia.descricao_ocorrencia && {
             descricao: ocorrencia.descricao_ocorrencia,
         }),
@@ -203,9 +197,6 @@ export function transformOcorrenciaToFormData(
         ...(protocoloAcionado && { protocoloAcionado }),
         ...(ocorrencia.envolvido?.length && {
             envolvidos: ocorrencia.envolvido.map((env) => env.uuid),
-        }),
-        ...(ocorrencia.envolvido_outros && {
-            descricaoEnvolvidos: ocorrencia.envolvido_outros,
         }),
         ...(possuiInfoAgressorVitima && { possuiInfoAgressorVitima }),
         ...infoAdicionais,

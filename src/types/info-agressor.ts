@@ -13,7 +13,6 @@ export type InfoAgressorBody = {
     dre_codigo_eol: string;
     pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
-    motivacao_ocorrencia_outros?: string;
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;
@@ -26,7 +25,6 @@ export type InfoAgressorResponse = {
     pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
     motivacao_ocorrencia_display: string;
-    motivacao_ocorrencia_outros?: string;
     redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
     acompanhado_naapa: boolean;

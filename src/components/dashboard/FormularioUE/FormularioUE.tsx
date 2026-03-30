@@ -191,18 +191,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             return false;
         }
 
-        const outrosValid = isFurtoRoubo
-            ? secaoFurtoERouboRef.current?.validateOutros()
-            : secaoNaoFurtoERouboRef.current?.validateOutros();
-
-        if (!outrosValid) {
-            showValidationError(
-                titulo,
-                'Preencha a descrição dos campos com "Outros" selecionado.',
-            );
-            return false;
-        }
-
         return true;
     };
 
@@ -216,15 +204,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             showValidationError(
                 "Erro ao validar Informações Adicionais",
                 "Verifique os campos e tente novamente.",
-            );
-            return false;
-        }
-
-        const outrosValid = informacoesAdicionaisRef.current?.validateOutros();
-        if (!outrosValid) {
-            showValidationError(
-                "Erro ao validar Informações Adicionais",
-                'Preencha a descrição dos campos com "Outros" selecionado.',
             );
             return false;
         }
@@ -305,9 +284,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 secaoTipoData?.tiposOcorrencia ?? [],
                 tiposOcorrenciaDisponiveis,
             ),
-            tipos_ocorrencia_outros: (
-                secaoTipoData as { descricaoTipoOcorrencia?: string }
-            )?.descricaoTipoOcorrencia,
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
@@ -315,9 +291,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     envolvido:
                         (secaoTipoData as { envolvidos?: string[] })
                             ?.envolvidos ?? [],
-                    envolvido_outros: (
-                        secaoTipoData as { descricaoEnvolvidos?: string }
-                    )?.descricaoEnvolvidos,
                 }),
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",
@@ -345,8 +318,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
-                motivacao_ocorrencia_outros:
-                    informacoesAdicionaisData.descricaoMotivoOcorrencia,
                 redes_protecao_acompanhamento:
                     informacoesAdicionaisData.redesProtecao,
                 notificado_conselho_tutelar:

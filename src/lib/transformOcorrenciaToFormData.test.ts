@@ -89,28 +89,6 @@ describe("transformOcorrenciaToFormData", () => {
         expect(result.tiposOcorrencia).toEqual(["tipo-1", "tipo-2"]);
     });
 
-    it("deve incluir descricaoTipoOcorrencia quando tipos_ocorrencia_outros estiver presente", () => {
-        const ocorrencia: OcorrenciaDetalheAPI = {
-            ...baseOcorrencia,
-            tipos_ocorrencia_outros: "Tipo livre de ocorrência",
-        };
-
-        const result = transformOcorrenciaToFormData(ocorrencia);
-
-        expect(result.descricaoTipoOcorrencia).toBe("Tipo livre de ocorrência");
-    });
-
-    it("deve incluir descricaoEnvolvidos quando envolvido_outros estiver presente", () => {
-        const ocorrencia: OcorrenciaDetalheAPI = {
-            ...baseOcorrencia,
-            envolvido_outros: "Responsável pelo aluno",
-        };
-
-        const result = transformOcorrenciaToFormData(ocorrencia);
-
-        expect(result.descricaoEnvolvidos).toBe("Responsável pelo aluno");
-    });
-
     it("deve incluir descrição quando presente", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
@@ -397,17 +375,6 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.motivoOcorrencia).toEqual(["homofobia", "racismo"]);
-        });
-
-        it("deve incluir descricaoMotivoOcorrencia quando motivacao_ocorrencia_outros estiver presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                motivacao_ocorrencia_outros: "Motivação livre",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.descricaoMotivoOcorrencia).toBe("Motivação livre");
         });
 
         it("deve incluir redes de proteção quando presente", () => {
