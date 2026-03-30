@@ -20,11 +20,12 @@ export type FormularioCompletoUEBody = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia?: string[];
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?: string;
 };
 
 export type FormularioCompletoUEResponse = {
@@ -46,9 +47,10 @@ export type FormularioCompletoUEResponse = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia?: string[];
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?: string;
 };

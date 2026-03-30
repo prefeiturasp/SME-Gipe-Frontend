@@ -88,6 +88,10 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
                 frequenciaEscolar: pessoa.frequencia_escolar || "",
                 interacaoAmbienteEscolar:
                     pessoa.interacao_ambiente_escolar || "",
+                nacionalidade: pessoa.nacionalidade || "",
+                pessoaComDeficiencia: pessoa.pessoa_com_deficiencia
+                    ? "Sim"
+                    : "Não",
             })),
         }),
     };
@@ -100,7 +104,6 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     const notificadoConselhoTutelar = getBooleanAsSimNao(
         ocorrencia.notificado_conselho_tutelar,
     );
-    const acompanhadoNAAPA = getBooleanAsSimNao(ocorrencia.acompanhado_naapa);
     const motivoOcorrencia = ocorrencia.motivacao_ocorrencia_display?.map(
         (item) => item.value,
     );
@@ -109,11 +112,10 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
         ...(motivoOcorrencia && {
             motivoOcorrencia,
         }),
-        ...(ocorrencia.redes_protecao_acompanhamento && {
-            redesProtecao: ocorrencia.redes_protecao_acompanhamento,
-        }),
         ...(notificadoConselhoTutelar && { notificadoConselhoTutelar }),
-        ...(acompanhadoNAAPA && { acompanhadoNAAPA }),
+        ...(ocorrencia.ocorrencia_acompanhada_pelo && {
+            acompanhadoNAAPA: ocorrencia.ocorrencia_acompanhada_pelo,
+        }),
     };
 }
 

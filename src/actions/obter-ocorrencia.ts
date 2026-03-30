@@ -41,11 +41,12 @@ export type OcorrenciaDetalheAPI = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?: string;
 };
 
 export async function obterOcorrencia(

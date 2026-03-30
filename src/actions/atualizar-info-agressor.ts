@@ -1,13 +1,13 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { AxiosError } from "axios";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { InfoAgressorBody, InfoAgressorResponse } from "@/types/info-agressor";
+import { AxiosError } from "axios";
+import { cookies } from "next/headers";
 
 export const atualizarInfoAgressor = async (
     uuid: string,
-    body: InfoAgressorBody
+    body: InfoAgressorBody,
 ): Promise<
     | { success: true; data: InfoAgressorResponse }
     | { success: false; error: string }
@@ -30,7 +30,7 @@ export const atualizarInfoAgressor = async (
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                 },
-            }
+            },
         );
 
         return { success: true, data: response.data };
