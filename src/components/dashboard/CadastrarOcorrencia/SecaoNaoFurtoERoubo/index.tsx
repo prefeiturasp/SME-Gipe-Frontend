@@ -253,8 +253,8 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        Existem informações sobre o agressor
-                                        e/ou vítima?*
+                                        Existem informações sobre as pessoas
+                                        envolvidas?*
                                     </FormLabel>
                                     <FormControl>
                                         <div className="pt-2">

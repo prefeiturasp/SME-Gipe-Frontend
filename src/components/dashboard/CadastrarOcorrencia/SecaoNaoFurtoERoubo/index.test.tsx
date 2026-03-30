@@ -149,7 +149,7 @@ describe("SecaoNaoFurtoERoubo", () => {
         expect(screen.getByText("Descreva a ocorrência*")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Existem informações sobre o agressor e/ou vítima?*",
+                "Existem informações sobre as pessoas envolvidas?*",
             ),
         ).toBeInTheDocument();
     });
