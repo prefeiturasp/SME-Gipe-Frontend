@@ -1354,4 +1354,103 @@ describe("Anexos", () => {
             expect(button).toHaveClass("cursor-not-allowed");
         });
     });
+
+    describe("alerta de imagens", () => {
+        beforeEach(() => {
+            vi.spyOn(
+                useTiposDocumentosHook,
+                "useTiposDocumentos",
+            ).mockReturnValue({
+                data: [
+                    {
+                        value: "boletim_ocorrencia",
+                        label: "Boletim de ocorrência",
+                    },
+                    { value: "imagens", label: "Imagens" },
+                ],
+                isLoading: false,
+                isError: false,
+                error: null,
+            } as never);
+        });
+
+        it("deve exibir o alerta ao selecionar o tipo Imagens", async () => {
+            const user = userEvent.setup();
+            renderWithProvider(
+                <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            );
+
+            expect(
+                screen.queryByText(/A imagem não deve conter pessoas/i),
+            ).not.toBeInTheDocument();
+
+            const tipoSelect = screen.getByRole("combobox", {
+                name: /Tipo do documento/i,
+            });
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /^Imagens$/i }),
+            );
+
+            expect(
+                screen.getByText(/A imagem não deve conter pessoas/i),
+            ).toBeInTheDocument();
+        });
+
+        it("deve ocultar o alerta ao trocar para outro tipo", async () => {
+            const user = userEvent.setup();
+            renderWithProvider(
+                <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            );
+
+            const tipoSelect = screen.getByRole("combobox", {
+                name: /Tipo do documento/i,
+            });
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /^Imagens$/i }),
+            );
+
+            expect(
+                screen.getByText(/A imagem não deve conter pessoas/i),
+            ).toBeInTheDocument();
+
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /Boletim/i }),
+            );
+
+            expect(
+                screen.queryByText(/A imagem não deve conter pessoas/i),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir o alerta novamente ao selecionar Imagens após trocar de tipo", async () => {
+            const user = userEvent.setup();
+            renderWithProvider(
+                <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            );
+
+            const tipoSelect = screen.getByRole("combobox", {
+                name: /Tipo do documento/i,
+            });
+
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /^Imagens$/i }),
+            );
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /Boletim/i }),
+            );
+            await user.click(tipoSelect);
+            await user.click(
+                await screen.findByRole("option", { name: /^Imagens$/i }),
+            );
+
+            expect(
+                screen.getByText(/A imagem não deve conter pessoas/i),
+            ).toBeInTheDocument();
+        });
+    });
 });
