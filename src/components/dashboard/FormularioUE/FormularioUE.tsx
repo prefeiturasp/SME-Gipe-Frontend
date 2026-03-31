@@ -314,17 +314,18 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             frequencia_escolar: pessoa.frequenciaEscolar,
                             interacao_ambiente_escolar:
                                 pessoa.interacaoAmbienteEscolar,
+                            nacionalidade: pessoa.nacionalidade,
+                            pessoa_com_deficiencia:
+                                pessoa.pessoaComDeficiencia === "Sim",
                         }),
                     ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
-                redes_protecao_acompanhamento:
-                    informacoesAdicionaisData.redesProtecao,
                 notificado_conselho_tutelar:
                     informacoesAdicionaisData.notificadoConselhoTutelar ===
                     "Sim",
-                acompanhado_naapa:
-                    informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
+                ocorrencia_acompanhada_pelo:
+                    informacoesAdicionaisData.acompanhadoNAAPA,
             }),
         };
     };

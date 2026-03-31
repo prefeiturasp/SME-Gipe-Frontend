@@ -43,7 +43,7 @@ describe("InformacoesAdicionais", () => {
         const motivoLabel = options?.motivoLabel ?? /Bullying/i;
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
@@ -58,7 +58,7 @@ describe("InformacoesAdicionais", () => {
         );
 
         const grupoTrigger = screen.getByRole("combobox", {
-            name: /Qual o grupo étnico-racial\?/i,
+            name: /Raça\/cor auto declarada/i,
         });
         await user.click(grupoTrigger);
         await user.click(await screen.findByRole("option", { name: /Pardo/i }));
@@ -86,14 +86,19 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação",
         );
-        await user.type(
-            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-            "CRAS, NAAPA",
-        );
+        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
 
-        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        const deficienciaTrigger = screen.getByRole("combobox", {
+            name: /Pessoa com deficiência\?/i,
+        });
+        await user.click(deficienciaTrigger);
+        await user.click(await screen.findByRole("option", { name: /^Sim$/i }));
+
+        const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
-        await user.click(radioSim[1]);
+
+        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
+        await user.click(radioNAAPA);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -164,15 +169,13 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i).length,
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i).length,
         ).toBeGreaterThanOrEqual(1);
         expect(
             screen.getByText(/O que motivou a ocorrência/i),
         ).toBeInTheDocument();
-        expect(
-            screen.getByText(/notificada ao Conselho Tutelar/i),
-        ).toBeInTheDocument();
-        expect(screen.getByText(/acompanhada pelo NAAPA/i)).toBeInTheDocument();
+        expect(screen.getByText(/notificada ao CT/i)).toBeInTheDocument();
+        expect(screen.getByText(/acompanhada pelo:/i)).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
@@ -209,9 +212,8 @@ describe("InformacoesAdicionais", () => {
                     },
                 ],
                 motivoOcorrencia: ["outros"],
-                redesProtecao: "CRAS",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             },
             setFormData: mockSetFormData,
         });
@@ -219,7 +221,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         expect(nomesInputs[0]).toHaveValue("João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
@@ -234,7 +236,7 @@ describe("InformacoesAdicionais", () => {
         expect(proximoButton).toBeDisabled();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
 
@@ -245,12 +247,14 @@ describe("InformacoesAdicionais", () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const radioNao = screen.getAllByRole("radio", { name: /Não/i });
-        await user.click(radioNao[0]);
-        await user.click(radioNao[1]);
+        const radioNao = screen.getByRole("radio", { name: /Não/i });
+        await user.click(radioNao);
 
-        expect(radioNao[0]).toBeChecked();
-        expect(radioNao[1]).toBeChecked();
+        expect(radioNao).toBeChecked();
+
+        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
+        await user.click(radioNAAPA);
+        expect(radioNAAPA).toBeChecked();
     });
 
     it("deve chamar onNext e setFormData ao submeter formulário válido", async () => {
@@ -258,7 +262,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
@@ -273,7 +277,7 @@ describe("InformacoesAdicionais", () => {
         );
 
         const grupoTrigger = screen.getByRole("combobox", {
-            name: /Qual o grupo étnico-racial\?/i,
+            name: /Raça\/cor auto declarada/i,
         });
         await user.click(grupoTrigger);
         await user.click(await screen.findByRole("option", { name: /Pardo/i }));
@@ -301,14 +305,19 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação com todos",
         );
-        await user.type(
-            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-            "CRAS e Conselho Tutelar",
-        );
+        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
 
-        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        const deficienciaTrigger2 = screen.getByRole("combobox", {
+            name: /Pessoa com deficiência\?/i,
+        });
+        await user.click(deficienciaTrigger2);
+        await user.click(await screen.findByRole("option", { name: /^Sim$/i }));
+
+        const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
-        await user.click(radioSim[1]);
+
+        const radioNAAPA2 = screen.getByRole("radio", { name: /NAAPA/i });
+        await user.click(radioNAAPA2);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -405,7 +414,7 @@ describe("InformacoesAdicionais", () => {
                             ],
                             motivacao_ocorrencia: ["bullying"],
                             notificado_conselho_tutelar: true,
-                            acompanhado_naapa: true,
+                            ocorrencia_acompanhada_pelo: "naapa",
                         }),
                     }),
                     expect.any(Object),
@@ -537,12 +546,13 @@ describe("InformacoesAdicionais", () => {
                             etapaEscolar: "ensino_fundamental_2",
                             frequenciaEscolar: "regular",
                             interacaoAmbienteEscolar: "Boa interação",
+                            nacionalidade: "Brasileira",
+                            pessoaComDeficiencia: "Sim",
                         },
                     ],
                     motivoOcorrencia: ["bullying"],
-                    redesProtecao: "CRAS, NAAPA",
                     notificadoConselhoTutelar: "Sim",
-                    acompanhadoNAAPA: "Sim",
+                    acompanhadoNAAPA: "naapa",
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -581,7 +591,6 @@ describe("InformacoesAdicionais", () => {
 
             expect(formData).toHaveProperty("pessoasAgressoras");
             expect(formData).toHaveProperty("motivoOcorrencia");
-            expect(formData).toHaveProperty("redesProtecao");
             expect(formData).toHaveProperty("notificadoConselhoTutelar");
             expect(formData).toHaveProperty("acompanhadoNAAPA");
         });
@@ -645,9 +654,7 @@ describe("InformacoesAdicionais", () => {
             );
 
             await user.type(
-                screen.getAllByLabelText(
-                    /Qual o nome da pessoa envolvida\?/i,
-                )[0],
+                screen.getAllByLabelText(/Qual o nome da pessoa\?/i)[0],
                 "João Silva",
             );
             await user.type(
@@ -664,7 +671,7 @@ describe("InformacoesAdicionais", () => {
             );
 
             const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
+                name: /Raça\/cor auto declarada/i,
             });
             await user.click(grupoTrigger);
             await user.click(
@@ -697,13 +704,25 @@ describe("InformacoesAdicionais", () => {
                 "Boa interação",
             );
             await user.type(
-                screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-                "CRAS, NAAPA",
+                screen.getByPlaceholderText(/Digite a nacionalidade/i),
+                "Brasileira",
             );
 
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
+            const deficienciaTrigger3 = screen.getByRole("combobox", {
+                name: /Pessoa com deficiência\?/i,
+            });
+            await user.click(deficienciaTrigger3);
+            await user.click(
+                await screen.findByRole("option", { name: /^Sim$/i }),
+            );
+
+            const radioSimSubmit = screen.getAllByRole("radio", {
+                name: /^Sim$/i,
+            });
+            await user.click(radioSimSubmit[0]);
+
+            const radioNAAPA3 = screen.getByRole("radio", { name: /NAAPA/i });
+            await user.click(radioNAAPA3);
 
             const motivoButton = screen.getByRole("button", {
                 name: /Selecione/i,
@@ -756,7 +775,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomeInput = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         )[0];
         const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
         expect(nomeInput).toBeDisabled();
