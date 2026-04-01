@@ -16,9 +16,6 @@ const mockInfoAdicionaisTrigger = vi.fn();
 const mockInfoAdicionaisGetData = vi.fn();
 const mockSecaoFinalTrigger = vi.fn();
 const mockSecaoFinalGetData = vi.fn();
-const mockSecaoFurtoValidateOutros = vi.fn();
-const mockSecaoNaoFurtoValidateOutros = vi.fn();
-const mockInfoAdicionaisValidateOutros = vi.fn();
 
 let capturedSecaoInicialCallback:
     | ((data: { tipoOcorrencia?: string }) => void)
@@ -124,7 +121,6 @@ vi.mock("../CadastrarOcorrencia/SecaoFurtoERoubo", () => {
                 trigger: mockSecaoFurtoTrigger,
             }),
             getFormData: mockSecaoFurtoGetData,
-            validateOutros: mockSecaoFurtoValidateOutros,
         }));
 
         return (
@@ -155,7 +151,6 @@ vi.mock("../CadastrarOcorrencia/SecaoNaoFurtoERoubo", () => {
                 trigger: mockSecaoNaoFurtoTrigger,
             }),
             getFormData: mockSecaoNaoFurtoGetData,
-            validateOutros: mockSecaoNaoFurtoValidateOutros,
         }));
 
         return (
@@ -195,7 +190,6 @@ vi.mock("../CadastrarOcorrencia/InformacoesAdicionais", () => {
                 trigger: mockInfoAdicionaisTrigger,
             }),
             getFormData: mockInfoAdicionaisGetData,
-            validateOutros: mockInfoAdicionaisValidateOutros,
         }));
 
         return (
@@ -313,9 +307,6 @@ describe("FormularioUE", () => {
         mockSecaoNaoFurtoTrigger.mockResolvedValue(true);
         mockInfoAdicionaisTrigger.mockResolvedValue(true);
         mockSecaoFinalTrigger.mockResolvedValue(true);
-        mockSecaoFurtoValidateOutros.mockReturnValue(true);
-        mockSecaoNaoFurtoValidateOutros.mockReturnValue(true);
-        mockInfoAdicionaisValidateOutros.mockReturnValue(true);
 
         mockSecaoInicialGetData.mockReturnValue({
             dataOcorrencia: "2024-01-01",
@@ -346,14 +337,13 @@ describe("FormularioUE", () => {
             etapaEscolar: "Fundamental II",
             frequenciaEscolar: "Regular",
             interacaoAmbienteEscolar: "Boa",
-            redesProtecao: ["CRAS"],
             notificadoConselhoTutelar: "Sim",
-            acompanhadoNAAPA: "Não",
+            acompanhadoNAAPA: "naapa",
         });
 
         mockSecaoFinalGetData.mockReturnValue({
             declarante: "Diretor",
-            comunicacaoSeguranca: "Sim, com a GCM",
+            comunicacaoSeguranca: "Sim",
             protocoloAcionado: "Ameaça",
         });
     });
@@ -753,63 +743,6 @@ describe("FormularioUE", () => {
             });
         });
 
-        it("deve mostrar erro quando validateOutros falha no Formulário Patrimonial", async () => {
-            mockStoreState.formData = { tipoOcorrencia: "Sim" };
-            mockSecaoFurtoValidateOutros.mockReturnValue(false);
-            renderWithClient(<FormularioUE />);
-
-            const botaoProximo = screen.getByText("Próximo");
-            await userEvent.click(botaoProximo);
-
-            await waitFor(() => {
-                expect(mockToast).toHaveBeenCalledWith({
-                    title: "Erro ao validar Formulário Patrimonial",
-                    description:
-                        'Preencha a descrição dos campos com "Outros" selecionado.',
-                    variant: "error",
-                });
-            });
-        });
-
-        it("deve mostrar erro quando validateOutros falha no Formulário Geral", async () => {
-            mockStoreState.formData = { tipoOcorrencia: "Não" };
-            mockSecaoNaoFurtoValidateOutros.mockReturnValue(false);
-            renderWithClient(<FormularioUE />);
-
-            const botaoProximo = screen.getByText("Próximo");
-            await userEvent.click(botaoProximo);
-
-            await waitFor(() => {
-                expect(mockToast).toHaveBeenCalledWith({
-                    title: "Erro ao validar Formulário Geral",
-                    description:
-                        'Preencha a descrição dos campos com "Outros" selecionado.',
-                    variant: "error",
-                });
-            });
-        });
-
-        it("deve mostrar erro quando validateOutros falha nas Informações Adicionais", async () => {
-            mockStoreState.formData = {
-                tipoOcorrencia: "Não",
-                possuiInfoAgressorVitima: "Sim",
-            };
-            mockInfoAdicionaisValidateOutros.mockReturnValue(false);
-            renderWithClient(<FormularioUE />);
-
-            const botaoProximo = screen.getByText("Próximo");
-            await userEvent.click(botaoProximo);
-
-            await waitFor(() => {
-                expect(mockToast).toHaveBeenCalledWith({
-                    title: "Erro ao validar Informações Adicionais",
-                    description:
-                        'Preencha a descrição dos campos com "Outros" selecionado.',
-                    variant: "error",
-                });
-            });
-        });
-
         it("deve mostrar erro quando a validação da Seção Final falha", async () => {
             mockSecaoFinalTrigger.mockResolvedValue(false);
             renderWithClient(<FormularioUE />);
@@ -1053,8 +986,7 @@ describe("FormularioUE", () => {
                     envolvido: "",
                     tem_info_agressor_ou_vitima: "nao",
                     declarante: "Diretor",
-                    comunicacao_seguranca_publica: "sim_gcm",
-                    protocolo_acionado: "ameaca",
+                    comunicacao_seguranca_publica: "sim",
                 });
             });
 
@@ -1105,15 +1037,13 @@ describe("FormularioUE", () => {
             mockInfoAdicionaisGetData.mockReturnValue({
                 pessoasAgressoras: [{ nome: "João", idade: "15" }],
                 motivoOcorrencia: "Bullying",
-                descricaoMotivoOcorrencia: "Motivação livre",
                 genero: "Masculino",
                 grupoEtnicoRacial: "Branco",
                 etapaEscolar: "Fundamental II",
                 frequenciaEscolar: "Regular",
                 interacaoAmbienteEscolar: "Boa",
-                redesProtecao: ["CRAS"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             });
 
             mockMutate.mockImplementation((data) => {
@@ -1123,9 +1053,8 @@ describe("FormularioUE", () => {
                         expect.objectContaining({ nome: "João", idade: 15 }),
                     ],
                     motivacao_ocorrencia: "Bullying",
-                    motivacao_ocorrencia_outros: "Motivação livre",
                     notificado_conselho_tutelar: true,
-                    acompanhado_naapa: false,
+                    ocorrencia_acompanhada_pelo: "naapa",
                 });
             });
 
@@ -1167,9 +1096,8 @@ describe("FormularioUE", () => {
                     },
                 ],
                 motivoOcorrencia: "Bullying",
-                redesProtecao: ["CRAS"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: "naapa",
             });
 
             mockMutate.mockImplementation((data) => {
@@ -1198,12 +1126,12 @@ describe("FormularioUE", () => {
         it("deve mapear comunicacao_seguranca_publica corretamente", async () => {
             mockSecaoFinalGetData.mockReturnValue({
                 declarante: "Diretor",
-                comunicacaoSeguranca: "Sim, com a PM",
+                comunicacaoSeguranca: "Sim",
                 protocoloAcionado: "Alerta",
             });
 
             mockMutate.mockImplementation((data) => {
-                expect(data.body.comunicacao_seguranca_publica).toBe("sim_pm");
+                expect(data.body.comunicacao_seguranca_publica).toBe("sim");
                 expect(data.body.protocolo_acionado).toBe("alerta");
             });
 
@@ -1540,6 +1468,32 @@ describe("FormularioUE", () => {
                 expect(mockMutate).toHaveBeenCalled();
             });
         });
+
+        it("deve usar '00:00' na data_ocorrencia quando foraHorarioFuncionamento é true", async () => {
+            mockSecaoInicialGetData.mockReturnValue({
+                dataOcorrencia: "2024-01-02",
+                horaOcorrencia: "15:30",
+                unidadeEducacional: "123456",
+                dre: "DRE-01",
+                tipoOcorrencia: "Sim",
+                foraHorarioFuncionamento: true,
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.fora_horario_funcionamento_ue).toBe(true);
+                expect(data.body.data_ocorrencia).toEqual(expect.any(String));
+                expect(data.body.data_ocorrencia).not.toContain("15:30");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
     });
 
     describe("Botões baseados em permissões", () => {
@@ -1622,7 +1576,7 @@ describe("FormularioUE", () => {
 
             mockSecaoFinalGetData.mockReturnValue({
                 declarante: "Diretor",
-                comunicacaoSeguranca: "Sim, com a GCM",
+                comunicacaoSeguranca: "Sim",
                 protocoloAcionado: "Ameaça",
             });
 

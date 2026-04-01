@@ -59,6 +59,18 @@ Given('eu efetuo login com RF', () => {
   cy.wait(2000)
 })
 
+Given('eu efetuo login com RF DRE cadastro', () => {
+  const RF_DRE = '7311559'
+  const SENHA_DRE = 'Sgp1559'
+  cy.log(`Efetuando login com RF DRE: ${RF_DRE}`)
+  cy.loginWithSession(RF_DRE, SENHA_DRE, 'CADASTRO-DRE')
+  cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
+    timeout: 30000,
+    failOnStatusCode: false 
+  })
+  cy.wait(2000)
+})
+
 When('o usuário está na página principal do sistema', () => {
   cy.url({ timeout: 20000 }).should('include', '/dashboard')
 })
@@ -118,8 +130,8 @@ When('seleciona {string} com a data atual', (label) => {
     .click({ force: true })
     .clear({ force: true })
     .type(normalized, { force: true })
-    .trigger('input')
-    .trigger('change')
+    .trigger('input', { force: true })
+    .trigger('change', { force: true })
   
   cy.wait(1000)
   cy.get('input[type="date"]')
@@ -288,6 +300,28 @@ When('Descreva a ocorrencia - Descreva a ocorrência', () => {
   cy.wait(1000)
 })
 
+When('Selecionar tipo de ocorrencia aleatorio furto', () => {
+  cy.wait(2000)
+  cy.log('Selecionando tipo de ocorrência aleatório (furto)')
+  cy.get('button[aria-haspopup="listbox"]', { timeout: 15000 })
+    .first()
+    .then(($btn) => {
+      if ($btn.attr('data-state') !== 'open') {
+        cy.wrap($btn).click({ force: true })
+      }
+    })
+  cy.get('[role="listbox"]', { timeout: 15000 }).should('be.visible')
+  cy.get('[role="listbox"] [role="option"]', { timeout: 10000 })
+    .filter(':visible')
+    .then($options => {
+      const randomIndex = Math.floor(Math.random() * $options.length)
+      const selectedOption = $options.eq(randomIndex).text().trim()
+      cy.log(`Tipo de ocorrência selecionado: ${selectedOption}`)
+      cy.wrap($options.eq(randomIndex)).scrollIntoView().click({ force: true })
+    })
+  cy.wait(2000)
+})
+
 When('valida a existencia do texto {string}', (texto) => {
   cy.wait(1000)
   
@@ -334,6 +368,10 @@ When('valida a existencia do texto {string}', (texto) => {
     cy.get('div.flex:nth-child(4) > div:nth-child(2) > p:nth-child(1)', { timeout: 15000 })
       .should('be.visible')
       .should('contain.text', 'Anexos')
+  } else if (texto.includes('Importante: Esse campo não exclui')) {
+    cy.get('fieldset > div:nth-child(2) > div > div', { timeout: 15000 })
+      .should('be.visible')
+      .should('contain.text', 'Esse campo não exclui')
   }
 })
 
@@ -381,44 +419,46 @@ When('valido a existencia do texto de {string}', (texto) => {
   }
 })
 
-When('seleciona {string}', (opcao) => {
-  cy.wait(2000)
-  
-  if (opcao.includes('Sim, mas não houve dano')) {
-    cy.get('label.flex:nth-child(2) > span:nth-child(3)', { timeout: 15000 })
-      .should('be.visible')
-      
-      .click({ force: true })
-    cy.wait(1500)
-  } else if (opcao.includes('Apenas um estudante')) {
-    cy.get('body').then($body => {
-      if ($body.find('#\\:rfd\\:-form-item').length > 0) {
-        cy.get('#\\:rfd\\:-form-item', { timeout: 15000 })
-          .should('be.visible')
-          .click({ force: true })
-      } else {
-        cy.contains('span, div[role="option"]', opcao, { timeout: 15000 })
-          .first()
-          .should('be.visible')
-          .click({ force: true })
-      }
-    })
-    cy.wait(1500)
-  } else {
-    cy.contains('span,label', opcao, { timeout: 15000 })
-      .first()
-      .should('be.visible')
-      
-      .click({ force: true })
-    cy.wait(1500)
-  }
-})
-
 When('clica em Proximo', () => {
-  waitAndGet('button.inline-flex', { wait: 2000 })
+  cy.wait(1000)
+  cy.log('Avançando da Aba 2 para Aba 3')
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[4]/button[2]', { timeout: 15000 })
+    .should('be.visible')
     .should('not.be.disabled')
     .click({ force: true })
   cy.wait(3000)
+})
+
+When('valida botoes anterior e proximo aba2', () => {
+  cy.wait(1000)
+  cy.log('Validando botões Anterior e Próximo da Aba 2')
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[4]/button[1]', { timeout: 15000 })
+    .should('exist')
+    .should('be.visible')
+    .then($btn => cy.log(`Botão Anterior: "${$btn.text().trim()}"`))
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[4]/button[2]', { timeout: 15000 })
+    .should('exist')
+    .should('be.visible')
+    .then($btn => cy.log(`Botão Próximo: "${$btn.text().trim()}"`))
+})
+
+When('valida a existencia do titulo {string}', (titulo) => {
+  cy.wait(500)
+  cy.log(`Validando título: ${titulo}`)
+  cy.get('fieldset > div:nth-child(3) > label', { timeout: 15000 })
+    .should('be.visible')
+    .should('contain.text', 'Smart Sampa')
+})
+
+When('valida opcoes sim e nao do Smart Sampa', () => {
+  cy.wait(500)
+  cy.log('Validando opções Sim e Não do Smart Sampa')
+  cy.get('fieldset > div:nth-child(3) label.flex.items-center', { timeout: 15000 })
+    .should('have.length.at.least', 2)
+  cy.get('fieldset > div:nth-child(3) label.flex.items-center', { timeout: 15000 })
+    .first().should('be.visible')
+  cy.get('fieldset > div:nth-child(3) label.flex.items-center', { timeout: 15000 })
+    .last().should('be.visible')
 })
 
 When('clica no campo do declarante', () => clickButtonByIndex(0))
@@ -437,24 +477,58 @@ When('seleciona protocolo', () => {
   cy.wait(1000)
 })
 
+When('seleciona opcao nao smart sampa', () => {
+  cy.wait(1000)
+  cy.log('Selecionando Não no Smart Sampa')
+  cy.get('fieldset > div:nth-child(3) label.flex.items-center', { timeout: 15000 })
+    .eq(1)
+    .should('be.visible')
+    .click({ force: true })
+  cy.wait(1000)
+})
+
+When('seleciona uma das opções disponivel de forma aleatoria com indice {int}', (indice) => {
+  cy.wait(1500)
+  cy.log(`Selecionando aleatoriamente combobox índice ${indice}`)
+  cy.selectRadixRandom({ comboIndex: indice })
+  cy.wait(1000)
+})
+
+When('valida botoes anterior e proximo aba3', () => {
+  cy.wait(1000)
+  cy.log('Validando botões Anterior e Próximo da Aba 3')
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[3]/button[1]', { timeout: 15000 })
+    .should('exist')
+    .should('be.visible')
+    .then($btn => cy.log(`Botão Anterior: "${$btn.text().trim()}"`))
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[3]/button[2]', { timeout: 15000 })
+    .should('exist')
+    .should('be.visible')
+    .then($btn => cy.log(`Botão Próximo: "${$btn.text().trim()}"`))
+})
+
+When('clica em proximo aba3', () => {
+  cy.wait(1000)
+  cy.log('Avançando da Aba 3 para Aba 4')
+  cy.xpath('/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[3]/button[2]', { timeout: 15000 })
+    .should('be.visible')
+    .should('not.be.disabled')
+    .click({ force: true })
+  cy.wait(3000)
+})
+
 When('clica em proximo final', () => {
   cy.wait(3000)
-  
-  // Aguardar botão ficar habilitado
   cy.get('.inline-flex', { timeout: 20000 })
     .should('be.visible')
     .then($btn => {
-      // Se ainda estiver desabilitado, aguardar mais tempo
       if ($btn.is(':disabled') || $btn.hasClass('disabled')) {
         cy.wait(3000)
       }
     })
-  
   cy.get('.inline-flex')
     .should('not.be.disabled')
-    
     .click({ force: true })
-  
   cy.wait(3000)
 })
 
@@ -466,6 +540,41 @@ When('clica fora para fechar dropdown', () => {
   cy.wait(500)
   cy.get('main').click({ force: true })
   cy.wait(1000)
+})
+
+When('clica no campo envolvidos ue', () => {
+  cy.wait(2000)
+  cy.xpath(
+    '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[1]/div[2]/button',
+    { timeout: 15000 }
+  )
+    .should('be.visible')
+    .should('be.enabled')
+    .click({ force: true })
+  cy.wait(2500)
+})
+
+When('seleciona envolvidos aleatorio', () => {
+  cy.wait(2000)
+  cy.xpath(
+    '/html/body/div/div/div[2]/main/div/div[3]/form/fieldset/div[1]/div[2]/button',
+    { timeout: 15000 }
+  )
+    .invoke('attr', 'aria-controls')
+    .then((listId) => {
+      const listSelector = listId
+        ? `#${CSS.escape(listId)}`
+        : 'div[role="listbox"]'
+      cy.get(`${listSelector} [role="option"]`, { timeout: 10000 }).then(
+        ($opts) => {
+          expect($opts.length, 'deve haver opções no listbox').to.be.greaterThan(0)
+          const idx = Math.floor(Math.random() * $opts.length)
+          cy.log(`Selecionando envolvido: ${$opts[idx].innerText.trim()}`)
+          cy.wrap($opts[idx]).scrollIntoView().click({ force: true })
+        }
+      )
+    })
+  cy.wait(2500)
 })
 
 When('clica no Campo {string}', (campo) => {

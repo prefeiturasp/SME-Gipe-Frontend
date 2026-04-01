@@ -302,6 +302,20 @@ export default function Anexos({
                                                     documento para anexar
                                                 </p>
                                             )}
+                                            {tiposDocumento.find(
+                                                (t) =>
+                                                    t.value === field.value &&
+                                                    t.label.toLowerCase() ===
+                                                        "imagens",
+                                            ) && (
+                                                <p
+                                                    className="text-sm"
+                                                    style={{ color: "#B40C02" }}
+                                                >
+                                                    A imagem não deve conter
+                                                    pessoas
+                                                </p>
+                                            )}
                                         </FormItem>
                                     )}
                                 />

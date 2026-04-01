@@ -13,11 +13,11 @@ export type OcorrenciaDetalheAPI = {
     nome_dre?: string;
     nome_unidade?: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
+    fora_horario_funcionamento_ue?: boolean;
     user_username: string;
     criado_em: string;
     atualizado_em: string;
     tipos_ocorrencia?: Array<{ uuid: string; nome: string }>;
-    tipos_ocorrencia_outros?: string;
     descricao_ocorrencia?: string;
     status?: string;
     smart_sampa_situacao?: "sim" | "nao";
@@ -26,18 +26,12 @@ export type OcorrenciaDetalheAPI = {
         uuid: string;
         declarante: string;
     };
-    comunicacao_seguranca_publica?:
-        | "sim_gcm"
-        | "sim_pm"
-        | "sim_dc"
-        | "sim_cbm"
-        | "nao";
+    comunicacao_seguranca_publica?: "sim" | "nao";
     protocolo_acionado?: "ameaca" | "alerta" | "registro";
     envolvido?: Array<{
         uuid: string;
         perfil_dos_envolvidos: string;
     }>;
-    envolvido_outros?: string;
     tem_info_agressor_ou_vitima?: "sim" | "nao";
     pessoas_agressoras?: Array<{
         nome: string;
@@ -47,12 +41,16 @@ export type OcorrenciaDetalheAPI = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
-    motivacao_ocorrencia_outros?: string;
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?:
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai";
 };
 
 export async function obterOcorrencia(

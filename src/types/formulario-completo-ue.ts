@@ -3,16 +3,15 @@ export type FormularioCompletoUEBody = {
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
+    fora_horario_funcionamento_ue?: boolean;
     tipos_ocorrencia: string[];
-    tipos_ocorrencia_outros?: string;
     descricao_ocorrencia: string;
     smart_sampa_situacao: string;
     envolvido?: string[];
-    envolvido_outros?: string;
     tem_info_agressor_ou_vitima: string;
     declarante: string;
     comunicacao_seguranca_publica: string;
-    protocolo_acionado: string;
+    protocolo_acionado?: string;
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
@@ -21,12 +20,16 @@ export type FormularioCompletoUEBody = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia?: string[];
-    motivacao_ocorrencia_outros?: string;
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?:
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai";
 };
 
 export type FormularioCompletoUEResponse = {
@@ -39,7 +42,7 @@ export type FormularioCompletoUEResponse = {
     smart_sampa_situacao: string;
     tem_info_agressor_ou_vitima: string;
     comunicacao_seguranca_publica: string;
-    protocolo_acionado: string;
+    protocolo_acionado?: string;
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
@@ -48,9 +51,14 @@ export type FormularioCompletoUEResponse = {
         etapa_escolar: string;
         frequencia_escolar: string;
         interacao_ambiente_escolar: string;
+        nacionalidade: string;
+        pessoa_com_deficiencia: boolean;
     }>;
     motivacao_ocorrencia?: string[];
-    redes_protecao_acompanhamento?: string;
     notificado_conselho_tutelar?: boolean;
-    acompanhado_naapa?: boolean;
+    ocorrencia_acompanhada_pelo?:
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai";
 };

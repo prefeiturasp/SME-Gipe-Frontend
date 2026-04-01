@@ -6,6 +6,8 @@ export type PessoaAgressora = {
     etapa_escolar: string;
     frequencia_escolar: string;
     interacao_ambiente_escolar: string;
+    nacionalidade: string;
+    pessoa_com_deficiencia: boolean;
 };
 
 export type InfoAgressorBody = {
@@ -13,10 +15,8 @@ export type InfoAgressorBody = {
     dre_codigo_eol: string;
     pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
-    motivacao_ocorrencia_outros?: string;
-    redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
-    acompanhado_naapa: boolean;
+    ocorrencia_acompanhada_pelo: string;
 };
 
 export type InfoAgressorResponse = {
@@ -26,8 +26,6 @@ export type InfoAgressorResponse = {
     pessoas_agressoras: PessoaAgressora[];
     motivacao_ocorrencia: string[];
     motivacao_ocorrencia_display: string;
-    motivacao_ocorrencia_outros?: string;
-    redes_protecao_acompanhamento: string;
     notificado_conselho_tutelar: boolean;
-    acompanhado_naapa: boolean;
+    ocorrencia_acompanhada_pelo: string;
 };

@@ -3,4 +3,5 @@ export type SecaoInicialBody = {
     unidade_codigo_eol: string;
     dre_codigo_eol: string;
     sobre_furto_roubo_invasao_depredacao: boolean;
+    fora_horario_funcionamento_ue: boolean;
 };

@@ -17,6 +17,13 @@ const pessoaAgressoraSchema = z.object({
         .string()
         .min(1, "Descrição da interação é obrigatória")
         .min(10, "Descrição deve ter no mínimo 10 caracteres"),
+    nacionalidade: z
+        .string()
+        .min(1, "Nacionalidade é obrigatória")
+        .max(100, "Nacionalidade deve ter no máximo 100 caracteres"),
+    pessoaComDeficiencia: z
+        .string()
+        .min(1, "Informe se a pessoa tem deficiência"),
 });
 
 export type PessoaAgressoraForm = z.infer<typeof pessoaAgressoraSchema>;
@@ -28,17 +35,15 @@ export const formSchema = z.object({
     motivoOcorrencia: z
         .array(z.string())
         .min(1, "Selecione pelo menos um motivo"),
-    descricaoMotivoOcorrencia: z.string().optional(),
-    redesProtecao: z
-        .string()
-        .min(1, "Informação sobre redes de proteção é obrigatória")
-        .min(10, "Descrição deve ter no mínimo 10 caracteres"),
     notificadoConselhoTutelar: z.enum(["Sim", "Não"], {
         required_error: "Selecione uma opção",
     }),
-    acompanhadoNAAPA: z.enum(["Sim", "Não"], {
-        required_error: "Selecione uma opção",
-    }),
+    acompanhadoNAAPA: z.enum(
+        ["naapa", "comissao_mediacao_conflitos", "supervisao_escolar", "cefai"],
+        {
+            required_error: "Selecione uma opção",
+        },
+    ),
 });
 
 export type InformacoesAdicionaisData = z.infer<typeof formSchema>;

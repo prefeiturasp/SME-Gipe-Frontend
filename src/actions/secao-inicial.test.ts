@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { SecaoInicial } from "./secao-inicial";
 import { SecaoInicialBody } from "@/types/secao-inicial";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { SecaoInicial } from "./secao-inicial";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -19,6 +19,7 @@ describe("SecaoInicial action", () => {
         unidade_codigo_eol: "12345",
         dre_codigo_eol: "DRE-ABC",
         sobre_furto_roubo_invasao_depredacao: true,
+        fora_horario_funcionamento_ue: false,
     };
     const mockAuthToken = "test-token";
 
@@ -49,7 +50,7 @@ describe("SecaoInicial action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 
@@ -124,5 +125,30 @@ describe("SecaoInicial action", () => {
             success: false,
             error: "Erro ao criar ocorrência",
         });
+    });
+
+    it("deve criar ocorrência com fora_horario_funcionamento_ue: true", async () => {
+        const bodyComFora: SecaoInicialBody = {
+            ...mockBody,
+            fora_horario_funcionamento_ue: true,
+        };
+        const mockResponse = { data: { uuid: "uuid-fora-horario" } };
+        const postSpy = vi
+            .spyOn(apiIntercorrencias, "post")
+            .mockResolvedValue(mockResponse);
+
+        const result = await SecaoInicial(bodyComFora);
+
+        expect(result).toEqual({
+            success: true,
+            data: { uuid: "uuid-fora-horario" },
+        });
+        expect(postSpy).toHaveBeenCalledWith(
+            "/diretor/secao-inicial/",
+            bodyComFora,
+            expect.objectContaining({
+                headers: { Authorization: `Bearer ${mockAuthToken}` },
+            }),
+        );
     });
 });

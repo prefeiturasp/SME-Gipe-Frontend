@@ -191,18 +191,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             return false;
         }
 
-        const outrosValid = isFurtoRoubo
-            ? secaoFurtoERouboRef.current?.validateOutros()
-            : secaoNaoFurtoERouboRef.current?.validateOutros();
-
-        if (!outrosValid) {
-            showValidationError(
-                titulo,
-                'Preencha a descrição dos campos com "Outros" selecionado.',
-            );
-            return false;
-        }
-
         return true;
     };
 
@@ -216,15 +204,6 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             showValidationError(
                 "Erro ao validar Informações Adicionais",
                 "Verifique os campos e tente novamente.",
-            );
-            return false;
-        }
-
-        const outrosValid = informacoesAdicionaisRef.current?.validateOutros();
-        if (!outrosValid) {
-            showValidationError(
-                "Erro ao validar Informações Adicionais",
-                'Preencha a descrição dos campos com "Outros" selecionado.',
             );
             return false;
         }
@@ -268,10 +247,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                 ?.possuiInfoAgressorVitima === "Sim";
 
         const comunicacaoMap: Record<string, string> = {
-            "Sim, com a GCM": "sim_gcm",
-            "Sim, com a PM": "sim_pm",
-            "Sim, com a Defesa civil": "sim_dc",
-            "Sim, com o Bombeiro": "sim_cbm",
+            Sim: "sim",
             Não: "nao",
         };
 
@@ -282,7 +258,11 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         };
 
         const dataHoraOcorrencia = new Date(
-            `${secaoInicialData?.dataOcorrencia}T${secaoInicialData?.horaOcorrencia}`,
+            `${secaoInicialData?.dataOcorrencia}T${
+                secaoInicialData?.foraHorarioFuncionamento
+                    ? "00:00"
+                    : secaoInicialData?.horaOcorrencia
+            }`,
         ).toISOString();
 
         let smartSampaSituacao = "nao";
@@ -298,13 +278,12 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
             dre_codigo_eol: secaoInicialData?.dre ?? "",
             sobre_furto_roubo_invasao_depredacao:
                 secaoInicialData?.tipoOcorrencia === "Sim",
+            fora_horario_funcionamento_ue:
+                secaoInicialData?.foraHorarioFuncionamento ?? false,
             tipos_ocorrencia: filterValidTiposOcorrencia(
                 secaoTipoData?.tiposOcorrencia ?? [],
                 tiposOcorrenciaDisponiveis,
             ),
-            tipos_ocorrencia_outros: (
-                secaoTipoData as { descricaoTipoOcorrencia?: string }
-            )?.descricaoTipoOcorrencia,
             descricao_ocorrencia: secaoTipoData?.descricao ?? "",
             smart_sampa_situacao: smartSampaSituacao,
             ...(!isFurtoRoubo &&
@@ -312,18 +291,17 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     envolvido:
                         (secaoTipoData as { envolvidos?: string[] })
                             ?.envolvidos ?? [],
-                    envolvido_outros: (
-                        secaoTipoData as { descricaoEnvolvidos?: string }
-                    )?.descricaoEnvolvidos,
                 }),
             tem_info_agressor_ou_vitima: temInfoAgressorVitima ? "sim" : "nao",
             declarante: secaoFinalData?.declarante ?? "",
             comunicacao_seguranca_publica:
                 comunicacaoMap[secaoFinalData?.comunicacaoSeguranca ?? ""] ||
                 "nao",
-            protocolo_acionado:
-                protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
-                "registro",
+            ...(!isFurtoRoubo && {
+                protocolo_acionado:
+                    protocoloMap[secaoFinalData?.protocoloAcionado ?? ""] ||
+                    "registro",
+            }),
             ...(informacoesAdicionaisData && {
                 pessoas_agressoras:
                     informacoesAdicionaisData.pessoasAgressoras.map(
@@ -336,19 +314,18 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             frequencia_escolar: pessoa.frequenciaEscolar,
                             interacao_ambiente_escolar:
                                 pessoa.interacaoAmbienteEscolar,
+                            nacionalidade: pessoa.nacionalidade,
+                            pessoa_com_deficiencia:
+                                pessoa.pessoaComDeficiencia === "Sim",
                         }),
                     ),
                 motivacao_ocorrencia:
                     informacoesAdicionaisData.motivoOcorrencia,
-                motivacao_ocorrencia_outros:
-                    informacoesAdicionaisData.descricaoMotivoOcorrencia,
-                redes_protecao_acompanhamento:
-                    informacoesAdicionaisData.redesProtecao,
                 notificado_conselho_tutelar:
                     informacoesAdicionaisData.notificadoConselhoTutelar ===
                     "Sim",
-                acompanhado_naapa:
-                    informacoesAdicionaisData.acompanhadoNAAPA === "Sim",
+                ocorrencia_acompanhada_pelo:
+                    informacoesAdicionaisData.acompanhadoNAAPA,
             }),
         };
     };

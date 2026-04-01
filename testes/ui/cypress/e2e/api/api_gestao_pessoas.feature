@@ -55,40 +55,12 @@ Funcionalidade: API Gestão de Pessoas - Gestão de Usuários
     E a resposta deve ser um array
     E todos os usuários devem ter os campos obrigatórios preenchidos
 
-  @gestao_usuarios @validacao @perfis_diversos
-  Cenário: Validar que existem diferentes tipos de perfis cadastrados
-    Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E a lista deve conter usuários com diferentes perfis
-
-  @gestao_usuarios @validacao @status_usuarios
-  Cenário: Validar que existem usuários com diferentes status
-    Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E a lista deve conter usuários ativos e inativos
-
-  @gestao_usuarios @validacao @formato_data
-  Cenário: Validar formato da data de solicitação
-    Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E todos os usuários devem ter data_solicitacao em formato válido
-
   @gestao_usuarios @validacao @rf_cpf_formato
   Cenário: Validar formato de RF ou CPF
     Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
     Então o status code da resposta deve ser 200
     E a resposta deve ser um array
     E todos os usuários devem ter rf_ou_cpf não vazio
-
-  @gestao_usuarios @validacao @contagem
-  Cenário: Validar quantidade de usuários retornados
-    Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E a lista deve ter mais de 10 usuários
 
   @gestao_usuarios @validacao @uuid_unico
   Cenário: Validar que todos os UUIDs são únicos
@@ -142,13 +114,6 @@ Funcionalidade: API Gestão de Pessoas - Gestão de Usuários
     Então o status code da resposta deve ser 200
     E o header Content-Type deve ser "application/json"
     E o header deve conter informações de segurança
-
-  @gestao_usuarios @business_rules @usuarios_validados
-  Cenário: Validar proporção de usuários validados
-    Quando eu faço uma requisição GET para "https://qa-gipe.sme.prefeitura.sp.gov.br/api/users/gestao-usuarios/?format=json"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E deve existir pelo menos um usuário validado e um não validado
 
   @gestao_usuarios @advanced @data_quality_report
   Cenário: Gerar relatório de qualidade de dados

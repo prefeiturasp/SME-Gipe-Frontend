@@ -551,10 +551,38 @@ When('clica no campo tipo documento', () => {
 When('seleciona {string}', (opcao) => {
   cy.wait(1500)
   cy.log(`Selecionando: ${opcao}`)
-  cy.contains('[role="option"]', opcao, { timeout: 10000 })
-    .should('be.visible')
-    .click({ force: true })
-  cy.wait(1000)
+
+  if (opcao.includes('Sim, mas não houve dano')) {
+    cy.get('label.flex:nth-child(2) > span:nth-child(3)', { timeout: 15000 })
+      .should('be.visible')
+      .click({ force: true })
+    cy.wait(1500)
+  } else if (opcao.includes('Sim, Unidade Educacional é contemplada pelo Smart Sampa')) {
+    cy.get('fieldset > div:nth-child(3) label.flex.items-center', { timeout: 15000 })
+      .first()
+      .should('be.visible')
+      .click({ force: true })
+    cy.wait(1500)
+  } else if (opcao.includes('Apenas um estudante')) {
+    cy.get('body').then($body => {
+      if ($body.find('#\\:rfd\\:-form-item').length > 0) {
+        cy.get('#\\:rfd\\:-form-item', { timeout: 15000 })
+          .should('be.visible')
+          .click({ force: true })
+      } else {
+        cy.contains('span, div[role="option"]', opcao, { timeout: 15000 })
+          .first()
+          .should('be.visible')
+          .click({ force: true })
+      }
+    })
+    cy.wait(1500)
+  } else {
+    cy.contains('[role="option"]', opcao, { timeout: 10000 })
+      .should('be.visible')
+      .click({ force: true })
+    cy.wait(1000)
+  }
   cy.log('Opção selecionada')
 })
 
@@ -801,43 +829,34 @@ When('preenche descricao aleatoria', () => {
 When('seleciona motivacoes aleatorias', () => {
   cy.wait(2000)
   cy.log('Selecionando motivações aleatórias')
-  cy.wait(2000)
-  cy.get('body').then($body => {
-    let spans = $body.find('[data-state="open"] span:visible')
-    if (spans.length === 0) {
-      spans = $body.find('div[role="listbox"] span:visible, span:visible')
-    }
-    const opcoes = []
-    spans.each((index, span) => {
-      const texto = Cypress.$(span).text().trim()
-      if (texto.length >= 10 && texto.length <= 80 && !texto.includes('Selecione')) {
-        opcoes.push(span)
+  cy.get('div[role="listbox"]', { timeout: 10000 })
+    .should('be.visible')
+    .find('[role="option"]')
+    .then(($opts) => {
+      expect($opts.length, 'deve haver opções no listbox').to.be.greaterThan(0)
+      const count = $opts.length
+      const idx1 = Math.floor(Math.random() * count)
+      let idx2 = Math.floor(Math.random() * count)
+      while (count > 1 && idx2 === idx1) {
+        idx2 = Math.floor(Math.random() * count)
+      }
+      cy.log(`Selecionando opção 1: ${$opts[idx1].innerText.trim()}`)
+      cy.wrap($opts[idx1]).scrollIntoView().click({ force: true })
+      cy.wait(500)
+      if (idx1 !== idx2) {
+        cy.log(`Selecionando opção 2: ${$opts[idx2].innerText.trim()}`)
+        cy.wrap($opts[idx2]).scrollIntoView().click({ force: true })
       }
     })
-    if (opcoes.length >= 2) {
-      const shuffled = opcoes.sort(() => 0.5 - Math.random())
-      const selected1 = Cypress.$(shuffled[0]).text().trim()
-      const selected2 = Cypress.$(shuffled[1]).text().trim()
-      cy.log(`Selecionadas: ${selected1} e ${selected2}`)
-      cy.wrap(shuffled[0]).click({ force: true })
-      cy.wait(1000)
-      cy.wrap(shuffled[1]).click({ force: true })
-    } else {
-      cy.log('[AVISO] Menos de 2 opções encontradas, usando fallback')
-      cy.xpath(locators.opcao_cyberbullying()).click({ force: true })
-      cy.wait(1000)
-      cy.xpath(locators.opcao_atividades_ilicitas()).click({ force: true })
-    }
-  })
   cy.wait(1000)
 })
 
 When('seleciona genero aleatorio', () => {
   cy.wait(1500)
   cy.log('Selecionando gênero aleatório')
-  cy.get('button', { timeout: 15000 })
-    .filter(':visible')
-    .contains(/selecione/i)
+  cy.contains('label', /gênero/i, { timeout: 15000 })
+    .closest('div')
+    .find('button')
     .first()
     .scrollIntoView()
     .click({ force: true })
@@ -856,10 +875,10 @@ When('seleciona genero aleatorio', () => {
 When('seleciona etnico aleatorio', () => {
   cy.wait(1500)
   cy.log('Selecionando étnico-racial aleatório')
-  cy.get('button', { timeout: 15000 })
-    .filter(':visible')
-    .contains(/selecione/i)
-    .eq(0)
+  cy.contains('label', /étnico|etnico/i, { timeout: 15000 })
+    .closest('div')
+    .find('button')
+    .first()
     .scrollIntoView()
     .click({ force: true })
   cy.wait(2000)
@@ -877,10 +896,10 @@ When('seleciona etnico aleatorio', () => {
 When('seleciona etapa aleatoria', () => {
   cy.wait(1500)
   cy.log('Selecionando etapa aleatória')
-  cy.get('button', { timeout: 15000 })
-    .filter(':visible')
-    .contains(/selecione/i)
-    .eq(0)
+  cy.contains('label', /etapa escolar/i, { timeout: 15000 })
+    .closest('div')
+    .find('button')
+    .first()
     .scrollIntoView()
     .click({ force: true })
   cy.wait(2000)
@@ -900,11 +919,11 @@ When('seleciona frequencia aleatoria', () => {
   cy.log('Selecionando frequência aleatória')
   cy.get('body').type('{esc}')
   cy.wait(1000)
-  cy.contains('label', /Qual a frequência escolar/i, { timeout: 15000 }).should('be.visible')
-  cy.get('button', { timeout: 15000 })
-    .filter(':visible')
-    .contains(/selecione/i)
-    .eq(0)
+  cy.contains('label', /frequência escolar|frequencia escolar/i, { timeout: 15000 }).should('be.visible')
+  cy.contains('label', /frequência escolar|frequencia escolar/i, { timeout: 15000 })
+    .closest('div')
+    .find('button')
+    .first()
     .scrollIntoView()
     .should('be.visible')
     .click({ force: true })

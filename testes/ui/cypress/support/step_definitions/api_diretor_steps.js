@@ -10,10 +10,10 @@ Then('a resposta deve conter intercorrências com campos obrigatórios:', (dataT
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
     expect(response.body.length).to.be.greaterThan(0);
-    
+
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
     const primeiraIntercorrencia = response.body[0];
-    
+
     campos.forEach(campo => {
       expect(primeiraIntercorrencia).to.have.property(campo);
     });
@@ -41,9 +41,9 @@ Then('a intercorrência deve ter campo {string}', (campo) => {
 Then('as intercorrências devem ter status válidos:', (dataTable) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     const statusValidos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.status) {
         expect(statusValidos).to.include(intercorrencia.status);
@@ -53,47 +53,49 @@ Then('as intercorrências devem ter status válidos:', (dataTable) => {
 });
 
 Then('as intercorrências com envolvidos devem ter:', (dataTable) => {
+  const campos = dataTable.rawTable.slice(1).map((row) => row[0].trim());
+
   cy.get('@response').then((response) => {
-    expect(response.body).to.be.an('array');
-    
-    const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
-    response.body.forEach(intercorrencia => {
-      if (intercorrencia.envolvido) {
-        campos.forEach(campoPath => {
-          const partes = campoPath.split('.');
-          let valor = intercorrencia;
-          
-          partes.forEach(parte => {
-            expect(valor).to.have.property(parte);
-            valor = valor[parte];
-          });
+    expect(response.status).to.eq(200);
+    const lista = Array.isArray(response.body) ? response.body : [];
+    const comEnvolvidos = lista.filter(
+      (item) => Array.isArray(item?.envolvidos) && item.envolvidos.length > 0
+    );
+    if (comEnvolvidos.length === 0) {
+      cy.log('⚠️ Nenhuma intercorrência com envolvidos encontrada - pulando validação');
+      return;
+    }
+    comEnvolvidos.forEach((item) => {
+      item.envolvidos.forEach((env) => {
+        campos.forEach((campo) => {
+          const chave = campo.replace('envolvido.', '');
+          expect(env, `Campo ${chave} no envolvido`).to.have.property(chave);
         });
-      }
+      });
     });
   });
 });
 
 Then('cada intercorrência deve ter tipos_ocorrencia como array', () => {
   cy.get('@response').then((response) => {
-    expect(response.body).to.be.an('array');
-    
-    response.body.forEach(intercorrencia => {
+    expect(response.status).to.eq(200);
+    const lista = Array.isArray(response.body) ? response.body : [];
+    lista.forEach((intercorrencia) => {
+      expect(intercorrencia).to.have.property('tipos_ocorrencia');
       expect(intercorrencia.tipos_ocorrencia).to.be.an('array');
     });
   });
 });
 
 Then('os tipos_ocorrencia devem ter os campos:', (dataTable) => {
+  const campos = dataTable.rawTable.slice(1).map((row) => row[0].trim());
   cy.get('@response').then((response) => {
-    expect(response.body).to.be.an('array');
-    
-    const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
-    response.body.forEach(intercorrencia => {
+    expect(response.status).to.eq(200);
+    const lista = Array.isArray(response.body) ? response.body : [];
+    lista.forEach((intercorrencia) => {
       if (intercorrencia.tipos_ocorrencia && intercorrencia.tipos_ocorrencia.length > 0) {
-        intercorrencia.tipos_ocorrencia.forEach(tipo => {
-          campos.forEach(campo => {
+        intercorrencia.tipos_ocorrencia.forEach((tipo) => {
+          campos.forEach((campo) => {
             expect(tipo).to.have.property(campo);
           });
         });
@@ -105,15 +107,15 @@ Then('os tipos_ocorrencia devem ter os campos:', (dataTable) => {
 Then('as intercorrências com declarante devem ter:', (dataTable) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.declarante_detalhes) {
         campos.forEach(campoPath => {
           const partes = campoPath.split('.');
           let valor = intercorrencia;
-          
+
           partes.forEach(parte => {
             expect(valor).to.have.property(parte);
             valor = valor[parte];
@@ -127,9 +129,13 @@ Then('as intercorrências com declarante devem ter:', (dataTable) => {
 Then('os campos booleanos devem ter valores válidos:', (dataTable) => {
   cy.get('@response').then((response) => {
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     campos.forEach(campo => {
-      if (response.body[campo] !== null && response.body[campo] !== undefined && response.body[campo] !== '') {
+      if (
+        response.body[campo] !== null &&
+        response.body[campo] !== undefined &&
+        response.body[campo] !== ''
+      ) {
         expect(response.body[campo]).to.be.a('boolean');
       }
     });
@@ -177,8 +183,11 @@ Then('o campo {string} deve ser um array', (campo) => {
 Then('as motivações devem ter estrutura:', (dataTable) => {
   cy.get('@response').then((response) => {
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
-    if (response.body.motivacao_ocorrencia_display && response.body.motivacao_ocorrencia_display.length > 0) {
+
+    if (
+      response.body.motivacao_ocorrencia_display &&
+      response.body.motivacao_ocorrencia_display.length > 0
+    ) {
       response.body.motivacao_ocorrencia_display.forEach(motivacao => {
         campos.forEach(campo => {
           expect(motivacao).to.have.property(campo);
@@ -191,7 +200,7 @@ Then('as motivações devem ter estrutura:', (dataTable) => {
 Then('a intercorrência deve ter campos de endereço:', (dataTable) => {
   cy.get('@response').then((response) => {
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     campos.forEach(campo => {
       expect(response.body).to.have.property(campo);
     });
@@ -201,11 +210,14 @@ Then('a intercorrência deve ter campos de endereço:', (dataTable) => {
 Then('as intercorrências devem ter valores válidos de comunicacao_seguranca_publica:', (dataTable) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     const valoresValidos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     response.body.forEach(intercorrencia => {
-      if (intercorrencia.comunicacao_seguranca_publica && intercorrencia.comunicacao_seguranca_publica !== '') {
+      if (
+        intercorrencia.comunicacao_seguranca_publica &&
+        intercorrencia.comunicacao_seguranca_publica !== ''
+      ) {
         expect(valoresValidos).to.include(intercorrencia.comunicacao_seguranca_publica);
       }
     });
@@ -215,9 +227,9 @@ Then('as intercorrências devem ter valores válidos de comunicacao_seguranca_pu
 Then('as intercorrências devem ter valores válidos de protocolo_acionado:', (dataTable) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     const valoresValidos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.protocolo_acionado && intercorrencia.protocolo_acionado !== '') {
         expect(valoresValidos).to.include(intercorrencia.protocolo_acionado);
@@ -234,7 +246,7 @@ Then('o status code da resposta deve ser {int} ou {int}', (status1, status2) => 
 
 When('eu tento acessar {string} sem token', (endpoint) => {
   const url = `${Cypress.env('API_BASE_URL') || 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1'}${endpoint}`;
-  
+
   cy.request({
     method: 'GET',
     url: url,
@@ -260,7 +272,7 @@ Then('os campos de timestamp devem ter formato ISO 8601:', (dataTable) => {
   cy.get('@response').then((response) => {
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
     const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
-    
+
     campos.forEach(campo => {
       if (response.body[campo]) {
         expect(response.body[campo]).to.match(isoRegex);
@@ -272,7 +284,7 @@ Then('os campos de timestamp devem ter formato ISO 8601:', (dataTable) => {
 Then('cada intercorrência deve ter códigos EOL válidos', () => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.unidade_codigo_eol) {
         expect(intercorrencia.unidade_codigo_eol).to.be.a('string');
@@ -287,7 +299,7 @@ Then('cada intercorrência deve ter códigos EOL válidos', () => {
 Then('o código DRE deve ter {int} dígitos', (digitos) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.dre_codigo_eol) {
         expect(intercorrencia.dre_codigo_eol.length).to.equal(digitos);
@@ -299,7 +311,7 @@ Then('o código DRE deve ter {int} dígitos', (digitos) => {
 Then('o código unidade deve ter {int} dígitos', (digitos) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.unidade_codigo_eol) {
         expect(intercorrencia.unidade_codigo_eol.length).to.equal(digitos);
@@ -311,9 +323,9 @@ Then('o código unidade deve ter {int} dígitos', (digitos) => {
 Then('as intercorrências devem ter status_extra válidos:', (dataTable) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.be.an('array');
-    
+
     const statusValidos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     response.body.forEach(intercorrencia => {
       if (intercorrencia.status_extra) {
         expect(statusValidos).to.include(intercorrencia.status_extra);
@@ -325,7 +337,7 @@ Then('as intercorrências devem ter status_extra válidos:', (dataTable) => {
 Then('a intercorrência deve ter todos os campos principais:', (dataTable) => {
   cy.get('@response').then((response) => {
     const campos = dataTable.rawTable.slice(1).map(row => row[0]);
-    
+
     campos.forEach(campo => {
       expect(response.body).to.have.property(campo);
     });
@@ -420,7 +432,7 @@ When('eu faço uma requisição PUT para {string}', (endpoint) => {
 When('eu tento fazer PUT em {string} sem token', (endpoint) => {
   const tokenOriginal = Cypress.env('authToken');
   Cypress.env('authToken', null);
-  
+
   cy.get('@dadosAtualizacao').then((dados) => {
     cy.api_put(endpoint, dados).then((response) => {
       cy.wrap(response).as('response');
@@ -475,12 +487,11 @@ Then('deve ter campo {string}', (campo) => {
 Then('o campo {string} deve ser {string}', (campo, valorEsperado) => {
   cy.get('@response').then((response) => {
     expect(response.body).to.have.property(campo);
-    
-    // Converter string para booleano se necessário
+
     let valorComparar = valorEsperado;
     if (valorEsperado === 'true') valorComparar = true;
     if (valorEsperado === 'false') valorComparar = false;
-    
+
     expect(response.body[campo]).to.equal(valorComparar);
   });
 });
@@ -515,7 +526,7 @@ Then('o campo {string} deve estar atualizado', (campo) => {
 Then('todos os campos de endereço devem estar preenchidos', () => {
   cy.get('@response').then((response) => {
     const camposEndereco = ['cep', 'logradouro', 'numero_residencia', 'bairro', 'cidade', 'estado'];
-    
+
     camposEndereco.forEach(campo => {
       expect(response.body).to.have.property(campo);
       expect(response.body[campo]).to.not.be.null;

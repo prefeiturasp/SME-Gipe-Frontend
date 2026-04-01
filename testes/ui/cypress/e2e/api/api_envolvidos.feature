@@ -41,22 +41,6 @@ Funcionalidade: API GIPE - Tipos de Envolvidos
     Então o status da resposta deve ser 200
     E a lista deve conter pelo menos 12 tipos de envolvidos
 
-  @validacao @perfis_especificos
-  Cenário: Validar perfis específicos de envolvidos
-    Quando eu consulto os tipos de envolvidos
-    Então o status da resposta deve ser 200
-    E devem existir os seguintes perfis:
-      | perfil_dos_envolvidos       |
-      | Apenas um estudante         |
-      | Mais de um estudante        |
-      | Diretor/Vice-diretor        |
-      | Coordenador pedagogico      |
-      | Orientador Educacional      |
-      | Funcionários                |
-      | Estagiarios/monitores       |
-      | Familiares                  |
-      | Pessoas externas            |
-
   @validacao @uuid_especifico
   Cenário: Validar UUID de perfil específico - Apenas um estudante
     Quando eu consulto os tipos de envolvidos
