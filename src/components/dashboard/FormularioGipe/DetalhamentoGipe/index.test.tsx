@@ -1,3 +1,4 @@
+import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
 import * as useTiposOcorrenciaModule from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
@@ -782,5 +783,39 @@ describe("DetalhamentoGipe", () => {
                 ).not.toBeInTheDocument();
             });
         });
+    });
+
+    it("deve usar array vazio para envolveArmaOuAtaqueOptions quando categoriasGipe é undefined", () => {
+        vi.spyOn(
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe",
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
+
+        renderComponent();
+
+        expect(
+            screen.getByText(/envolve arma ou ataque\?\*/i),
+        ).toBeInTheDocument();
+        expect(screen.queryAllByRole("radio")).toHaveLength(0);
+    });
+
+    it("deve usar array vazio para ameacaRealizadaOptions quando categoriasGipe é undefined", () => {
+        vi.spyOn(
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe",
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
+
+        renderComponent();
+
+        expect(
+            screen.getByText(/ameaça foi realizada de qual maneira\?\*/i),
+        ).toBeInTheDocument();
+        expect(screen.queryAllByRole("radio")).toHaveLength(0);
     });
 });
