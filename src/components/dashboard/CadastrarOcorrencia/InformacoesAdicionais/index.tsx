@@ -293,8 +293,7 @@ const InformacoesAdicionais = forwardRef<
                                                     option.value,
                                                 )}
                                                 onCheckedChange={(checked) => {
-                                                    const current =
-                                                        field.value ?? [];
+                                                    const current = field.value;
                                                     field.onChange(
                                                         checked
                                                             ? [

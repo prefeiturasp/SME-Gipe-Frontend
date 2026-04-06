@@ -260,6 +260,37 @@ describe("InformacoesAdicionais", () => {
         expect(checkboxNAAPA).toBeChecked();
     });
 
+    it("deve alterar o placeholder da idade ao ativar o switch de criança menor de 1 ano", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos anos...",
+        );
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos meses...",
+        );
+    });
+
+    it("deve desmarcar checkbox de acompanhamento e remover do array", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
+
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).not.toBeChecked();
+    });
+
     it("deve chamar onNext e setFormData ao submeter formulário válido", async () => {
         const user = userEvent.setup();
         renderComponent();
@@ -745,6 +776,77 @@ describe("InformacoesAdicionais", () => {
             });
 
             expect(mockMutate).toHaveBeenCalled();
+        });
+
+        it("deve usar false como fallback para idadeEmMeses não definido ao submeter via ref", async () => {
+            const mockMutateLocal = vi.fn((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    pessoasAgressoras: [
+                        {
+                            nome: "João Silva",
+                            idade: "25",
+                            genero: "masculino",
+                            grupoEtnicoRacial: "pardo",
+                            etapaEscolar: "ensino_fundamental_2",
+                            frequenciaEscolar: "regular",
+                            interacaoAmbienteEscolar: "Boa interação",
+                            nacionalidade: "Brasileira",
+                            pessoaComDeficiencia: "Sim",
+                            // idadeEmMeses intencionalmente omitido (undefined)
+                        },
+                    ],
+                    motivoOcorrencia: ["bullying"],
+                    notificadoConselhoTutelar: "Sim",
+                    acompanhadoNAAPA: ["naapa"],
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            vi.spyOn(
+                useAtualizarInfoAgressorHook,
+                "useAtualizarInfoAgressor",
+            ).mockReturnValue({
+                mutate: mockMutateLocal,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
+
+            expect(mockMutateLocal).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        pessoas_agressoras: [
+                            expect.objectContaining({
+                                idade_em_meses: false,
+                            }),
+                        ],
+                    }),
+                }),
+                expect.any(Object),
+            );
         });
 
         it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
