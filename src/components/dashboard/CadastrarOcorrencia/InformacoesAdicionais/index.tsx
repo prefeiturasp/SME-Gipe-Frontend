@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -63,6 +64,7 @@ const InformacoesAdicionais = forwardRef<
                 : [
                       {
                           nome: "",
+                          idadeEmMeses: false,
                           idade: "",
                           genero: "",
                           grupoEtnicoRacial: "",
@@ -76,7 +78,7 @@ const InformacoesAdicionais = forwardRef<
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
-            acompanhadoNAAPA: formData.acompanhadoNAAPA ?? undefined,
+            acompanhadoNAAPA: formData.acompanhadoNAAPA ?? [],
         },
     });
 
@@ -123,6 +125,7 @@ const InformacoesAdicionais = forwardRef<
                             (pessoa) => ({
                                 nome: pessoa.nome,
                                 idade: Number.parseInt(pessoa.idade),
+                                idade_em_meses: pessoa.idadeEmMeses ?? false,
                                 genero: pessoa.genero,
                                 grupo_etnico_racial: pessoa.grupoEtnicoRacial,
                                 etapa_escolar: pessoa.etapaEscolar,
@@ -266,66 +269,59 @@ const InformacoesAdicionais = forwardRef<
                                 <FormLabel disabled={disabled}>
                                     A ocorrência está sendo acompanhada pelo:
                                 </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                            disabled={disabled}
-                                            className="flex flex-col space-y-2"
+                                <div className="pt-2 flex flex-col space-y-2">
+                                    {(
+                                        [
+                                            { value: "naapa", label: "NAAPA" },
+                                            {
+                                                value: "comissao_mediacao_conflitos",
+                                                label: "Comissão de Mediação de Conflitos",
+                                            },
+                                            {
+                                                value: "supervisao_escolar",
+                                                label: "Supervisão Escolar",
+                                            },
+                                            { value: "cefai", label: "CEFAI" },
+                                        ] as const
+                                    ).map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className="flex items-center space-x-2 w-fit cursor-pointer"
                                         >
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="naapa" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    NAAPA
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="comissao_mediacao_conflitos" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Comissão de Mediação de
-                                                    Conflitos
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="supervisao_escolar" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Supervisão Escolar
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="cefai" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    CEFAI
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
+                                            <Checkbox
+                                                checked={field.value?.includes(
+                                                    option.value,
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                    const current =
+                                                        field.value ?? [];
+                                                    field.onChange(
+                                                        checked
+                                                            ? [
+                                                                  ...current,
+                                                                  option.value,
+                                                              ]
+                                                            : current.filter(
+                                                                  (v) =>
+                                                                      v !==
+                                                                      option.value,
+                                                              ),
+                                                    );
+                                                }}
+                                                disabled={disabled}
+                                            />
+                                            <span
+                                                className={
+                                                    disabled
+                                                        ? "text-sm text-[#B0B0B0]"
+                                                        : "text-sm text-[#42474a]"
+                                                }
+                                            >
+                                                {option.label}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )}
