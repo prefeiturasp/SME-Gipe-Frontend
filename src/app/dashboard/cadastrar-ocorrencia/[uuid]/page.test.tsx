@@ -857,15 +857,8 @@ describe("EditarOcorrenciaPage", () => {
 
         const mockDataGipe = {
             uuid: "test-uuid-gipe",
-            envolvido: "estudante",
-            tipos_ocorrencia_detalhes: [
-                { uuid: "tipo-uuid-1", nome: "Violência física" },
-            ],
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "verbal",
-            motivacao_ocorrencia: ["bullying"],
-            etapa_escolar: "fundamental_i",
-            info_sobre_interacoes_virtuais_pessoa_agressora: "Info virtual",
             encaminhamentos_gipe: "Encaminhamentos GIPE",
         };
 
@@ -915,10 +908,8 @@ describe("EditarOcorrenciaPage", () => {
             expect(mockStoreState.setFormData).toHaveBeenCalledWith(
                 expect.objectContaining({
                     ameacaRealizada: "verbal",
-                    etapaEscolar: "fundamental_i",
                     encaminhamentos: "Encaminhamentos GIPE",
                     envolveArmaOuAtaque: "sim",
-                    informacoesInteracoesVirtuais: "Info virtual",
                 }),
             );
         });

@@ -24,11 +24,7 @@ describe("atualizarOcorrenciaGipe action", () => {
         dre_codigo_eol: "108500",
         envolve_arma_ataque: "sim",
         ameaca_realizada_qual_maneira: "virtualmente",
-        envolvido: ["214e18a2-1599-4396-877f-70ea526d36a0"],
-        motivacao_ocorrencia: ["bullying"],
         tipos_ocorrencia: ["001c9106-7cbd-4cb8-8658-ae9b7b0aaf34"],
-        etapa_escolar: "alfabetizacao",
-        info_sobre_interacoes_virtuais_pessoa_agressora: "",
         encaminhamentos_gipe: "teste encaminhamento",
     };
     const mockAuthToken = "test-token";
@@ -52,11 +48,7 @@ describe("atualizarOcorrenciaGipe action", () => {
                 dre_codigo_eol: "108500",
                 envolve_arma_ataque: "sim",
                 ameaca_realizada_qual_maneira: "virtualmente",
-                envolvido: ["214e18a2-1599-4396-877f-70ea526d36a0"],
-                motivacao_ocorrencia: ["bullying"],
                 tipos_ocorrencia: ["001c9106-7cbd-4cb8-8658-ae9b7b0aaf34"],
-                etapa_escolar: "alfabetizacao",
-                info_sobre_interacoes_virtuais_pessoa_agressora: "",
                 encaminhamentos_gipe: "teste encaminhamento",
             },
         };
