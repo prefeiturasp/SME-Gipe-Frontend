@@ -104,59 +104,15 @@ describe("DetalhamentoDre", () => {
         renderComponent();
 
         expect(
-            screen.getByText(
-                /houve acionamento da secretaria de seguranças pública ou forças de segurança/i,
-            ),
+            screen.getByText(/a ronda escolar foi acionada/i),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText(
-                /houve interlocução com a supervisão técnica de saúde \(sts\)/i,
-            ),
+            screen.getByText(/a supervis\u00e3o escolar foi comunicada/i),
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText(
-                /houve interlocução com a coordenação de políticas para criança e adolescente \(cpca\)/i,
-            ),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/houve interlocução com a supervisão escolar/i),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(
-                /houve interlocução com o núcleo de apoio e acompanhamento para a aprendizagem \(naapa\)/i,
-            ),
-        ).toBeInTheDocument();
-    });
-
-    it("deve renderizar todos os campos de textarea", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o sts/i,
-            ),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o cpca/i,
-            ),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o supervisão escolar/i,
-            ),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(
-                /existe alguma informação complementar da atuação conjunta entre a dre e o naapa/i,
-            ),
+            screen.getByText(/h\u00e1 um n\u00famero do processo sei/i),
         ).toBeInTheDocument();
     });
 
@@ -213,26 +169,17 @@ describe("DetalhamentoDre", () => {
         await user.click(radiosSeguranca[1]);
         await user.click(radiosSeguranca[3]);
         await user.click(radiosSeguranca[5]);
-        await user.click(radiosSeguranca[7]);
-        await user.click(radiosSeguranca[9]);
 
         await waitFor(() => {
             expect(botaoProximo).not.toBeDisabled();
         });
     });
 
-    it("deve ter 5 grupos de radio buttons (cada um com Sim/Não)", () => {
+    it("deve ter 3 grupos de radio buttons (cada um com Sim/Não)", () => {
         renderComponent();
 
         const radios = screen.getAllByRole("radio");
-        expect(radios).toHaveLength(10);
-    });
-
-    it("deve ter 4 campos de textarea", () => {
-        renderComponent();
-
-        const textareas = screen.getAllByRole("textbox");
-        expect(textareas).toHaveLength(4);
+        expect(radios).toHaveLength(6);
     });
 
     it("deve renderizar o formulário dentro de um componente Form", () => {
@@ -257,23 +204,21 @@ describe("DetalhamentoDre", () => {
         );
     });
 
-    it("deve organizar os campos em 3 QuadroBranco distintos", () => {
+    it("deve organizar os campos em 1 QuadroBranco principal com os 3 radios", () => {
         renderComponent();
 
         expect(
-            screen.getByText(
-                /acionamento da secretaria de seguranças pública/i,
-            ),
+            screen.getByText(/ronda escolar foi acionada/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/interlocução com a supervisão escolar/i),
+            screen.getByText(/supervis\u00e3o escolar foi comunicada/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/interlocução com o núcleo de apoio/i),
+            screen.getByText(/n\u00famero do processo sei/i),
         ).toBeInTheDocument();
     });
 
-    it("deve manter a estrutura de validação condicional dos textareas", async () => {
+    it("deve manter a estrutura de validação condicional do campo SEI", async () => {
         const user = userEvent.setup();
         renderComponent();
 
@@ -282,8 +227,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         await waitFor(() => {
             const botaoProximo = screen.getByRole("button", {
@@ -293,17 +236,15 @@ describe("DetalhamentoDre", () => {
         });
     });
 
-    it("deve exigir preenchimento de textarea quando radio é 'Sim'", async () => {
+    it("deve exigir preenchimento do campo SEI quando radio é 'Sim'", async () => {
         const user = userEvent.setup();
         renderComponent();
 
         const radios = screen.getAllByRole("radio");
 
         await user.click(radios[1]);
-        await user.click(radios[2]);
-        await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
+        await user.click(radios[3]);
+        await user.click(radios[4]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -313,9 +254,8 @@ describe("DetalhamentoDre", () => {
             expect(botaoProximo).toBeDisabled();
         });
 
-        const textareas = screen.getAllByRole("textbox");
-        const textareaSTS = textareas[0];
-        await user.type(textareaSTS, "Informações complementares STS");
+        const input = screen.getByPlaceholderText(/exemplo: 1234/i);
+        await user.type(input, "1234.5678/9012345-6");
 
         await waitFor(() => {
             expect(botaoProximo).not.toBeDisabled();
@@ -334,14 +274,8 @@ describe("DetalhamentoDre", () => {
         const radios = screen.getAllByRole("radio");
 
         await user.click(radios[0]);
-        await user.click(radios[2]);
+        await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[6]);
-        await user.click(radios[9]);
-
-        const textareas = screen.getAllByRole("textbox");
-        await user.type(textareas[0], "Info STS");
-        await user.type(textareas[2], "Info Supervisão");
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -361,14 +295,8 @@ describe("DetalhamentoDre", () => {
                         unidade_codigo_eol: "123456",
                         dre_codigo_eol: "654321",
                         acionamento_seguranca_publica: true,
-                        interlocucao_sts: true,
-                        info_complementar_sts: "Info STS",
-                        interlocucao_cpca: false,
-                        info_complementar_cpca: "",
-                        interlocucao_supervisao_escolar: true,
-                        info_complementar_supervisao_escolar: "Info Supervisão",
-                        interlocucao_naapa: false,
-                        info_complementar_naapa: "",
+                        interlocucao_supervisao_escolar: false,
+                        nr_processo_sei: "",
                     },
                 },
                 expect.any(Object),
@@ -394,8 +322,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -416,6 +342,46 @@ describe("DetalhamentoDre", () => {
         });
     });
 
+    it("deve enviar o nr_processo_sei preenchido quando numeroProcedimentoSEI é 'Sim'", async () => {
+        const user = userEvent.setup();
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        renderComponent();
+
+        const radios = screen.getAllByRole("radio");
+
+        await user.click(radios[0]);
+        await user.click(radios[3]);
+        await user.click(radios[4]);
+
+        const input = screen.getByPlaceholderText(/exemplo: 1234/i);
+        await user.type(input, "1234567890123456");
+
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoProximo).not.toBeDisabled();
+        });
+
+        await user.click(botaoProximo);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        nr_processo_sei: expect.stringMatching(/\d/),
+                    }),
+                }),
+                expect.any(Object),
+            );
+        });
+    });
+
     it("deve exibir toast de erro quando a mutation falha", async () => {
         const user = userEvent.setup();
 
@@ -430,8 +396,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -467,8 +431,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -483,14 +445,9 @@ describe("DetalhamentoDre", () => {
         await waitFor(() => {
             expect(mockSetFormData).toHaveBeenCalledWith({
                 acionamentoSegurancaPublica: "Não",
-                interlocucaoSTS: "Não",
-                informacoesComplementaresSTS: "",
-                interlocucaoCPCA: "Não",
-                informacoesComplementaresCPCA: "",
                 interlocucaoSupervisaoEscolar: "Não",
-                informacoesComplementaresSupervisaoEscolar: "",
-                interlocucaoNAAPA: "Não",
-                informacoesComplementaresNAAPA: "",
+                numeroProcedimentoSEI: "Não",
+                numeroProcedimentoSEITexto: "",
             });
         });
     });
@@ -598,8 +555,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoSalvar = screen.getByRole("button", {
             name: /finalizar e enviar/i,
@@ -636,8 +591,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoSalvar = screen.getByRole("button", {
             name: /finalizar e enviar/i,
@@ -675,8 +628,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -714,8 +665,6 @@ describe("DetalhamentoDre", () => {
         await user.click(radios[1]);
         await user.click(radios[3]);
         await user.click(radios[5]);
-        await user.click(radios[7]);
-        await user.click(radios[9]);
 
         const botaoFinalizar = screen.getByRole("button", {
             name: /finalizar/i,
