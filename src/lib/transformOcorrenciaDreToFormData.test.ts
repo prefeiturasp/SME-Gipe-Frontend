@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { transformOcorrenciaDreToFormData } from "./transformOcorrenciaDreToFormData";
 import { OcorrenciaDreResponse } from "@/types/ocorrencia-dre";
+import { describe, expect, it } from "vitest";
+import { transformOcorrenciaDreToFormData } from "./transformOcorrenciaDreToFormData";
 
 describe("transformOcorrenciaDreToFormData", () => {
     it("deve transformar dados da DRE com todos os campos preenchidos", () => {
@@ -13,33 +13,21 @@ describe("transformOcorrenciaDreToFormData", () => {
             status_display: "Em preenchimento DRE",
             status_extra: "",
             acionamento_seguranca_publica: true,
-            interlocucao_sts: true,
-            info_complementar_sts: "Informações STS",
-            interlocucao_cpca: true,
-            info_complementar_cpca: "Informações CPCA",
             interlocucao_supervisao_escolar: true,
-            info_complementar_supervisao_escolar: "Informações Supervisão",
-            interlocucao_naapa: true,
-            info_complementar_naapa: "Informações NAAPA",
+            nr_processo_sei: "1234.5678/9012345-6",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
             acionamentoSegurancaPublica: "Sim",
-            interlocucaoSTS: "Sim",
-            informacoesComplementaresSTS: "Informações STS",
-            interlocucaoCPCA: "Sim",
-            informacoesComplementaresCPCA: "Informações CPCA",
             interlocucaoSupervisaoEscolar: "Sim",
-            informacoesComplementaresSupervisaoEscolar:
-                "Informações Supervisão",
-            interlocucaoNAAPA: "Sim",
-            informacoesComplementaresNAAPA: "Informações NAAPA",
+            numeroProcedimentoSEI: "Sim",
+            numeroProcedimentoSEITexto: "1234.5678/9012345-6",
         });
     });
 
-    it("deve transformar dados da DRE com campos booleanos como false", () => {
+    it("deve transformar dados da DRE com campos booleanos como false e sem SEI", () => {
         const ocorrenciaDre: OcorrenciaDreResponse = {
             id: 1,
             uuid: "test-uuid",
@@ -49,32 +37,20 @@ describe("transformOcorrenciaDreToFormData", () => {
             status_display: "Em preenchimento DRE",
             status_extra: "",
             acionamento_seguranca_publica: false,
-            interlocucao_sts: false,
-            info_complementar_sts: "",
-            interlocucao_cpca: false,
-            info_complementar_cpca: "",
             interlocucao_supervisao_escolar: false,
-            info_complementar_supervisao_escolar: "",
-            interlocucao_naapa: false,
-            info_complementar_naapa: "",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
             acionamentoSegurancaPublica: "Não",
-            interlocucaoSTS: "Não",
-            informacoesComplementaresSTS: "",
-            interlocucaoCPCA: "Não",
-            informacoesComplementaresCPCA: "",
             interlocucaoSupervisaoEscolar: "Não",
-            informacoesComplementaresSupervisaoEscolar: "",
-            interlocucaoNAAPA: "Não",
-            informacoesComplementaresNAAPA: "",
+            numeroProcedimentoSEI: "Não",
+            numeroProcedimentoSEITexto: "",
         });
     });
 
-    it("deve transformar dados com mix de true e false", () => {
+    it("deve transformar dados com mix de true e false e SEI preenchido", () => {
         const ocorrenciaDre: OcorrenciaDreResponse = {
             id: 1,
             uuid: "test-uuid",
@@ -84,32 +60,21 @@ describe("transformOcorrenciaDreToFormData", () => {
             status_display: "Em preenchimento DRE",
             status_extra: "",
             acionamento_seguranca_publica: true,
-            interlocucao_sts: false,
-            info_complementar_sts: "",
-            interlocucao_cpca: true,
-            info_complementar_cpca: "Apenas CPCA",
             interlocucao_supervisao_escolar: false,
-            info_complementar_supervisao_escolar: "",
-            interlocucao_naapa: true,
-            info_complementar_naapa: "Apenas NAAPA",
+            nr_processo_sei: "9876.5432/1234567-8",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
             acionamentoSegurancaPublica: "Sim",
-            interlocucaoSTS: "Não",
-            informacoesComplementaresSTS: "",
-            interlocucaoCPCA: "Sim",
-            informacoesComplementaresCPCA: "Apenas CPCA",
             interlocucaoSupervisaoEscolar: "Não",
-            informacoesComplementaresSupervisaoEscolar: "",
-            interlocucaoNAAPA: "Sim",
-            informacoesComplementaresNAAPA: "Apenas NAAPA",
+            numeroProcedimentoSEI: "Sim",
+            numeroProcedimentoSEITexto: "9876.5432/1234567-8",
         });
     });
 
-    it("deve retornar campos de info complementar vazios quando não preenchidos", () => {
+    it("deve retornar numeroProcedimentoSEITexto vazio quando nr_processo_sei é undefined", () => {
         const ocorrenciaDre: OcorrenciaDreResponse = {
             id: 1,
             uuid: "test-uuid",
@@ -119,21 +84,12 @@ describe("transformOcorrenciaDreToFormData", () => {
             status_display: "Em preenchimento DRE",
             status_extra: "",
             acionamento_seguranca_publica: true,
-            interlocucao_sts: true,
-            info_complementar_sts: "",
-            interlocucao_cpca: true,
-            info_complementar_cpca: "",
             interlocucao_supervisao_escolar: true,
-            info_complementar_supervisao_escolar: "",
-            interlocucao_naapa: true,
-            info_complementar_naapa: "",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
-        expect(result.informacoesComplementaresSTS).toBe("");
-        expect(result.informacoesComplementaresCPCA).toBe("");
-        expect(result.informacoesComplementaresSupervisaoEscolar).toBe("");
-        expect(result.informacoesComplementaresNAAPA).toBe("");
+        expect(result.numeroProcedimentoSEI).toBe("Não");
+        expect(result.numeroProcedimentoSEITexto).toBe("");
     });
 });
