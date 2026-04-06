@@ -228,7 +228,7 @@ describe("atualizarFormularioCompletoUE action", () => {
             ],
             motivacao_ocorrencia: ["Bullying"],
             notificado_conselho_tutelar: true,
-            ocorrencia_acompanhada_pelo: "naapa",
+            ocorrencia_acompanhada_pelo: ["naapa"],
         };
 
         const mockResponse = {

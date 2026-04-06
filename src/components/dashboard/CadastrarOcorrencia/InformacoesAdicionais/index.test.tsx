@@ -86,7 +86,10 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação",
         );
-        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
+        await user.type(
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
+        );
 
         const deficienciaTrigger = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -97,8 +100,8 @@ describe("InformacoesAdicionais", () => {
         const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
 
-        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
-        await user.click(radioNAAPA);
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -213,7 +216,7 @@ describe("InformacoesAdicionais", () => {
                 ],
                 motivoOcorrencia: ["outros"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "naapa",
+                acompanhadoNAAPA: ["naapa"],
             },
             setFormData: mockSetFormData,
         });
@@ -252,9 +255,9 @@ describe("InformacoesAdicionais", () => {
 
         expect(radioNao).toBeChecked();
 
-        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
-        await user.click(radioNAAPA);
-        expect(radioNAAPA).toBeChecked();
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
     });
 
     it("deve chamar onNext e setFormData ao submeter formulário válido", async () => {
@@ -305,7 +308,10 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação com todos",
         );
-        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
+        await user.type(
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
+        );
 
         const deficienciaTrigger2 = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -316,7 +322,7 @@ describe("InformacoesAdicionais", () => {
         const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
 
-        const radioNAAPA2 = screen.getByRole("radio", { name: /NAAPA/i });
+        const radioNAAPA2 = screen.getByRole("checkbox", { name: /NAAPA/i });
         await user.click(radioNAAPA2);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
@@ -414,7 +420,7 @@ describe("InformacoesAdicionais", () => {
                             ],
                             motivacao_ocorrencia: ["bullying"],
                             notificado_conselho_tutelar: true,
-                            ocorrencia_acompanhada_pelo: "naapa",
+                            ocorrencia_acompanhada_pelo: ["naapa"],
                         }),
                     }),
                     expect.any(Object),
@@ -540,6 +546,7 @@ describe("InformacoesAdicionais", () => {
                     pessoasAgressoras: [
                         {
                             nome: "João Silva",
+                            idadeEmMeses: false,
                             idade: "25",
                             genero: "masculino",
                             grupoEtnicoRacial: "pardo",
@@ -552,7 +559,7 @@ describe("InformacoesAdicionais", () => {
                     ],
                     motivoOcorrencia: ["bullying"],
                     notificadoConselhoTutelar: "Sim",
-                    acompanhadoNAAPA: "naapa",
+                    acompanhadoNAAPA: ["naapa"],
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -721,7 +728,9 @@ describe("InformacoesAdicionais", () => {
             });
             await user.click(radioSimSubmit[0]);
 
-            const radioNAAPA3 = screen.getByRole("radio", { name: /NAAPA/i });
+            const radioNAAPA3 = screen.getByRole("checkbox", {
+                name: /NAAPA/i,
+            });
             await user.click(radioNAAPA3);
 
             const motivoButton = screen.getByRole("button", {
