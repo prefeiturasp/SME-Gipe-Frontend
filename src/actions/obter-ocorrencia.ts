@@ -47,7 +47,12 @@ export type OcorrenciaDetalheAPI = {
     }>;
     motivacao_ocorrencia_display?: Array<{ value: string; label: string }>;
     notificado_conselho_tutelar?: boolean;
-    ocorrencia_acompanhada_pelo?: string[];
+    ocorrencia_acompanhada_pelo?: (
+        | "naapa"
+        | "comissao_mediacao_conflitos"
+        | "supervisao_escolar"
+        | "cefai"
+    )[];
 };
 
 export async function obterOcorrencia(
