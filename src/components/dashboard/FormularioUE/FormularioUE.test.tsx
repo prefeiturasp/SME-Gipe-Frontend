@@ -338,7 +338,7 @@ describe("FormularioUE", () => {
             frequenciaEscolar: "Regular",
             interacaoAmbienteEscolar: "Boa",
             notificadoConselhoTutelar: "Sim",
-            acompanhadoNAAPA: "naapa",
+            acompanhadoNAAPA: ["naapa"],
         });
 
         mockSecaoFinalGetData.mockReturnValue({
@@ -1043,7 +1043,7 @@ describe("FormularioUE", () => {
                 frequenciaEscolar: "Regular",
                 interacaoAmbienteEscolar: "Boa",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "naapa",
+                acompanhadoNAAPA: ["naapa"],
             });
 
             mockMutate.mockImplementation((data) => {
@@ -1054,7 +1054,7 @@ describe("FormularioUE", () => {
                     ],
                     motivacao_ocorrencia: "Bullying",
                     notificado_conselho_tutelar: true,
-                    ocorrencia_acompanhada_pelo: "naapa",
+                    ocorrencia_acompanhada_pelo: ["naapa"],
                 });
             });
 
@@ -1097,7 +1097,7 @@ describe("FormularioUE", () => {
                 ],
                 motivoOcorrencia: "Bullying",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "naapa",
+                acompanhadoNAAPA: ["naapa"],
             });
 
             mockMutate.mockImplementation((data) => {

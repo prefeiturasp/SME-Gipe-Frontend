@@ -86,7 +86,10 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação",
         );
-        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
+        await user.type(
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
+        );
 
         const deficienciaTrigger = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -97,8 +100,8 @@ describe("InformacoesAdicionais", () => {
         const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
 
-        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
-        await user.click(radioNAAPA);
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -213,7 +216,7 @@ describe("InformacoesAdicionais", () => {
                 ],
                 motivoOcorrencia: ["outros"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "naapa",
+                acompanhadoNAAPA: ["naapa"],
             },
             setFormData: mockSetFormData,
         });
@@ -252,9 +255,73 @@ describe("InformacoesAdicionais", () => {
 
         expect(radioNao).toBeChecked();
 
-        const radioNAAPA = screen.getByRole("radio", { name: /NAAPA/i });
-        await user.click(radioNAAPA);
-        expect(radioNAAPA).toBeChecked();
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
+    });
+
+    it("deve alterar o placeholder da idade ao ativar o switch de criança menor de 1 ano", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos anos...",
+        );
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos meses...",
+        );
+    });
+
+    it("deve aceitar idade 0 meses quando switch de criança menor de 1 ano está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "0");
+
+        expect(
+            screen.queryByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir erro ao digitar idade maior que 12 meses quando switch está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "13");
+        await user.tab();
+
+        expect(
+            await screen.findByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).toBeInTheDocument();
+    });
+
+    it("deve desmarcar checkbox de acompanhamento e remover do array", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
+
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).not.toBeChecked();
     });
 
     it("deve chamar onNext e setFormData ao submeter formulário válido", async () => {
@@ -305,7 +372,10 @@ describe("InformacoesAdicionais", () => {
             screen.getByLabelText(/Como é a interação da pessoa no ambiente/i),
             "Boa interação com todos",
         );
-        await user.type(screen.getByPlaceholderText(/Digite a nacionalidade/i), "Brasileira");
+        await user.type(
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
+        );
 
         const deficienciaTrigger2 = screen.getByRole("combobox", {
             name: /Pessoa com deficiência\?/i,
@@ -316,7 +386,7 @@ describe("InformacoesAdicionais", () => {
         const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
 
-        const radioNAAPA2 = screen.getByRole("radio", { name: /NAAPA/i });
+        const radioNAAPA2 = screen.getByRole("checkbox", { name: /NAAPA/i });
         await user.click(radioNAAPA2);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
@@ -414,7 +484,7 @@ describe("InformacoesAdicionais", () => {
                             ],
                             motivacao_ocorrencia: ["bullying"],
                             notificado_conselho_tutelar: true,
-                            ocorrencia_acompanhada_pelo: "naapa",
+                            ocorrencia_acompanhada_pelo: ["naapa"],
                         }),
                     }),
                     expect.any(Object),
@@ -540,6 +610,7 @@ describe("InformacoesAdicionais", () => {
                     pessoasAgressoras: [
                         {
                             nome: "João Silva",
+                            idadeEmMeses: false,
                             idade: "25",
                             genero: "masculino",
                             grupoEtnicoRacial: "pardo",
@@ -552,7 +623,7 @@ describe("InformacoesAdicionais", () => {
                     ],
                     motivoOcorrencia: ["bullying"],
                     notificadoConselhoTutelar: "Sim",
-                    acompanhadoNAAPA: "naapa",
+                    acompanhadoNAAPA: ["naapa"],
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -721,7 +792,9 @@ describe("InformacoesAdicionais", () => {
             });
             await user.click(radioSimSubmit[0]);
 
-            const radioNAAPA3 = screen.getByRole("radio", { name: /NAAPA/i });
+            const radioNAAPA3 = screen.getByRole("checkbox", {
+                name: /NAAPA/i,
+            });
             await user.click(radioNAAPA3);
 
             const motivoButton = screen.getByRole("button", {
@@ -736,6 +809,77 @@ describe("InformacoesAdicionais", () => {
             });
 
             expect(mockMutate).toHaveBeenCalled();
+        });
+
+        it("deve usar false como fallback para idadeEmMeses não definido ao submeter via ref", async () => {
+            const mockMutateLocal = vi.fn((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    pessoasAgressoras: [
+                        {
+                            nome: "João Silva",
+                            idade: "25",
+                            genero: "masculino",
+                            grupoEtnicoRacial: "pardo",
+                            etapaEscolar: "ensino_fundamental_2",
+                            frequenciaEscolar: "regular",
+                            interacaoAmbienteEscolar: "Boa interação",
+                            nacionalidade: "Brasileira",
+                            pessoaComDeficiencia: "Sim",
+                            // idadeEmMeses intencionalmente omitido (undefined)
+                        },
+                    ],
+                    motivoOcorrencia: ["bullying"],
+                    notificadoConselhoTutelar: "Sim",
+                    acompanhadoNAAPA: ["naapa"],
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            vi.spyOn(
+                useAtualizarInfoAgressorHook,
+                "useAtualizarInfoAgressor",
+            ).mockReturnValue({
+                mutate: mockMutateLocal,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
+
+            expect(mockMutateLocal).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        pessoas_agressoras: [
+                            expect.objectContaining({
+                                idade_em_meses: false,
+                            }),
+                        ],
+                    }),
+                }),
+                expect.any(Object),
+            );
         });
 
         it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {

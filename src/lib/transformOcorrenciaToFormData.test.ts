@@ -311,6 +311,7 @@ describe("transformOcorrenciaToFormData", () => {
                 {
                     nome: "João Silva",
                     idade: "25",
+                    idadeEmMeses: false,
                     genero: "masculino",
                     grupoEtnicoRacial: "branco",
                     etapaEscolar: "ensino_fundamental_2",
@@ -388,12 +389,12 @@ describe("transformOcorrenciaToFormData", () => {
         it("deve incluir ocorrencia_acompanhada_pelo quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                ocorrencia_acompanhada_pelo: "naapa",
+                ocorrencia_acompanhada_pelo: ["naapa"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("naapa");
+            expect(result.acompanhadoNAAPA).toEqual(["naapa"]);
         });
 
         it("deve converter notificado_conselho_tutelar para 'Sim' quando true", () => {
@@ -421,12 +422,14 @@ describe("transformOcorrenciaToFormData", () => {
         it("deve converter acompanhado_naapa para o valor de ocorrencia_acompanhada_pelo", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                ocorrencia_acompanhada_pelo: "comissao_mediacao_conflitos",
+                ocorrencia_acompanhada_pelo: ["comissao_mediacao_conflitos"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("comissao_mediacao_conflitos");
+            expect(result.acompanhadoNAAPA).toEqual([
+                "comissao_mediacao_conflitos",
+            ]);
         });
 
         it("não deve incluir acompanhadoNAAPA quando ocorrencia_acompanhada_pelo é undefined", () => {
@@ -475,7 +478,7 @@ describe("transformOcorrenciaToFormData", () => {
                     { value: "racismo", label: "Racismo" },
                 ],
                 notificado_conselho_tutelar: true,
-                ocorrencia_acompanhada_pelo: "naapa",
+                ocorrencia_acompanhada_pelo: ["naapa"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
@@ -497,7 +500,7 @@ describe("transformOcorrenciaToFormData", () => {
                 ],
                 motivoOcorrencia: ["homofobia", "racismo"],
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "naapa",
+                acompanhadoNAAPA: ["naapa"],
             });
         });
     });

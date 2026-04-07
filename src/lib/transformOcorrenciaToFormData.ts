@@ -82,6 +82,7 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
             pessoasAgressoras: ocorrencia.pessoas_agressoras.map((pessoa) => ({
                 nome: pessoa.nome,
                 idade: String(pessoa.idade),
+                idadeEmMeses: pessoa.idade_em_meses ?? false,
                 genero: pessoa.genero || "",
                 grupoEtnicoRacial: pessoa.grupo_etnico_racial || "",
                 etapaEscolar: pessoa.etapa_escolar || "",
@@ -113,7 +114,7 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
             motivoOcorrencia,
         }),
         ...(notificadoConselhoTutelar && { notificadoConselhoTutelar }),
-        ...(ocorrencia.ocorrencia_acompanhada_pelo && {
+        ...(ocorrencia.ocorrencia_acompanhada_pelo?.length && {
             acompanhadoNAAPA: ocorrencia.ocorrencia_acompanhada_pelo,
         }),
     };
