@@ -3,6 +3,7 @@
 
 import Alert from "@/assets/icons/Alert";
 import Bars from "@/assets/icons/Bars";
+import Export from "@/assets/icons/Export";
 import Gestao from "@/assets/icons/Gestao";
 import User from "@/assets/icons/User";
 import LogoGipeNome from "@/assets/images/logo-gipe-nome.webp";
@@ -70,6 +71,11 @@ const items: NavItem[] = [
                 url: "/dashboard/gestao-unidades-educacionais",
                 icon: Gestao,
             },
+            {
+                title: "Relatórios",
+                url: "/dashboard/relatorios",
+                icon: Export,
+            },
         ],
     },
 ];
@@ -79,14 +85,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { open } = useSidebar(); // estado do sidebar (expandido/recolhido)
     const [openCollapsible, setOpenCollapsible] = React.useState(false);
 
-    const { isGipeAdmin } = useUserPermissions();
+    const { isGipe, isGipeAdmin } = useUserPermissions();
 
     const filteredItems = React.useMemo(
         () =>
-            isGipeAdmin
-                ? items
-                : items.filter((item) => item.title !== "Gestão"),
-        [isGipeAdmin]
+            items
+                .filter((item) => isGipeAdmin || item.title !== "Gestão")
+                .map((item) =>
+                    item.children
+                        ? {
+                              ...item,
+                              children: item.children.filter(
+                                  (child) =>
+                                      child.title !== "Relatórios" ||
+                                      (isGipe && isGipeAdmin),
+                              ),
+                          }
+                        : item,
+                ),
+        [isGipeAdmin, isGipe],
     );
 
     return (
@@ -112,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     : false;
                                 const isChildActive = hasChildren
                                     ? item.children!.some((child) =>
-                                          pathname.startsWith(child.url)
+                                          pathname.startsWith(child.url),
                                       )
                                     : false;
 
@@ -123,7 +140,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         : "bg-[--sidebar-accent-foreground] mb-1",
                                     open
                                         ? "w-[--sidebar-item-width] h-[--sidebar-item-height] flex flex-col items-center"
-                                        : "h-[--sidebar-item-height-collapsed] w-[--sidebar-item-width-collapsed] flex flex-col items-center justify-center"
+                                        : "h-[--sidebar-item-height-collapsed] w-[--sidebar-item-width-collapsed] flex flex-col items-center justify-center",
                                 );
 
                                 const parentItemClasses = cn(
@@ -132,14 +149,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         : "bg-[--sidebar-accent-foreground] mb-1",
                                     open
                                         ? "w-[--sidebar-item-width] flex flex-col items-stretch"
-                                        : "w-[--sidebar-item-width-collapsed] flex flex-col items-stretch p-1!"
+                                        : "w-[--sidebar-item-width-collapsed] flex flex-col items-stretch p-1!",
                                 );
 
                                 // CARD DO CABEÇALHO "Gestão"
                                 const parentHeaderClasses = cn(
                                     isActive || isChildActive || openCollapsible
                                         ? "bg-[--sidebar-accent]"
-                                        : "bg-[--sidebar-accent-foreground]"
+                                        : "bg-[--sidebar-accent-foreground]",
                                 );
 
                                 // ---------------- ITEM SIMPLES ----------------
@@ -208,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                         className={cn(
                                                                             (isChildActive ||
                                                                                 openCollapsible) &&
-                                                                                "stroke-[--sidebar-accent-foreground]"
+                                                                                "stroke-[--sidebar-accent-foreground]",
                                                                         )}
                                                                     />
                                                                 ) : (
@@ -217,7 +234,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                         className={cn(
                                                                             (isChildActive ||
                                                                                 openCollapsible) &&
-                                                                                "stroke-[--sidebar-accent-foreground]"
+                                                                                "stroke-[--sidebar-accent-foreground]",
                                                                         )}
                                                                     />
                                                                 )}
@@ -233,14 +250,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                     className={cn(
                                                         open
                                                             ? "mt-2 w-full"
-                                                            : "mt-1 w-full"
+                                                            : "mt-1 w-full",
                                                     )}
                                                 >
                                                     {item.children!.map(
                                                         (child) => {
                                                             const isChildRouteActive =
                                                                 pathname.startsWith(
-                                                                    child.url
+                                                                    child.url,
                                                                 );
 
                                                             return (
@@ -251,7 +268,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     className={cn(
                                                                         "w-full bg-[--sidebar-accent] border-t border-gray-100 min-h-[48px] flex items-center",
                                                                         open &&
-                                                                            "px-6"
+                                                                            "px-6",
                                                                     )}
                                                                 >
                                                                     <SidebarMenuButton
@@ -272,7 +289,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                                     </SidebarMenuButton>
                                                                 </SidebarMenuItem>
                                                             );
-                                                        }
+                                                        },
                                                     )}
                                                 </SidebarMenu>
                                             </CollapsibleContent>
