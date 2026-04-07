@@ -99,6 +99,8 @@ function PessoaRow({
                                 <Input
                                     disabled={disabled}
                                     type="number"
+                                    min={idadeEmMeses ? 0 : 1}
+                                    max={idadeEmMeses ? 12 : undefined}
                                     placeholder={
                                         idadeEmMeses
                                             ? "Digite quantos meses..."

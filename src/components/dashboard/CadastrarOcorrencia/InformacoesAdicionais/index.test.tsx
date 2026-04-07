@@ -279,6 +279,39 @@ describe("InformacoesAdicionais", () => {
         );
     });
 
+    it("deve aceitar idade 0 meses quando switch de criança menor de 1 ano está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "0");
+
+        expect(
+            screen.queryByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir erro ao digitar idade maior que 12 meses quando switch está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "13");
+        await user.tab();
+
+        expect(
+            await screen.findByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).toBeInTheDocument();
+    });
+
     it("deve desmarcar checkbox de acompanhamento e remover do array", async () => {
         const user = userEvent.setup();
         renderComponent();
