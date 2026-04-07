@@ -293,18 +293,20 @@ const InformacoesAdicionais = forwardRef<
                                                     option.value,
                                                 )}
                                                 onCheckedChange={(checked) => {
-                                                    const current = field.value;
+                                                    const updated = new Set(
+                                                        field.value,
+                                                    );
+                                                    if (checked) {
+                                                        updated.add(
+                                                            option.value,
+                                                        );
+                                                    } else {
+                                                        updated.delete(
+                                                            option.value,
+                                                        );
+                                                    }
                                                     field.onChange(
-                                                        checked
-                                                            ? [
-                                                                  ...current,
-                                                                  option.value,
-                                                              ]
-                                                            : current.filter(
-                                                                  (v) =>
-                                                                      v !==
-                                                                      option.value,
-                                                              ),
+                                                        Array.from(updated),
                                                     );
                                                 }}
                                                 disabled={disabled}
