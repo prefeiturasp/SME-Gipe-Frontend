@@ -45,15 +45,16 @@ beforeAll(() => {
             addEventListener: () => {},
             removeEventListener: () => {},
             dispatchEvent: () => {},
-        } as unknown as MediaQueryList);
+        }) as unknown as MediaQueryList;
 });
 
 describe("AppSidebar", () => {
     beforeEach(() => {
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/dashboard"
+            "/dashboard",
         );
         mockedUseUserPermissions.mockReturnValue({
+            isGipe: true,
             isGipeAdmin: true,
         });
     });
@@ -64,13 +65,13 @@ describe("AppSidebar", () => {
     it("renderiza os itens do menu e destaca o ativo", () => {
         renderWithProvider(<AppSidebar />);
         expect(
-            screen.getByText("Intercorrência institucional")
+            screen.getByText("Intercorrência institucional"),
         ).toBeInTheDocument();
         expect(screen.getByText("Meus dados")).toBeInTheDocument();
         expect(
             screen
                 .getByText("Intercorrência institucional")
-                .closest(".bg-[--sidebar-accent]")
+                .closest(".bg-[--sidebar-accent]"),
         );
         expect(screen.getByTestId("icon-alert")).toBeInTheDocument();
         expect(screen.getByTestId("icon-user")).toBeInTheDocument();
@@ -78,11 +79,11 @@ describe("AppSidebar", () => {
 
     it("destaca o menu correto conforme a rota", () => {
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/meus-dados"
+            "/meus-dados",
         );
         renderWithProvider(<AppSidebar />);
         expect(
-            screen.getByText("Meus dados").closest(".bg-[--sidebar-accent]")
+            screen.getByText("Meus dados").closest(".bg-[--sidebar-accent]"),
         );
     });
 
@@ -99,7 +100,7 @@ describe("AppSidebar", () => {
         renderWithProvider(<AppSidebar />);
         expect(screen.getByTestId("icon-alert")).toBeInTheDocument();
         expect(
-            screen.getByText("Intercorrência institucional")
+            screen.getByText("Intercorrência institucional"),
         ).toBeInTheDocument();
         expect(screen.getByTestId("icon-user")).toBeInTheDocument();
         expect(screen.getByText("Meus dados")).toBeInTheDocument();
@@ -119,7 +120,10 @@ describe("AppSidebar", () => {
         expect(screen.getByText("Gestão")).toBeInTheDocument();
     });
     it("não renderiza o menu Gestão quando o usuário não é admin", () => {
-        mockedUseUserPermissions.mockReturnValue({ isGipeAdmin: false });
+        mockedUseUserPermissions.mockReturnValue({
+            isGipe: false,
+            isGipeAdmin: false,
+        });
         renderWithProvider(<AppSidebar />);
         expect(screen.queryByText("Gestão")).not.toBeInTheDocument();
     });
@@ -161,7 +165,7 @@ describe("AppSidebar", () => {
         // Verifica se os subitens estão visíveis
         expect(screen.getByText("Gestão de perfis")).toBeInTheDocument();
         expect(
-            screen.getByText("Gestão de Unidades Educacionais")
+            screen.getByText("Gestão de Unidades Educacionais"),
         ).toBeInTheDocument();
     });
 
@@ -176,7 +180,7 @@ describe("AppSidebar", () => {
             toggleSidebar: () => {},
         });
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/dashboard/gestao-usuarios"
+            "/dashboard/gestao-usuarios",
         );
         const user = userEvent.setup();
         renderWithProvider(<AppSidebar />);
@@ -201,14 +205,14 @@ describe("AppSidebar", () => {
             toggleSidebar: () => {},
         });
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/dashboard"
+            "/dashboard",
         );
         renderWithProvider(<AppSidebar />);
 
         const chevronDown = screen.getByTestId("chevron-down");
         expect(chevronDown).toBeInTheDocument();
         expect(chevronDown).not.toHaveClass(
-            "stroke-[--sidebar-accent-foreground]"
+            "stroke-[--sidebar-accent-foreground]",
         );
     });
 
@@ -223,7 +227,7 @@ describe("AppSidebar", () => {
             toggleSidebar: () => {},
         });
         (usePathname as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-            "/dashboard"
+            "/dashboard",
         );
         const user = userEvent.setup();
         renderWithProvider(<AppSidebar />);
@@ -234,8 +238,86 @@ describe("AppSidebar", () => {
         await waitFor(() => {
             expect(screen.getByText("Gestão de perfis")).toBeInTheDocument();
             expect(
-                screen.getByText("Gestão de Unidades Educacionais")
+                screen.getByText("Gestão de Unidades Educacionais"),
             ).toBeInTheDocument();
+            expect(screen.getByText("Relatórios")).toBeInTheDocument();
+        });
+    });
+
+    it("exibe o item Relatórios quando isGipe e isGipeAdmin são true e o collapsible está aberto", async () => {
+        vi.spyOn(sidebarUi, "useSidebar").mockReturnValue({
+            state: "expanded",
+            open: true,
+            setOpen: () => {},
+            openMobile: false,
+            setOpenMobile: () => {},
+            isMobile: false,
+            toggleSidebar: () => {},
+        });
+        const user = userEvent.setup();
+        renderWithProvider(<AppSidebar />);
+
+        const gestaoButton = screen.getByText("Gestão");
+        await user.click(gestaoButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Relatórios")).toBeInTheDocument();
+        });
+    });
+
+    it("o item Relatórios tem link para /dashboard/relatorios", async () => {
+        vi.spyOn(sidebarUi, "useSidebar").mockReturnValue({
+            state: "expanded",
+            open: true,
+            setOpen: () => {},
+            openMobile: false,
+            setOpenMobile: () => {},
+            isMobile: false,
+            toggleSidebar: () => {},
+        });
+        const user = userEvent.setup();
+        renderWithProvider(<AppSidebar />);
+
+        const gestaoButton = screen.getByText("Gestão");
+        await user.click(gestaoButton);
+
+        await waitFor(() => {
+            const link = screen.getByText("Relatórios").closest("a");
+            expect(link).toHaveAttribute("href", "/dashboard/relatorios");
+        });
+    });
+
+    it("não exibe o item Relatórios quando isGipeAdmin é false", () => {
+        mockedUseUserPermissions.mockReturnValue({
+            isGipe: true,
+            isGipeAdmin: false,
+        });
+        renderWithProvider(<AppSidebar />);
+        expect(screen.queryByText("Relatórios")).not.toBeInTheDocument();
+    });
+
+    it("não exibe o item Relatórios quando isGipe é false", async () => {
+        mockedUseUserPermissions.mockReturnValue({
+            isGipe: false,
+            isGipeAdmin: true,
+        });
+        vi.spyOn(sidebarUi, "useSidebar").mockReturnValue({
+            state: "expanded",
+            open: true,
+            setOpen: () => {},
+            openMobile: false,
+            setOpenMobile: () => {},
+            isMobile: false,
+            toggleSidebar: () => {},
+        });
+        const user = userEvent.setup();
+        renderWithProvider(<AppSidebar />);
+
+        const gestaoButton = screen.getByText("Gestão");
+        await user.click(gestaoButton);
+
+        await waitFor(() => {
+            expect(screen.queryByText("Relatórios")).not.toBeInTheDocument();
         });
     });
 });
