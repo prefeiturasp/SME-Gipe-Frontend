@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { cn } from "@/lib/utils";
 import type { UnidadeEducacional } from "@/types/unidades";
@@ -55,13 +56,6 @@ const BIMESTRES = [
 const GENEROS = [
     { value: "masculino", label: "Masculino" },
     { value: "feminino", label: "Feminino" },
-];
-
-const ETAPAS = [
-    { value: "infantil", label: "Educação Infantil" },
-    { value: "fundamental1", label: "Ensino Fundamental I" },
-    { value: "fundamental2", label: "Ensino Fundamental II" },
-    { value: "medio", label: "Ensino Médio" },
 ];
 
 function FilterSection({
@@ -215,6 +209,9 @@ export default function FilterPanel() {
 
     const dreUuid = dres.length === 1 ? dres[0] : undefined;
 
+    const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
+    const etapasOptions = categoriasDisponiveis?.etapa_escolar ?? [];
+
     const { data: dreData = [] } = useGetUnidades(true, undefined, "DRE");
     const { data: ueData = [] } = useGetUnidades(true, dreUuid);
 
@@ -365,7 +362,7 @@ export default function FilterPanel() {
 
                     <FilterField label="Etapa escolar">
                         <FilterMultiSelect
-                            options={ETAPAS}
+                            options={etapasOptions}
                             selected={etapas}
                             onChange={setEtapas}
                             placeholder="Selecione"

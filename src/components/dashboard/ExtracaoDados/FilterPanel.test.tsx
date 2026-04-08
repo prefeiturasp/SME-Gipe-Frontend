@@ -16,6 +16,24 @@ vi.mock("@/hooks/useGetUnidades", () => ({
     },
 }));
 
+vi.mock("@/hooks/useCategoriasDisponiveis", () => ({
+    useCategoriasDisponiveis: () => ({
+        data: {
+            etapa_escolar: [
+                { value: "infantil", label: "Educação Infantil" },
+                { value: "fundamental1", label: "Ensino Fundamental I" },
+                { value: "fundamental2", label: "Ensino Fundamental II" },
+                { value: "medio", label: "Ensino Médio" },
+            ],
+            motivo_ocorrencia: [],
+            grupo_etnico_racial: [],
+            genero: [],
+            frequencia_escolar: [],
+        },
+        isLoading: false,
+    }),
+}));
+
 const ANO_ATUAL = new Date().getFullYear().toString();
 
 describe("FilterPanel", () => {
@@ -283,5 +301,48 @@ describe("FilterPanel", () => {
 
         await user.click(screen.getByText("Selecionar todos"));
         expect(triggerMes).toHaveTextContent("Selecione");
+    });
+
+    it("deve exibir etapas escolares vindas da API", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+
+        expect(screen.getByText("Educação Infantil")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Fundamental I")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Fundamental II")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Médio")).toBeInTheDocument();
+    });
+
+    it("deve habilitar o botão Limpar tudo ao selecionar uma etapa escolar", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+        await user.click(screen.getByText("Ensino Médio"));
+
+        expect(
+            screen.getByRole("button", { name: /limpar tudo/i }),
+        ).toBeEnabled();
+    });
+
+    it("deve limpar a etapa escolar selecionada ao clicar em Limpar tudo", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+        await user.click(screen.getByText("Ensino Médio"));
+        await user.keyboard("{Escape}");
+
+        await user.click(screen.getByRole("button", { name: /limpar tudo/i }));
+
+        expect(trigger).toHaveTextContent("Selecione");
     });
 });
