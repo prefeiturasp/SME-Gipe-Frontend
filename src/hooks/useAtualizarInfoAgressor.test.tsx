@@ -47,7 +47,7 @@ describe("useAtualizarInfoAgressor", () => {
         ],
         motivacao_ocorrencia: ["homofobia", "racismo"],
         notificado_conselho_tutelar: true,
-        ocorrencia_acompanhada_pelo: "naapa",
+        ocorrencia_acompanhada_pelo: ["naapa"],
     };
 
     beforeEach(() => {
@@ -76,7 +76,7 @@ describe("useAtualizarInfoAgressor", () => {
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
             notificado_conselho_tutelar: true,
-            ocorrencia_acompanhada_pelo: "naapa",
+            ocorrencia_acompanhada_pelo: ["naapa"],
         };
         vi.spyOn(
             atualizarInfoAgressorAction,
@@ -167,7 +167,7 @@ describe("useAtualizarInfoAgressor", () => {
             motivacao_ocorrencia: ["homofobia", "racismo"],
             motivacao_ocorrencia_display: "Homofobia, Racismo",
             notificado_conselho_tutelar: true,
-            ocorrencia_acompanhada_pelo: "naapa",
+            ocorrencia_acompanhada_pelo: ["naapa"],
         };
         const spy = vi
             .spyOn(atualizarInfoAgressorAction, "atualizarInfoAgressor")

@@ -15,6 +15,7 @@ export type FormularioCompletoUEBody = {
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
+        idade_em_meses?: boolean;
         genero: string;
         grupo_etnico_racial: string;
         etapa_escolar: string;
@@ -25,11 +26,12 @@ export type FormularioCompletoUEBody = {
     }>;
     motivacao_ocorrencia?: string[];
     notificado_conselho_tutelar?: boolean;
-    ocorrencia_acompanhada_pelo?:
+    ocorrencia_acompanhada_pelo?: (
         | "naapa"
         | "comissao_mediacao_conflitos"
         | "supervisao_escolar"
-        | "cefai";
+        | "cefai"
+    )[];
 };
 
 export type FormularioCompletoUEResponse = {
@@ -46,6 +48,7 @@ export type FormularioCompletoUEResponse = {
     pessoas_agressoras?: Array<{
         nome: string;
         idade: number;
+        idade_em_meses?: boolean;
         genero: string;
         grupo_etnico_racial: string;
         etapa_escolar: string;
@@ -56,9 +59,5 @@ export type FormularioCompletoUEResponse = {
     }>;
     motivacao_ocorrencia?: string[];
     notificado_conselho_tutelar?: boolean;
-    ocorrencia_acompanhada_pelo?:
-        | "naapa"
-        | "comissao_mediacao_conflitos"
-        | "supervisao_escolar"
-        | "cefai";
+    ocorrencia_acompanhada_pelo?: string[];
 };

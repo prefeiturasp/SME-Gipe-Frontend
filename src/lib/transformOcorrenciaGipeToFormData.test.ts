@@ -14,18 +14,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
             status_extra: "",
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "presencialmente",
-            envolvido: ["env-uuid-123"],
-            motivacao_ocorrencia: ["bullying", "racismo"],
             tipos_ocorrencia: ["tipo-uuid-1"],
-            tipos_ocorrencia_detalhes: [
-                {
-                    uuid: "tipo-uuid-1",
-                    nome: "Tipo A",
-                },
-            ],
-            etapa_escolar: "alfabetizacao",
-            info_sobre_interacoes_virtuais_pessoa_agressora:
-                "Informações sobre interações virtuais",
             encaminhamentos_gipe: "Encaminhamentos realizados",
         };
 
@@ -34,9 +23,6 @@ describe("transformOcorrenciaGipeToFormData", () => {
         expect(result).toEqual({
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            etapaEscolar: "alfabetizacao",
-            informacoesInteracoesVirtuais:
-                "Informações sobre interações virtuais",
             encaminhamentos: "Encaminhamentos realizados",
         });
     });
@@ -52,17 +38,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
             status_extra: "",
             envolve_arma_ataque: "",
             ameaca_realizada_qual_maneira: "presencialmente",
-            envolvido: ["env-uuid-123"],
-            motivacao_ocorrencia: ["bullying"],
             tipos_ocorrencia: ["tipo-uuid-1"],
-            tipos_ocorrencia_detalhes: [
-                {
-                    uuid: "tipo-uuid-1",
-                    nome: "Tipo A",
-                },
-            ],
-            etapa_escolar: "alfabetizacao",
-            info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };
 
@@ -82,17 +58,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
             status_extra: "",
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "",
-            envolvido: ["env-uuid-123"],
-            motivacao_ocorrencia: ["bullying"],
             tipos_ocorrencia: ["tipo-uuid-1"],
-            tipos_ocorrencia_detalhes: [
-                {
-                    uuid: "tipo-uuid-1",
-                    nome: "Tipo A",
-                },
-            ],
-            etapa_escolar: "alfabetizacao",
-            info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "Encaminhamentos",
         };
 
@@ -101,7 +67,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
         expect(result.ameacaRealizada).toBeUndefined();
     });
 
-    it("deve retornar string vazia para campos opcionais vazios", () => {
+    it("deve retornar string vazia para encaminhamentos vazio", () => {
         const ocorrenciaGipe: OcorrenciaGipeResponse = {
             id: 1,
             uuid: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -112,24 +78,12 @@ describe("transformOcorrenciaGipeToFormData", () => {
             status_extra: "",
             envolve_arma_ataque: "sim",
             ameaca_realizada_qual_maneira: "presencialmente",
-            envolvido: ["env-uuid-123"],
-            motivacao_ocorrencia: ["bullying"],
             tipos_ocorrencia: ["tipo-uuid-1"],
-            tipos_ocorrencia_detalhes: [
-                {
-                    uuid: "tipo-uuid-1",
-                    nome: "Tipo A",
-                },
-            ],
-            etapa_escolar: "",
-            info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "",
         };
 
         const result = transformOcorrenciaGipeToFormData(ocorrenciaGipe);
 
-        expect(result.etapaEscolar).toBe("");
-        expect(result.informacoesInteracoesVirtuais).toBe("");
         expect(result.encaminhamentos).toBe("");
     });
 
@@ -144,12 +98,7 @@ describe("transformOcorrenciaGipeToFormData", () => {
             status_extra: "",
             envolve_arma_ataque: "",
             ameaca_realizada_qual_maneira: "",
-            envolvido: [],
-            motivacao_ocorrencia: [],
             tipos_ocorrencia: [],
-            tipos_ocorrencia_detalhes: [],
-            etapa_escolar: "",
-            info_sobre_interacoes_virtuais_pessoa_agressora: "",
             encaminhamentos_gipe: "",
         };
 
@@ -158,8 +107,6 @@ describe("transformOcorrenciaGipeToFormData", () => {
         expect(result).toEqual({
             envolveArmaOuAtaque: undefined,
             ameacaRealizada: undefined,
-            etapaEscolar: "",
-            informacoesInteracoesVirtuais: "",
             encaminhamentos: "",
         });
     });

@@ -308,6 +308,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                         (pessoa) => ({
                             nome: pessoa.nome,
                             idade: Number(pessoa.idade),
+                            idade_em_meses: pessoa.idadeEmMeses ?? false,
                             genero: pessoa.genero,
                             grupo_etnico_racial: pessoa.grupoEtnicoRacial,
                             etapa_escolar: pessoa.etapaEscolar,

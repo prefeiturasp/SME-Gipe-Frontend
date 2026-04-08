@@ -1,8 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
+import { InputMask } from "@/components/ui/input";
 import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
@@ -17,7 +25,6 @@ import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
 import { RadioForm } from "./RadioForm";
 import { formSchema, FormularioDreData } from "./schema";
-import { TextareaForm } from "./TextareaForm";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
@@ -41,19 +48,11 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         defaultValues: {
             acionamentoSegurancaPublica:
                 formData.acionamentoSegurancaPublica ?? undefined,
-            interlocucaoSTS: formData.interlocucaoSTS ?? undefined,
-            informacoesComplementaresSTS:
-                formData.informacoesComplementaresSTS ?? "",
-            interlocucaoCPCA: formData.interlocucaoCPCA ?? undefined,
-            informacoesComplementaresCPCA:
-                formData.informacoesComplementaresCPCA ?? "",
             interlocucaoSupervisaoEscolar:
                 formData.interlocucaoSupervisaoEscolar ?? undefined,
-            informacoesComplementaresSupervisaoEscolar:
-                formData.informacoesComplementaresSupervisaoEscolar ?? "",
-            interlocucaoNAAPA: formData.interlocucaoNAAPA ?? undefined,
-            informacoesComplementaresNAAPA:
-                formData.informacoesComplementaresNAAPA ?? "",
+            numeroProcedimentoSEI: formData.numeroProcedimentoSEI ?? undefined,
+            numeroProcedimentoSEITexto:
+                formData.numeroProcedimentoSEITexto ?? "",
         },
     });
 
@@ -68,19 +67,12 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                     dre_codigo_eol: formData.dre!,
                     acionamento_seguranca_publica:
                         data.acionamentoSegurancaPublica === "Sim",
-                    interlocucao_sts: data.interlocucaoSTS === "Sim",
-                    info_complementar_sts:
-                        data.informacoesComplementaresSTS || "",
-                    interlocucao_cpca: data.interlocucaoCPCA === "Sim",
-                    info_complementar_cpca:
-                        data.informacoesComplementaresCPCA || "",
                     interlocucao_supervisao_escolar:
                         data.interlocucaoSupervisaoEscolar === "Sim",
-                    info_complementar_supervisao_escolar:
-                        data.informacoesComplementaresSupervisaoEscolar || "",
-                    interlocucao_naapa: data.interlocucaoNAAPA === "Sim",
-                    info_complementar_naapa:
-                        data.informacoesComplementaresNAAPA || "",
+                    nr_processo_sei:
+                        data.numeroProcedimentoSEI === "Sim"
+                            ? data.numeroProcedimentoSEITexto
+                            : "",
                 },
             },
             {
@@ -129,6 +121,8 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
 
     const finalizarTexts = isPontoFocal ? "Finalizar" : "Próximo";
 
+    const numeroProcedimentoSEI = form.watch("numeroProcedimentoSEI");
+
     return (
         <>
             <Form {...form}>
@@ -141,64 +135,44 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioForm
                                 control={form.control}
                                 name="acionamentoSegurancaPublica"
-                                label="Houve acionamento da Secretaria de Seguranças Pública ou Forças de Segurança?*"
+                                label="A ronda escolar foi acionada?*"
                             />
 
-                            <RadioForm
-                                control={form.control}
-                                name="interlocucaoSTS"
-                                label="Houve interlocução com a Supervisão Técnica de Saúde (STS)?*"
-                            />
-
-                            <TextareaForm
-                                control={form.control}
-                                name="informacoesComplementaresSTS"
-                                label="Existe alguma informação complementar da atuação conjunta entre a DRE e o STS?"
-                            />
-
-                            <RadioForm
-                                control={form.control}
-                                name="interlocucaoCPCA"
-                                label="Houve interlocução com a Coordenação de Políticas para Criança e Adolescente (CPCA)?*"
-                            />
-
-                            <TextareaForm
-                                control={form.control}
-                                name="informacoesComplementaresCPCA"
-                                label="Existe alguma informação complementar da atuação conjunta entre a DRE e o CPCA?"
-                            />
-                        </div>
-                    </QuadroBranco>
-
-                    <QuadroBranco>
-                        <div className="flex flex-col gap-6">
                             <RadioForm
                                 control={form.control}
                                 name="interlocucaoSupervisaoEscolar"
-                                label="Houve interlocução com a Supervisão Escolar?*"
+                                label="A supervisão escolar foi comunicada?*"
                             />
 
-                            <TextareaForm
-                                control={form.control}
-                                name="informacoesComplementaresSupervisaoEscolar"
-                                label="Existe alguma informação complementar da atuação conjunta entre a DRE e o Supervisão Escolar? Algum planejamento ou estratégias de ação?"
-                            />
-                        </div>
-                    </QuadroBranco>
-
-                    <QuadroBranco>
-                        <div className="flex flex-col gap-6">
                             <RadioForm
                                 control={form.control}
-                                name="interlocucaoNAAPA"
-                                label="Houve interlocução com o Núcleo de Apoio e Acompanhamento para a Aprendizagem (NAAPA)?*"
+                                name="numeroProcedimentoSEI"
+                                label="Há um número do processo SEI?*"
                             />
 
-                            <TextareaForm
-                                control={form.control}
-                                name="informacoesComplementaresNAAPA"
-                                label="Existe alguma informação complementar da atuação conjunta entre a DRE e o NAAPA?"
-                            />
+                            {numeroProcedimentoSEI === "Sim" && (
+                                <FormField
+                                    control={form.control}
+                                    name="numeroProcedimentoSEITexto"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Número do processo SEI*
+                                            </FormLabel>
+                                            <FormControl>
+                                                <InputMask
+                                                    maskProps={{
+                                                        mask: "9999.9999/9999999-9",
+                                                    }}
+                                                    placeholder="Exemplo: 1234.5678/9012345-6"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </div>
                     </QuadroBranco>
                 </form>
