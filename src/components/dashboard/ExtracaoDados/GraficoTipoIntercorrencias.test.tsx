@@ -208,4 +208,18 @@ describe("GraficoTipoIntercorrencias", () => {
             screen.queryByText("10 intercorrências"),
         ).not.toBeInTheDocument();
     });
+
+    it("deve renderizar o skeleton quando isLoading é true", () => {
+        render(<GraficoTipoIntercorrencias isLoading />);
+        expect(
+            screen.queryByText("Gráfico por tipo de intercorrências"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("não deve renderizar o skeleton quando isLoading é false", () => {
+        render(<GraficoTipoIntercorrencias isLoading={false} />);
+        expect(
+            screen.getByText("Gráfico por tipo de intercorrências"),
+        ).toBeInTheDocument();
+    });
 });

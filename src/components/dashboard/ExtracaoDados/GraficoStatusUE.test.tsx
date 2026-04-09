@@ -108,4 +108,16 @@ describe("GraficoStatusUE", () => {
         // status = undefined → TooltipStatus retorna null → sem separador
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
+
+    it("deve renderizar o skeleton quando isLoading é true", () => {
+        render(<GraficoStatusUE isLoading />);
+        expect(
+            screen.queryByText("Intercorrências por UE"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("não deve renderizar o skeleton quando isLoading é false", () => {
+        render(<GraficoStatusUE isLoading={false} />);
+        expect(screen.getByText("Intercorrências por UE")).toBeInTheDocument();
+    });
 });

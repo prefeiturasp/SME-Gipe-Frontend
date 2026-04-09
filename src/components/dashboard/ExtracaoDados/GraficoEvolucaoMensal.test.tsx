@@ -87,4 +87,14 @@ describe("GraficoEvolucaoMensal", () => {
         render(<GraficoEvolucaoMensal />);
         expect(screen.queryByText("Março/2025:")).not.toBeInTheDocument();
     });
+
+    it("deve renderizar o skeleton quando isLoading é true", () => {
+        render(<GraficoEvolucaoMensal isLoading />);
+        expect(screen.queryByText("Evolução mensal")).not.toBeInTheDocument();
+    });
+
+    it("não deve renderizar o skeleton quando isLoading é false", () => {
+        render(<GraficoEvolucaoMensal isLoading={false} />);
+        expect(screen.getByText("Evolução mensal")).toBeInTheDocument();
+    });
 });

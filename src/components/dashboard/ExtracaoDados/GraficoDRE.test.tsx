@@ -116,4 +116,16 @@ describe("GraficoDRE", () => {
         // dre = undefined → TooltipDRE retorna null → sem separador
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
+
+    it("deve renderizar o skeleton quando isLoading é true", () => {
+        render(<GraficoDRE isLoading />);
+        expect(
+            screen.queryByText("Intercorrências por DRE"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("não deve renderizar o skeleton quando isLoading é false", () => {
+        render(<GraficoDRE isLoading={false} />);
+        expect(screen.getByText("Intercorrências por DRE")).toBeInTheDocument();
+    });
 });
