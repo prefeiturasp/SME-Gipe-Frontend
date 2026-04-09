@@ -1,7 +1,43 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import FilterPanel from "./FilterPanel";
+
+let mockCategoriasData:
+    | {
+          etapa_escolar: { value: string; label: string }[];
+          motivo_ocorrencia: never[];
+          grupo_etnico_racial: never[];
+          genero: never[];
+          frequencia_escolar: never[];
+      }
+    | undefined = {
+    etapa_escolar: [
+        { value: "infantil", label: "Educação Infantil" },
+        { value: "fundamental1", label: "Ensino Fundamental I" },
+        { value: "fundamental2", label: "Ensino Fundamental II" },
+        { value: "medio", label: "Ensino Médio" },
+    ],
+    motivo_ocorrencia: [],
+    grupo_etnico_racial: [],
+    genero: [],
+    frequencia_escolar: [],
+};
+
+afterEach(() => {
+    mockCategoriasData = {
+        etapa_escolar: [
+            { value: "infantil", label: "Educação Infantil" },
+            { value: "fundamental1", label: "Ensino Fundamental I" },
+            { value: "fundamental2", label: "Ensino Fundamental II" },
+            { value: "medio", label: "Ensino Médio" },
+        ],
+        motivo_ocorrencia: [],
+        grupo_etnico_racial: [],
+        genero: [],
+        frequencia_escolar: [],
+    };
+});
 
 vi.mock("@/hooks/useGetUnidades", () => ({
     useGetUnidades: (
@@ -18,18 +54,7 @@ vi.mock("@/hooks/useGetUnidades", () => ({
 
 vi.mock("@/hooks/useCategoriasDisponiveis", () => ({
     useCategoriasDisponiveis: () => ({
-        data: {
-            etapa_escolar: [
-                { value: "infantil", label: "Educação Infantil" },
-                { value: "fundamental1", label: "Ensino Fundamental I" },
-                { value: "fundamental2", label: "Ensino Fundamental II" },
-                { value: "medio", label: "Ensino Médio" },
-            ],
-            motivo_ocorrencia: [],
-            grupo_etnico_racial: [],
-            genero: [],
-            frequencia_escolar: [],
-        },
+        data: mockCategoriasData,
         isLoading: false,
     }),
 }));
@@ -344,5 +369,33 @@ describe("FilterPanel", () => {
         await user.click(screen.getByRole("button", { name: /limpar tudo/i }));
 
         expect(trigger).toHaveTextContent("Selecione");
+    });
+
+    it("deve carregar UEs ao selecionar exatamente uma DRE (dreUuid)", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const dreField = screen
+            .getByText("Diretoria Regional de Educação (DRE)")
+            .closest("div")!;
+        const triggerDre = within(dreField).getByRole("button");
+        await user.click(triggerDre);
+        await user.click(screen.getByText("DRE Butantã"));
+        await user.keyboard("{Escape}");
+
+        const ueField = screen
+            .getByText("Unidade Educacional (UE)")
+            .closest("div")!;
+        const triggerUe = within(ueField).getByRole("button");
+        await user.click(triggerUe);
+
+        expect(screen.getByText("EMEF Teste")).toBeInTheDocument();
+    });
+
+    it("deve usar array vazio de etapas quando categoriasDisponiveis não está disponível", () => {
+        mockCategoriasData = undefined;
+        render(<FilterPanel />);
+
+        expect(screen.getByText("Etapa escolar")).toBeInTheDocument();
     });
 });
