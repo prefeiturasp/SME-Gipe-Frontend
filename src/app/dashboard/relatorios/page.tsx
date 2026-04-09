@@ -1,6 +1,7 @@
 "use client";
 
 import Export from "@/assets/icons/Export";
+import DashboardAnalitico from "@/components/dashboard/ExtracaoDados/DashboardAnalitico";
 import FilterPanel from "@/components/dashboard/ExtracaoDados/FilterPanel";
 import { Button } from "@/components/ui/button";
 
@@ -26,8 +27,9 @@ export default function ExtracaoDadosPage() {
                 </Button>
             </div>
 
-            <div className="flex gap-4 items-start flex-1 min-h-0">
+            <div className="flex gap-4 items-start flex-1 min-h-0 overflow-hidden">
                 <FilterPanel />
+                <DashboardAnalitico />
             </div>
         </div>
     );
