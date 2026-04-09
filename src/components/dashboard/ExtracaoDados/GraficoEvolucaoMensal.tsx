@@ -138,15 +138,22 @@ export default function GraficoEvolucaoMensal({
                                 {d.mes === "Abr" ? ":" : ""}
                             </p>
                             <p className="text-[#595959]">
-                                Total: {String(d.total).padStart(2, "0")}
+                                Total:{" "}
+                                {d.total === 0
+                                    ? "0"
+                                    : String(d.total).padStart(2, "0")}
                             </p>
                             <p className="text-[#595959]">
                                 Patrimonial:{" "}
-                                {String(d.patrimonial).padStart(2, "0")}
+                                {d.patrimonial === 0
+                                    ? "0"
+                                    : String(d.patrimonial).padStart(2, "0")}
                             </p>
                             <p className="text-[#595959]">
                                 Interpessoal:{" "}
-                                {String(d.interpessoal).padStart(2, "0")}
+                                {d.interpessoal === 0
+                                    ? "0"
+                                    : String(d.interpessoal).padStart(2, "0")}
                             </p>
                         </div>
                     ))}

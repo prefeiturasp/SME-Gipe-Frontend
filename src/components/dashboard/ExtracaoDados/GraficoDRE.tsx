@@ -145,15 +145,15 @@ export default function GraficoDRE({
                                 </span>
                             </div>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Total: <b>{String(d.total).padStart(2, "0")}</b>
+                                Total: <b>{d.total === 0 ? "0" : String(d.total).padStart(2, "0")}</b>
                             </p>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
                                 Patrimonial:{" "}
-                                <b>{String(d.patrimonial).padStart(2, "0")}</b>
+                                <b>{d.patrimonial === 0 ? "0" : String(d.patrimonial).padStart(2, "0")}</b>
                             </p>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
                                 Interpessoal:{" "}
-                                <b>{String(d.interpessoal).padStart(2, "0")}</b>
+                                <b>{d.interpessoal === 0 ? "0" : String(d.interpessoal).padStart(2, "0")}</b>
                             </p>
                         </div>
                     ))}

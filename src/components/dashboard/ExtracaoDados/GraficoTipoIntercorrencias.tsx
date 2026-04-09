@@ -7,7 +7,6 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
-    Cell,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -126,7 +125,8 @@ function TooltipColunas({ active, payload, label }: TooltipColunasProps) {
                     margin: 0,
                 }}
             >
-                {String(count).padStart(2, "0")} intercorrências
+                {count === 0 ? "0" : String(count).padStart(2, "0")}{" "}
+                intercorrências
             </p>
         </div>
     );
@@ -137,11 +137,16 @@ function GraficoColunasVertical({
 }: Readonly<{
     data: { tipo: string; count: number }[];
 }>) {
+    const coloredData = data.map((item, index) => ({
+        ...item,
+        fill: TIPO_COR_PALETTE[index % TIPO_COR_PALETTE.length],
+    }));
+
     return (
         <div className="flex flex-col gap-3">
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart
-                    data={data}
+                    data={coloredData}
                     margin={{ top: 20, right: 8, left: 0, bottom: 10 }}
                     barCategoryGap="10%"
                     barSize={90}
@@ -197,18 +202,7 @@ function GraficoColunasVertical({
                         dataKey="count"
                         radius={[2, 2, 0, 0]}
                         label={<BarLabel />}
-                    >
-                        {data.map((entry, index) => (
-                            <Cell
-                                key={`cell-${entry.tipo}`}
-                                fill={
-                                    TIPO_COR_PALETTE[
-                                        index % TIPO_COR_PALETTE.length
-                                    ]
-                                }
-                            />
-                        ))}
-                    </Bar>
+                    />
                 </BarChart>
             </ResponsiveContainer>
         </div>
@@ -217,6 +211,10 @@ function GraficoColunasVertical({
 
 function GraficoMotivacoes() {
     const maxCount = Math.max(...motivacoesData.map((d) => d.count));
+    const coloredData = motivacoesData.map((item, index) => ({
+        ...item,
+        fill: TIPO_COR_PALETTE[index % TIPO_COR_PALETTE.length],
+    }));
 
     return (
         <div className="flex flex-col gap-3 mt-4">
@@ -235,7 +233,7 @@ function GraficoMotivacoes() {
             >
                 <BarChart
                     layout="vertical"
-                    data={motivacoesData}
+                    data={coloredData}
                     margin={{ top: 0, right: 60, left: 8, bottom: 0 }}
                     barCategoryGap="10%"
                     barSize={36}
@@ -266,18 +264,7 @@ function GraficoMotivacoes() {
                         content={<TooltipColunas />}
                         cursor={{ fill: "rgba(0,0,0,0.04)" }}
                     />
-                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                        {motivacoesData.map((entry, index) => (
-                            <Cell
-                                key={`cell-mot-${entry.motivacao}`}
-                                fill={
-                                    TIPO_COR_PALETTE[
-                                        index % TIPO_COR_PALETTE.length
-                                    ]
-                                }
-                            />
-                        ))}
-                    </Bar>
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} />
                 </BarChart>
             </ResponsiveContainer>
         </div>
