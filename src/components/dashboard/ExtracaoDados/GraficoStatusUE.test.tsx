@@ -2,11 +2,21 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoStatusUE from "./GraficoStatusUE";
+import type { StatusUEDado } from "./mockData";
 
-// Variáveis lidas pelas closures do mock no momento do render
 let mockTooltipActive = true;
-// Quando definido, sobrepõe o hoveredLabel que vem do estado do componente
 let mockOverrideHoveredLabel: string | undefined = undefined;
+let customStatusUEData: StatusUEDado[] | null = null;
+
+vi.mock("./mockData", async (importOriginal) => {
+    const original = await importOriginal<typeof import("./mockData")>();
+    return {
+        ...original,
+        get statusUEData() {
+            return customStatusUEData ?? original.statusUEData;
+        },
+    };
+});
 
 vi.mock("recharts", () => ({
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -50,6 +60,7 @@ vi.mock("recharts", () => ({
 afterEach(() => {
     mockTooltipActive = true;
     mockOverrideHoveredLabel = undefined;
+    customStatusUEData = null;
 });
 
 describe("GraficoStatusUE", () => {
@@ -78,8 +89,6 @@ describe("GraficoStatusUE", () => {
         render(<GraficoStatusUE />);
         const bar = screen.getByTestId("bar-Intercorrências em andamento");
         fireEvent.mouseEnter(bar);
-        // O tooltip tem <hr> único no componente e usa singular (Patrimonial/Interpessoal)
-        // enquanto a legenda usa plural (Patrimoniais/Interpessoais)
         expect(screen.getByRole("separator")).toBeInTheDocument();
         expect(screen.getByText("Patrimonial:")).toBeInTheDocument();
         expect(screen.getByText("Interpessoal:")).toBeInTheDocument();
@@ -105,7 +114,6 @@ describe("GraficoStatusUE", () => {
     it("deve retornar null do tooltip quando o status não existe nos dados", () => {
         mockOverrideHoveredLabel = "Status Inexistente";
         render(<GraficoStatusUE />);
-        // status = undefined → TooltipStatus retorna null → sem separador
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
 
@@ -119,5 +127,21 @@ describe("GraficoStatusUE", () => {
     it("não deve renderizar o skeleton quando isLoading é false", () => {
         render(<GraficoStatusUE isLoading={false} />);
         expect(screen.getByText("Intercorrências por UE")).toBeInTheDocument();
+    });
+
+    it("deve exibir '0' quando total e patrimonial são zero na legenda", () => {
+        customStatusUEData = [
+            {
+                label: "Intercorrências em andamento",
+                sublabel: "em andamento",
+                total: 0,
+                patrimonial: 0,
+                interpessoal: 5,
+                cor: "#3d4eb0",
+            },
+        ];
+        render(<GraficoStatusUE />);
+        const zeros = screen.getAllByText("0");
+        expect(zeros.length).toBeGreaterThanOrEqual(2);
     });
 });

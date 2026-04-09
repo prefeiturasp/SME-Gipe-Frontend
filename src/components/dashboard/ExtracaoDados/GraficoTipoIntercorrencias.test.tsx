@@ -4,7 +4,6 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoTipoIntercorrencias from "./GraficoTipoIntercorrencias";
 
-// Variáveis lidas pelas closures do mock no momento do render (não na definição)
 let mockBarLabelValue = 5;
 let mockXAxisPayload: { value: string } | undefined = {
     value: "Furto no estabelecimento",
@@ -174,21 +173,18 @@ describe("GraficoTipoIntercorrencias", () => {
     it("deve retornar null do BarLabel quando value é zero", () => {
         mockBarLabelValue = 0;
         render(<GraficoTipoIntercorrencias />);
-        // Com value=0, BarLabel retorna null — o texto "00" não deve aparecer
         expect(screen.queryByText("00")).not.toBeInTheDocument();
     });
 
     it("deve retornar null do CustomXAxisTick quando payload está ausente", () => {
         mockXAxisPayload = undefined;
         render(<GraficoTipoIntercorrencias />);
-        // Sem payload, CustomXAxisTick retorna null — nenhum texto de tick renderizado
         expect(screen.queryByText("Furto no")).not.toBeInTheDocument();
     });
 
     it("deve usar string vazia quando label é undefined no TooltipColunas", () => {
         mockTooltipLabel = undefined;
         render(<GraficoTipoIntercorrencias />);
-        // label ?? "" → "" → tipo = "" → renderiza apenas ":"
         expect(screen.getByText(":")).toBeInTheDocument();
     });
 
@@ -206,6 +202,12 @@ describe("GraficoTipoIntercorrencias", () => {
         expect(
             screen.queryByText("10 intercorrências"),
         ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir '0' no tooltip quando count é zero", () => {
+        mockTooltipPayload = [{ value: 0 }];
+        render(<GraficoTipoIntercorrencias />);
+        expect(screen.getByText("0 intercorrências")).toBeInTheDocument();
     });
 
     it("deve renderizar o skeleton quando isLoading é true", () => {
