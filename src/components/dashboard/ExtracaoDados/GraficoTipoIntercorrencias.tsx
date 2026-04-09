@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -283,7 +284,52 @@ function GraficoMotivacoes() {
     );
 }
 
-export default function GraficoTipoIntercorrencias() {
+const SKELETON_BARS = [
+    { key: "s1", height: 180 },
+    { key: "s2", height: 120 },
+    { key: "s3", height: 160 },
+    { key: "s4", height: 90 },
+    { key: "s5", height: 200 },
+    { key: "s6", height: 140 },
+    { key: "s7", height: 110 },
+    { key: "s8", height: 170 },
+    { key: "s9", height: 80 },
+];
+
+function GraficoTipoIntercorrenciasSkeleton() {
+    return (
+        <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-2/3 mt-1" />
+            </div>
+            <div className="flex gap-[2px] border-b border-[#DADADA] pb-0">
+                <Skeleton className="h-[48px] w-[220px] rounded-t-[4px] rounded-b-none" />
+                <Skeleton className="h-[48px] w-[220px] rounded-t-[4px] rounded-b-none" />
+            </div>
+            <div className="flex items-end gap-3 h-[320px] pt-5">
+                {SKELETON_BARS.map((bar) => (
+                    <div
+                        key={bar.key}
+                        className="flex-1 flex flex-col items-center justify-end gap-1"
+                    >
+                        <Skeleton
+                            className="w-full"
+                            style={{ height: `${bar.height}px` }}
+                        />
+                        <Skeleton className="h-3 w-full mt-1" />
+                        <Skeleton className="h-3 w-4/5" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export default function GraficoTipoIntercorrencias({
+    isLoading = false,
+}: Readonly<{ isLoading?: boolean }>) {
+    if (isLoading) return <GraficoTipoIntercorrenciasSkeleton />;
     return (
         <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
             <div>

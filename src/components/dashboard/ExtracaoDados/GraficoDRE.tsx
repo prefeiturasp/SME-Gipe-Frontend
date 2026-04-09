@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import {
     Bar,
@@ -39,7 +40,38 @@ function TooltipDRE({ active, hoveredNome }: TooltipDREProps) {
     );
 }
 
-export default function GraficoDRE() {
+function GraficoDRESkeleton() {
+    return (
+        <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+                <Skeleton className="h-6 w-1/3" />
+                <Skeleton className="h-4 w-1/2 mt-1" />
+            </div>
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-8 w-full" />
+            <div className="flex flex-col gap-3">
+                <Skeleton className="h-4 w-1/3" />
+                <div className="grid grid-cols-4 gap-x-6 gap-y-4">
+                    {dreData.map((d) => (
+                        <div
+                            key={`skeleton-${d.nome}`}
+                            className="flex flex-col gap-1"
+                        >
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-2/3" />
+                            <Skeleton className="h-3 w-2/3" />
+                            <Skeleton className="h-3 w-2/3" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function GraficoDRE({
+    isLoading = false,
+}: Readonly<{ isLoading?: boolean }>) {
     const [hoveredNome, setHoveredNome] = useState<string | null>(null);
     const total = dreData.reduce((acc, d) => acc + d.total, 0);
 
@@ -49,6 +81,8 @@ export default function GraficoDRE() {
             {},
         ),
     ];
+
+    if (isLoading) return <GraficoDRESkeleton />;
 
     return (
         <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">

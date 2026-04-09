@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
 import { AlertCircle, Calendar, Pencil, Users } from "lucide-react";
 import GraficoDRE from "./GraficoDRE";
@@ -30,7 +31,25 @@ function SummaryCard({ label, value, icon: Icon }: Readonly<SummaryCardProps>) {
     );
 }
 
-export default function DashboardAnalitico() {
+function SummaryCardSkeleton() {
+    return (
+        <div className="flex flex-col gap-6 bg-white rounded-[4px] border border-[#e0e0e0] px-4 py-4 flex-1 min-w-0 min-h-[127px]">
+            <Skeleton className="w-5 h-5 rounded-[2px]" />
+            <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-1/3" />
+            </div>
+        </div>
+    );
+}
+
+interface DashboardAnaliticoProps {
+    isLoading?: boolean;
+}
+
+export default function DashboardAnalitico({
+    isLoading = false,
+}: Readonly<DashboardAnaliticoProps>) {
     return (
         <div className="flex-1 min-w-0 flex flex-col gap-4 m-4 overflow-y-auto">
             <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
@@ -43,33 +62,44 @@ export default function DashboardAnalitico() {
                 </p>
 
                 <div className="flex gap-4">
-                    <SummaryCard
-                        label="Total de intercorrências:"
-                        value={resumoCards.totalIntercorrencias}
-                        icon={Pencil}
-                    />
-                    <SummaryCard
-                        label="Intercorrências patrimoniais:"
-                        value={resumoCards.intercorrenciasPatrimoniais}
-                        icon={AlertCircle}
-                    />
-                    <SummaryCard
-                        label="Intercorrências interpessoais:"
-                        value={resumoCards.intercorrenciasInterpessoais}
-                        icon={Users}
-                    />
-                    <SummaryCard
-                        label="Média de registros por mês:"
-                        value={resumoCards.mediaMensal}
-                        icon={Calendar}
-                    />
+                    {isLoading ? (
+                        <>
+                            <SummaryCardSkeleton />
+                            <SummaryCardSkeleton />
+                            <SummaryCardSkeleton />
+                            <SummaryCardSkeleton />
+                        </>
+                    ) : (
+                        <>
+                            <SummaryCard
+                                label="Total de intercorrências:"
+                                value={resumoCards.totalIntercorrencias}
+                                icon={Pencil}
+                            />
+                            <SummaryCard
+                                label="Intercorrências patrimoniais:"
+                                value={resumoCards.intercorrenciasPatrimoniais}
+                                icon={AlertCircle}
+                            />
+                            <SummaryCard
+                                label="Intercorrências interpessoais:"
+                                value={resumoCards.intercorrenciasInterpessoais}
+                                icon={Users}
+                            />
+                            <SummaryCard
+                                label="Média de registros por mês:"
+                                value={resumoCards.mediaMensal}
+                                icon={Calendar}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
 
-            <GraficoDRE />
-            <GraficoStatusUE />
-            <GraficoEvolucaoMensal />
-            <GraficoTipoIntercorrencias />
+            <GraficoDRE isLoading={isLoading} />
+            <GraficoStatusUE isLoading={isLoading} />
+            <GraficoEvolucaoMensal isLoading={isLoading} />
+            <GraficoTipoIntercorrencias isLoading={isLoading} />
         </div>
     );
 }
