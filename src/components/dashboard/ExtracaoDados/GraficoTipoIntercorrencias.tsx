@@ -132,7 +132,7 @@ function TooltipColunas({ active, payload, label }: TooltipColunasProps) {
     );
 }
 
-function GraficoColunasVertical({
+export function GraficoColunasVertical({
     data,
 }: Readonly<{
     data: { tipo: string; count: number }[];
@@ -209,7 +209,7 @@ function GraficoColunasVertical({
     );
 }
 
-function GraficoMotivacoes() {
+export function GraficoMotivacoes() {
     const maxCount = Math.max(...motivacoesData.map((d) => d.count));
     const coloredData = motivacoesData.map((item, index) => ({
         ...item,
