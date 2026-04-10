@@ -64,9 +64,18 @@ export default function ExtracaoDadosPage() {
                 tiposInterpessoal,
                 motivacoes,
             ] = await Promise.all([
-                toPng(refDRE.current, captureOpts),
-                toPng(refStatusUE.current, captureOpts),
-                toPng(refEvolucao.current, captureOpts),
+                toPng(refDRE.current, {
+                    ...captureOpts,
+                    backgroundColor: "#ffffff",
+                }),
+                toPng(refStatusUE.current, {
+                    ...captureOpts,
+                    backgroundColor: "#ffffff",
+                }),
+                toPng(refEvolucao.current, {
+                    ...captureOpts,
+                    backgroundColor: "#ffffff",
+                }),
                 toPng(refTiposPatrimonial.current, {
                     ...captureOpts,
                     backgroundColor: "#ffffff",
@@ -106,7 +115,7 @@ export default function ExtracaoDadosPage() {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Zona de captura off-screen â€” sempre montada para recharts inicializar */}
+            {/* Zona de captura off-screen sempre montada para recharts inicializar */}
             <div
                 aria-hidden="true"
                 style={{
@@ -118,14 +127,23 @@ export default function ExtracaoDadosPage() {
                     zIndex: -1,
                 }}
             >
-                <div ref={refDRE} style={{ padding: "12px" }}>
-                    <GraficoDRE isLoading={false} />
+                <div
+                    ref={refDRE}
+                    style={{ padding: "12px", background: "white" }}
+                >
+                    <GraficoDRE isLoading={false} pdfLayout />
                 </div>
-                <div ref={refStatusUE} style={{ padding: "12px" }}>
-                    <GraficoStatusUE isLoading={false} />
+                <div
+                    ref={refStatusUE}
+                    style={{ padding: "12px", background: "white" }}
+                >
+                    <GraficoStatusUE isLoading={false} pdfLayout />
                 </div>
-                <div ref={refEvolucao} style={{ padding: "12px" }}>
-                    <GraficoEvolucaoMensal isLoading={false} />
+                <div
+                    ref={refEvolucao}
+                    style={{ padding: "12px", background: "white" }}
+                >
+                    <GraficoEvolucaoMensal isLoading={false} pdfLayout />
                 </div>
                 <div
                     ref={refTiposPatrimonial}
