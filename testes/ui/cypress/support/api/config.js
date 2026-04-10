@@ -1,6 +1,10 @@
 // ============================================================================
 // CONFIGURAÇÕES DA API GIPE
 // ============================================================================
+// ATENÇÃO: Credenciais e tokens agora vêm do arquivo .env
+// ============================================================================
+
+require('dotenv').config()
 
 const API_CONFIG = {
   BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br/api-intercorrencias/v1',
@@ -10,8 +14,8 @@ const API_CONFIG = {
 
 const CREDENTIALS = {
   valid: {
-    username: '7311559',
-    password: 'Sgp1559'
+    username: process.env.RF_GIPE,
+    password: process.env.SENHA_GIPE
   },
   invalid: {
     username: 'usuario_invalido',
@@ -19,7 +23,9 @@ const CREDENTIALS = {
   }
 };
 
-// Token válido pré-configurado
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MTc5ODAyLCJpYXQiOjE3NjQwOTM0MDIsImp0aSI6IjQxM2JjN2UxZmI0YjQ0Y2Q4YzdlZmM0YTgyMzJiYzlhIiwidXNlcl9pZCI6MjAsInVzZXJuYW1lIjoiMDU0ODExNzkzNDIiLCJuYW1lIjoiTWFyY2VsbyBBbHZlcyBOdW5lcyBkYSBTaWx2YSIsImNwZiI6IjA1NDgxMTc5MzQyIiwiZW1haWwiOiJndWlsaGVybWUuc2lsdmVpcmFAc3Bhc3N1LmNvbS5iciIsInBlcmZpbF9jb2RpZ28iOjMzNjAsInBlcmZpbF9ub21lIjoiRElSRVRPUiBERSBFU0NPTEEiLCJjb2RpZ29fdW5pZGFkZV9lb2wiOiIwMTE1NjgifQ.0fZeid7Ri4ThV4yeYIxyx68WX3K2zEhAa-Zs3g0lYSM';
+// Token válido carregado do .env
+// Este token expira em 2025-12-26 (epoch: 1764179802)
+// Se expirado, regere via: npm run cy:token
+const AUTH_TOKEN = process.env.AUTH_TOKEN;
 
 module.exports = { API_CONFIG, CREDENTIALS, AUTH_TOKEN };
