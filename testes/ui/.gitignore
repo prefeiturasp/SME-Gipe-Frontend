@@ -116,6 +116,11 @@ docker-compose.override.yml
 Dockerfile.local
 
 # ========================================
+# PROMPTS E DOCUMENTAÇÃO INTERNA
+# ========================================
+prompt-*.md
+
+# ========================================
 # ARQUIVOS TEMPORÁRIOS E BACKUPS
 # ========================================
 *.bak

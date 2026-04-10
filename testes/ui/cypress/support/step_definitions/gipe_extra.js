@@ -372,7 +372,9 @@ Then('o estado da aplicação é mantido', () => {
 // =============== OCORRÊNCIAS ===============
 
 Given('que eu acesso o sistema para cadastro de ocorrências', () => {
-  cy.loginWithSession('29379960000', 'Sgp0000', 'CADASTRO')
+  const RF_UE = Cypress.env('RF_UE')
+  const SENHA_UE = Cypress.env('SENHA_UE')
+  cy.loginWithSession(RF_UE, SENHA_UE, 'CADASTRO')
   
   // Garante navegação para o dashboard mesmo se sessão restaurar em about:blank
   cy.url().then((url) => {

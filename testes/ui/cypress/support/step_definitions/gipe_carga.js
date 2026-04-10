@@ -61,6 +61,9 @@ const obterNovoToken = () => {
   cy.clearCookies()
   cy.clearLocalStorage()
   
+  const CPF_CARGA = Cypress.env('CPF_CARGA')
+  const SENHA_CARGA = Cypress.env('SENHA_CARGA')
+  
   cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/', {
     timeout: 30000,
     retryOnNetworkFailure: true
@@ -70,12 +73,12 @@ const obterNovoToken = () => {
   cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
     .should('be.visible')
     .clear()
-    .type('05481179342')
+    .type(CPF_CARGA)
   
   cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
     .should('be.visible')
     .clear()
-    .type('Sgp9342')
+    .type(SENHA_CARGA)
   
   cy.get('button')
     .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')

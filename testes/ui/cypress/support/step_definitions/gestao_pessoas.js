@@ -3,8 +3,9 @@ import Gestao_Pessoas_Localizadores from '../locators/gestao_pessoas_locators'
 
 const locators = new Gestao_Pessoas_Localizadores()
 
-const RF_GIPE = '7311559'
-const SENHA_GIPE = 'Sgp1559'
+// ============================================================================
+// CREDENCIAIS VÊM DO .env via cypress.config.js
+// ============================================================================
 
 const waitAndGet = (selector, options = {}) => {
   const { timeout = 15000, wait = 2000, checkEnabled = true } = options
@@ -101,6 +102,8 @@ function gerarNomeAleatorio() {
 }
 
 Given('que eu acesso o sistema como GIPE', () => {
+  const RF_GIPE = Cypress.env('RF_GIPE')
+  const SENHA_GIPE = Cypress.env('SENHA_GIPE')
   cy.loginWithSession(RF_GIPE, SENHA_GIPE, 'GIPE')
 })
 

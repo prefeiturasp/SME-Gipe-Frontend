@@ -10,9 +10,11 @@ const locators_alterar_senha = new Alterar_Senha_Localizadores()
 const locators_alterar_email = new Alterar_Email_Localizadores()
 
 Given("que o usuário realizou o login com sucesso", () => {
+  const RF_UE = Cypress.env('RF_UE')
+  const SENHA_UE = Cypress.env('SENHA_UE')
   cy.login_gipe()
-  cy.get(locators.campo_usuario()).type('29379960000')
-  cy.get(locators.campo_senha()).type('Sgp0000')
+  cy.get(locators.campo_usuario()).type(RF_UE)
+  cy.get(locators.campo_senha()).type(SENHA_UE)
   cy.get('button').filter((_, el) => el.innerText.trim() === 'Acessar').click()
   cy.url().should("include", "/dashboard");
 });

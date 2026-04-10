@@ -3,8 +3,9 @@ import Gestao_Unidade_Localizadores from '../locators/gestao_unidade_locators'
 
 const locators = new Gestao_Unidade_Localizadores()
 
-const RF_GIPE = '7311559'
-const SENHA_GIPE = 'Sgp1559'
+// ============================================================================
+// CREDENCIAIS VÊM DO .env via cypress.config.js
+// ============================================================================
 
 // Funções auxiliares
 const clickElementXPath = (xpath, wait = 2000) => {
