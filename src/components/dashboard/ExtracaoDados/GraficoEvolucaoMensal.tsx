@@ -74,10 +74,13 @@ function GraficoEvolucaoMensalSkeleton() {
 
 export default function GraficoEvolucaoMensal({
     isLoading = false,
-}: Readonly<{ isLoading?: boolean }>) {
+    pdfLayout = false,
+}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
     if (isLoading) return <GraficoEvolucaoMensalSkeleton />;
     return (
-        <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
+        <div
+            className={`bg-white rounded-[4px] p-6 flex flex-col gap-4${pdfLayout ? "" : " shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]"}`}
+        >
             <div>
                 <h2 className="text-[#42474a] text-[20px] font-bold">
                     Evolução mensal
@@ -87,9 +90,22 @@ export default function GraficoEvolucaoMensal({
                 </p>
             </div>
 
-            <div className="flex gap-6 items-stretch">
-                <div className="flex-1 min-w-0 flex flex-col">
-                    <ResponsiveContainer width="100%" height="100%">
+            <div
+                className={
+                    pdfLayout
+                        ? "flex flex-col gap-4"
+                        : "flex gap-6 items-stretch"
+                }
+            >
+                <div
+                    className={
+                        pdfLayout ? "w-full" : "flex-1 min-w-0 flex flex-col"
+                    }
+                >
+                    <ResponsiveContainer
+                        width="100%"
+                        height={pdfLayout ? 300 : "100%"}
+                    >
                         <LineChart
                             data={evolucaoMensalData}
                             margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
@@ -127,7 +143,9 @@ export default function GraficoEvolucaoMensal({
                     </ResponsiveContainer>
                 </div>
 
-                <div className="grid grid-cols-3 gap-x-1 gap-y-1 shrink-0 text-[12px]">
+                <div
+                    className={`grid gap-x-1 gap-y-1 text-[12px] ${pdfLayout ? "grid-cols-4" : "grid-cols-3 shrink-0"}`}
+                >
                     {evolucaoMensalData.map((d) => (
                         <div
                             key={d.mes}
