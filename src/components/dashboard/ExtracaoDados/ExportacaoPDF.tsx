@@ -1,16 +1,13 @@
-﻿import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
+﻿/* eslint-disable jsx-a11y/alt-text */
+import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { BIMESTRES, GENEROS, MESES, type FilterState } from "./FilterPanel";
 import { resumoCards } from "./mockData";
-
-// â”€â”€â”€ Paleta / constantes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const GRAY_DARK = "#42474A";
 const GRAY_MID = "#595959";
 const GRAY_LIGHT = "#E0E0E0";
 const PAGE_PADDING = 28;
 const CONTENT_WIDTH = 595 - PAGE_PADDING * 2; // A4 width - padding
-
-// â”€â”€â”€ Tipo das imagens capturadas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface CapturedImages {
     dre: string;
@@ -20,8 +17,6 @@ export interface CapturedImages {
     tiposInterpessoal: string;
     motivacoes: string;
 }
-
-// â”€â”€â”€ Helpers de display dos filtros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function displayList(
     values: string[],
@@ -56,7 +51,7 @@ function buildEtapaLabel(etapas: string[]): string {
 function buildIdadeLabel(idade: string, menosDeUmAno: boolean): string {
     if (idade === "") return "Todas";
     if (menosDeUmAno) {
-        return `${idade} ${idade === "1" ? "mÃªs" : "meses"}`;
+        return `${idade} ${idade === "1" ? "mês" : "meses"}`;
     }
     return `${idade} ${idade === "1" ? "ano" : "anos"}`;
 }
@@ -77,8 +72,6 @@ function buildFiltrosDisplay(state: FilterState) {
         idade: buildIdadeLabel(state.idade, state.menosDeUmAno),
     };
 }
-
-// â”€â”€â”€ Componentes primitivos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SectionTitle({ children }: Readonly<{ children: string }>) {
     return (
@@ -120,7 +113,7 @@ function FiltroCell({
 }
 
 function VDivider() {
-    return <View style={{ width: 1, backgroundColor: GRAY_LIGHT }} />;
+    return <View style={{ width: 1, backgroundColor: "#fff" }} />;
 }
 
 function PageNumber({
@@ -146,10 +139,10 @@ const PAGE_STYLE = {
     paddingHorizontal: PAGE_PADDING,
     paddingVertical: 24,
     fontFamily: "Helvetica",
-    backgroundColor: "#F5F6F8",
+    backgroundColor: "#FFFFFF",
 } as const;
 
-// â”€â”€â”€ PÃ¡gina 1: Filtros + Cards + DRE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Página 1: Filtros + Cards + DRE ---
 
 function Pagina1({
     filtros,
@@ -160,7 +153,7 @@ function Pagina1({
 }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
-            {/* CabeÃ§alho */}
+            {/* Cabeçalho */}
             <View style={{ marginBottom: 10 }}>
                 <Text
                     style={{
@@ -169,11 +162,11 @@ function Pagina1({
                         color: GRAY_DARK,
                     }}
                 >
-                    ExtraÃ§Ã£o de dados
+                    Extração de dados
                 </Text>
                 <Text style={{ fontSize: 9, color: GRAY_MID, marginTop: 2 }}>
-                    Confira todas as intercorrÃªncias registradas no sistema e
-                    exporte os dados em PDF de forma rÃ¡pida e prÃ¡tica.
+                    Confira todas as intercorrências registradas no sistema e
+                    exporte os dados em PDF de forma rápida e prática.
                 </Text>
             </View>
 
@@ -216,7 +209,7 @@ function Pagina1({
                             value={filtros.anoLetivo}
                         />
                         <VDivider />
-                        <FiltroCell label="MÃªs:" value={filtros.mes} />
+                        <FiltroCell label="Mês:" value={filtros.mes} />
                         <VDivider />
                         <FiltroCell
                             label="Bimestre:"
@@ -237,7 +230,7 @@ function Pagina1({
                             value={filtros.ue}
                         />
                         <VDivider />
-                        <FiltroCell label="GÃªnero:" value={filtros.genero} />
+                        <FiltroCell label="Gênero:" value={filtros.genero} />
                     </View>
                     <View style={{ flexDirection: "row" }}>
                         <FiltroCell
@@ -246,12 +239,11 @@ function Pagina1({
                         />
                         <VDivider />
                         <FiltroCell label="Idade:" value={filtros.idade} />
-                        <View style={{ flex: 1 }} />
                     </View>
                 </View>
             </View>
 
-            {/* Dashboard analÃ­tico â€” cards */}
+            {/* Dashboard analítico — cards */}
             <View
                 style={{
                     backgroundColor: "#fff",
@@ -262,28 +254,28 @@ function Pagina1({
                 }}
             >
                 <SectionTitle>
-                    Dashboard analÃ­tico de intercorrÃªncias
+                    Dashboard analítico de intercorrências
                 </SectionTitle>
                 <SectionSubtitle>
-                    Tenha um resumo rÃ¡pido de alguns indicadores do sistema,
-                    facilitando o acompanhamento e a anÃ¡lise.
+                    Tenha um resumo rápido de alguns indicadores do sistema,
+                    facilitando o acompanhamento e a análise.
                 </SectionSubtitle>
                 <View style={{ flexDirection: "row", gap: 8 }}>
                     {[
                         {
-                            label: "Total de intercorrÃªncias:",
+                            label: "Total de intercorrências:",
                             value: resumoCards.totalIntercorrencias,
                         },
                         {
-                            label: "IntercorrÃªncias patrimoniais:",
+                            label: "Intercorrências patrimoniais:",
                             value: resumoCards.intercorrenciasPatrimoniais,
                         },
                         {
-                            label: "IntercorrÃªncias interpessoais:",
+                            label: "Intercorrências interpessoais:",
                             value: resumoCards.intercorrenciasInterpessoais,
                         },
                         {
-                            label: "MÃ©dia de registros por mÃªs:",
+                            label: "Média de registros por mês:",
                             value: resumoCards.mediaMensal,
                         },
                     ].map(({ label, value }) => (
@@ -321,93 +313,122 @@ function Pagina1({
                 </View>
             </View>
 
-            {/* GrÃ¡fico DRE â€” imagem capturada do recharts */}
-            <Image src={images.dre} style={{ width: CONTENT_WIDTH }} />
+            {/* Gráfico DRE — imagem capturada do recharts */}
+            <View
+                style={{
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
+                }}
+            >
+                <Image src={images.dre} />
+            </View>
 
             <PageNumber total={4} current={1} />
         </Page>
     );
 }
 
-// â”€â”€â”€ PÃ¡gina 2: StatusUE + EvoluÃ§Ã£o Mensal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Página 2: StatusUE + Evolução Mensal ---
 
 function Pagina2({ images }: Readonly<{ images: CapturedImages }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
-            <Image
-                src={images.statusUE}
-                style={{ width: CONTENT_WIDTH, marginBottom: 8 }}
-            />
-            <Image
-                src={images.evolucaoMensal}
-                style={{ width: CONTENT_WIDTH }}
-            />
+            <View
+                style={{
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
+                    marginBottom: 8,
+                }}
+            >
+                <Image src={images.statusUE} />
+            </View>
+            <View
+                style={{
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
+                }}
+            >
+                <Image src={images.evolucaoMensal} />
+            </View>
             <PageNumber total={4} current={2} />
         </Page>
     );
 }
 
-// â”€â”€â”€ PÃ¡gina 3: Tipos de IntercorrÃªncias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Página 3: Tipos de Intercorrências ---
 
 function Pagina3({ images }: Readonly<{ images: CapturedImages }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
             <View style={{ marginBottom: 10 }}>
-                <SectionTitle>
-                    GrÃ¡fico por tipo de intercorrÃªncias
-                </SectionTitle>
+                <SectionTitle>Gráfico por tipo de intercorrências</SectionTitle>
                 <SectionSubtitle>
                     Confira a quantidade de registros por tipo de
-                    intercorrÃªncia, patrimonial ou interpessoal.
+                    intercorrência, patrimonial ou interpessoal.
                 </SectionSubtitle>
             </View>
 
-            <Image
-                src={images.tiposPatrimonial}
-                style={{ width: CONTENT_WIDTH, marginBottom: 8 }}
-            />
-            <Image
-                src={images.tiposInterpessoal}
-                style={{ width: CONTENT_WIDTH }}
-            />
+            <View
+                style={{
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
+                    marginBottom: 8,
+                }}
+            >
+                <Image src={images.tiposPatrimonial} />
+            </View>
+            <View
+                style={{
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
+                }}
+            >
+                <Image src={images.tiposInterpessoal} />
+            </View>
 
             <PageNumber total={4} current={3} />
         </Page>
     );
 }
 
-// â”€â”€â”€ PÃ¡gina 4: MotivaÃ§Ãµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Página 4: Motivações ---
 
 function Pagina4({ images }: Readonly<{ images: CapturedImages }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
             <View style={{ marginBottom: 10 }}>
-                <SectionTitle>GrÃ¡fico por motivaÃ§Ã£o</SectionTitle>
+                <SectionTitle>Gráfico por motivação</SectionTitle>
                 <SectionSubtitle>
                     Confira a quantidade de registros cadastrados por motivo de
-                    intercorrÃªncias.
+                    intercorrências.
                 </SectionSubtitle>
             </View>
 
-            <Image src={images.motivacoes} style={{ width: CONTENT_WIDTH }} />
-
-            <Text
+            <View
                 style={{
-                    fontSize: 7,
-                    color: GRAY_MID,
-                    marginTop: 8,
-                    fontStyle: "italic",
+                    width: CONTENT_WIDTH,
+                    borderWidth: 1,
+                    borderColor: GRAY_LIGHT,
+                    borderRadius: 4,
                 }}
             >
-                *(facista, nazista, discurso de Ã³dio)
-            </Text>
+                <Image src={images.motivacoes} />
+            </View>
 
             <PageNumber total={4} current={4} />
         </Page>
     );
 }
-
-// â”€â”€â”€ Documento principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ExportacaoPDF({
     filterState,
