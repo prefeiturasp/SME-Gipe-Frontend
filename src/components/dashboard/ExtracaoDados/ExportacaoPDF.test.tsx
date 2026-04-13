@@ -18,6 +18,12 @@ vi.mock("@react-pdf/renderer", () => ({
         <div>{children}</div>
     ),
     Image: ({ src }: { src: string }) => <img src={src} alt="" />,
+    Svg: ({ children }: { children: React.ReactNode }) => <svg>{children}</svg>,
+    Path: (props: Record<string, unknown>) => <path {...props} />,
+    Circle: (props: Record<string, unknown>) => <circle {...props} />,
+    Line: (props: Record<string, unknown>) => <line {...props} />,
+    Rect: (props: Record<string, unknown>) => <rect {...props} />,
+    G: ({ children }: { children: React.ReactNode }) => <g>{children}</g>,
     StyleSheet: { create: (v: unknown) => v },
 }));
 
@@ -276,13 +282,6 @@ describe("ExportacaoPDF", () => {
         expect(
             screen.getByText("Gráfico por tipo de intercorrências"),
         ).toBeInTheDocument();
-    });
-
-    it("deve renderizar o título da seção de motivações", () => {
-        render(
-            <ExportacaoPDF filterState={baseFilterState} images={mockImages} />,
-        );
-        expect(screen.getByText("Gráfico por motivação")).toBeInTheDocument();
     });
 
     it("deve renderizar os labels dos cards do dashboard analítico", () => {

@@ -1,13 +1,83 @@
 ﻿/* eslint-disable jsx-a11y/alt-text */
-import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
+import {
+    Circle,
+    Document,
+    Image,
+    Line,
+    Page,
+    Path,
+    Rect,
+    Svg,
+    Text,
+    View,
+} from "@react-pdf/renderer";
+import type { ReactNode } from "react";
 import { BIMESTRES, GENEROS, MESES, type FilterState } from "./FilterPanel";
 import { resumoCards } from "./mockData";
 
 const GRAY_DARK = "#42474A";
 const GRAY_MID = "#595959";
 const GRAY_LIGHT = "#E0E0E0";
+const ICON_COLOR = "#5B78C7";
 const PAGE_PADDING = 28;
 const CONTENT_WIDTH = 595 - PAGE_PADDING * 2; // A4 width - padding
+
+const SVG_SIZE = { width: 16, height: 16, viewBox: "0 0 24 24" };
+
+const STROKE_PROPS = {
+    fill: "none",
+    stroke: ICON_COLOR,
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+};
+
+function PencilIcon() {
+    return (
+        <Svg {...SVG_SIZE}>
+            <Path
+                {...STROKE_PROPS}
+                d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+            />
+            <Path {...STROKE_PROPS} d="M15 5l4 4" />
+        </Svg>
+    );
+}
+
+function AlertCircleIcon() {
+    return (
+        <Svg {...SVG_SIZE}>
+            <Circle {...STROKE_PROPS} cx="12" cy="12" r="10" />
+            <Line {...STROKE_PROPS} x1="12" x2="12" y1="8" y2="12" />
+            <Line {...STROKE_PROPS} x1="12" x2="12.01" y1="16" y2="16" />
+        </Svg>
+    );
+}
+
+function UsersIcon() {
+    return (
+        <Svg {...SVG_SIZE}>
+            <Path
+                {...STROKE_PROPS}
+                d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+            />
+            <Circle {...STROKE_PROPS} cx="9" cy="7" r="4" />
+            <Path {...STROKE_PROPS} d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <Path {...STROKE_PROPS} d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </Svg>
+    );
+}
+
+function CalendarIcon() {
+    return (
+        <Svg {...SVG_SIZE}>
+            <Path {...STROKE_PROPS} d="M8 2v4" />
+            <Path {...STROKE_PROPS} d="M16 2v4" />
+            <Rect {...STROKE_PROPS} width="18" height="18" x="3" y="4" rx="2" />
+            <Path {...STROKE_PROPS} d="M3 10h18" />
+        </Svg>
+    );
+}
 
 export interface CapturedImages {
     dre: string;
@@ -260,48 +330,64 @@ function Pagina1({
                     Tenha um resumo rápido de alguns indicadores do sistema,
                     facilitando o acompanhamento e a análise.
                 </SectionSubtitle>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                    {[
-                        {
-                            label: "Total de intercorrências:",
-                            value: resumoCards.totalIntercorrencias,
-                        },
-                        {
-                            label: "Intercorrências patrimoniais:",
-                            value: resumoCards.intercorrenciasPatrimoniais,
-                        },
-                        {
-                            label: "Intercorrências interpessoais:",
-                            value: resumoCards.intercorrenciasInterpessoais,
-                        },
-                        {
-                            label: "Média de registros por mês:",
-                            value: resumoCards.mediaMensal,
-                        },
-                    ].map(({ label, value }) => (
+                <View
+                    style={{
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        gap: 8,
+                    }}
+                >
+                    {(
+                        [
+                            {
+                                label: "Total de intercorrências:",
+                                value: resumoCards.totalIntercorrencias,
+                                icon: <PencilIcon />,
+                            },
+                            {
+                                label: "Intercorrências patrimoniais:",
+                                value: resumoCards.intercorrenciasPatrimoniais,
+                                icon: <AlertCircleIcon />,
+                            },
+                            {
+                                label: "Intercorrências interpessoais:",
+                                value: resumoCards.intercorrenciasInterpessoais,
+                                icon: <UsersIcon />,
+                            },
+                            {
+                                label: "Média de registros por mês:",
+                                value: resumoCards.mediaMensal,
+                                icon: <CalendarIcon />,
+                            },
+                        ] as { label: string; value: number; icon: ReactNode }[]
+                    ).map(({ label, value, icon }) => (
                         <View
                             key={label}
                             style={{
-                                flex: 1,
+                                width: "48.5%",
+                                height: 32,
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 6,
                                 borderWidth: 1,
                                 borderColor: GRAY_LIGHT,
                                 borderRadius: 4,
-                                padding: 8,
+                                paddingHorizontal: 8,
                                 backgroundColor: "#fff",
                             }}
                         >
+                            {icon}
                             <Text
                                 style={{
-                                    fontSize: 8,
+                                    fontSize: 12,
                                     color: GRAY_MID,
-                                    marginBottom: 6,
                                 }}
                             >
                                 {label}
                             </Text>
                             <Text
                                 style={{
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     fontWeight: "bold",
                                     color: GRAY_DARK,
                                 }}
@@ -406,14 +492,6 @@ function Pagina3({ images }: Readonly<{ images: CapturedImages }>) {
 function Pagina4({ images }: Readonly<{ images: CapturedImages }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
-            <View style={{ marginBottom: 10 }}>
-                <SectionTitle>Gráfico por motivação</SectionTitle>
-                <SectionSubtitle>
-                    Confira a quantidade de registros cadastrados por motivo de
-                    intercorrências.
-                </SectionSubtitle>
-            </View>
-
             <View
                 style={{
                     width: CONTENT_WIDTH,
