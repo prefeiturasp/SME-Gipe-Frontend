@@ -97,4 +97,12 @@ describe("GraficoEvolucaoMensal", () => {
         render(<GraficoEvolucaoMensal isLoading={false} />);
         expect(screen.getByText("Evolução mensal")).toBeInTheDocument();
     });
+
+    it("deve usar layout em coluna e remover sombra quando pdfLayout é true", () => {
+        const { container } = render(<GraficoEvolucaoMensal pdfLayout />);
+        expect(container.firstChild).not.toHaveClass(
+            "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
+        );
+        expect(container.firstChild).toHaveClass("flex-col");
+    });
 });

@@ -128,4 +128,11 @@ describe("GraficoDRE", () => {
         render(<GraficoDRE isLoading={false} />);
         expect(screen.getByText("Intercorrências por DRE")).toBeInTheDocument();
     });
+
+    it("não deve aplicar sombra quando pdfLayout é true", () => {
+        const { container } = render(<GraficoDRE pdfLayout />);
+        expect(container.firstChild).not.toHaveClass(
+            "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
+        );
+    });
 });

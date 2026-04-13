@@ -144,4 +144,11 @@ describe("GraficoStatusUE", () => {
         const zeros = screen.getAllByText("0");
         expect(zeros.length).toBeGreaterThanOrEqual(2);
     });
+
+    it("não deve aplicar sombra quando pdfLayout é true", () => {
+        const { container } = render(<GraficoStatusUE pdfLayout />);
+        expect(container.firstChild).not.toHaveClass(
+            "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
+        );
+    });
 });

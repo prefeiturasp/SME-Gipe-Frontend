@@ -398,4 +398,22 @@ describe("FilterPanel", () => {
 
         expect(screen.getByText("Etapa escolar")).toBeInTheDocument();
     });
+
+    it("deve chamar onStateChange com o estado inicial ao renderizar", () => {
+        const onStateChange = vi.fn();
+        render(<FilterPanel onStateChange={onStateChange} />);
+        expect(onStateChange).toHaveBeenCalledWith(
+            expect.objectContaining({
+                ano: ANO_ATUAL,
+                meses: [],
+                bimestre: [],
+                dres: [],
+                ues: [],
+                genero: "",
+                etapas: [],
+                idade: "",
+                menosDeUmAno: false,
+            }),
+        );
+    });
 });
