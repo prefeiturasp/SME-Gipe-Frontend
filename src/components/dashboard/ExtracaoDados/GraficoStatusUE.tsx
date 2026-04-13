@@ -65,7 +65,8 @@ function GraficoStatusUESkeleton() {
 
 export default function GraficoStatusUE({
     isLoading = false,
-}: Readonly<{ isLoading?: boolean }>) {
+    pdfLayout = false,
+}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
     const total = statusUEData.reduce((acc, d) => acc + d.total, 0);
 
@@ -79,7 +80,9 @@ export default function GraficoStatusUE({
     if (isLoading) return <GraficoStatusUESkeleton />;
 
     return (
-        <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
+        <div
+            className={`bg-white rounded-[4px] p-6 flex flex-col gap-4${pdfLayout ? "" : " shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]"}`}
+        >
             <div>
                 <h2 className="text-[#42474a] text-[20px] font-bold">
                     Intercorrências por UE

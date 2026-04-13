@@ -71,7 +71,8 @@ function GraficoDRESkeleton() {
 
 export default function GraficoDRE({
     isLoading = false,
-}: Readonly<{ isLoading?: boolean }>) {
+    pdfLayout = false,
+}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
     const [hoveredNome, setHoveredNome] = useState<string | null>(null);
     const total = dreData.reduce((acc, d) => acc + d.total, 0);
 
@@ -85,7 +86,9 @@ export default function GraficoDRE({
     if (isLoading) return <GraficoDRESkeleton />;
 
     return (
-        <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
+        <div
+            className={`bg-white rounded-[4px] p-6 flex flex-col gap-4${pdfLayout ? "" : " shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]"}`}
+        >
             <div>
                 <h2 className="text-[#42474a] text-[20px] font-bold">
                     Intercorrências por DRE
@@ -145,15 +148,34 @@ export default function GraficoDRE({
                                 </span>
                             </div>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Total: <b>{d.total === 0 ? "0" : String(d.total).padStart(2, "0")}</b>
+                                Total:{" "}
+                                <b>
+                                    {d.total === 0
+                                        ? "0"
+                                        : String(d.total).padStart(2, "0")}
+                                </b>
                             </p>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
                                 Patrimonial:{" "}
-                                <b>{d.patrimonial === 0 ? "0" : String(d.patrimonial).padStart(2, "0")}</b>
+                                <b>
+                                    {d.patrimonial === 0
+                                        ? "0"
+                                        : String(d.patrimonial).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </b>
                             </p>
                             <p className="text-[#595959] text-[14px] pl-[18px]">
                                 Interpessoal:{" "}
-                                <b>{d.interpessoal === 0 ? "0" : String(d.interpessoal).padStart(2, "0")}</b>
+                                <b>
+                                    {d.interpessoal === 0
+                                        ? "0"
+                                        : String(d.interpessoal).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </b>
                             </p>
                         </div>
                     ))}
