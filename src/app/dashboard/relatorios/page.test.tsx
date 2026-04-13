@@ -103,6 +103,13 @@ vi.mock("@/components/dashboard/ExtracaoDados/ExportacaoPDF", () => ({
     default: () => null,
 }));
 
+vi.mock("@/hooks/useAnalytics", () => ({
+    useAnalytics: () => ({
+        data: undefined,
+        isLoading: false,
+    }),
+}));
+
 vi.mock("@/assets/icons/Export", () => ({
     default: () => <svg data-testid="export-icon" />,
 }));

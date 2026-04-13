@@ -1,22 +1,18 @@
+import type { IntercorrenciaStatus } from "@/actions/analytics";
 import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoStatusUE from "./GraficoStatusUE";
-import type { StatusUEDado } from "./mockData";
 
 let mockTooltipActive = true;
 let mockOverrideHoveredLabel: string | undefined = undefined;
-let customStatusUEData: StatusUEDado[] | null = null;
 
-vi.mock("./mockData", async (importOriginal) => {
-    const original = await importOriginal<typeof import("./mockData")>();
-    return {
-        ...original,
-        get statusUEData() {
-            return customStatusUEData ?? original.statusUEData;
-        },
-    };
-});
+const mockIntercorrenciasStatus: IntercorrenciaStatus[] = [
+    { status: "Em andamento", total: 30, patrimonial: 12, interpessoal: 18 },
+    { status: "Incompleta", total: 10, patrimonial: 6, interpessoal: 4 },
+    { status: "Finalizada", total: 20, patrimonial: 15, interpessoal: 5 },
+    { status: "Migrada", total: 5, patrimonial: 3, interpessoal: 2 },
+];
 
 vi.mock("recharts", () => ({
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -60,17 +56,24 @@ vi.mock("recharts", () => ({
 afterEach(() => {
     mockTooltipActive = true;
     mockOverrideHoveredLabel = undefined;
-    customStatusUEData = null;
 });
 
 describe("GraficoStatusUE", () => {
     it("deve renderizar o título Intercorrências por UE", () => {
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         expect(screen.getByText("Intercorrências por UE")).toBeInTheDocument();
     });
 
     it("deve exibir a quantidade de intercorrências por status na legenda", () => {
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         expect(
             screen.getByText("Intercorrências em andamento:"),
         ).toBeInTheDocument();
@@ -86,7 +89,11 @@ describe("GraficoStatusUE", () => {
     });
 
     it("deve exibir o tooltip com os dados ao passar o mouse na barra", () => {
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         const bar = screen.getByTestId("bar-Intercorrências em andamento");
         fireEvent.mouseEnter(bar);
         expect(screen.getByRole("separator")).toBeInTheDocument();
@@ -95,7 +102,11 @@ describe("GraficoStatusUE", () => {
     });
 
     it("deve ocultar o tooltip ao remover o mouse da barra", () => {
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         const bar = screen.getByTestId("bar-Intercorrências em andamento");
         fireEvent.mouseEnter(bar);
         fireEvent.mouseLeave(bar);
@@ -105,7 +116,11 @@ describe("GraficoStatusUE", () => {
 
     it("deve retornar null do tooltip quando active é false", () => {
         mockTooltipActive = false;
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         const bar = screen.getByTestId("bar-Intercorrências em andamento");
         fireEvent.mouseEnter(bar);
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
@@ -113,7 +128,11 @@ describe("GraficoStatusUE", () => {
 
     it("deve retornar null do tooltip quando o status não existe nos dados", () => {
         mockOverrideHoveredLabel = "Status Inexistente";
-        render(<GraficoStatusUE />);
+        render(
+            <GraficoStatusUE
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
 
@@ -125,28 +144,29 @@ describe("GraficoStatusUE", () => {
     });
 
     it("não deve renderizar o skeleton quando isLoading é false", () => {
-        render(<GraficoStatusUE isLoading={false} />);
+        render(
+            <GraficoStatusUE
+                isLoading={false}
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         expect(screen.getByText("Intercorrências por UE")).toBeInTheDocument();
     });
 
-    it("deve exibir '0' quando total e patrimonial são zero na legenda", () => {
-        customStatusUEData = [
-            {
-                label: "Intercorrências em andamento",
-                sublabel: "em andamento",
-                total: 0,
-                patrimonial: 0,
-                interpessoal: 5,
-                cor: "#3d4eb0",
-            },
-        ];
+    it("deve exibir '0' quando não há dados do backend", () => {
         render(<GraficoStatusUE />);
         const zeros = screen.getAllByText("0");
-        expect(zeros.length).toBeGreaterThanOrEqual(2);
+        // 4 status × 3 valores (total, patrimonial, interpessoal) = 12 zeros
+        expect(zeros.length).toBeGreaterThanOrEqual(12);
     });
 
     it("não deve aplicar sombra quando pdfLayout é true", () => {
-        const { container } = render(<GraficoStatusUE pdfLayout />);
+        const { container } = render(
+            <GraficoStatusUE
+                pdfLayout
+                intercorrenciasStatus={mockIntercorrenciasStatus}
+            />,
+        );
         expect(container.firstChild).not.toHaveClass(
             "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
         );

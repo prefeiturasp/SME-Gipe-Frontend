@@ -9,19 +9,19 @@ export const resumoCards = {
 };
 
 export const DRE_CORES: Record<string, string> = {
-    "DRE Butantã": "#3d4eb0",
-    "DRE Campo Limpo": "#e06c2e",
-    "DRE Capela do Socorro": "#3aaa5a",
-    "DRE Freguesia/Brasilândia": "#8a3db0",
-    "DRE Guaianases": "#3daab0",
-    "DRE Ipiranga": "#e0b820",
-    "DRE Itaquera": "#6ab04c",
-    "DRE Jaçanã/Tremembé": "#7d5a3c",
-    "DRE Penha": "#b0526e",
-    "DRE Pirituba/Jaraguá": "#7a8a9a",
-    "DRE Santo Amaro": "#c8a42a",
-    "DRE São Mateus": "#2aa48a",
-    "DRE São Miguel": "#9a5ab0",
+    "DRE Butantã": "#283890",
+    "DRE Campo Limpo": "#E9511D",
+    "DRE Capela do Socorro": "#4CAF50",
+    "DRE Freguesia/Brasilândia": "#9C27B0",
+    "DRE Guaianases": "#03A9F4",
+    "DRE Ipiranga": "#FF9800",
+    "DRE Itaquera": "#8BC34A",
+    "DRE Jaçanã/Tremembé": "#795548",
+    "DRE Penha": "#E91E63",
+    "DRE Pirituba/Jaraguá": "#607D8B",
+    "DRE Santo Amaro": "#FFC107",
+    "DRE São Mateus": "#009688",
+    "DRE São Miguel": "#673AB7",
 };
 
 export interface DreDado {
