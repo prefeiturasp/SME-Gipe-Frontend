@@ -1,7 +1,10 @@
 "use client";
 
+import type { IntercorrenciaDre } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
+import type { UnidadeEducacional } from "@/types/unidades";
+import { useMemo, useState } from "react";
 import {
     Bar,
     BarChart,
@@ -10,16 +13,35 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { dreData } from "./mockData";
+import type { DreDado } from "./mockData";
+
+const DRE_CORES_PALETA = [
+    "#283890",
+    "#E9511D",
+    "#4CAF50",
+    "#9C27B0",
+    "#03A9F4",
+    "#FF9800",
+    "#8BC34A",
+    "#795548",
+    "#E91E63",
+    "#607D8B",
+    "#FFC107",
+    "#009688",
+    "#673AB7",
+];
+
+const DEFAULT_COR = "#a0a0a0";
 
 interface TooltipDREProps {
     readonly active?: boolean;
     readonly hoveredNome: string | null;
+    readonly dreDataMerged: DreDado[];
 }
 
-function TooltipDRE({ active, hoveredNome }: TooltipDREProps) {
+function TooltipDRE({ active, hoveredNome, dreDataMerged }: TooltipDREProps) {
     if (!active || !hoveredNome) return null;
-    const dre = dreData.find((d) => d.nome === hoveredNome);
+    const dre = dreDataMerged.find((d) => d.nome === hoveredNome);
     if (!dre) return null;
     return (
         <div className="bg-white border border-[#e0e0e0] rounded-[4px] p-2 shadow text-[12px]">
@@ -52,9 +74,9 @@ function GraficoDRESkeleton() {
             <div className="flex flex-col gap-3">
                 <Skeleton className="h-4 w-1/3" />
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
-                    {dreData.map((d) => (
+                    {Array.from({ length: 13 }).map((_, i) => (
                         <div
-                            key={`skeleton-${d.nome}`}
+                            key={`skeleton-dre-${String(i)}`}
                             className="flex flex-col gap-1"
                         >
                             <Skeleton className="h-4 w-3/4" />
@@ -69,15 +91,47 @@ function GraficoDRESkeleton() {
     );
 }
 
+function buildDreData(
+    dreUnidades: UnidadeEducacional[],
+    intercorrenciasDre?: IntercorrenciaDre[],
+): DreDado[] {
+    const analyticsMap = new Map(
+        (intercorrenciasDre ?? []).map((item) => [item.codigo_eol, item]),
+    );
+
+    return dreUnidades.map((unidade, index) => {
+        const analytics = analyticsMap.get(unidade.codigo_eol);
+        return {
+            nome: unidade.nome,
+            total: analytics?.total ?? 0,
+            patrimonial: analytics?.patrimonial ?? 0,
+            interpessoal: analytics?.interpessoal ?? 0,
+            cor: DRE_CORES_PALETA[index % DRE_CORES_PALETA.length] ?? DEFAULT_COR,
+        };
+    });
+}
+
 export default function GraficoDRE({
     isLoading = false,
     pdfLayout = false,
-}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
+    intercorrenciasDre,
+}: Readonly<{
+    isLoading?: boolean;
+    pdfLayout?: boolean;
+    intercorrenciasDre?: IntercorrenciaDre[];
+}>) {
+    const { data: dreUnidades = [] } = useGetUnidades(true, undefined, "DRE");
     const [hoveredNome, setHoveredNome] = useState<string | null>(null);
-    const total = dreData.reduce((acc, d) => acc + d.total, 0);
+
+    const dreDataMerged = useMemo(
+        () => buildDreData(dreUnidades, intercorrenciasDre),
+        [dreUnidades, intercorrenciasDre],
+    );
+
+    const total = dreDataMerged.reduce((acc, d) => acc + d.total, 0);
 
     const chartData = [
-        dreData.reduce<Record<string, number>>(
+        dreDataMerged.reduce<Record<string, number>>(
             (acc, d) => ({ ...acc, [d.nome]: d.total }),
             {},
         ),
@@ -112,10 +166,15 @@ export default function GraficoDRE({
                     <XAxis type="number" domain={[0, total]} hide />
                     <YAxis type="category" hide />
                     <Tooltip
-                        content={<TooltipDRE hoveredNome={hoveredNome} />}
+                        content={
+                            <TooltipDRE
+                                hoveredNome={hoveredNome}
+                                dreDataMerged={dreDataMerged}
+                            />
+                        }
                         cursor={{ fill: "transparent" }}
                     />
-                    {dreData
+                    {dreDataMerged
                         .filter((d) => d.total > 0)
                         .map((d) => (
                             <Bar
@@ -136,7 +195,7 @@ export default function GraficoDRE({
                     Diretorias Regionais de Educação (DREs):
                 </p>
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
-                    {dreData.map((d) => (
+                    {dreDataMerged.map((d) => (
                         <div key={d.nome} className="flex flex-col">
                             <div className="flex items-center gap-1.5">
                                 <span

@@ -21,6 +21,7 @@ import {
     tiposPatrimonialData,
 } from "@/components/dashboard/ExtracaoDados/mockData";
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { pdf } from "@react-pdf/renderer";
 import { toPng } from "html-to-image";
 import { Loader2 } from "lucide-react";
@@ -37,6 +38,9 @@ export default function ExtracaoDadosPage() {
     const refTiposPatrimonial = useRef<HTMLDivElement>(null);
     const refTiposInterpessoal = useRef<HTMLDivElement>(null);
     const refMotivacoes = useRef<HTMLDivElement>(null);
+
+    const { data: analyticsData, isLoading: isLoadingAnalytics } =
+        useAnalytics(filterState);
 
     const handleStateChange = useCallback((state: FilterState) => {
         setFilterState(state);
@@ -220,7 +224,10 @@ export default function ExtracaoDadosPage() {
 
             <div className="flex gap-4 items-start flex-1 min-h-0 overflow-hidden">
                 <FilterPanel onStateChange={handleStateChange} />
-                <DashboardAnalitico />
+                <DashboardAnalitico
+                    analyticsData={analyticsData}
+                    isLoading={isLoadingAnalytics}
+                />
             </div>
         </div>
     );

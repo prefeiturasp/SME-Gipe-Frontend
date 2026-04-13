@@ -1,7 +1,8 @@
 "use client";
 
+import type { IntercorrenciaStatus } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
     Bar,
     BarChart,
@@ -10,16 +11,49 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { statusUEData } from "./mockData";
+import type { StatusUEDado } from "./mockData";
+
+const STATUS_CONFIG: Record<
+    string,
+    { label: string; sublabel: string; cor: string }
+> = {
+    "Em andamento": {
+        label: "Intercorrências em andamento",
+        sublabel: "em andamento",
+        cor: "#283890",
+    },
+    Incompleta: {
+        label: "Intercorrências incompletas",
+        sublabel: "incompletas",
+        cor: "#E9511D",
+    },
+    Finalizada: {
+        label: "Intercorrências finalizadas",
+        sublabel: "finalizadas",
+        cor: "#4CAF50",
+    },
+    Migrada: {
+        label: "Intercorrências migradas",
+        sublabel: "migradas",
+        cor: "#607D8B",
+    },
+};
+
+const ALL_STATUS_KEYS = ["Em andamento", "Incompleta", "Finalizada", "Migrada"];
 
 interface TooltipStatusProps {
     readonly active?: boolean;
     readonly hoveredLabel: string | null;
+    readonly statusData: StatusUEDado[];
 }
 
-function TooltipStatus({ active, hoveredLabel }: TooltipStatusProps) {
+function TooltipStatus({
+    active,
+    hoveredLabel,
+    statusData,
+}: TooltipStatusProps) {
     if (!active || !hoveredLabel) return null;
-    const status = statusUEData.find((d) => d.label === hoveredLabel);
+    const status = statusData.find((d) => d.label === hoveredLabel);
     if (!status) return null;
     return (
         <div className="bg-white border border-[#e0e0e0] rounded-[4px] p-3 shadow text-[12px]">
@@ -47,9 +81,9 @@ function GraficoStatusUESkeleton() {
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-8 w-full" />
             <div className="grid grid-cols-4 gap-x-8 gap-y-4">
-                {statusUEData.map((d) => (
+                {ALL_STATUS_KEYS.map((key) => (
                     <div
-                        key={`skeleton-${d.label}`}
+                        key={`skeleton-${key}`}
                         className="flex flex-col gap-1"
                     >
                         <Skeleton className="h-4 w-3/4" />
@@ -63,15 +97,47 @@ function GraficoStatusUESkeleton() {
     );
 }
 
+function buildStatusData(
+    intercorrenciasStatus?: IntercorrenciaStatus[],
+): StatusUEDado[] {
+    const analyticsMap = new Map(
+        (intercorrenciasStatus ?? []).map((item) => [item.status, item]),
+    );
+
+    return ALL_STATUS_KEYS.map((key) => {
+        const config = STATUS_CONFIG[key];
+        const analytics = analyticsMap.get(key);
+        return {
+            label: config.label,
+            sublabel: config.sublabel,
+            total: analytics?.total ?? 0,
+            patrimonial: analytics?.patrimonial ?? 0,
+            interpessoal: analytics?.interpessoal ?? 0,
+            cor: config.cor,
+        };
+    });
+}
+
 export default function GraficoStatusUE({
     isLoading = false,
     pdfLayout = false,
-}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
+    intercorrenciasStatus,
+}: Readonly<{
+    isLoading?: boolean;
+    pdfLayout?: boolean;
+    intercorrenciasStatus?: IntercorrenciaStatus[];
+}>) {
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
-    const total = statusUEData.reduce((acc, d) => acc + d.total, 0);
+
+    const statusData = useMemo(
+        () => buildStatusData(intercorrenciasStatus),
+        [intercorrenciasStatus],
+    );
+
+    const total = statusData.reduce((acc, d) => acc + d.total, 0);
 
     const chartData = [
-        statusUEData.reduce<Record<string, number>>(
+        statusData.reduce<Record<string, number>>(
             (acc, d) => ({ ...acc, [d.label]: d.total }),
             {},
         ),
@@ -108,10 +174,15 @@ export default function GraficoStatusUE({
                     <XAxis type="number" domain={[0, total]} hide />
                     <YAxis type="category" hide />
                     <Tooltip
-                        content={<TooltipStatus hoveredLabel={hoveredLabel} />}
+                        content={
+                            <TooltipStatus
+                                hoveredLabel={hoveredLabel}
+                                statusData={statusData}
+                            />
+                        }
                         cursor={{ fill: "transparent" }}
                     />
-                    {statusUEData
+                    {statusData
                         .filter((d) => d.total > 0)
                         .map((d) => (
                             <Bar
@@ -128,7 +199,7 @@ export default function GraficoStatusUE({
             </ResponsiveContainer>
 
             <div className="grid grid-cols-4 gap-x-8 gap-y-4">
-                {statusUEData.map((d) => (
+                {statusData.map((d) => (
                     <div key={d.label} className="flex flex-col">
                         <div className="flex items-center gap-1.5">
                             <span
