@@ -4,6 +4,7 @@ import Export from "@/assets/icons/Export";
 import DashboardAnalitico from "@/components/dashboard/ExtracaoDados/DashboardAnalitico";
 import ExportacaoPDF, {
     type CapturedImages,
+    type CardValues,
 } from "@/components/dashboard/ExtracaoDados/ExportacaoPDF";
 import FilterPanel, {
     type FilterState,
@@ -16,10 +17,6 @@ import {
     GraficoColunasVertical,
     GraficoMotivacoes,
 } from "@/components/dashboard/ExtracaoDados/GraficoTipoIntercorrencias";
-import {
-    tiposInterpessoalData,
-    tiposPatrimonialData,
-} from "@/components/dashboard/ExtracaoDados/mockData";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { pdf } from "@react-pdf/renderer";
@@ -41,6 +38,13 @@ export default function ExtracaoDadosPage() {
 
     const { data: analyticsData, isLoading: isLoadingAnalytics } =
         useAnalytics(filterState);
+
+    function extractCardValue(key: string): number {
+        const cards = analyticsData?.cards;
+        if (!cards) return 0;
+        const card = cards.find((c) => key in c);
+        return card ? card[key] : 0;
+    }
 
     const handleStateChange = useCallback((state: FilterState) => {
         setFilterState(state);
@@ -104,7 +108,24 @@ export default function ExtracaoDadosPage() {
             };
 
             const blob = await pdf(
-                <ExportacaoPDF filterState={filterState} images={images} />,
+                <ExportacaoPDF
+                    filterState={filterState}
+                    images={images}
+                    cardValues={
+                        {
+                            totalIntercorrencias: extractCardValue(
+                                "total_intercorrencia",
+                            ),
+                            intercorrenciasPatrimoniais: extractCardValue(
+                                "intercorrencias_patrimoniais",
+                            ),
+                            intercorrenciasInterpessoais: extractCardValue(
+                                "intercorrencias_interpessoais",
+                            ),
+                            mediaMensal: extractCardValue("media_mensal"),
+                        } satisfies CardValues
+                    }
+                />,
             ).toBlob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -163,7 +184,12 @@ export default function ExtracaoDadosPage() {
                     >
                         Intercorrências patrimoniais
                     </p>
-                    <GraficoColunasVertical data={tiposPatrimonialData} />
+                    <GraficoColunasVertical
+                        data={Object.entries(
+                            analyticsData?.intercorrencias_tipos?.patrimonial ??
+                                {},
+                        ).map(([tipo, count]) => ({ tipo, count }))}
+                    />
                 </div>
                 <div
                     ref={refTiposInterpessoal}
@@ -179,13 +205,22 @@ export default function ExtracaoDadosPage() {
                     >
                         Intercorrências interpessoais
                     </p>
-                    <GraficoColunasVertical data={tiposInterpessoalData} />
+                    <GraficoColunasVertical
+                        data={Object.entries(
+                            analyticsData?.intercorrencias_tipos
+                                ?.interpessoal ?? {},
+                        ).map(([tipo, count]) => ({ tipo, count }))}
+                    />
                 </div>
                 <div
                     ref={refMotivacoes}
                     style={{ padding: "24px", background: "white" }}
                 >
-                    <GraficoMotivacoes />
+                    <GraficoMotivacoes
+                        motivacoesData={Object.entries(
+                            analyticsData?.total_por_motivo ?? {},
+                        ).map(([motivacao, count]) => ({ motivacao, count }))}
+                    />
                 </div>
             </div>
 

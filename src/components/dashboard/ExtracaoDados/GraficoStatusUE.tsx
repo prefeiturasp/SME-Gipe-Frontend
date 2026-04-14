@@ -11,7 +11,15 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import type { StatusUEDado } from "./mockData";
+
+interface StatusUEDado {
+    label: string;
+    sublabel: string;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+    cor: string;
+}
 
 const STATUS_CONFIG: Record<
     string,

@@ -12,7 +12,14 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import type { EvolucaoMensalDado } from "./mockData";
+
+interface EvolucaoMensalDado {
+    mes: string;
+    mesLabel: string;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+}
 
 const MESES_CONFIG = [
     { abreviado: "Jan", completo: "Janeiro" },

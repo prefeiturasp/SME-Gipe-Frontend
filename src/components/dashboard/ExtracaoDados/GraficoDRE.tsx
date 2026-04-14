@@ -13,7 +13,14 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import type { DreDado } from "./mockData";
+
+interface DreDado {
+    nome: string;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+    cor: string;
+}
 
 const DRE_CORES_PALETA = [
     "#283890",
