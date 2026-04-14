@@ -65,6 +65,11 @@ describe("getAnalytics action", () => {
                         interpessoal: 8,
                     },
                 ],
+                intercorrencias_tipos: {
+                    patrimonial: { "Dano material": 4 },
+                    interpessoal: { "Agressão física": 6 },
+                },
+                total_por_motivo: { Bullying: 6 },
                 cards: [
                     { total_intercorrencia: 5 },
                     { intercorrencias_patrimoniais: 2 },

@@ -155,6 +155,11 @@ describe("DashboardAnalitico", () => {
                     interpessoal: 8,
                 },
             ],
+            intercorrencias_tipos: {
+                patrimonial: { "Dano material": 4 },
+                interpessoal: { "Agressão física": 6 },
+            },
+            total_por_motivo: { Bullying: 6 },
             cards: [
                 { total_intercorrencia: 42 },
                 { intercorrencias_patrimoniais: 18 },
