@@ -71,6 +71,7 @@ afterEach(() => {
     useRefOverride.active = false;
     mockToPng.mockResolvedValue("data:image/png;base64,fake");
     mockToBlob.mockResolvedValue(new Blob(["pdf"]));
+    mockUseAnalytics.mockReturnValue({ data: undefined, isLoading: false });
 });
 
 vi.mock("@/components/dashboard/ExtracaoDados/GraficoDRE", () => ({
@@ -103,11 +104,12 @@ vi.mock("@/components/dashboard/ExtracaoDados/ExportacaoPDF", () => ({
     default: () => null,
 }));
 
+const mockUseAnalytics = vi.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+});
 vi.mock("@/hooks/useAnalytics", () => ({
-    useAnalytics: () => ({
-        data: undefined,
-        isLoading: false,
-    }),
+    useAnalytics: (...args: unknown[]) => mockUseAnalytics(...args),
 }));
 
 vi.mock("@/assets/icons/Export", () => ({
@@ -219,5 +221,74 @@ describe("ExtracaoDadosPage", () => {
                 screen.getByRole("button", { name: /exportar dados/i }),
             ).toBeInTheDocument();
         });
+    });
+
+    it("deve extrair valores dos cards ao exportar quando analyticsData possui cards", async () => {
+        mockUseAnalytics.mockReturnValue({
+            data: {
+                cards: [
+                    { total_intercorrencia: 10 },
+                    { intercorrencias_patrimoniais: 4 },
+                    { intercorrencias_interpessoais: 6 },
+                    { media_mensal: 2 },
+                ],
+                intercorrencias_dre: [],
+                intercorrencias_status: [],
+                evolucao_mensal: [],
+                intercorrencias_tipos: { patrimonial: {}, interpessoal: {} },
+                total_por_motivo: {},
+            },
+            isLoading: false,
+        });
+
+        const mockAnchorClick = vi.fn();
+        vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+            mockAnchorClick,
+        );
+        global.URL.createObjectURL = vi.fn().mockReturnValue("blob:fake-url");
+        global.URL.revokeObjectURL = vi.fn();
+
+        render(<ExtracaoDadosPage />);
+        fireEvent.click(
+            screen.getByRole("button", { name: /exportar dados/i }),
+        );
+
+        await waitFor(() => {
+            expect(mockAnchorClick).toHaveBeenCalled();
+        });
+
+        vi.restoreAllMocks();
+    });
+
+    it("deve retornar 0 quando cards existe mas não contém a chave buscada", async () => {
+        mockUseAnalytics.mockReturnValue({
+            data: {
+                cards: [],
+                intercorrencias_dre: [],
+                intercorrencias_status: [],
+                evolucao_mensal: [],
+                intercorrencias_tipos: { patrimonial: {}, interpessoal: {} },
+                total_por_motivo: {},
+            },
+            isLoading: false,
+        });
+
+        const mockAnchorClick = vi.fn();
+        vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+            mockAnchorClick,
+        );
+        global.URL.createObjectURL = vi.fn().mockReturnValue("blob:fake-url");
+        global.URL.revokeObjectURL = vi.fn();
+
+        render(<ExtracaoDadosPage />);
+        fireEvent.click(
+            screen.getByRole("button", { name: /exportar dados/i }),
+        );
+
+        await waitFor(() => {
+            expect(mockAnchorClick).toHaveBeenCalled();
+        });
+
+        vi.restoreAllMocks();
     });
 });

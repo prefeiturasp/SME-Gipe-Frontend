@@ -302,6 +302,25 @@ describe("ExportacaoPDF", () => {
         ).toBeInTheDocument();
     });
 
+    it("deve renderizar os valores dos cards quando cardValues é fornecido", () => {
+        render(
+            <ExportacaoPDF
+                filterState={baseFilterState}
+                images={mockImages}
+                cardValues={{
+                    totalIntercorrencias: 42,
+                    intercorrenciasPatrimoniais: 18,
+                    intercorrenciasInterpessoais: 24,
+                    mediaMensal: 7,
+                }}
+            />,
+        );
+        expect(screen.getByText("42")).toBeInTheDocument();
+        expect(screen.getByText("18")).toBeInTheDocument();
+        expect(screen.getByText("24")).toBeInTheDocument();
+        expect(screen.getByText("7")).toBeInTheDocument();
+    });
+
     it("deve renderizar as imagens dos gráficos com os src corretos", () => {
         render(
             <ExportacaoPDF filterState={baseFilterState} images={mockImages} />,
