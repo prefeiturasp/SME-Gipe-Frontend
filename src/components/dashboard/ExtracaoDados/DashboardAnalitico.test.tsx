@@ -1,3 +1,4 @@
+import type { AnalyticsResponse } from "@/actions/analytics";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import DashboardAnalitico from "./DashboardAnalitico";
@@ -125,6 +126,57 @@ describe("DashboardAnalitico", () => {
             expect(
                 screen.getByText("Dashboard analítico de intercorrências"),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe("com analyticsData preenchido", () => {
+        const mockAnalytics: AnalyticsResponse = {
+            intercorrencias_dre: [
+                {
+                    codigo_eol: "108500",
+                    total: 10,
+                    patrimonial: 6,
+                    interpessoal: 4,
+                },
+            ],
+            intercorrencias_status: [
+                {
+                    status: "Em andamento",
+                    total: 5,
+                    patrimonial: 3,
+                    interpessoal: 2,
+                },
+            ],
+            cards: [
+                { total_intercorrencia: 42 },
+                { intercorrencias_patrimoniais: 18 },
+                { intercorrencias_interpessoais: 24 },
+                { media_mensal: 7 },
+            ],
+        };
+
+        it("deve exibir os valores dos cards a partir do analyticsData", () => {
+            render(<DashboardAnalitico analyticsData={mockAnalytics} />);
+            expect(screen.getByText("42")).toBeInTheDocument();
+            expect(screen.getByText("18")).toBeInTheDocument();
+            expect(screen.getByText("24")).toBeInTheDocument();
+            expect(screen.getByText("7")).toBeInTheDocument();
+        });
+
+        it("deve exibir 0 quando a chave do card não existe no array", () => {
+            const analyticsComCardsParciais: AnalyticsResponse = {
+                ...mockAnalytics,
+                cards: [{ total_intercorrencia: 10 }],
+            };
+            render(
+                <DashboardAnalitico
+                    analyticsData={analyticsComCardsParciais}
+                />,
+            );
+            expect(screen.getByText("10")).toBeInTheDocument();
+            // chaves não encontradas retornam 0
+            const zeros = screen.getAllByText("0");
+            expect(zeros.length).toBeGreaterThanOrEqual(3);
         });
     });
 });

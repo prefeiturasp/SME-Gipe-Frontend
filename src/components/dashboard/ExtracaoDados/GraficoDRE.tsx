@@ -31,8 +31,6 @@ const DRE_CORES_PALETA = [
     "#673AB7",
 ];
 
-const DEFAULT_COR = "#a0a0a0";
-
 interface TooltipDREProps {
     readonly active?: boolean;
     readonly hoveredNome: string | null;
@@ -106,7 +104,7 @@ function buildDreData(
             total: analytics?.total ?? 0,
             patrimonial: analytics?.patrimonial ?? 0,
             interpessoal: analytics?.interpessoal ?? 0,
-            cor: DRE_CORES_PALETA[index % DRE_CORES_PALETA.length] ?? DEFAULT_COR,
+            cor: DRE_CORES_PALETA[index % DRE_CORES_PALETA.length],
         };
     });
 }
