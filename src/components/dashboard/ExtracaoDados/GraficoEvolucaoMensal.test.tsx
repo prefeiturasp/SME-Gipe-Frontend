@@ -1,7 +1,13 @@
+import type { EvolucaoMensal } from "@/actions/analytics";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoEvolucaoMensal from "./GraficoEvolucaoMensal";
+
+const mockEvolucaoMensal: EvolucaoMensal[] = [
+    { mes: 3, total: 18, patrimonial: 10, interpessoal: 8 },
+    { mes: 4, total: 1, patrimonial: 1, interpessoal: 0 },
+];
 
 // Variáveis lidas pelas closures do mock no momento do render
 let mockTooltipActive = true;
@@ -38,12 +44,12 @@ afterEach(() => {
 
 describe("GraficoEvolucaoMensal", () => {
     it("deve renderizar o título Evolução mensal", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.getByText("Evolução mensal")).toBeInTheDocument();
     });
 
     it("deve exibir a descrição do gráfico", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(
             screen.getByText(
                 "Confira a quantidade de registros realizados em cada mês.",
@@ -52,39 +58,39 @@ describe("GraficoEvolucaoMensal", () => {
     });
 
     it("deve exibir os meses na grade de resumo", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.getByText("Janeiro")).toBeInTheDocument();
         expect(screen.getByText("Fevereiro")).toBeInTheDocument();
         expect(screen.getByText("Abril:")).toBeInTheDocument();
     });
 
     it("deve exibir o tooltip com o nome do mês e ano", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.getByText("Março/2025:")).toBeInTheDocument();
     });
 
     it("deve exibir o label de total de intercorrências no tooltip", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(
             screen.getByText("Total de intercorrências:"),
         ).toBeInTheDocument();
     });
 
     it("deve exibir os labels de patrimonial e interpessoal no tooltip", () => {
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.getByText("Patrimoniais:")).toBeInTheDocument();
         expect(screen.getByText("Interpessoais:")).toBeInTheDocument();
     });
 
     it("deve retornar null do tooltip quando active é false", () => {
         mockTooltipActive = false;
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.queryByText("Março/2025:")).not.toBeInTheDocument();
     });
 
     it("deve retornar null do tooltip quando o mês não existe nos dados", () => {
         mockTooltipLabel = "Xyz";
-        render(<GraficoEvolucaoMensal />);
+        render(<GraficoEvolucaoMensal evolucaoMensal={mockEvolucaoMensal} />);
         expect(screen.queryByText("Março/2025:")).not.toBeInTheDocument();
     });
 
@@ -94,12 +100,22 @@ describe("GraficoEvolucaoMensal", () => {
     });
 
     it("não deve renderizar o skeleton quando isLoading é false", () => {
-        render(<GraficoEvolucaoMensal isLoading={false} />);
+        render(
+            <GraficoEvolucaoMensal
+                isLoading={false}
+                evolucaoMensal={mockEvolucaoMensal}
+            />,
+        );
         expect(screen.getByText("Evolução mensal")).toBeInTheDocument();
     });
 
     it("deve usar layout em coluna e remover sombra quando pdfLayout é true", () => {
-        const { container } = render(<GraficoEvolucaoMensal pdfLayout />);
+        const { container } = render(
+            <GraficoEvolucaoMensal
+                pdfLayout
+                evolucaoMensal={mockEvolucaoMensal}
+            />,
+        );
         expect(container.firstChild).not.toHaveClass(
             "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
         );

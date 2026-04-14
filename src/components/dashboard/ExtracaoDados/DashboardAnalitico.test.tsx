@@ -147,6 +147,14 @@ describe("DashboardAnalitico", () => {
                     interpessoal: 2,
                 },
             ],
+            evolucao_mensal: [
+                {
+                    mes: 3,
+                    total: 18,
+                    patrimonial: 10,
+                    interpessoal: 8,
+                },
+            ],
             cards: [
                 { total_intercorrencia: 42 },
                 { intercorrencias_patrimoniais: 18 },
