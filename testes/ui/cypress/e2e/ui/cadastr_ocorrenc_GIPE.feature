@@ -10,7 +10,7 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     Dado que eu acesso o sistema
     E eu efetuo login com RF GIPE Admin
 
-  @skip @login @validacao @smoke
+  @login @validacao @smoke
   Cenário: Validar autenticação e acesso ao dashboard
     Então devo ser redirecionado para o dashboard
     E devo visualizar a página principal do sistema
