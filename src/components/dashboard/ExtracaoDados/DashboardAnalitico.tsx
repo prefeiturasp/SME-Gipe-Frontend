@@ -126,7 +126,10 @@ export default function DashboardAnalitico({
                 isLoading={isLoading}
                 intercorrenciasStatus={analyticsData?.intercorrencias_status}
             />
-            <GraficoEvolucaoMensal isLoading={isLoading} />
+            <GraficoEvolucaoMensal
+                isLoading={isLoading}
+                evolucaoMensal={analyticsData?.evolucao_mensal}
+            />
             <GraficoTipoIntercorrencias isLoading={isLoading} />
         </div>
     );

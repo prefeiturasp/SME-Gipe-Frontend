@@ -30,9 +30,17 @@ export interface IntercorrenciaStatus {
     interpessoal: number;
 }
 
+export interface EvolucaoMensal {
+    mes: number;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+}
+
 export interface AnalyticsResponse {
     intercorrencias_dre: IntercorrenciaDre[];
     intercorrencias_status: IntercorrenciaStatus[];
+    evolucao_mensal: EvolucaoMensal[];
     cards: Record<string, number>[];
 }
 
