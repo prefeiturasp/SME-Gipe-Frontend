@@ -1,6 +1,8 @@
 "use client";
 
+import type { EvolucaoMensal } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo } from "react";
 import {
     CartesianGrid,
     Line,
@@ -10,16 +12,65 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { evolucaoMensalData } from "./mockData";
+
+interface EvolucaoMensalDado {
+    mes: string;
+    mesLabel: string;
+    mesNum: string;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+}
+
+const MESES_CONFIG = [
+    { abreviado: "Jan", completo: "Janeiro" },
+    { abreviado: "Fev", completo: "Fevereiro" },
+    { abreviado: "Mar", completo: "Março" },
+    { abreviado: "Abr", completo: "Abril" },
+    { abreviado: "Mai", completo: "Maio" },
+    { abreviado: "Jun", completo: "Junho" },
+    { abreviado: "Jul", completo: "Julho" },
+    { abreviado: "Ago", completo: "Agosto" },
+    { abreviado: "Set", completo: "Setembro" },
+    { abreviado: "Out", completo: "Outubro" },
+    { abreviado: "Nov", completo: "Novembro" },
+    { abreviado: "Dez", completo: "Dezembro" },
+];
+
+function buildEvolucaoData(
+    evolucaoMensal?: EvolucaoMensal[],
+): EvolucaoMensalDado[] {
+    const apiMap = new Map(
+        (evolucaoMensal ?? []).map((item) => [item.mes, item]),
+    );
+
+    return MESES_CONFIG.map((config, index) => {
+        const mesNum = index + 1;
+        const api = apiMap.get(mesNum);
+        return {
+            mes: config.abreviado,
+            mesLabel: config.completo,
+            mesNum: String(mesNum).padStart(2, "0"),
+            total: api?.total ?? 0,
+            patrimonial: api?.patrimonial ?? 0,
+            interpessoal: api?.interpessoal ?? 0,
+        };
+    });
+}
 
 interface TooltipEvolucaoProps {
     readonly active?: boolean;
     readonly label?: string;
+    readonly evolucaoData: EvolucaoMensalDado[];
 }
 
-function TooltipEvolucao({ active, label }: TooltipEvolucaoProps) {
+function TooltipEvolucao({
+    active,
+    label,
+    evolucaoData,
+}: TooltipEvolucaoProps) {
     if (!active || !label) return null;
-    const d = evolucaoMensalData.find((m) => m.mes === label);
+    const d = evolucaoData.find((m) => m.mes === label);
     if (!d) return null;
     return (
         <div className="bg-white border border-[#e0e0e0] rounded-[4px] p-2 shadow text-[12px] flex flex-col gap-1">
@@ -55,9 +106,9 @@ function GraficoEvolucaoMensalSkeleton() {
                     <Skeleton className="w-full h-[300px]" />
                 </div>
                 <div className="grid grid-cols-3 gap-x-1 gap-y-1 shrink-0">
-                    {evolucaoMensalData.map((d) => (
+                    {MESES_CONFIG.map((config) => (
                         <div
-                            key={`skeleton-${d.mes}`}
+                            key={`skeleton-${config.abreviado}`}
                             className="flex flex-col gap-1 w-[151px] h-[93px] p-3 border border-[#DADADA]"
                         >
                             <Skeleton className="h-4 w-2/3" />
@@ -75,7 +126,19 @@ function GraficoEvolucaoMensalSkeleton() {
 export default function GraficoEvolucaoMensal({
     isLoading = false,
     pdfLayout = false,
-}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
+    evolucaoMensal,
+    activeMeses,
+}: Readonly<{
+    isLoading?: boolean;
+    pdfLayout?: boolean;
+    evolucaoMensal?: EvolucaoMensal[];
+    activeMeses?: string[];
+}>) {
+    const evolucaoData = useMemo(
+        () => buildEvolucaoData(evolucaoMensal),
+        [evolucaoMensal],
+    );
+
     if (isLoading) return <GraficoEvolucaoMensalSkeleton />;
     return (
         <div
@@ -107,7 +170,7 @@ export default function GraficoEvolucaoMensal({
                         height={pdfLayout ? 300 : "100%"}
                     >
                         <LineChart
-                            data={evolucaoMensalData}
+                            data={evolucaoData}
                             margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
                         >
                             <CartesianGrid
@@ -127,7 +190,11 @@ export default function GraficoEvolucaoMensal({
                                 allowDecimals={false}
                             />
                             <Tooltip
-                                content={<TooltipEvolucao />}
+                                content={
+                                    <TooltipEvolucao
+                                        evolucaoData={evolucaoData}
+                                    />
+                                }
                                 cursor={{ stroke: "#e0e0e0", strokeWidth: 1 }}
                             />
                             <Line
@@ -146,35 +213,52 @@ export default function GraficoEvolucaoMensal({
                 <div
                     className={`grid gap-x-1 gap-y-1 text-[12px] ${pdfLayout ? "grid-cols-4" : "grid-cols-3 shrink-0"}`}
                 >
-                    {evolucaoMensalData.map((d) => (
-                        <div
-                            key={d.mes}
-                            className="flex flex-col gap-0 w-[151px] h-[93px] border border-[#DADADA p-3"
-                        >
-                            <p className="text-[#42474a] font-bold text-[13px]">
-                                {d.mesLabel}
-                                {d.mes === "Abr" ? ":" : ""}
-                            </p>
-                            <p className="text-[#595959]">
-                                Total:{" "}
-                                {d.total === 0
-                                    ? "0"
-                                    : String(d.total).padStart(2, "0")}
-                            </p>
-                            <p className="text-[#595959]">
-                                Patrimonial:{" "}
-                                {d.patrimonial === 0
-                                    ? "0"
-                                    : String(d.patrimonial).padStart(2, "0")}
-                            </p>
-                            <p className="text-[#595959]">
-                                Interpessoal:{" "}
-                                {d.interpessoal === 0
-                                    ? "0"
-                                    : String(d.interpessoal).padStart(2, "0")}
-                            </p>
-                        </div>
-                    ))}
+                    {evolucaoData.map((d) => {
+                        const isDisabled =
+                            activeMeses !== undefined &&
+                            activeMeses.length > 0 &&
+                            !activeMeses.includes(d.mesNum);
+                        const titleColor = isDisabled ? "#B0B0B0" : "#42474a";
+                        const subColor = isDisabled ? "#B0B0B0" : "#595959";
+                        return (
+                            <div
+                                key={d.mes}
+                                className="flex flex-col gap-0 w-[151px] h-[93px] border border-[#DADADA] p-3"
+                            >
+                                <p
+                                    className="font-bold text-[13px]"
+                                    style={{ color: titleColor }}
+                                >
+                                    {d.mesLabel}
+                                    {d.mes === "Abr" ? ":" : ""}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Total:{" "}
+                                    {d.total === 0
+                                        ? "0"
+                                        : String(d.total).padStart(2, "0")}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Patrimonial:{" "}
+                                    {d.patrimonial === 0
+                                        ? "0"
+                                        : String(d.patrimonial).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Interpessoal:{" "}
+                                    {d.interpessoal === 0
+                                        ? "0"
+                                        : String(d.interpessoal).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

@@ -1,8 +1,10 @@
 "use client";
 
+import type { IntercorrenciasTipos } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 import {
     Bar,
     BarChart,
@@ -12,11 +14,6 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import {
-    motivacoesData,
-    tiposInterpessoalData,
-    tiposPatrimonialData,
-} from "./mockData";
 
 const TIPO_COR_PALETTE = [
     "#3d4eb0",
@@ -209,8 +206,12 @@ export function GraficoColunasVertical({
     );
 }
 
-export function GraficoMotivacoes() {
-    const maxCount = Math.max(...motivacoesData.map((d) => d.count));
+export function GraficoMotivacoes({
+    motivacoesData,
+}: Readonly<{
+    motivacoesData: { motivacao: string; count: number }[];
+}>) {
+    const maxCount = Math.max(...motivacoesData.map((d) => d.count), 0);
     const coloredData = motivacoesData.map((item, index) => ({
         ...item,
         fill: TIPO_COR_PALETTE[index % TIPO_COR_PALETTE.length],
@@ -229,7 +230,7 @@ export function GraficoMotivacoes() {
             </div>
             <ResponsiveContainer
                 width="100%"
-                height={motivacoesData.length * 48}
+                height={Math.max(motivacoesData.length * 48, 48)}
             >
                 <BarChart
                     layout="vertical"
@@ -313,9 +314,47 @@ function GraficoTipoIntercorrenciasSkeleton() {
     );
 }
 
+function buildTipoData(
+    tiposMap?: Record<string, number>,
+): { tipo: string; count: number }[] {
+    if (!tiposMap) return [];
+    return Object.entries(tiposMap).map(([tipo, count]) => ({ tipo, count }));
+}
+
+function buildMotivoData(
+    totalPorMotivo?: Record<string, number>,
+): { motivacao: string; count: number }[] {
+    if (!totalPorMotivo) return [];
+    return Object.entries(totalPorMotivo).map(([motivacao, count]) => ({
+        motivacao,
+        count,
+    }));
+}
+
 export default function GraficoTipoIntercorrencias({
     isLoading = false,
-}: Readonly<{ isLoading?: boolean }>) {
+    intercorrenciasTipos,
+    totalPorMotivo,
+}: Readonly<{
+    isLoading?: boolean;
+    intercorrenciasTipos?: IntercorrenciasTipos;
+    totalPorMotivo?: Record<string, number>;
+}>) {
+    const tiposPatrimonialData = useMemo(
+        () => buildTipoData(intercorrenciasTipos?.patrimonial),
+        [intercorrenciasTipos?.patrimonial],
+    );
+
+    const tiposInterpessoalData = useMemo(
+        () => buildTipoData(intercorrenciasTipos?.interpessoal),
+        [intercorrenciasTipos?.interpessoal],
+    );
+
+    const motivacoesDataBuilt = useMemo(
+        () => buildMotivoData(totalPorMotivo),
+        [totalPorMotivo],
+    );
+
     if (isLoading) return <GraficoTipoIntercorrenciasSkeleton />;
     return (
         <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
@@ -362,7 +401,7 @@ export default function GraficoTipoIntercorrencias({
                     className="mt-4 flex flex-col gap-6"
                 >
                     <GraficoColunasVertical data={tiposInterpessoalData} />
-                    <GraficoMotivacoes />
+                    <GraficoMotivacoes motivacoesData={motivacoesDataBuilt} />
                 </TabsContent>
             </Tabs>
         </div>

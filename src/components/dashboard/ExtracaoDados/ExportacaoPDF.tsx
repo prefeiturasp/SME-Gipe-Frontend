@@ -13,7 +13,6 @@ import {
 } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
 import { BIMESTRES, GENEROS, MESES, type FilterState } from "./FilterPanel";
-import { resumoCards } from "./mockData";
 
 const GRAY_DARK = "#42474A";
 const GRAY_MID = "#595959";
@@ -217,9 +216,11 @@ const PAGE_STYLE = {
 function Pagina1({
     filtros,
     images,
+    cardValues,
 }: Readonly<{
     filtros: ReturnType<typeof buildFiltrosDisplay>;
     images: CapturedImages;
+    cardValues?: CardValues;
 }>) {
     return (
         <Page size="A4" style={PAGE_STYLE}>
@@ -341,22 +342,26 @@ function Pagina1({
                         [
                             {
                                 label: "Total de intercorrências:",
-                                value: resumoCards.totalIntercorrencias,
+                                value: cardValues?.totalIntercorrencias ?? 0,
                                 icon: <PencilIcon />,
                             },
                             {
                                 label: "Intercorrências patrimoniais:",
-                                value: resumoCards.intercorrenciasPatrimoniais,
+                                value:
+                                    cardValues?.intercorrenciasPatrimoniais ??
+                                    0,
                                 icon: <AlertCircleIcon />,
                             },
                             {
                                 label: "Intercorrências interpessoais:",
-                                value: resumoCards.intercorrenciasInterpessoais,
+                                value:
+                                    cardValues?.intercorrenciasInterpessoais ??
+                                    0,
                                 icon: <UsersIcon />,
                             },
                             {
                                 label: "Média de registros por mês:",
-                                value: resumoCards.mediaMensal,
+                                value: cardValues?.mediaMensal ?? 0,
                                 icon: <CalendarIcon />,
                             },
                         ] as { label: string; value: number; icon: ReactNode }[]
@@ -508,15 +513,31 @@ function Pagina4({ images }: Readonly<{ images: CapturedImages }>) {
     );
 }
 
+export interface CardValues {
+    totalIntercorrencias: number;
+    intercorrenciasPatrimoniais: number;
+    intercorrenciasInterpessoais: number;
+    mediaMensal: number;
+}
+
 export default function ExportacaoPDF({
     filterState,
     images,
-}: Readonly<{ filterState: FilterState; images: CapturedImages }>) {
+    cardValues,
+}: Readonly<{
+    filterState: FilterState;
+    images: CapturedImages;
+    cardValues?: CardValues;
+}>) {
     const filtros = buildFiltrosDisplay(filterState);
 
     return (
         <Document>
-            <Pagina1 filtros={filtros} images={images} />
+            <Pagina1
+                filtros={filtros}
+                images={images}
+                cardValues={cardValues}
+            />
             <Pagina2 images={images} />
             <Pagina3 images={images} />
             <Pagina4 images={images} />

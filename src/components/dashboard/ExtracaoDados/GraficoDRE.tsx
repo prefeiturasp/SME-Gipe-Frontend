@@ -1,7 +1,10 @@
 "use client";
 
+import type { IntercorrenciaDre } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useGetUnidades } from "@/hooks/useGetUnidades";
+import type { UnidadeEducacional } from "@/types/unidades";
+import { useMemo, useState } from "react";
 import {
     Bar,
     BarChart,
@@ -10,16 +13,41 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { dreData } from "./mockData";
+
+interface DreDado {
+    nome: string;
+    codigoEol: string;
+    total: number;
+    patrimonial: number;
+    interpessoal: number;
+    cor: string;
+}
+
+const DRE_CORES_PALETA = [
+    "#283890",
+    "#E9511D",
+    "#4CAF50",
+    "#9C27B0",
+    "#03A9F4",
+    "#FF9800",
+    "#8BC34A",
+    "#795548",
+    "#E91E63",
+    "#607D8B",
+    "#FFC107",
+    "#009688",
+    "#673AB7",
+];
 
 interface TooltipDREProps {
     readonly active?: boolean;
     readonly hoveredNome: string | null;
+    readonly dreDataMerged: DreDado[];
 }
 
-function TooltipDRE({ active, hoveredNome }: TooltipDREProps) {
+function TooltipDRE({ active, hoveredNome, dreDataMerged }: TooltipDREProps) {
     if (!active || !hoveredNome) return null;
-    const dre = dreData.find((d) => d.nome === hoveredNome);
+    const dre = dreDataMerged.find((d) => d.nome === hoveredNome);
     if (!dre) return null;
     return (
         <div className="bg-white border border-[#e0e0e0] rounded-[4px] p-2 shadow text-[12px]">
@@ -52,9 +80,9 @@ function GraficoDRESkeleton() {
             <div className="flex flex-col gap-3">
                 <Skeleton className="h-4 w-1/3" />
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
-                    {dreData.map((d) => (
+                    {Array.from({ length: 13 }).map((_, i) => (
                         <div
-                            key={`skeleton-${d.nome}`}
+                            key={`skeleton-dre-${String(i)}`}
                             className="flex flex-col gap-1"
                         >
                             <Skeleton className="h-4 w-3/4" />
@@ -69,15 +97,50 @@ function GraficoDRESkeleton() {
     );
 }
 
+function buildDreData(
+    dreUnidades: UnidadeEducacional[],
+    intercorrenciasDre?: IntercorrenciaDre[],
+): DreDado[] {
+    const analyticsMap = new Map(
+        (intercorrenciasDre ?? []).map((item) => [item.codigo_eol, item]),
+    );
+
+    return dreUnidades.map((unidade, index) => {
+        const analytics = analyticsMap.get(unidade.codigo_eol);
+        return {
+            nome: unidade.nome,
+            codigoEol: unidade.codigo_eol,
+            total: analytics?.total ?? 0,
+            patrimonial: analytics?.patrimonial ?? 0,
+            interpessoal: analytics?.interpessoal ?? 0,
+            cor: DRE_CORES_PALETA[index % DRE_CORES_PALETA.length],
+        };
+    });
+}
+
 export default function GraficoDRE({
     isLoading = false,
     pdfLayout = false,
-}: Readonly<{ isLoading?: boolean; pdfLayout?: boolean }>) {
+    intercorrenciasDre,
+    activeDres,
+}: Readonly<{
+    isLoading?: boolean;
+    pdfLayout?: boolean;
+    intercorrenciasDre?: IntercorrenciaDre[];
+    activeDres?: string[];
+}>) {
+    const { data: dreUnidades = [] } = useGetUnidades(true, undefined, "DRE");
     const [hoveredNome, setHoveredNome] = useState<string | null>(null);
-    const total = dreData.reduce((acc, d) => acc + d.total, 0);
+
+    const dreDataMerged = useMemo(
+        () => buildDreData(dreUnidades, intercorrenciasDre),
+        [dreUnidades, intercorrenciasDre],
+    );
+
+    const total = dreDataMerged.reduce((acc, d) => acc + d.total, 0);
 
     const chartData = [
-        dreData.reduce<Record<string, number>>(
+        dreDataMerged.reduce<Record<string, number>>(
             (acc, d) => ({ ...acc, [d.nome]: d.total }),
             {},
         ),
@@ -112,10 +175,15 @@ export default function GraficoDRE({
                     <XAxis type="number" domain={[0, total]} hide />
                     <YAxis type="category" hide />
                     <Tooltip
-                        content={<TooltipDRE hoveredNome={hoveredNome} />}
+                        content={
+                            <TooltipDRE
+                                hoveredNome={hoveredNome}
+                                dreDataMerged={dreDataMerged}
+                            />
+                        }
                         cursor={{ fill: "transparent" }}
                     />
-                    {dreData
+                    {dreDataMerged
                         .filter((d) => d.total > 0)
                         .map((d) => (
                             <Bar
@@ -136,49 +204,73 @@ export default function GraficoDRE({
                     Diretorias Regionais de Educação (DREs):
                 </p>
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
-                    {dreData.map((d) => (
-                        <div key={d.nome} className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                                <span
-                                    className="inline-block w-3 h-3 rounded-[2px] shrink-0"
-                                    style={{ backgroundColor: d.cor }}
-                                />
-                                <span className="text-[#42474a] text-[14px] font-bold leading-tight">
-                                    {d.nome}
-                                </span>
+                    {dreDataMerged.map((d) => {
+                        const isDisabled =
+                            activeDres !== undefined &&
+                            activeDres.length > 0 &&
+                            !activeDres.includes(d.codigoEol);
+                        const textColor = isDisabled ? "#B0B0B0" : "#42474a";
+                        const subTextColor = isDisabled ? "#B0B0B0" : "#595959";
+                        return (
+                            <div key={d.nome} className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    <span
+                                        className="inline-block w-3 h-3 rounded-[2px] shrink-0"
+                                        style={{
+                                            backgroundColor: isDisabled
+                                                ? "#B0B0B0"
+                                                : d.cor,
+                                        }}
+                                    />
+                                    <span
+                                        className="text-[14px] font-bold leading-tight"
+                                        style={{ color: textColor }}
+                                    >
+                                        {d.nome}
+                                    </span>
+                                </div>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Total:{" "}
+                                    <b>
+                                        {d.total === 0
+                                            ? "0"
+                                            : String(d.total).padStart(2, "0")}
+                                    </b>
+                                </p>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Patrimonial:{" "}
+                                    <b>
+                                        {d.patrimonial === 0
+                                            ? "0"
+                                            : String(d.patrimonial).padStart(
+                                                  2,
+                                                  "0",
+                                              )}
+                                    </b>
+                                </p>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Interpessoal:{" "}
+                                    <b>
+                                        {d.interpessoal === 0
+                                            ? "0"
+                                            : String(d.interpessoal).padStart(
+                                                  2,
+                                                  "0",
+                                              )}
+                                    </b>
+                                </p>
                             </div>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Total:{" "}
-                                <b>
-                                    {d.total === 0
-                                        ? "0"
-                                        : String(d.total).padStart(2, "0")}
-                                </b>
-                            </p>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Patrimonial:{" "}
-                                <b>
-                                    {d.patrimonial === 0
-                                        ? "0"
-                                        : String(d.patrimonial).padStart(
-                                              2,
-                                              "0",
-                                          )}
-                                </b>
-                            </p>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Interpessoal:{" "}
-                                <b>
-                                    {d.interpessoal === 0
-                                        ? "0"
-                                        : String(d.interpessoal).padStart(
-                                              2,
-                                              "0",
-                                          )}
-                                </b>
-                            </p>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

@@ -1,10 +1,21 @@
+import type { AnalyticsResponse } from "@/actions/analytics";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import DashboardAnalitico from "./DashboardAnalitico";
 
 vi.mock("./GraficoDRE", () => ({
-    default: ({ isLoading }: { isLoading?: boolean }) => (
-        <div data-testid="grafico-dre" data-loading={String(isLoading)} />
+    default: ({
+        isLoading,
+        activeDres,
+    }: {
+        isLoading?: boolean;
+        activeDres?: string[];
+    }) => (
+        <div
+            data-testid="grafico-dre"
+            data-loading={String(isLoading)}
+            data-active-dres={JSON.stringify(activeDres)}
+        />
     ),
 }));
 vi.mock("./GraficoStatusUE", () => ({
@@ -13,10 +24,17 @@ vi.mock("./GraficoStatusUE", () => ({
     ),
 }));
 vi.mock("./GraficoEvolucaoMensal", () => ({
-    default: ({ isLoading }: { isLoading?: boolean }) => (
+    default: ({
+        isLoading,
+        activeMeses,
+    }: {
+        isLoading?: boolean;
+        activeMeses?: string[];
+    }) => (
         <div
             data-testid="grafico-evolucao-mensal"
             data-loading={String(isLoading)}
+            data-active-meses={JSON.stringify(activeMeses)}
         />
     ),
 }));
@@ -125,6 +143,95 @@ describe("DashboardAnalitico", () => {
             expect(
                 screen.getByText("Dashboard analítico de intercorrências"),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe("com analyticsData preenchido", () => {
+        const mockAnalytics: AnalyticsResponse = {
+            intercorrencias_dre: [
+                {
+                    codigo_eol: "108500",
+                    total: 10,
+                    patrimonial: 6,
+                    interpessoal: 4,
+                },
+            ],
+            intercorrencias_status: [
+                {
+                    status: "Em andamento",
+                    total: 5,
+                    patrimonial: 3,
+                    interpessoal: 2,
+                },
+            ],
+            evolucao_mensal: [
+                {
+                    mes: 3,
+                    total: 18,
+                    patrimonial: 10,
+                    interpessoal: 8,
+                },
+            ],
+            intercorrencias_tipos: {
+                patrimonial: { "Dano material": 4 },
+                interpessoal: { "Agressão física": 6 },
+            },
+            total_por_motivo: { Bullying: 6 },
+            cards: [
+                { total_intercorrencia: 42 },
+                { intercorrencias_patrimoniais: 18 },
+                { intercorrencias_interpessoais: 24 },
+                { media_mensal: 7 },
+            ],
+        };
+
+        it("deve exibir os valores dos cards a partir do analyticsData", () => {
+            render(<DashboardAnalitico analyticsData={mockAnalytics} />);
+            expect(screen.getByText("42")).toBeInTheDocument();
+            expect(screen.getByText("18")).toBeInTheDocument();
+            expect(screen.getByText("24")).toBeInTheDocument();
+            expect(screen.getByText("7")).toBeInTheDocument();
+        });
+
+        it("deve exibir 0 quando a chave do card não existe no array", () => {
+            const analyticsComCardsParciais: AnalyticsResponse = {
+                ...mockAnalytics,
+                cards: [{ total_intercorrencia: 10 }],
+            };
+            render(
+                <DashboardAnalitico
+                    analyticsData={analyticsComCardsParciais}
+                />,
+            );
+            expect(screen.getByText("10")).toBeInTheDocument();
+            const zeros = screen.getAllByText("0");
+            expect(zeros.length).toBeGreaterThanOrEqual(3);
+        });
+
+        it("deve repassar activeDres e activeMeses quando filterState é fornecido", () => {
+            render(
+                <DashboardAnalitico
+                    analyticsData={mockAnalytics}
+                    filterState={{
+                        ano: "2025",
+                        meses: ["03"],
+                        bimestre: [],
+                        dres: ["108500"],
+                        ues: [],
+                        genero: "",
+                        etapas: [],
+                        idade: "",
+                        menosDeUmAno: false,
+                    }}
+                />,
+            );
+            expect(screen.getByTestId("grafico-dre")).toHaveAttribute(
+                "data-active-dres",
+                JSON.stringify(["108500"]),
+            );
+            expect(
+                screen.getByTestId("grafico-evolucao-mensal"),
+            ).toHaveAttribute("data-active-meses", JSON.stringify(["03"]));
         });
     });
 });

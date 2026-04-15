@@ -1,16 +1,36 @@
+import type { IntercorrenciasTipos } from "@/actions/analytics";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoTipoIntercorrencias from "./GraficoTipoIntercorrencias";
 
+const mockIntercorrenciasTipos: IntercorrenciasTipos = {
+    patrimonial: {
+        "Dano material": 4,
+        "Depredação ou vandalismo": 2,
+        Roubo: 1,
+    },
+    interpessoal: {
+        "Agressão física": 6,
+        "Ameaça interna": 1,
+        "Ameaça externa": 5,
+    },
+};
+
+const mockTotalPorMotivo: Record<string, number> = {
+    Bullying: 6,
+    Cyberbullying: 4,
+    "Envolvimento com atividades ilícitas": 1,
+};
+
 let mockBarLabelValue = 5;
 let mockXAxisPayload: { value: string } | undefined = {
-    value: "Furto no estabelecimento",
+    value: "Dano material",
 };
 let mockTooltipActive = true;
 let mockTooltipPayload: { value: number }[] = [{ value: 10 }];
-let mockTooltipLabel: string | undefined = "Furto no estabelecimento";
+let mockTooltipLabel: string | undefined = "Dano material";
 
 vi.mock("recharts", () => ({
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -89,49 +109,77 @@ vi.mock("recharts", () => ({
 
 afterEach(() => {
     mockBarLabelValue = 5;
-    mockXAxisPayload = { value: "Furto no estabelecimento" };
+    mockXAxisPayload = { value: "Dano material" };
     mockTooltipActive = true;
     mockTooltipPayload = [{ value: 10 }];
-    mockTooltipLabel = "Furto no estabelecimento";
+    mockTooltipLabel = "Dano material";
 });
 
 describe("GraficoTipoIntercorrencias", () => {
     it("deve renderizar o título do gráfico", () => {
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(
             screen.getByText("Gráfico por tipo de intercorrências"),
         ).toBeInTheDocument();
     });
 
     it("deve exibir por padrão a aba de intercorrências patrimoniais", () => {
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(
             screen.getByRole("tab", { name: "Intercorrências patrimoniais" }),
         ).toHaveAttribute("data-state", "active");
     });
 
     it("deve renderizar o rótulo de barra com valor formatado via BarLabel", () => {
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(screen.getByText("05")).toBeInTheDocument();
     });
 
     it("deve renderizar o tick do eixo X com quebra de linha via CustomXAxisTick", () => {
-        render(<GraficoTipoIntercorrencias />);
-        expect(screen.getByText("Furto no")).toBeInTheDocument();
-        expect(screen.getByText("estabelecimento")).toBeInTheDocument();
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
+        expect(screen.getByText("Dano")).toBeInTheDocument();
+        expect(screen.getByText("material")).toBeInTheDocument();
     });
 
     it("deve exibir o tooltip com tipo e quantidade de intercorrências", () => {
-        render(<GraficoTipoIntercorrencias />);
-        expect(
-            screen.getByText("Furto no estabelecimento:"),
-        ).toBeInTheDocument();
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
+        expect(screen.getByText("Dano material:")).toBeInTheDocument();
         expect(screen.getByText("10 intercorrências")).toBeInTheDocument();
     });
 
     it("deve exibir a aba interpessoal ao clicar nela", async () => {
         const user = userEvent.setup();
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         await user.click(
             screen.getByRole("tab", {
                 name: "Intercorrências interpessoais",
@@ -146,7 +194,12 @@ describe("GraficoTipoIntercorrencias", () => {
 
     it("deve renderizar o gráfico de motivações ao clicar na aba interpessoal", async () => {
         const user = userEvent.setup();
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         await user.click(
             screen.getByRole("tab", {
                 name: "Intercorrências interpessoais",
@@ -157,7 +210,12 @@ describe("GraficoTipoIntercorrencias", () => {
 
     it("deve exibir a descrição do gráfico de motivações na aba interpessoal", async () => {
         const user = userEvent.setup();
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         await user.click(
             screen.getByRole("tab", {
                 name: "Intercorrências interpessoais",
@@ -172,33 +230,56 @@ describe("GraficoTipoIntercorrencias", () => {
 
     it("deve retornar null do BarLabel quando value é zero", () => {
         mockBarLabelValue = 0;
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(screen.queryByText("00")).not.toBeInTheDocument();
     });
 
     it("deve retornar null do CustomXAxisTick quando payload está ausente", () => {
         mockXAxisPayload = undefined;
-        render(<GraficoTipoIntercorrencias />);
-        expect(screen.queryByText("Furto no")).not.toBeInTheDocument();
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
+        expect(screen.queryByText("Dano material")).not.toBeInTheDocument();
     });
 
     it("deve usar string vazia quando label é undefined no TooltipColunas", () => {
         mockTooltipLabel = undefined;
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(screen.getByText(":")).toBeInTheDocument();
     });
 
     it("deve retornar null do TooltipColunas quando active é false", () => {
         mockTooltipActive = false;
-        render(<GraficoTipoIntercorrencias />);
-        expect(
-            screen.queryByText("Furto no estabelecimento:"),
-        ).not.toBeInTheDocument();
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
+        expect(screen.queryByText("Dano material:")).not.toBeInTheDocument();
     });
 
     it("deve retornar null do TooltipColunas quando payload está vazio", () => {
         mockTooltipPayload = [];
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(
             screen.queryByText("10 intercorrências"),
         ).not.toBeInTheDocument();
@@ -206,7 +287,12 @@ describe("GraficoTipoIntercorrencias", () => {
 
     it("deve exibir '0' no tooltip quando count é zero", () => {
         mockTooltipPayload = [{ value: 0 }];
-        render(<GraficoTipoIntercorrencias />);
+        render(
+            <GraficoTipoIntercorrencias
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(screen.getByText("0 intercorrências")).toBeInTheDocument();
     });
 
@@ -218,7 +304,13 @@ describe("GraficoTipoIntercorrencias", () => {
     });
 
     it("não deve renderizar o skeleton quando isLoading é false", () => {
-        render(<GraficoTipoIntercorrencias isLoading={false} />);
+        render(
+            <GraficoTipoIntercorrencias
+                isLoading={false}
+                intercorrenciasTipos={mockIntercorrenciasTipos}
+                totalPorMotivo={mockTotalPorMotivo}
+            />,
+        );
         expect(
             screen.getByText("Gráfico por tipo de intercorrências"),
         ).toBeInTheDocument();

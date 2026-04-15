@@ -1,13 +1,14 @@
 "use client";
 
+import type { AnalyticsResponse } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
 import { AlertCircle, Calendar, Pencil, Users } from "lucide-react";
+import type { FilterState } from "./FilterPanel";
 import GraficoDRE from "./GraficoDRE";
 import GraficoEvolucaoMensal from "./GraficoEvolucaoMensal";
 import GraficoStatusUE from "./GraficoStatusUE";
 import GraficoTipoIntercorrencias from "./GraficoTipoIntercorrencias";
-import { resumoCards } from "./mockData";
 
 interface SummaryCardProps {
     label: string;
@@ -43,13 +44,28 @@ function SummaryCardSkeleton() {
     );
 }
 
+function extractCardValue(
+    cards: Record<string, number>[] | undefined,
+    key: string,
+): number {
+    if (!cards) return 0;
+    const card = cards.find((c) => key in c);
+    return card ? card[key] : 0;
+}
+
 interface DashboardAnaliticoProps {
     isLoading?: boolean;
+    analyticsData?: AnalyticsResponse;
+    filterState?: FilterState;
 }
 
 export default function DashboardAnalitico({
     isLoading = false,
+    analyticsData,
+    filterState,
 }: Readonly<DashboardAnaliticoProps>) {
+    const cards = analyticsData?.cards;
+
     return (
         <div className="flex-1 min-w-0 flex flex-col gap-4 m-4 overflow-y-auto">
             <div className="bg-white rounded-[4px] shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)] p-6 flex flex-col gap-4">
@@ -73,22 +89,31 @@ export default function DashboardAnalitico({
                         <>
                             <SummaryCard
                                 label="Total de intercorrências:"
-                                value={resumoCards.totalIntercorrencias}
+                                value={extractCardValue(
+                                    cards,
+                                    "total_intercorrencia",
+                                )}
                                 icon={Pencil}
                             />
                             <SummaryCard
                                 label="Intercorrências patrimoniais:"
-                                value={resumoCards.intercorrenciasPatrimoniais}
+                                value={extractCardValue(
+                                    cards,
+                                    "intercorrencias_patrimoniais",
+                                )}
                                 icon={AlertCircle}
                             />
                             <SummaryCard
                                 label="Intercorrências interpessoais:"
-                                value={resumoCards.intercorrenciasInterpessoais}
+                                value={extractCardValue(
+                                    cards,
+                                    "intercorrencias_interpessoais",
+                                )}
                                 icon={Users}
                             />
                             <SummaryCard
                                 label="Média de registros por mês:"
-                                value={resumoCards.mediaMensal}
+                                value={extractCardValue(cards, "media_mensal")}
                                 icon={Calendar}
                             />
                         </>
@@ -96,10 +121,25 @@ export default function DashboardAnalitico({
                 </div>
             </div>
 
-            <GraficoDRE isLoading={isLoading} />
-            <GraficoStatusUE isLoading={isLoading} />
-            <GraficoEvolucaoMensal isLoading={isLoading} />
-            <GraficoTipoIntercorrencias isLoading={isLoading} />
+            <GraficoDRE
+                isLoading={isLoading}
+                intercorrenciasDre={analyticsData?.intercorrencias_dre}
+                activeDres={filterState?.dres}
+            />
+            <GraficoStatusUE
+                isLoading={isLoading}
+                intercorrenciasStatus={analyticsData?.intercorrencias_status}
+            />
+            <GraficoEvolucaoMensal
+                isLoading={isLoading}
+                evolucaoMensal={analyticsData?.evolucao_mensal}
+                activeMeses={filterState?.meses}
+            />
+            <GraficoTipoIntercorrencias
+                isLoading={isLoading}
+                intercorrenciasTipos={analyticsData?.intercorrencias_tipos}
+                totalPorMotivo={analyticsData?.total_por_motivo}
+            />
         </div>
     );
 }

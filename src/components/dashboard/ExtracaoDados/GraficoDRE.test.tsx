@@ -1,11 +1,27 @@
+import type { IntercorrenciaDre } from "@/actions/analytics";
 import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoDRE from "./GraficoDRE";
 
-// Variáveis lidas pelas closures do mock no momento do render (não na definição)
+const mockDreUnidades = [
+    { uuid: "1", nome: "DRE Butantã", codigo_eol: "108500" },
+    { uuid: "2", nome: "DRE Campo Limpo", codigo_eol: "108600" },
+    { uuid: "3", nome: "DRE Itaquera", codigo_eol: "108700" },
+    { uuid: "4", nome: "DRE São Miguel", codigo_eol: "108800" },
+];
+
+vi.mock("@/hooks/useGetUnidades", () => ({
+    useGetUnidades: () => ({ data: mockDreUnidades }),
+}));
+
+const mockIntercorrenciasDre: IntercorrenciaDre[] = [
+    { codigo_eol: "108500", total: 50, patrimonial: 23, interpessoal: 27 },
+    { codigo_eol: "108600", total: 10, patrimonial: 9, interpessoal: 1 },
+    { codigo_eol: "108700", total: 50, patrimonial: 32, interpessoal: 18 },
+];
+
 let mockTooltipActive = true;
-// Quando definido, sobrepõe o hoveredNome que vem do estado do componente
 let mockOverrideHoveredNome: string | undefined = undefined;
 
 vi.mock("recharts", () => ({
@@ -54,26 +70,26 @@ afterEach(() => {
 
 describe("GraficoDRE", () => {
     it("deve renderizar o título Intercorrências por DRE", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         expect(screen.getByText("Intercorrências por DRE")).toBeInTheDocument();
     });
 
     it("deve exibir o total geral de intercorrências no cabeçalho", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         expect(
             screen.getByText(/Total: \d+ intercorrências/),
         ).toBeInTheDocument();
     });
 
     it("deve listar as DREs com seus dados na legenda", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         expect(screen.getByText("DRE Butantã")).toBeInTheDocument();
         expect(screen.getByText("DRE Campo Limpo")).toBeInTheDocument();
         expect(screen.getByText("DRE Itaquera")).toBeInTheDocument();
     });
 
     it("deve exibir o tooltip com os dados da DRE ao passar o mouse na barra", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         const bar = screen.getByTestId("bar-DRE Butantã");
         fireEvent.mouseEnter(bar);
         expect(
@@ -84,7 +100,7 @@ describe("GraficoDRE", () => {
     });
 
     it("deve ocultar o tooltip ao remover o mouse da barra", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         const bar = screen.getByTestId("bar-DRE Butantã");
         fireEvent.mouseEnter(bar);
         fireEvent.mouseLeave(bar);
@@ -94,7 +110,7 @@ describe("GraficoDRE", () => {
     });
 
     it("não deve exibir tooltip para DRE com total zero", () => {
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         expect(
             screen.queryByTestId("bar-DRE São Miguel"),
         ).not.toBeInTheDocument();
@@ -102,7 +118,7 @@ describe("GraficoDRE", () => {
 
     it("deve retornar null do tooltip quando active é false", () => {
         mockTooltipActive = false;
-        render(<GraficoDRE />);
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         const bar = screen.getByTestId("bar-DRE Butantã");
         fireEvent.mouseEnter(bar);
         expect(
@@ -112,8 +128,7 @@ describe("GraficoDRE", () => {
 
     it("deve retornar null do tooltip quando a DRE não existe nos dados", () => {
         mockOverrideHoveredNome = "DRE Inexistente";
-        render(<GraficoDRE />);
-        // dre = undefined → TooltipDRE retorna null → sem separador
+        render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
 
@@ -125,14 +140,55 @@ describe("GraficoDRE", () => {
     });
 
     it("não deve renderizar o skeleton quando isLoading é false", () => {
-        render(<GraficoDRE isLoading={false} />);
+        render(
+            <GraficoDRE
+                isLoading={false}
+                intercorrenciasDre={mockIntercorrenciasDre}
+            />,
+        );
         expect(screen.getByText("Intercorrências por DRE")).toBeInTheDocument();
     });
 
     it("não deve aplicar sombra quando pdfLayout é true", () => {
-        const { container } = render(<GraficoDRE pdfLayout />);
+        const { container } = render(
+            <GraficoDRE
+                pdfLayout
+                intercorrenciasDre={mockIntercorrenciasDre}
+            />,
+        );
         expect(container.firstChild).not.toHaveClass(
             "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
         );
+    });
+
+    it("deve aplicar cor #B0B0B0 nas legendas de DREs fora do filtro activeDres", () => {
+        render(
+            <GraficoDRE
+                intercorrenciasDre={mockIntercorrenciasDre}
+                activeDres={["108500"]}
+            />,
+        );
+        const butantaLabel = screen.getByText("DRE Butantã");
+        expect(butantaLabel).toHaveStyle({ color: "#42474a" });
+
+        const campoLimpoLabel = screen.getByText("DRE Campo Limpo");
+        expect(campoLimpoLabel).toHaveStyle({ color: "#B0B0B0" });
+
+        const itaqueraLabel = screen.getByText("DRE Itaquera");
+        expect(itaqueraLabel).toHaveStyle({ color: "#B0B0B0" });
+    });
+
+    it("não deve aplicar estilo disabled quando activeDres é vazio", () => {
+        render(
+            <GraficoDRE
+                intercorrenciasDre={mockIntercorrenciasDre}
+                activeDres={[]}
+            />,
+        );
+        const butantaLabel = screen.getByText("DRE Butantã");
+        expect(butantaLabel).toHaveStyle({ color: "#42474a" });
+
+        const campoLimpoLabel = screen.getByText("DRE Campo Limpo");
+        expect(campoLimpoLabel).toHaveStyle({ color: "#42474a" });
     });
 });
