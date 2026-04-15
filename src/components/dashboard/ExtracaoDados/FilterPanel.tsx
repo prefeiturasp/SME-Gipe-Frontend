@@ -16,11 +16,24 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
 import { cn } from "@/lib/utils";
 import type { UnidadeEducacional } from "@/types/unidades";
 import { Check, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+export interface FilterState {
+    ano: string;
+    meses: string[];
+    bimestre: string[];
+    dres: string[];
+    ues: string[];
+    genero: string;
+    etapas: string[];
+    idade: string;
+    menosDeUmAno: boolean;
+}
 
 const ANO_ATUAL = new Date().getFullYear().toString();
 const ANO_INICIO = 2024;
@@ -30,7 +43,7 @@ const ANOS = Array.from({ length: ANO_FIM - ANO_INICIO + 1 }, (_, i) =>
     (ANO_INICIO + i).toString(),
 );
 
-const MESES = [
+export const MESES = [
     { value: "01", label: "Janeiro" },
     { value: "02", label: "Fevereiro" },
     { value: "03", label: "Março" },
@@ -45,23 +58,16 @@ const MESES = [
     { value: "12", label: "Dezembro" },
 ];
 
-const BIMESTRES = [
+export const BIMESTRES = [
     { value: "1", label: "1º Bimestre" },
     { value: "2", label: "2º Bimestre" },
     { value: "3", label: "3º Bimestre" },
     { value: "4", label: "4º Bimestre" },
 ];
 
-const GENEROS = [
+export const GENEROS = [
     { value: "masculino", label: "Masculino" },
     { value: "feminino", label: "Feminino" },
-];
-
-const ETAPAS = [
-    { value: "infantil", label: "Educação Infantil" },
-    { value: "fundamental1", label: "Ensino Fundamental I" },
-    { value: "fundamental2", label: "Ensino Fundamental II" },
-    { value: "medio", label: "Ensino Médio" },
 ];
 
 function FilterSection({
@@ -205,7 +211,21 @@ function FilterMultiSelect({
     );
 }
 
-export default function FilterPanel() {
+export const filterStateInitial: FilterState = {
+    ano: ANO_ATUAL,
+    meses: [],
+    bimestre: [],
+    dres: [],
+    ues: [],
+    genero: "",
+    etapas: [],
+    idade: "",
+    menosDeUmAno: false,
+};
+
+export default function FilterPanel({
+    onStateChange,
+}: Readonly<{ onStateChange?: (state: FilterState) => void }>) {
     const [ano, setAno] = useState(ANO_ATUAL);
     const [meses, setMeses] = useState<string[]>([]);
     const [bimestre, setBimestre] = useState<string[]>([]);
@@ -213,17 +233,25 @@ export default function FilterPanel() {
     const [ues, setUes] = useState<string[]>([]);
     const [genero, setGenero] = useState("");
 
-    const dreUuid = dres.length === 1 ? dres[0] : undefined;
+    const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
+    const etapasOptions = categoriasDisponiveis?.etapa_escolar ?? [];
 
     const { data: dreData = [] } = useGetUnidades(true, undefined, "DRE");
+
+    const dreUuid =
+        dres.length === 1
+            ? dreData.find((d: UnidadeEducacional) => d.codigo_eol === dres[0])
+                  ?.uuid
+            : undefined;
+
     const { data: ueData = [] } = useGetUnidades(true, dreUuid);
 
     const dreOptions = dreData.map((d: UnidadeEducacional) => ({
-        value: d.uuid,
+        value: d.codigo_eol,
         label: d.nome,
     }));
     const ueOptions = ueData.map((u: UnidadeEducacional) => ({
-        value: u.uuid,
+        value: u.codigo_eol,
         label: u.nome,
     }));
     const [etapas, setEtapas] = useState<string[]>([]);
@@ -239,6 +267,31 @@ export default function FilterPanel() {
         etapas.length > 0 ||
         idade !== "" ||
         menosDeUmAno;
+
+    useEffect(() => {
+        onStateChange?.({
+            ano,
+            meses,
+            bimestre,
+            dres,
+            ues,
+            genero,
+            etapas,
+            idade,
+            menosDeUmAno,
+        });
+    }, [
+        ano,
+        meses,
+        bimestre,
+        dres,
+        ues,
+        genero,
+        etapas,
+        idade,
+        menosDeUmAno,
+        onStateChange,
+    ]);
 
     function handleLimpar() {
         setMeses([]);
@@ -365,7 +418,7 @@ export default function FilterPanel() {
 
                     <FilterField label="Etapa escolar">
                         <FilterMultiSelect
-                            options={ETAPAS}
+                            options={etapasOptions}
                             selected={etapas}
                             onChange={setEtapas}
                             placeholder="Selecione"

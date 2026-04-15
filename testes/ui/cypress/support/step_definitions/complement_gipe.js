@@ -3,9 +3,12 @@ import Login_Gipe_Localizadores from '../locators/login_locators'
 
 const locators_login = new Login_Gipe_Localizadores()
 
+// ============================================================================
+// CREDENCIAIS VÊM DO .env via cypress.config.js
+// ============================================================================
 const CREDENCIAIS_GIPE = {
-  RF: '7311559',
-  SENHA: 'Sgp1559'
+  RF: Cypress.env('RF_GIPE'),
+  SENHA: Cypress.env('SENHA_GIPE')
 }
 
 const TIMEOUTS = {
@@ -779,4 +782,256 @@ Then('valida a existencia do Texto {string}', (texto) => {
     .and('contain.text', texto.trim())
   
   cy.log('Texto validado - teste concluído com sucesso')
+})
+
+// ============================================================================
+// ============================================================================
+// STEPS COMP_GIPE — padrão idêntico ao COMP_DRE com prefixo GIPE
+// Contador próprio (_gipeRadioIdx) para evitar conflito com outros steps.
+// ============================================================================
+
+/**
+ * Abre ocorrências da tabela até encontrar uma com o formulário de complemento
+ * disponível ("Qual o tipo de ocorrência?" presente no DOM).
+ * Algumas ocorrências já concluídas não exibem esses campos.
+ * Tenta até MAX_TENTATIVAS linhas diferentes antes de falhar.
+ */
+When('COMP_GIPE abre ocorrencia valida para complemento', () => {
+  const CAMPO_VALIDACAO = 'Qual o tipo de ocorrência?'
+  const MAX_TENTATIVAS  = 10
+  const linhasTestadas  = new Set()
+
+  function tentarProximaOcorrencia(tentativa) {
+    if (tentativa > MAX_TENTATIVAS) {
+      throw new Error(`COMP_GIPE: Nenhuma ocorrência válida para complemento após ${MAX_TENTATIVAS} tentativas`)
+    }
+
+    cy.log(`COMP_GIPE: Tentativa ${tentativa}/${MAX_TENTATIVAS} — buscando ocorrência válida`)
+
+    cy.get('table tbody tr', { timeout: TIMEOUTS.LONG }).then($rows => {
+      const totalLinhas = Math.min($rows.length, 10)
+
+      let idx
+      let guard = 0
+      do {
+        idx = Math.floor(Math.random() * totalLinhas)
+        guard++
+      } while (linhasTestadas.has(idx) && guard < 20)
+
+      linhasTestadas.add(idx)
+      cy.log(`COMP_GIPE: Abrindo linha ${idx + 1} de ${totalLinhas}`)
+
+      cy.wrap($rows[idx]).find('td').last().find('a').should('be.visible').click()
+      cy.wait(2000)
+
+      cy.get('body').then($body => {
+        if ($body.text().includes(CAMPO_VALIDACAO)) {
+          cy.log(`COMP_GIPE: ✓ Ocorrência válida encontrada na linha ${idx + 1}`)
+        } else {
+          cy.log(`COMP_GIPE: ✗ Linha ${idx + 1} sem campos esperados — retornando ao dashboard`)
+          cy.go('back')
+          cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.LONG }).should('be.visible')
+          cy.wait(1000)
+          tentarProximaOcorrencia(tentativa + 1)
+        }
+      })
+    })
+  }
+
+  cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG }).should('be.visible')
+  cy.wait(1000)
+  tentarProximaOcorrencia(1)
+})
+
+When('COMP_GIPE valida a existencia do texto {string}', (texto) => {
+  cy.wait(500)
+
+  // Ao entrar na aba 2 (Detalhes DRE), reseta o contador de radiogroups.
+  if (texto.includes('Detalhes da Intercorrência')) {
+    Cypress.env('_gipeRadioIdx', 0)
+    cy.log('COMP_GIPE: Contador de radiogroup resetado para aba 2')
+  }
+
+  cy.get('body').then($body => {
+    if ($body.text().includes(texto)) {
+      cy.log(`COMP_GIPE: Texto encontrado no DOM: "${texto}"`)
+    } else {
+      cy.contains(texto, { timeout: TIMEOUTS.LONG }).should('exist')
+    }
+  })
+})
+
+When('COMP_GIPE valida campos de pessoas envolvidas quando aplicavel', () => {
+  cy.wait(500)
+  cy.get('body').then($body => {
+    const texto = $body.text()
+
+    const temCampoNome = texto.includes('Qual o nome da pessoa?')
+    const temMotivacao = texto.includes('O que motivou a ocorrência?')
+    const temCT        = texto.includes('A ocorrência foi notificada ao CT')
+    const temAcomp     = texto.includes('A ocorrência está sendo acompanhada pelo')
+
+    if (temCampoNome || temMotivacao || temCT || temAcomp) {
+      cy.log('COMP_GIPE: Campos de pessoas envolvidas detectados — validando...')
+
+      if (temCampoNome) {
+        cy.contains('Qual o nome da pessoa?', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_GIPE: ✓ "Qual o nome da pessoa?*" presente')
+      }
+      if (temMotivacao) {
+        cy.contains('O que motivou a ocorrência?', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_GIPE: ✓ "O que motivou a ocorrência?*" presente')
+      }
+      if (temCT) {
+        cy.contains('A ocorrência foi notificada ao CT', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_GIPE: ✓ "A ocorrência foi notificada ao CT (Conselho Tutelar)?*" presente')
+      }
+      if (temAcomp) {
+        cy.contains('A ocorrência está sendo acompanhada pelo', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_GIPE: ✓ "A ocorrência está sendo acompanhada pelo:" presente')
+      }
+    } else {
+      cy.log('COMP_GIPE: Campos de pessoas envolvidas NÃO detectados — ocorrência sem pessoas, pulando validação.')
+    }
+  })
+})
+
+When('COMP_GIPE valida a existencia dos botões {string} e {string}', (btn1, btn2) => {
+  cy.wait(500)
+  cy.contains('button', new RegExp(btn1, 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+  cy.contains('button', new RegExp(btn2, 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+})
+
+Then('COMP_GIPE clica no botão {string}', (textoBotao) => {
+  cy.wait(1000)
+  cy.contains('button', new RegExp(textoBotao.trim(), 'i'), { timeout: TIMEOUTS.LONG })
+    .should('be.visible').should('not.be.disabled')
+    .scrollIntoView().click({ force: true })
+  cy.wait(3000)
+})
+
+// Contador por índice para selecionar radiogroups em ordem (ronda=0, supervisão=1).
+// Todos os grupos carregam com valor padrão, impossibilitando detectar quais foram respondidos.
+When('COMP_GIPE seleciona Sim ou Não de forma aleatoria', () => {
+  cy.wait(500)
+  const opcao = Math.random() < 0.5 ? 'Sim' : 'Não'
+
+  const idx = Cypress.env('_gipeRadioIdx') !== undefined ? Cypress.env('_gipeRadioIdx') : 0
+  Cypress.env('_gipeRadioIdx', idx + 1)
+
+  cy.log(`COMP_GIPE: Selecionando "${opcao}" no radiogroup[${idx}]`)
+
+  cy.get('[role="radiogroup"]').eq(idx).then($group => {
+    const $span = Cypress.$($group)
+      .find('span.text-sm')
+      .filter((_, el) => el.textContent.trim() === opcao)
+      .first()
+
+    if ($span.length > 0) {
+      cy.wrap($span).scrollIntoView().click({ force: true })
+      cy.log(`COMP_GIPE: ✓ Clicou "${opcao}" no grupo índice ${idx}`)
+    } else {
+      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(1000)
+})
+
+When('COMP_GIPE seleciona Sim ou Não para SEI e preenche numero quando necessario', () => {
+  const numerosSEI = [
+    '1234567890123456', '9876543210987654', '4728193650284719',
+    '8163920574810293', '3047582916473820', '6192840375619284',
+    '7483920156748392', '2905817364920581', '5671034829567103',
+    '8204915673820491', '1593047826159304', '6840291753684029',
+    '3217568940321756', '7659412308765941', '4082736519408273',
+    '9315820647931582', '2748506193274850', '5063918274506391',
+    '8497230165849723', '1820473956182047', '6234815709623481',
+    '3967124085396712', '7150693248715069', '4813275096481327',
+    '9046382751904638',
+  ]
+
+  const opcao = Math.random() < 0.5 ? 'Sim' : 'Não'
+  cy.log(`COMP_GIPE: Selecionando "${opcao}" para "Há um número do processo SEI?*"`)
+
+  cy.wait(500)
+
+  // O grupo SEI é sempre o último (.last()). Ronda=0 e Supervisão=1 já foram clicados.
+  cy.get('[role="radiogroup"]').last().then($group => {
+    const $span = Cypress.$($group)
+      .find('span.text-sm')
+      .filter((_, el) => el.textContent.trim() === opcao)
+      .first()
+
+    if ($span.length > 0) {
+      cy.wrap($span).scrollIntoView().click({ force: true })
+      cy.log(`COMP_GIPE: ✓ Clicou "${opcao}" no grupo SEI`)
+    } else {
+      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(800)
+
+  if (opcao === 'Sim') {
+    const seiIdx = Math.floor(Math.random() * numerosSEI.length)
+    const numeroSEI = numerosSEI[seiIdx]
+    cy.log(`COMP_GIPE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
+    cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
+      .last()
+      .scrollIntoView()
+      .type(numeroSEI, { delay: 30 })
+    cy.wait(500)
+  } else {
+    cy.log('COMP_GIPE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
+  }
+
+  cy.wait(1000)
+})
+
+When('COMP_GIPE localiza o button {string}', (textoBotao) => {
+  cy.wait(1000)
+  cy.contains('button', new RegExp(textoBotao.trim(), 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+  cy.log(`COMP_GIPE: Botão "${textoBotao}" localizado`)
+})
+
+// Botão de conclusão da aba 3 GIPE.
+// O nome pode variar: "Finalizar e enviar" ou "Finalizar" dependendo da ocorrência.
+// Usa o container div.flex.justify-end.gap-2 para localizar o botão purple (último filho)
+// correspondente ao seletor: div.flex.justify-end.gap-2 > button.inline-flex
+When('COMP_GIPE localiza e clica em {string}', (textoBotao) => {
+  cy.wait(2000)
+
+  const regexPrimaria  = new RegExp(textoBotao.trim(), 'i')
+  const regexFinalizar = /Finalizar/i
+
+  cy.get('body').then($body => {
+    const existeExato     = $body.find('button').toArray().some(b => regexPrimaria.test(b.textContent.trim()))
+    const existeFinalizar = $body.find('button').toArray().some(b => regexFinalizar.test(b.textContent.trim()))
+
+    if (existeExato) {
+      cy.log(`COMP_GIPE: Botão "${textoBotao}" encontrado — clicando`)
+      cy.contains('button', regexPrimaria, { timeout: TIMEOUTS.LONG })
+        .should('be.visible').scrollIntoView().click({ force: true })
+    } else if (existeFinalizar) {
+      cy.log('COMP_GIPE: Botão "Finalizar" encontrado — clicando')
+      cy.contains('button', regexFinalizar, { timeout: TIMEOUTS.LONG })
+        .should('be.visible').scrollIntoView().click({ force: true })
+    } else {
+      // Fallback posicional: último botão do container div.flex.justify-end.gap-2
+      // (button.inline-flex = botão purple = ação principal)
+      cy.log('COMP_GIPE: Botão não encontrado por texto — usando fallback posicional')
+      cy.get('div.flex.justify-end.gap-2', { timeout: TIMEOUTS.LONG })
+        .last()
+        .find('button')
+        .last()
+        .should('be.visible').scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(3000)
+  cy.log(`COMP_GIPE: Clicou em "${textoBotao}"`)
 })

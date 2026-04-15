@@ -6,6 +6,13 @@ import './commands_ui/commands_cadastro'
 import 'cypress-xpath'
 import 'cypress-plugin-tab'
 
+// Suprime erros de ResizeObserver que são do app React (não do teste)
+Cypress.on('uncaught:exception', (err) => {
+  if (err.message.includes('ResizeObserver loop')) {
+    return false
+  }
+})
+
 import postgreSQL from 'cypress-postgresql';
 
 postgreSQL.loadDBCommands();

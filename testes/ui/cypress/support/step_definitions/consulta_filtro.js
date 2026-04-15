@@ -3,12 +3,24 @@ import ConsultaFiltroLocalizadores from '../locators/consulta_filtro_locators'
 
 const locators = new ConsultaFiltroLocalizadores()
 
-const RF_PADRAO = '29379960000'
-const SENHA_PADRAO = 'Sgp0000'
+// ============================================================================
+// CREDENCIAIS VÊM DO .env via cypress.config.js
+// Este arquivo usa RF_UE/SENHA_UE (perfil Unidade Educacional)
+// ============================================================================
 
 Given('eu efetuo login com RF', () => {
-  cy.log(`Efetuando login com RF: ${RF_PADRAO}`)
-  cy.loginWithSession(RF_PADRAO, SENHA_PADRAO, 'CONSULTA')
+  const RF_UE = Cypress.env('RF_UE')
+  const SENHA_UE = Cypress.env('SENHA_UE')
+  
+  if (!RF_UE || !SENHA_UE) {
+    throw new Error(`❌ Credenciais UE não encontradas! RF_UE: ${RF_UE}, SENHA_UE: ${SENHA_UE}. Verifique:
+    1. Arquivo .env existe na raiz do projeto
+    2. Variáveis RF_UE e SENHA_UE estão preenchidas
+    3. Cypress foi REINICIADO após alterações no .env`)
+  }
+  
+  cy.log(`✅ Efetuando login com RF_UE: ${RF_UE}`)
+  cy.loginWithSession(RF_UE, SENHA_UE, 'CONSULTA')
   cy.visit('https://qa-gipe.sme.prefeitura.sp.gov.br/dashboard', { 
     timeout: 30000,
     failOnStatusCode: false 

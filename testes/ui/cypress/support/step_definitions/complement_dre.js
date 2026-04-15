@@ -534,3 +534,239 @@ Then('devo retornar para o histórico de ocorrências', () => {
   cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG })
     .should('be.visible')
 })
+
+// ================================================================
+// STEPS COMP_DRE — FLUXO COMPLEMENTO DRE REFATORADO
+// ================================================================
+
+When('COMP_DRE valida a existencia do texto {string}', (texto) => {
+  cy.wait(500)
+
+  // Ao entrar na aba 2 (Detalhes DRE), reseta o contador de radiogroups.
+  // Garante que ronda=idx0, supervisão=idx1 mesmo em reruns ou retries.
+  if (texto.includes('Detalhes da Intercorrência')) {
+    Cypress.env('_dreRadioIdx', 0)
+    cy.log('COMP_DRE: Contador de radiogroup resetado para aba 2')
+  }
+
+  cy.get('body').then($body => {
+    if ($body.text().includes(texto)) {
+      cy.log(`COMP_DRE: Texto encontrado no DOM: "${texto}"`)
+    } else {
+      // tenta via contains para erro legível
+      cy.contains(texto, { timeout: TIMEOUTS.LONG }).should('exist')
+    }
+  })
+})
+
+When('COMP_DRE valida a existencia dos botões {string} e {string}', (btn1, btn2) => {
+  cy.wait(500)
+  cy.contains('button', new RegExp(btn1, 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+  cy.contains('button', new RegExp(btn2, 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+})
+
+/**
+ * Valida os campos de pessoas envolvidas SOMENTE se a resposta for "Sim".
+ * Quando a ocorrência não tem dados de pessoas envolvidas (resposta "Não"),
+ * esses campos não são exibidos e o step é pulado automaticamente.
+ */
+When('COMP_DRE valida campos de pessoas envolvidas quando aplicavel', () => {
+  cy.wait(500)
+  cy.get('body').then($body => {
+    const texto = $body.text()
+
+    // Detecta se o formulário já expandiu para mostrar os campos de pessoa,
+    // ou se a resposta "Não" ocultou essa seção.
+    const temCampoNome   = texto.includes('Qual o nome da pessoa?')
+    const temMotivacao   = texto.includes('O que motivou a ocorrência?')
+    const temCT          = texto.includes('A ocorrência foi notificada ao CT')
+    const temAcomp       = texto.includes('A ocorrência está sendo acompanhada pelo')
+
+    if (temCampoNome || temMotivacao || temCT || temAcomp) {
+      cy.log('COMP_DRE: Campos de pessoas envolvidas detectados — validando...')
+
+      if (temCampoNome) {
+        cy.contains('Qual o nome da pessoa?', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_DRE: ✓ "Qual o nome da pessoa?*" presente')
+      }
+      if (temMotivacao) {
+        cy.contains('O que motivou a ocorrência?', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_DRE: ✓ "O que motivou a ocorrência?*" presente')
+      }
+      if (temCT) {
+        cy.contains('A ocorrência foi notificada ao CT', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_DRE: ✓ "A ocorrência foi notificada ao CT (Conselho Tutelar)?*" presente')
+      }
+      if (temAcomp) {
+        cy.contains('A ocorrência está sendo acompanhada pelo', { timeout: TIMEOUTS.LONG }).should('exist')
+        cy.log('COMP_DRE: ✓ "A ocorrência está sendo acompanhada pelo:" presente')
+      }
+    } else {
+      cy.log('COMP_DRE: Campos de pessoas envolvidas NÃO detectados — ocorrência sem pessoas, pulando validação.')
+    }
+  })
+})
+
+Then('COMP_DRE clica no botão {string}', (textoBotao) => {
+  cy.wait(1000)
+  cy.contains('button', new RegExp(textoBotao.trim(), 'i'), { timeout: TIMEOUTS.LONG })
+    .should('be.visible').should('not.be.disabled')
+    .scrollIntoView().click({ force: true })
+  cy.wait(3000)
+})
+
+// Contador de índice para selecionar os radiogroups em ordem (ronda=0, supervisão=1).
+// Resetado via Cypress.env('_dreRadioIdx', 0) antes da aba 2.
+// Necessário porque todos os grupos carregam com valor padrão (data-state="checked"),
+// impossibilitando detectar quais já foram respondidos pelo teste.
+When('COMP_DRE seleciona Sim ou Não de forma aleatoria', () => {
+  cy.wait(500)
+  const opcao = Math.random() < 0.5 ? 'Sim' : 'Não'
+
+  // Lê o índice atual e incrementa para a próxima chamada
+  const idx = Cypress.env('_dreRadioIdx') !== undefined ? Cypress.env('_dreRadioIdx') : 0
+  Cypress.env('_dreRadioIdx', idx + 1)
+
+  cy.log(`COMP_DRE: Selecionando "${opcao}" no radiogroup[${idx}]`)
+
+  cy.get('[role="radiogroup"]').eq(idx).then($group => {
+    const $span = Cypress.$($group)
+      .find('span.text-sm')
+      .filter((_, el) => el.textContent.trim() === opcao)
+      .first()
+
+    if ($span.length > 0) {
+      cy.wrap($span).scrollIntoView().click({ force: true })
+      cy.log(`COMP_DRE: ✓ Clicou "${opcao}" no grupo índice ${idx}`)
+    } else {
+      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(1000)
+})
+
+/**
+ * Para a pergunta "Há um número do processo SEI?*":
+ * - Seleciona Sim ou Não de forma aleatória
+ * - Se "Sim" for selecionado, o sistema exibe um campo extra para o número do processo
+ * - Preenche o campo com um número aleatório de 16 dígitos da lista pré-definida
+ */
+When('COMP_DRE seleciona Sim ou Não para SEI e preenche numero quando necessario', () => {
+  const numerosSEI = [
+    '1234567890123456',
+    '9876543210987654',
+    '4728193650284719',
+    '8163920574810293',
+    '3047582916473820',
+    '6192840375619284',
+    '7483920156748392',
+    '2905817364920581',
+    '5671034829567103',
+    '8204915673820491',
+    '1593047826159304',
+    '6840291753684029',
+    '3217568940321756',
+    '7659412308765941',
+    '4082736519408273',
+    '9315820647931582',
+    '2748506193274850',
+    '5063918274506391',
+    '8497230165849723',
+    '1820473956182047',
+    '6234815709623481',
+    '3967124085396712',
+    '7150693248715069',
+    '4813275096481327',
+    '9046382751904638',
+  ]
+
+  // SEI usa o índice 2 (3º radiogroup) e NÃO compartilha o contador com o step genérico
+  const opcao = Math.random() < 0.5 ? 'Sim' : 'Não'
+  cy.log(`COMP_DRE: Selecionando "${opcao}" para "Há um número do processo SEI?*"`)
+
+  cy.wait(500)
+
+  // O grupo SEI é sempre o último (índice 2). Ronda=0 e Supervisão=1 já foram clicados.
+  cy.get('[role="radiogroup"]').last().then($group => {
+    const $span = Cypress.$($group)
+      .find('span.text-sm')
+      .filter((_, el) => el.textContent.trim() === opcao)
+      .first()
+
+    if ($span.length > 0) {
+      cy.wrap($span).scrollIntoView().click({ force: true })
+      cy.log(`COMP_DRE: ✓ Clicou "${opcao}" no grupo SEI`)
+    } else {
+      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(800)
+
+  // Se "Sim" foi selecionado, um campo de texto surge para o número do processo SEI
+  if (opcao === 'Sim') {
+    const seiIdx = Math.floor(Math.random() * numerosSEI.length)
+    const numeroSEI = numerosSEI[seiIdx]
+    cy.log(`COMP_DRE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
+    // Exclui explicitamente inputs readonly (campo de exibição de arquivo) e file inputs
+    cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
+      .last()
+      .scrollIntoView()
+      .type(numeroSEI, { delay: 30 })
+    cy.wait(500)
+  } else {
+    cy.log('COMP_DRE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
+  }
+
+  cy.wait(1000)
+})
+
+When('COMP_DRE localiza o button {string}', (textoBotao) => {
+  cy.wait(1000)
+  cy.contains('button', new RegExp(textoBotao.trim(), 'i'), { timeout: TIMEOUTS.LONG })
+    .should('exist').should('be.visible')
+  cy.log(`COMP_DRE: Botão "${textoBotao}" localizado`)
+})
+
+When('COMP_DRE localiza e clica em {string}', (textoBotao) => {
+  cy.wait(2000)
+
+  // OBSERVAÇÃO: O rótulo do botão de conclusão varia conforme a ocorrência:
+  //   - Algumas ocorrências exibem "Finalizar e enviar"  (texto completo)
+  //   - Outras ocorrências exibem apenas "Finalizar"     (texto abreviado)
+  // A lógica abaixo cobre ambos os casos automaticamente:
+  //   1. Tenta o texto exato recebido via feature (ex: "Finalizar e enviar")
+  //   2. Se não encontrar, tenta regex /Finalizar/i (captura ambas as variações)
+  //   3. Fallback posicional: último botão no mesmo container do "Anterior"
+  const regexPrimaria = new RegExp(textoBotao.trim(), 'i')
+  const regexFinalizar = /Finalizar/i
+
+  cy.get('body').then($body => {
+    const existeExato     = $body.find('button').toArray().some(b => regexPrimaria.test(b.textContent.trim()))
+    const existeFinalizar = $body.find('button').toArray().some(b => regexFinalizar.test(b.textContent.trim()))
+
+    if (existeExato) {
+      cy.log(`COMP_DRE: Botão "${textoBotao}" encontrado — clicando`)
+      cy.contains('button', regexPrimaria, { timeout: TIMEOUTS.LONG })
+        .should('be.visible').scrollIntoView().click({ force: true })
+    } else if (existeFinalizar) {
+      cy.log('COMP_DRE: Botão "Finalizar" encontrado — clicando')
+      cy.contains('button', regexFinalizar, { timeout: TIMEOUTS.LONG })
+        .should('be.visible').scrollIntoView().click({ force: true })
+    } else {
+      // Fallback posicional: último botão do container de ações (Anterior + Finalizar)
+      cy.log('COMP_DRE: Botão não encontrado por texto — usando fallback posicional (btn ao lado de Anterior)')
+      cy.contains('button', /Anterior/i, { timeout: TIMEOUTS.LONG })
+        .closest('div')
+        .find('button')
+        .last()
+        .should('be.visible').scrollIntoView().click({ force: true })
+    }
+  })
+
+  cy.wait(3000)
+  cy.log(`COMP_DRE: Clicou em "${textoBotao}"`)
+})

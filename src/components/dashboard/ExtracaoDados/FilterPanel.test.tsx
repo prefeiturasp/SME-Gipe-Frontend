@@ -1,7 +1,43 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import FilterPanel from "./FilterPanel";
+
+let mockCategoriasData:
+    | {
+          etapa_escolar: { value: string; label: string }[];
+          motivo_ocorrencia: never[];
+          grupo_etnico_racial: never[];
+          genero: never[];
+          frequencia_escolar: never[];
+      }
+    | undefined = {
+    etapa_escolar: [
+        { value: "infantil", label: "Educação Infantil" },
+        { value: "fundamental1", label: "Ensino Fundamental I" },
+        { value: "fundamental2", label: "Ensino Fundamental II" },
+        { value: "medio", label: "Ensino Médio" },
+    ],
+    motivo_ocorrencia: [],
+    grupo_etnico_racial: [],
+    genero: [],
+    frequencia_escolar: [],
+};
+
+afterEach(() => {
+    mockCategoriasData = {
+        etapa_escolar: [
+            { value: "infantil", label: "Educação Infantil" },
+            { value: "fundamental1", label: "Ensino Fundamental I" },
+            { value: "fundamental2", label: "Ensino Fundamental II" },
+            { value: "medio", label: "Ensino Médio" },
+        ],
+        motivo_ocorrencia: [],
+        grupo_etnico_racial: [],
+        genero: [],
+        frequencia_escolar: [],
+    };
+});
 
 vi.mock("@/hooks/useGetUnidades", () => ({
     useGetUnidades: (
@@ -10,10 +46,33 @@ vi.mock("@/hooks/useGetUnidades", () => ({
         tipo_unidade?: string,
     ) => {
         if (tipo_unidade === "DRE") {
-            return { data: [{ uuid: "dre-uuid-1", nome: "DRE Butantã" }] };
+            return {
+                data: [
+                    {
+                        uuid: "dre-uuid-1",
+                        nome: "DRE Butantã",
+                        codigo_eol: "108600",
+                    },
+                ],
+            };
         }
-        return { data: [{ uuid: "ue-uuid-1", nome: "EMEF Teste" }] };
+        return {
+            data: [
+                {
+                    uuid: "ue-uuid-1",
+                    nome: "EMEF Teste",
+                    codigo_eol: "019455",
+                },
+            ],
+        };
     },
+}));
+
+vi.mock("@/hooks/useCategoriasDisponiveis", () => ({
+    useCategoriasDisponiveis: () => ({
+        data: mockCategoriasData,
+        isLoading: false,
+    }),
 }));
 
 const ANO_ATUAL = new Date().getFullYear().toString();
@@ -283,5 +342,94 @@ describe("FilterPanel", () => {
 
         await user.click(screen.getByText("Selecionar todos"));
         expect(triggerMes).toHaveTextContent("Selecione");
+    });
+
+    it("deve exibir etapas escolares vindas da API", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+
+        expect(screen.getByText("Educação Infantil")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Fundamental I")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Fundamental II")).toBeInTheDocument();
+        expect(screen.getByText("Ensino Médio")).toBeInTheDocument();
+    });
+
+    it("deve habilitar o botão Limpar tudo ao selecionar uma etapa escolar", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+        await user.click(screen.getByText("Ensino Médio"));
+
+        expect(
+            screen.getByRole("button", { name: /limpar tudo/i }),
+        ).toBeEnabled();
+    });
+
+    it("deve limpar a etapa escolar selecionada ao clicar em Limpar tudo", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const etapaField = screen.getByText("Etapa escolar").closest("div")!;
+        const trigger = within(etapaField).getByRole("button");
+        await user.click(trigger);
+        await user.click(screen.getByText("Ensino Médio"));
+        await user.keyboard("{Escape}");
+
+        await user.click(screen.getByRole("button", { name: /limpar tudo/i }));
+
+        expect(trigger).toHaveTextContent("Selecione");
+    });
+
+    it("deve carregar UEs ao selecionar exatamente uma DRE (dreUuid)", async () => {
+        const user = userEvent.setup();
+        render(<FilterPanel />);
+
+        const dreField = screen
+            .getByText("Diretoria Regional de Educação (DRE)")
+            .closest("div")!;
+        const triggerDre = within(dreField).getByRole("button");
+        await user.click(triggerDre);
+        await user.click(screen.getByText("DRE Butantã"));
+        await user.keyboard("{Escape}");
+
+        const ueField = screen
+            .getByText("Unidade Educacional (UE)")
+            .closest("div")!;
+        const triggerUe = within(ueField).getByRole("button");
+        await user.click(triggerUe);
+
+        expect(screen.getByText("EMEF Teste")).toBeInTheDocument();
+    });
+
+    it("deve usar array vazio de etapas quando categoriasDisponiveis não está disponível", () => {
+        mockCategoriasData = undefined;
+        render(<FilterPanel />);
+
+        expect(screen.getByText("Etapa escolar")).toBeInTheDocument();
+    });
+
+    it("deve chamar onStateChange com o estado inicial ao renderizar", () => {
+        const onStateChange = vi.fn();
+        render(<FilterPanel onStateChange={onStateChange} />);
+        expect(onStateChange).toHaveBeenCalledWith(
+            expect.objectContaining({
+                ano: ANO_ATUAL,
+                meses: [],
+                bimestre: [],
+                dres: [],
+                ues: [],
+                genero: "",
+                etapas: [],
+                idade: "",
+                menosDeUmAno: false,
+            }),
+        );
     });
 });

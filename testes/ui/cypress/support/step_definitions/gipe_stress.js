@@ -435,9 +435,8 @@ When('requisição está em andamento', () => {
     timeout: 30000
   }).then((response) => {
     cy.wrap(response).as('requestAntesQueda')
-  }).catch(() => {
-    // Falha esperada
   })
+  // Nota: Falha esperada é tratada por failOnStatusCode: false
 })
 
 Then('retry automático funciona', () => {
