@@ -4,8 +4,18 @@ import { describe, expect, it, vi } from "vitest";
 import DashboardAnalitico from "./DashboardAnalitico";
 
 vi.mock("./GraficoDRE", () => ({
-    default: ({ isLoading }: { isLoading?: boolean }) => (
-        <div data-testid="grafico-dre" data-loading={String(isLoading)} />
+    default: ({
+        isLoading,
+        activeDres,
+    }: {
+        isLoading?: boolean;
+        activeDres?: string[];
+    }) => (
+        <div
+            data-testid="grafico-dre"
+            data-loading={String(isLoading)}
+            data-active-dres={JSON.stringify(activeDres)}
+        />
     ),
 }));
 vi.mock("./GraficoStatusUE", () => ({
@@ -14,10 +24,17 @@ vi.mock("./GraficoStatusUE", () => ({
     ),
 }));
 vi.mock("./GraficoEvolucaoMensal", () => ({
-    default: ({ isLoading }: { isLoading?: boolean }) => (
+    default: ({
+        isLoading,
+        activeMeses,
+    }: {
+        isLoading?: boolean;
+        activeMeses?: string[];
+    }) => (
         <div
             data-testid="grafico-evolucao-mensal"
             data-loading={String(isLoading)}
+            data-active-meses={JSON.stringify(activeMeses)}
         />
     ),
 }));
@@ -187,9 +204,34 @@ describe("DashboardAnalitico", () => {
                 />,
             );
             expect(screen.getByText("10")).toBeInTheDocument();
-            // chaves não encontradas retornam 0
             const zeros = screen.getAllByText("0");
             expect(zeros.length).toBeGreaterThanOrEqual(3);
+        });
+
+        it("deve repassar activeDres e activeMeses quando filterState é fornecido", () => {
+            render(
+                <DashboardAnalitico
+                    analyticsData={mockAnalytics}
+                    filterState={{
+                        ano: "2025",
+                        meses: ["03"],
+                        bimestre: [],
+                        dres: ["108500"],
+                        ues: [],
+                        genero: "",
+                        etapas: [],
+                        idade: "",
+                        menosDeUmAno: false,
+                    }}
+                />,
+            );
+            expect(screen.getByTestId("grafico-dre")).toHaveAttribute(
+                "data-active-dres",
+                JSON.stringify(["108500"]),
+            );
+            expect(
+                screen.getByTestId("grafico-evolucao-mensal"),
+            ).toHaveAttribute("data-active-meses", JSON.stringify(["03"]));
         });
     });
 });

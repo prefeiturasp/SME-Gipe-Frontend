@@ -9,7 +9,6 @@ const mockEvolucaoMensal: EvolucaoMensal[] = [
     { mes: 4, total: 1, patrimonial: 1, interpessoal: 0 },
 ];
 
-// Variáveis lidas pelas closures do mock no momento do render
 let mockTooltipActive = true;
 let mockTooltipLabel = "Mar";
 
@@ -120,5 +119,36 @@ describe("GraficoEvolucaoMensal", () => {
             "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
         );
         expect(container.firstChild).toHaveClass("flex-col");
+    });
+
+    it("deve aplicar cor #B0B0B0 nos cards de meses fora do filtro activeMeses", () => {
+        render(
+            <GraficoEvolucaoMensal
+                evolucaoMensal={mockEvolucaoMensal}
+                activeMeses={["03"]}
+            />,
+        );
+        const marcoLabel = screen.getByText("Março");
+        expect(marcoLabel).toHaveStyle({ color: "#42474a" });
+
+        const janeiroLabel = screen.getByText("Janeiro");
+        expect(janeiroLabel).toHaveStyle({ color: "#B0B0B0" });
+
+        const abrilLabel = screen.getByText("Abril:");
+        expect(abrilLabel).toHaveStyle({ color: "#B0B0B0" });
+    });
+
+    it("não deve aplicar estilo disabled quando activeMeses é vazio", () => {
+        render(
+            <GraficoEvolucaoMensal
+                evolucaoMensal={mockEvolucaoMensal}
+                activeMeses={[]}
+            />,
+        );
+        const janeiroLabel = screen.getByText("Janeiro");
+        expect(janeiroLabel).toHaveStyle({ color: "#42474a" });
+
+        const marcoLabel = screen.getByText("Março");
+        expect(marcoLabel).toHaveStyle({ color: "#42474a" });
     });
 });

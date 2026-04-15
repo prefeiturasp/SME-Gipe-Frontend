@@ -4,7 +4,6 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GraficoDRE from "./GraficoDRE";
 
-// Mock useGetUnidades para retornar DREs fake
 const mockDreUnidades = [
     { uuid: "1", nome: "DRE Butantã", codigo_eol: "108500" },
     { uuid: "2", nome: "DRE Campo Limpo", codigo_eol: "108600" },
@@ -20,7 +19,6 @@ const mockIntercorrenciasDre: IntercorrenciaDre[] = [
     { codigo_eol: "108500", total: 50, patrimonial: 23, interpessoal: 27 },
     { codigo_eol: "108600", total: 10, patrimonial: 9, interpessoal: 1 },
     { codigo_eol: "108700", total: 50, patrimonial: 32, interpessoal: 18 },
-    // DRE São Miguel sem analytics → total 0
 ];
 
 let mockTooltipActive = true;
@@ -131,7 +129,6 @@ describe("GraficoDRE", () => {
     it("deve retornar null do tooltip quando a DRE não existe nos dados", () => {
         mockOverrideHoveredNome = "DRE Inexistente";
         render(<GraficoDRE intercorrenciasDre={mockIntercorrenciasDre} />);
-        // dre = undefined → TooltipDRE retorna null → sem separador
         expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
 
@@ -162,5 +159,36 @@ describe("GraficoDRE", () => {
         expect(container.firstChild).not.toHaveClass(
             "shadow-[4px_4px_12px_0px_rgba(0,0,0,0.12)]",
         );
+    });
+
+    it("deve aplicar cor #B0B0B0 nas legendas de DREs fora do filtro activeDres", () => {
+        render(
+            <GraficoDRE
+                intercorrenciasDre={mockIntercorrenciasDre}
+                activeDres={["108500"]}
+            />,
+        );
+        const butantaLabel = screen.getByText("DRE Butantã");
+        expect(butantaLabel).toHaveStyle({ color: "#42474a" });
+
+        const campoLimpoLabel = screen.getByText("DRE Campo Limpo");
+        expect(campoLimpoLabel).toHaveStyle({ color: "#B0B0B0" });
+
+        const itaqueraLabel = screen.getByText("DRE Itaquera");
+        expect(itaqueraLabel).toHaveStyle({ color: "#B0B0B0" });
+    });
+
+    it("não deve aplicar estilo disabled quando activeDres é vazio", () => {
+        render(
+            <GraficoDRE
+                intercorrenciasDre={mockIntercorrenciasDre}
+                activeDres={[]}
+            />,
+        );
+        const butantaLabel = screen.getByText("DRE Butantã");
+        expect(butantaLabel).toHaveStyle({ color: "#42474a" });
+
+        const campoLimpoLabel = screen.getByText("DRE Campo Limpo");
+        expect(campoLimpoLabel).toHaveStyle({ color: "#42474a" });
     });
 });

@@ -46,9 +46,25 @@ vi.mock("@/hooks/useGetUnidades", () => ({
         tipo_unidade?: string,
     ) => {
         if (tipo_unidade === "DRE") {
-            return { data: [{ uuid: "dre-uuid-1", nome: "DRE Butantã" }] };
+            return {
+                data: [
+                    {
+                        uuid: "dre-uuid-1",
+                        nome: "DRE Butantã",
+                        codigo_eol: "108600",
+                    },
+                ],
+            };
         }
-        return { data: [{ uuid: "ue-uuid-1", nome: "EMEF Teste" }] };
+        return {
+            data: [
+                {
+                    uuid: "ue-uuid-1",
+                    nome: "EMEF Teste",
+                    codigo_eol: "019455",
+                },
+            ],
+        };
     },
 }));
 
