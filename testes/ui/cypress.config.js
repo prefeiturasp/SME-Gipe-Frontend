@@ -27,12 +27,23 @@ const requiredEnvVars = [
   'RF_INVALIDO', 'SENHA_INVALIDA'
 ]
 
+// Detecta ambiente CI/CD (Jenkins injeta JENKINS_HOME; Docker pode injetar CI=true)
+const isCI = !!(process.env.JENKINS_HOME || process.env.CI || process.env.CI_BUILD_ID)
+
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName])
 
 if (missingVars.length > 0) {
-  console.error('ERRO: Variáveis obrigatórias não encontradas no .env:', missingVars.join(', '))
-  console.error('Arquivo .env:', envPath)
-  throw new Error(`Variáveis obrigatórias não encontradas no .env: ${missingVars.join(', ')}`)
+  if (isCI) {
+    // Em CI/CD as variáveis devem ser injetadas pelo Jenkins via secrets (-e VAR=valor no docker run)
+    // Apenas avisa para não abortar o Cypress — testes falharão individualmente se credenciais ausentes
+    console.warn('AVISO CI: Variáveis não encontradas (devem ser injetadas como secrets no Jenkins):', missingVars.join(', '))
+  } else {
+    // Em ambiente local, exige o arquivo .env preenchido
+    console.error('ERRO: Variáveis obrigatórias não encontradas no .env:', missingVars.join(', '))
+    console.error('Arquivo .env:', envPath)
+    console.error('Copie o .env.example para .env e preencha as credenciais.')
+    throw new Error(`Variáveis obrigatórias não encontradas no .env: ${missingVars.join(', ')}`)
+  }
 }
 
 module.exports = defineConfig({
