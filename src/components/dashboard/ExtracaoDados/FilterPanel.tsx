@@ -233,20 +233,25 @@ export default function FilterPanel({
     const [ues, setUes] = useState<string[]>([]);
     const [genero, setGenero] = useState("");
 
-    const dreUuid = dres.length === 1 ? dres[0] : undefined;
-
     const { data: categoriasDisponiveis } = useCategoriasDisponiveis();
     const etapasOptions = categoriasDisponiveis?.etapa_escolar ?? [];
 
     const { data: dreData = [] } = useGetUnidades(true, undefined, "DRE");
+
+    const dreUuid =
+        dres.length === 1
+            ? dreData.find((d: UnidadeEducacional) => d.codigo_eol === dres[0])
+                  ?.uuid
+            : undefined;
+
     const { data: ueData = [] } = useGetUnidades(true, dreUuid);
 
     const dreOptions = dreData.map((d: UnidadeEducacional) => ({
-        value: d.uuid,
+        value: d.codigo_eol,
         label: d.nome,
     }));
     const ueOptions = ueData.map((u: UnidadeEducacional) => ({
-        value: u.uuid,
+        value: u.codigo_eol,
         label: u.nome,
     }));
     const [etapas, setEtapas] = useState<string[]>([]);

@@ -4,6 +4,7 @@ import type { AnalyticsResponse } from "@/actions/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
 import { AlertCircle, Calendar, Pencil, Users } from "lucide-react";
+import type { FilterState } from "./FilterPanel";
 import GraficoDRE from "./GraficoDRE";
 import GraficoEvolucaoMensal from "./GraficoEvolucaoMensal";
 import GraficoStatusUE from "./GraficoStatusUE";
@@ -55,11 +56,13 @@ function extractCardValue(
 interface DashboardAnaliticoProps {
     isLoading?: boolean;
     analyticsData?: AnalyticsResponse;
+    filterState?: FilterState;
 }
 
 export default function DashboardAnalitico({
     isLoading = false,
     analyticsData,
+    filterState,
 }: Readonly<DashboardAnaliticoProps>) {
     const cards = analyticsData?.cards;
 
@@ -121,6 +124,7 @@ export default function DashboardAnalitico({
             <GraficoDRE
                 isLoading={isLoading}
                 intercorrenciasDre={analyticsData?.intercorrencias_dre}
+                activeDres={filterState?.dres}
             />
             <GraficoStatusUE
                 isLoading={isLoading}
@@ -129,6 +133,7 @@ export default function DashboardAnalitico({
             <GraficoEvolucaoMensal
                 isLoading={isLoading}
                 evolucaoMensal={analyticsData?.evolucao_mensal}
+                activeMeses={filterState?.meses}
             />
             <GraficoTipoIntercorrencias
                 isLoading={isLoading}

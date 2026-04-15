@@ -16,6 +16,7 @@ import {
 
 interface DreDado {
     nome: string;
+    codigoEol: string;
     total: number;
     patrimonial: number;
     interpessoal: number;
@@ -108,6 +109,7 @@ function buildDreData(
         const analytics = analyticsMap.get(unidade.codigo_eol);
         return {
             nome: unidade.nome,
+            codigoEol: unidade.codigo_eol,
             total: analytics?.total ?? 0,
             patrimonial: analytics?.patrimonial ?? 0,
             interpessoal: analytics?.interpessoal ?? 0,
@@ -120,10 +122,12 @@ export default function GraficoDRE({
     isLoading = false,
     pdfLayout = false,
     intercorrenciasDre,
+    activeDres,
 }: Readonly<{
     isLoading?: boolean;
     pdfLayout?: boolean;
     intercorrenciasDre?: IntercorrenciaDre[];
+    activeDres?: string[];
 }>) {
     const { data: dreUnidades = [] } = useGetUnidades(true, undefined, "DRE");
     const [hoveredNome, setHoveredNome] = useState<string | null>(null);
@@ -200,49 +204,73 @@ export default function GraficoDRE({
                     Diretorias Regionais de Educação (DREs):
                 </p>
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
-                    {dreDataMerged.map((d) => (
-                        <div key={d.nome} className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                                <span
-                                    className="inline-block w-3 h-3 rounded-[2px] shrink-0"
-                                    style={{ backgroundColor: d.cor }}
-                                />
-                                <span className="text-[#42474a] text-[14px] font-bold leading-tight">
-                                    {d.nome}
-                                </span>
+                    {dreDataMerged.map((d) => {
+                        const isDisabled =
+                            activeDres !== undefined &&
+                            activeDres.length > 0 &&
+                            !activeDres.includes(d.codigoEol);
+                        const textColor = isDisabled ? "#B0B0B0" : "#42474a";
+                        const subTextColor = isDisabled ? "#B0B0B0" : "#595959";
+                        return (
+                            <div key={d.nome} className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    <span
+                                        className="inline-block w-3 h-3 rounded-[2px] shrink-0"
+                                        style={{
+                                            backgroundColor: isDisabled
+                                                ? "#B0B0B0"
+                                                : d.cor,
+                                        }}
+                                    />
+                                    <span
+                                        className="text-[14px] font-bold leading-tight"
+                                        style={{ color: textColor }}
+                                    >
+                                        {d.nome}
+                                    </span>
+                                </div>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Total:{" "}
+                                    <b>
+                                        {d.total === 0
+                                            ? "0"
+                                            : String(d.total).padStart(2, "0")}
+                                    </b>
+                                </p>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Patrimonial:{" "}
+                                    <b>
+                                        {d.patrimonial === 0
+                                            ? "0"
+                                            : String(d.patrimonial).padStart(
+                                                  2,
+                                                  "0",
+                                              )}
+                                    </b>
+                                </p>
+                                <p
+                                    className="text-[14px] pl-[18px]"
+                                    style={{ color: subTextColor }}
+                                >
+                                    Interpessoal:{" "}
+                                    <b>
+                                        {d.interpessoal === 0
+                                            ? "0"
+                                            : String(d.interpessoal).padStart(
+                                                  2,
+                                                  "0",
+                                              )}
+                                    </b>
+                                </p>
                             </div>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Total:{" "}
-                                <b>
-                                    {d.total === 0
-                                        ? "0"
-                                        : String(d.total).padStart(2, "0")}
-                                </b>
-                            </p>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Patrimonial:{" "}
-                                <b>
-                                    {d.patrimonial === 0
-                                        ? "0"
-                                        : String(d.patrimonial).padStart(
-                                              2,
-                                              "0",
-                                          )}
-                                </b>
-                            </p>
-                            <p className="text-[#595959] text-[14px] pl-[18px]">
-                                Interpessoal:{" "}
-                                <b>
-                                    {d.interpessoal === 0
-                                        ? "0"
-                                        : String(d.interpessoal).padStart(
-                                              2,
-                                              "0",
-                                          )}
-                                </b>
-                            </p>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

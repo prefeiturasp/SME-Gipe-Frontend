@@ -16,6 +16,7 @@ import {
 interface EvolucaoMensalDado {
     mes: string;
     mesLabel: string;
+    mesNum: string;
     total: number;
     patrimonial: number;
     interpessoal: number;
@@ -49,6 +50,7 @@ function buildEvolucaoData(
         return {
             mes: config.abreviado,
             mesLabel: config.completo,
+            mesNum: String(mesNum).padStart(2, "0"),
             total: api?.total ?? 0,
             patrimonial: api?.patrimonial ?? 0,
             interpessoal: api?.interpessoal ?? 0,
@@ -125,10 +127,12 @@ export default function GraficoEvolucaoMensal({
     isLoading = false,
     pdfLayout = false,
     evolucaoMensal,
+    activeMeses,
 }: Readonly<{
     isLoading?: boolean;
     pdfLayout?: boolean;
     evolucaoMensal?: EvolucaoMensal[];
+    activeMeses?: string[];
 }>) {
     const evolucaoData = useMemo(
         () => buildEvolucaoData(evolucaoMensal),
@@ -209,35 +213,52 @@ export default function GraficoEvolucaoMensal({
                 <div
                     className={`grid gap-x-1 gap-y-1 text-[12px] ${pdfLayout ? "grid-cols-4" : "grid-cols-3 shrink-0"}`}
                 >
-                    {evolucaoData.map((d) => (
-                        <div
-                            key={d.mes}
-                            className="flex flex-col gap-0 w-[151px] h-[93px] border border-[#DADADA p-3"
-                        >
-                            <p className="text-[#42474a] font-bold text-[13px]">
-                                {d.mesLabel}
-                                {d.mes === "Abr" ? ":" : ""}
-                            </p>
-                            <p className="text-[#595959]">
-                                Total:{" "}
-                                {d.total === 0
-                                    ? "0"
-                                    : String(d.total).padStart(2, "0")}
-                            </p>
-                            <p className="text-[#595959]">
-                                Patrimonial:{" "}
-                                {d.patrimonial === 0
-                                    ? "0"
-                                    : String(d.patrimonial).padStart(2, "0")}
-                            </p>
-                            <p className="text-[#595959]">
-                                Interpessoal:{" "}
-                                {d.interpessoal === 0
-                                    ? "0"
-                                    : String(d.interpessoal).padStart(2, "0")}
-                            </p>
-                        </div>
-                    ))}
+                    {evolucaoData.map((d) => {
+                        const isDisabled =
+                            activeMeses !== undefined &&
+                            activeMeses.length > 0 &&
+                            !activeMeses.includes(d.mesNum);
+                        const titleColor = isDisabled ? "#B0B0B0" : "#42474a";
+                        const subColor = isDisabled ? "#B0B0B0" : "#595959";
+                        return (
+                            <div
+                                key={d.mes}
+                                className="flex flex-col gap-0 w-[151px] h-[93px] border border-[#DADADA] p-3"
+                            >
+                                <p
+                                    className="font-bold text-[13px]"
+                                    style={{ color: titleColor }}
+                                >
+                                    {d.mesLabel}
+                                    {d.mes === "Abr" ? ":" : ""}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Total:{" "}
+                                    {d.total === 0
+                                        ? "0"
+                                        : String(d.total).padStart(2, "0")}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Patrimonial:{" "}
+                                    {d.patrimonial === 0
+                                        ? "0"
+                                        : String(d.patrimonial).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </p>
+                                <p style={{ color: subColor }}>
+                                    Interpessoal:{" "}
+                                    {d.interpessoal === 0
+                                        ? "0"
+                                        : String(d.interpessoal).padStart(
+                                              2,
+                                              "0",
+                                          )}
+                                </p>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

@@ -156,19 +156,35 @@ export default function ExtracaoDadosPage() {
                     ref={refDRE}
                     style={{ padding: "12px", background: "white" }}
                 >
-                    <GraficoDRE isLoading={false} pdfLayout />
+                    <GraficoDRE
+                        isLoading={false}
+                        pdfLayout
+                        intercorrenciasDre={analyticsData?.intercorrencias_dre}
+                        activeDres={filterState.dres}
+                    />
                 </div>
                 <div
                     ref={refStatusUE}
                     style={{ padding: "12px", background: "white" }}
                 >
-                    <GraficoStatusUE isLoading={false} pdfLayout />
+                    <GraficoStatusUE
+                        isLoading={false}
+                        pdfLayout
+                        intercorrenciasStatus={
+                            analyticsData?.intercorrencias_status
+                        }
+                    />
                 </div>
                 <div
                     ref={refEvolucao}
                     style={{ padding: "12px", background: "white" }}
                 >
-                    <GraficoEvolucaoMensal isLoading={false} pdfLayout />
+                    <GraficoEvolucaoMensal
+                        isLoading={false}
+                        pdfLayout
+                        evolucaoMensal={analyticsData?.evolucao_mensal}
+                        activeMeses={filterState.meses}
+                    />
                 </div>
                 <div
                     ref={refTiposPatrimonial}
@@ -262,6 +278,7 @@ export default function ExtracaoDadosPage() {
                 <DashboardAnalitico
                     analyticsData={analyticsData}
                     isLoading={isLoadingAnalytics}
+                    filterState={filterState}
                 />
             </div>
         </div>
