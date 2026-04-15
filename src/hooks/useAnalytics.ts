@@ -40,7 +40,7 @@ export function useAnalytics(filters: FilterState) {
             if (!result.success) {
                 throw new Error(result.error);
             }
-            return result.data;
+            return result.data as AnalyticsResponse;
         },
         refetchOnWindowFocus: false,
         placeholderData: keepPreviousData,
