@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 export interface AnalyticsRequestBody {
     ano: number[];
     mes: string[];
-    periodo: string[];
+    periodo: number[];
     dre: string[];
     unidade: string[];
     genero: string[];

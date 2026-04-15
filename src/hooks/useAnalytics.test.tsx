@@ -36,6 +36,12 @@ const mockAnalyticsData: AnalyticsResponse = {
         },
     ],
     intercorrencias_status: [],
+    evolucao_mensal: [],
+    intercorrencias_tipos: {
+        patrimonial: {},
+        interpessoal: {},
+    },
+    total_por_motivo: {},
     cards: [
         { total_intercorrencia: 5 },
         { intercorrencias_patrimoniais: 2 },
@@ -123,7 +129,7 @@ describe("useAnalytics", () => {
         expect(analyticsAction.getAnalytics).toHaveBeenCalledWith({
             ano: [2025],
             mes: ["01", "02"],
-            periodo: ["1"],
+            periodo: [1],
             dre: ["uuid-dre-1"],
             unidade: ["uuid-ue-1"],
             genero: ["masculino"],

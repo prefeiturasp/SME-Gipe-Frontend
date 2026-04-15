@@ -10,7 +10,7 @@ function buildRequestBody(filters: FilterState): AnalyticsRequestBody {
     return {
         ano: [Number(filters.ano)],
         mes: filters.meses,
-        periodo: filters.bimestre,
+        periodo: filters.bimestre.map(Number),
         dre: filters.dres,
         unidade: filters.ues,
         genero: filters.genero ? [filters.genero] : [],
