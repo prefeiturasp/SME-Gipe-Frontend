@@ -17,7 +17,6 @@ pipeline {
     environment {
         ALLURE_PATH = 'testes/ui/allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
-        BUILD_ID_UNIQUE = "SME-GIPE_${BUILD_NUMBER}_${new Date().format('yyyyMMdd_HHmmss')}"
     }
 
     stages {
@@ -30,106 +29,53 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    echo "Iniciando execução dos testes Cypress..."
-                    
-                    // Carrega credenciais do Jenkins se existirem
-                    def envVars = [:]
-                    def credentialIds = [
-                        'gipe-rf-gipe': 'RF_GIPE',
-                        'gipe-senha-gipe': 'SENHA_GIPE',
-                        'gipe-rf-gipe-admin': 'RF_GIPE_ADMIN',
-                        'gipe-senha-gipe-admin': 'SENHA_GIPE_ADMIN',
-                        'gipe-rf-ue': 'RF_UE',
-                        'gipe-senha-ue': 'SENHA_UE',
-                        'gipe-rf-cadastro': 'RF_CADASTRO',
-                        'gipe-senha-cadastro': 'SENHA_CADASTRO',
-                        'gipe-rf-dre': 'RF_DRE',
-                        'gipe-senha-dre': 'SENHA_DRE',
-                        'gipe-cpf-carga': 'CPF_CARGA',
-                        'gipe-senha-carga': 'SENHA_CARGA',
-                        'gipe-rf-invalido': 'RF_INVALIDO',
-                        'gipe-senha-invalida': 'SENHA_INVALIDA'
-                    ]
-                    
-                    // Tenta carregar cada credencial individualmente
-                    credentialIds.each { credId, varName ->
-                        try {
-                            withCredentials([string(credentialsId: credId, variable: 'TEMP_VAR')]) {
-                                envVars[varName] = env.TEMP_VAR
-                            }
-                        } catch (Exception e) {
-                            echo "⚠️ Credential '${credId}' não encontrada, continuando sem ela..."
+                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                        withCredentials([file(credentialsId: "cypress_env_gipe", variable: 'env')]){
+                            sh '''
+                                touch testes/ui/.env
+                                cp "$env" "testes/ui/.env"
+                                docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                                docker run \
+                                    --rm \
+                                    -v "$WORKSPACE/testes/ui:/app" \
+                                    -w /app \
+                                    registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                                    sh -c "rm -rf allure-results && \
+                                        npm install && \
+                                        npm install cypress-cloud@1.13.1 \
+                                        @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                        npx cypress-cloud run \
+                                                --parallel \
+                                                --browser chrome \
+                                                --headed true \
+                                                --record \
+                                                --key somekey \
+                                                --reporter mocha-allure-reporter \
+                                                --reporter-options reportDir=allure-results \
+                                                --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                        chown 1001:1001 * -R && \
+                                        chmod 777 * -R"
+                            '''
                         }
                     }
-                    
-                    // Monta string de variáveis de ambiente para o Docker
-                    def envFlags = envVars.collect { k, v -> "-e ${k}='${v}'" }.join(' ')
-                    echo "Credenciais carregadas: ${envVars.keySet().join(', ')}"
-                    if (envVars.isEmpty()) {
-                        echo "⚠️ Nenhuma credencial carregada. Testes rodarão sem credenciais."
-                    }
-                    
-                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                        sh """
-                            docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                            docker run \
-                                --rm \
-                                -e CI=true \
-                                ${envFlags} \
-                                -v "\$WORKSPACE/testes/ui:/app" \
-                                -w /app \
-                                registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                sh -c "rm -rf allure-results && \
-                                       npm install --legacy-peer-deps && \
-                                       npm install cypress@14.5.2 cypress-cloud@1.13.1 \
-                                       @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                       npx cypress-cloud run \
-                                            --parallel \
-                                            --browser chrome \
-                                            --headed true \
-                                            --record \
-                                            --key somekey \
-                                            --reporter mocha-allure-reporter \
-                                            --reporter-options reportDir=allure-results \
-                                            --ci-build-id ${BUILD_ID_UNIQUE} && \
-                                        chown 1001:1001 * -R || true && \
-                                        chmod 777 * -R || true"
-                        """
-                    }
-
                     echo "Testes Cypress finalizados."
-                    
-                    def logText = currentBuild.rawBuild.getLog(100).join('\n')
-                    
-                    def matchUrl = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
-                    if (matchUrl) {
-                        env.CYPRESS_RUN_URL = matchUrl[0][1]
-                    }
-                    
-                    if (logText.contains('No specs executed')) {
-                        echo "ERRO: Nenhum teste foi executado!"
-                        echo "Verifique o conflito de specs no cypress-cloud."
-                        error("Pipeline abortado: Nenhum teste executado. Verifique os logs acima.")
-                    }
-                    
-                    def matchSpecs = logText =~ /(\d+)\s+of\s+(\d+)\s+spec files? complete/
-                    if (!matchSpecs) {
-                        echo "Aviso: Não foi possível confirmar a execução dos specs."
-                    } else {
-                        echo "Specs executados: ${matchSpecs[0][1]} de ${matchSpecs[0][2]}"
+                    def logText = currentBuild.rawBuild.getLog(20).join('\n')
+                    def match = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
+                    if (match) {
+                        env.CYPRESS_RUN_URL = match[0][1]
                     }
                 }
             }
         }
 
-        stage('Gerar Relatório Allure') {
+        stage('Gerar Relatorio Allure') {
             steps {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                         def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
                         if (hasResults) {
-                            echo "Gerando relatório Allure..."
+                            echo "Gerando relatorio Allure..."
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
@@ -160,11 +106,10 @@ pipeline {
                             sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
                     '''
                 }
-                
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
                 } else {
-                    echo "Resultados do Allure não encontrados ou vazios, plugin não será acionado."
+                    echo "Resultados do Allure nao encontrados ou vazios, plugin nao sera acionado."
                 }
 
                 def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
@@ -192,7 +137,6 @@ def sendTelegram(message) {
         "<b>Dashboard Link:</b> <a href='${env.CYPRESS_RUN_URL}'>Resultados no dashboard</a>\n" +
         "<b>Log:</b> <a href='${env.BUILD_URL}console'>Ver console output</a>"
     )
-    
     def encodedMessage = URLEncoder.encode(messageTemplate, "UTF-8")
 
     withCredentials([string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
