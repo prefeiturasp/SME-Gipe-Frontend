@@ -26,7 +26,7 @@ pipeline {
 
     environment {
 
-        ALLURE_PATH = 'testes/allure-results'
+        ALLURE_PATH = 'testes/ui/allure-results'
 
         WORKSPACE_DIR = "${env.WORKSPACE}"
 
@@ -56,9 +56,9 @@ pipeline {
 
                             sh '''
 
-                                touch testes/.env
+                                touch testes/ui/.env
 
-                                cp "$env" "testes/.env"
+                                cp "$env" "testes/ui/.env"
 
                                 docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
 
@@ -66,7 +66,7 @@ pipeline {
 
                                     --rm \
 
-                                    -v "$WORKSPACE/testes:/app" \
+                                    -v "$WORKSPACE/testes/ui:/app" \
 
                                     -w /app \
 
@@ -146,9 +146,9 @@ pipeline {
 
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
 
-                                allure generate ${ALLURE_PATH} --clean --output testes/allure-report; \
+                                allure generate ${ALLURE_PATH} --clean --output testes/ui/allure-report; \
 
-                                cd testes; \
+                                cd testes/ui; \
 
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
 
@@ -208,11 +208,11 @@ pipeline {
 
                 }
 
-                def zipExists = sh(script: "ls testes/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+                def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
 
                 if (zipExists) {
 
-                    archiveArtifacts artifacts: 'testes/allure-results-*.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
 
                 } else {
 
