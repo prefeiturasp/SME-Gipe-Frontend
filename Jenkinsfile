@@ -30,109 +30,36 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    // Tenta usar secrets do Jenkins para injetar credenciais no container.
-                    // Se os secrets não existirem (CredentialNotFoundException), executa
-                    // sem -e flags — comportamento idêntico ao pipeline original que funcionava.
-                    def credenciaisDisponiveis = true
-                    try {
-                        withCredentials([
-                            string(credentialsId: 'gipe-rf-gipe',           variable: 'RF_GIPE'),
-                            string(credentialsId: 'gipe-senha-gipe',         variable: 'SENHA_GIPE'),
-                            string(credentialsId: 'gipe-rf-gipe-admin',      variable: 'RF_GIPE_ADMIN'),
-                            string(credentialsId: 'gipe-senha-gipe-admin',   variable: 'SENHA_GIPE_ADMIN'),
-                            string(credentialsId: 'gipe-rf-ue',              variable: 'RF_UE'),
-                            string(credentialsId: 'gipe-senha-ue',           variable: 'SENHA_UE'),
-                            string(credentialsId: 'gipe-rf-cadastro',        variable: 'RF_CADASTRO'),
-                            string(credentialsId: 'gipe-senha-cadastro',     variable: 'SENHA_CADASTRO'),
-                            string(credentialsId: 'gipe-rf-dre',             variable: 'RF_DRE'),
-                            string(credentialsId: 'gipe-senha-dre',          variable: 'SENHA_DRE'),
-                            string(credentialsId: 'gipe-cpf-carga',          variable: 'CPF_CARGA'),
-                            string(credentialsId: 'gipe-senha-carga',        variable: 'SENHA_CARGA'),
-                            string(credentialsId: 'gipe-rf-invalido',        variable: 'RF_INVALIDO'),
-                            string(credentialsId: 'gipe-senha-invalida',     variable: 'SENHA_INVALIDA'),
-                        ]) {
-                            withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                                sh '''
-                                    docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                                    docker run \
-                                        --rm \
-                                        -e CI=true \
-                                        -e RF_GIPE="$RF_GIPE" \
-                                        -e SENHA_GIPE="$SENHA_GIPE" \
-                                        -e RF_GIPE_ADMIN="$RF_GIPE_ADMIN" \
-                                        -e SENHA_GIPE_ADMIN="$SENHA_GIPE_ADMIN" \
-                                        -e RF_UE="$RF_UE" \
-                                        -e SENHA_UE="$SENHA_UE" \
-                                        -e RF_CADASTRO="$RF_CADASTRO" \
-                                        -e SENHA_CADASTRO="$SENHA_CADASTRO" \
-                                        -e RF_DRE="$RF_DRE" \
-                                        -e SENHA_DRE="$SENHA_DRE" \
-                                        -e CPF_CARGA="$CPF_CARGA" \
-                                        -e SENHA_CARGA="$SENHA_CARGA" \
-                                        -e RF_INVALIDO="$RF_INVALIDO" \
-                                        -e SENHA_INVALIDA="$SENHA_INVALIDA" \
-                                        -v "$WORKSPACE/testes/ui:/app" \
-                                        -w /app \
-                                        registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                        sh -c "rm -rf allure-results && \
-                                               npm install --legacy-peer-deps && \
-                                               npm install cypress@14.5.2 cypress-cloud@beta \
-                                               @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                               npx cypress-cloud run \
-                                                    --parallel \
-                                                    --browser chrome \
-                                                    --headed true \
-                                                    --record \
-                                                    --key somekey \
-                                                    --reporter mocha-allure-reporter \
-                                                    --reporter-options reportDir=allure-results \
-                                                    --ci-build-id ${BUILD_ID_UNIQUE} && \
-                                                chown 1001:1001 * -R
-                                                chmod 777 * -R"
-                                '''
-                            }
-                        }
-                    } catch (Exception e) {
-                        def msg = e.message ?: e.class.simpleName
-                        if (msg.contains('CredentialNotFoundException') ||
-                            msg.contains('No such credential') ||
-                            msg.contains('Credentials with ID') ||
-                            msg.contains('CredentialsUnavailableException') ||
-                            e.class.simpleName.contains('Credentials')) {
-                            credenciaisDisponiveis = false
-                            echo "AVISO: Secrets de credenciais não encontrados no Jenkins ('${msg}'). Executando sem injeção de credenciais (comportamento idêntico ao pipeline original)."
-                        } else {
-                            throw e
-                        }
-                    }
-
-                    if (!credenciaisDisponiveis) {
-                        withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                            sh '''
-                                docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                                docker run \
-                                    --rm \
-                                    -e CI=true \
-                                    -v "$WORKSPACE/testes/ui:/app" \
-                                    -w /app \
-                                    registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                    sh -c "rm -rf allure-results && \
-                                           npm install --legacy-peer-deps && \
-                                           npm install cypress@14.5.2 cypress-cloud@beta \
-                                           @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                           npx cypress-cloud run \
-                                                --parallel \
-                                                --browser chrome \
-                                                --headed true \
-                                                --record \
-                                                --key somekey \
-                                                --reporter mocha-allure-reporter \
-                                                --reporter-options reportDir=allure-results \
-                                                --ci-build-id ${BUILD_ID_UNIQUE} && \
-                                            chown 1001:1001 * -R
-                                            chmod 777 * -R"
-                            '''
-                        }
+                    // Executa testes Cypress sem depender de credenciais específicas
+                    // As credenciais serão injetadas via cypress.env.json ou variáveis de ambiente
+                    // configuradas diretamente no Jenkins, se necessário.
+                    echo "Iniciando execução dos testes Cypress..."
+                    
+                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                        sh '''
+                            docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                            docker run \
+                                --rm \
+                                -e CI=true \
+                                -v "$WORKSPACE/testes/ui:/app" \
+                                -w /app \
+                                registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                                sh -c "rm -rf allure-results && \
+                                       npm install --legacy-peer-deps && \
+                                       npm install cypress@14.5.2 cypress-cloud@beta \
+                                       @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                       npx cypress-cloud run \
+                                            --parallel \
+                                            --browser chrome \
+                                            --headed true \
+                                            --record \
+                                            --key somekey \
+                                            --reporter mocha-allure-reporter \
+                                            --reporter-options reportDir=allure-results \
+                                            --ci-build-id ${BUILD_ID_UNIQUE} && \
+                                        chown 1001:1001 * -R || true && \
+                                        chmod 777 * -R || true"
+                        '''
                     }
 
                     echo "Testes Cypress finalizados."
