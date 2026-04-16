@@ -81,7 +81,7 @@ pipeline {
                                 registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
                                 sh -c "rm -rf allure-results && \
                                        npm install --legacy-peer-deps && \
-                                       npm install cypress@14.5.2 cypress-cloud@1.13.1 \
+                                       npm install cypress-cloud@1.13.1 \
                                        @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
                                        npx cypress-cloud run \
                                             --parallel \
