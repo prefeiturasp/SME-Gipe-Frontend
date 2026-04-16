@@ -30,18 +30,53 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    // Executa testes Cypress sem depender de credenciais específicas
-                    // As credenciais serão injetadas via cypress.env.json ou variáveis de ambiente
-                    // configuradas diretamente no Jenkins, se necessário.
                     echo "Iniciando execução dos testes Cypress..."
                     
+                    // Carrega credenciais do Jenkins se existirem
+                    def envVars = [:]
+                    def credentialIds = [
+                        'gipe-rf-gipe': 'RF_GIPE',
+                        'gipe-senha-gipe': 'SENHA_GIPE',
+                        'gipe-rf-gipe-admin': 'RF_GIPE_ADMIN',
+                        'gipe-senha-gipe-admin': 'SENHA_GIPE_ADMIN',
+                        'gipe-rf-ue': 'RF_UE',
+                        'gipe-senha-ue': 'SENHA_UE',
+                        'gipe-rf-cadastro': 'RF_CADASTRO',
+                        'gipe-senha-cadastro': 'SENHA_CADASTRO',
+                        'gipe-rf-dre': 'RF_DRE',
+                        'gipe-senha-dre': 'SENHA_DRE',
+                        'gipe-cpf-carga': 'CPF_CARGA',
+                        'gipe-senha-carga': 'SENHA_CARGA',
+                        'gipe-rf-invalido': 'RF_INVALIDO',
+                        'gipe-senha-invalida': 'SENHA_INVALIDA'
+                    ]
+                    
+                    // Tenta carregar cada credencial individualmente
+                    credentialIds.each { credId, varName ->
+                        try {
+                            withCredentials([string(credentialsId: credId, variable: 'TEMP_VAR')]) {
+                                envVars[varName] = env.TEMP_VAR
+                            }
+                        } catch (Exception e) {
+                            echo "⚠️ Credential '${credId}' não encontrada, continuando sem ela..."
+                        }
+                    }
+                    
+                    // Monta string de variáveis de ambiente para o Docker
+                    def envFlags = envVars.collect { k, v -> "-e ${k}='${v}'" }.join(' ')
+                    echo "Credenciais carregadas: ${envVars.keySet().join(', ')}"
+                    if (envVars.isEmpty()) {
+                        echo "⚠️ Nenhuma credencial carregada. Testes rodarão sem credenciais."
+                    }
+                    
                     withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                        sh '''
+                        sh """
                             docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
                             docker run \
                                 --rm \
                                 -e CI=true \
-                                -v "$WORKSPACE/testes/ui:/app" \
+                                ${envFlags} \
+                                -v "\$WORKSPACE/testes/ui:/app" \
                                 -w /app \
                                 registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
                                 sh -c "rm -rf allure-results && \
@@ -59,7 +94,7 @@ pipeline {
                                             --ci-build-id ${BUILD_ID_UNIQUE} && \
                                         chown 1001:1001 * -R || true && \
                                         chmod 777 * -R || true"
-                        '''
+                        """
                     }
 
                     echo "Testes Cypress finalizados."
