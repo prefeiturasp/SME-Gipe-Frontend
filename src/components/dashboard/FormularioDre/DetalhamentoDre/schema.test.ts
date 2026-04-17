@@ -3,10 +3,9 @@ import { formSchema } from "./schema";
 
 describe("FormularioDre Schema", () => {
     describe("Campos obrigatórios", () => {
-        it("deve validar com sucesso quando todos os radios são 'Não'", () => {
+        it("deve validar com sucesso quando todos os campos estão preenchidos corretamente", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Não" as const,
                 numeroProcedimentoSEITexto: "",
             };
@@ -15,10 +14,14 @@ describe("FormularioDre Schema", () => {
             expect(result.success).toBe(true);
         });
 
-        it("deve validar com sucesso quando numeroProcedimentoSEI é 'Sim' e texto está preenchido", () => {
+        it("deve validar com sucesso com múltiplos órgãos selecionados e SEI preenchido", () => {
             const data = {
-                acionamentoSegurancaPublica: "Sim" as const,
-                interlocucaoSupervisaoEscolar: "Sim" as const,
+                quaisOrgaosAcionadosDre: [
+                    "comunicacao_supervisao_tecnica_saude",
+                    "comunicacao_assistencia_social",
+                    "comunicacao_gcm_ronda_escolar",
+                    "comunicacao_gipe",
+                ],
                 numeroProcedimentoSEI: "Sim" as const,
                 numeroProcedimentoSEITexto: "1234.5678/9012345-6",
             };
@@ -26,13 +29,31 @@ describe("FormularioDre Schema", () => {
             const result = formSchema.safeParse(data);
             expect(result.success).toBe(true);
         });
+
+        it("deve falhar quando nenhum órgão é selecionado", () => {
+            const data = {
+                quaisOrgaosAcionadosDre: [],
+                numeroProcedimentoSEI: "Não" as const,
+                numeroProcedimentoSEITexto: "",
+            };
+
+            const result = formSchema.safeParse(data);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].path).toEqual([
+                    "quaisOrgaosAcionadosDre",
+                ]);
+                expect(result.error.issues[0].message).toBe(
+                    "Selecione pelo menos um órgão",
+                );
+            }
+        });
     });
 
     describe("Validação condicional - numeroProcedimentoSEI", () => {
         it("deve falhar quando numeroProcedimentoSEI é 'Sim' e numeroProcedimentoSEITexto está vazio", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Sim" as const,
                 numeroProcedimentoSEITexto: "",
             };
@@ -51,8 +72,7 @@ describe("FormularioDre Schema", () => {
 
         it("deve falhar quando numeroProcedimentoSEI é 'Sim' e numeroProcedimentoSEITexto tem apenas espaços", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Sim" as const,
                 numeroProcedimentoSEITexto: "   ",
             };
@@ -68,8 +88,7 @@ describe("FormularioDre Schema", () => {
 
         it("deve validar quando numeroProcedimentoSEI é 'Sim' e numeroProcedimentoSEITexto está preenchido", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Sim" as const,
                 numeroProcedimentoSEITexto: "1234.5678/9012345-6",
             };
@@ -80,8 +99,7 @@ describe("FormularioDre Schema", () => {
 
         it("deve validar quando numeroProcedimentoSEI é 'Não' e numeroProcedimentoSEITexto está vazio", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Não" as const,
                 numeroProcedimentoSEITexto: "",
             };
@@ -92,8 +110,7 @@ describe("FormularioDre Schema", () => {
 
         it("deve falhar quando numeroProcedimentoSEI é 'Sim' e numeroProcedimentoSEITexto é undefined", () => {
             const data = {
-                acionamentoSegurancaPublica: "Não" as const,
-                interlocucaoSupervisaoEscolar: "Não" as const,
+                quaisOrgaosAcionadosDre: ["comunicacao_gipe"],
                 numeroProcedimentoSEI: "Sim" as const,
                 numeroProcedimentoSEITexto: undefined,
             };

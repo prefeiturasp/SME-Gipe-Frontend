@@ -6,12 +6,23 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Control, FieldPath } from "react-hook-form";
+import { Control } from "react-hook-form";
 import { FormularioDreData } from "./schema";
+
+type StringFieldNames = Exclude<
+    {
+        [K in keyof FormularioDreData]: FormularioDreData[K] extends
+            | string
+            | undefined
+            ? K
+            : never;
+    }[keyof FormularioDreData],
+    undefined
+>;
 
 type RadioFormProps = {
     control: Control<FormularioDreData>;
-    name: FieldPath<FormularioDreData>;
+    name: StringFieldNames;
     label: string;
 };
 
@@ -27,7 +38,7 @@ export function RadioForm({ control, name, label }: Readonly<RadioFormProps>) {
                         <div className="pt-2">
                             <RadioGroup
                                 onValueChange={field.onChange}
-                                value={field.value ?? ""}
+                                value={(field.value as string) ?? ""}
                                 className="flex flex-col space-y-2"
                             >
                                 <label className="flex items-center space-x-2 w-fit cursor-pointer">
