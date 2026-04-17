@@ -111,6 +111,8 @@ module.exports = defineConfig({
       ALUNO_ESCOLA_UUID: process.env.ALUNO_ESCOLA_UUID,
       
       AUTH_TOKEN: process.env.AUTH_TOKEN,
+      API_USERNAME: process.env.RF_GIPE,
+      API_PASSWORD: process.env.SENHA_GIPE,
       
       GIPE_ESTUDANTES_BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br',
       DISPOSITIVO: 'WEB',
@@ -131,6 +133,21 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       allureWriter(on, config)
       on('file:preprocessor', cucumber())
+      on('task', {
+        lerArquivoSeguro(caminho) {
+          try {
+            const fs = require('fs')
+            const path = require('path')
+            const caminhoAbsoluto = path.isAbsolute(caminho) ? caminho : path.join(process.cwd(), caminho)
+            if (fs.existsSync(caminhoAbsoluto)) {
+              return fs.readFileSync(caminhoAbsoluto, 'utf8')
+            }
+            return null
+          } catch (e) {
+            return null
+          }
+        }
+      })
       return cloudPlugin(on, config).then((enhancedConfig) => {
         enhancedConfig.env = enhancedConfig.env || {}
         enhancedConfig.env.db = dbConfig

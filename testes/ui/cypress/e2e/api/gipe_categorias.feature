@@ -1,5 +1,5 @@
 #language: pt
-@skip @api @categorias
+@api @categorias
 Funcionalidade: API GIPE - Categorias Disponíveis
   Como usuário da API GIPE
   Quero consultar as categorias disponíveis

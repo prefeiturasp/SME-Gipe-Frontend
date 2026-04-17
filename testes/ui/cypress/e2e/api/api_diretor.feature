@@ -1,5 +1,5 @@
 #language: pt
-@skip @api @diretor
+@api @diretor
 Funcionalidade: API Diretor - Endpoint Diretor
   Como diretor de escola
   Quero gerenciar intercorrências através da API

@@ -233,13 +233,23 @@ Then('dre valida historico de ocorrencias', () => {
 // ── Dados para testes ────────────────────────────────────────────
 
 const dreNomesAgressores = [
+  // Brasileiros
   'João da Silva Santos', 'Maria Oliveira Costa', 'Pedro Henrique Almeida',
   'Ana Paula Rodrigues', 'Carlos Eduardo Martins', 'Juliana Souza Lima',
   'Rafael Fernandes Barbosa', 'Fernanda Costa Pereira', 'Lucas Martins Cardoso',
   'Amanda Silva Rocha', 'Bruno Oliveira Nascimento', 'Camila Alves Mendes',
-  'Diego Santos Ferreira', 'Patrícia Lima Gomes', 'Marcos Vinícius Dias'
+  'Diego Santos Ferreira', 'Patrícia Lima Gomes', 'Marcos Vinícius Dias',
+  // Origem Africana
+  'Amara Diallo Kouyaté', 'Fatou Balde Sow', 'Kofi Asante Mensah',
+  'Nia Okonkwo Adeyemi', 'Seun Abiodun Balogun',
+  // Origem Árabe
+  'Yasmin Khalil Haddad', 'Omar Nasser Saleh', 'Laila Farid Mansour',
+  'Karim Aziz Rachid', 'Nour Hamdan Aoun',
+  // Origem Europeia
+  'Sophie Müller Wagner', 'Luca Rossi Ferrari', 'Elena Dubois Moreau',
+  'Aleksander Kowalski Wiśniewski', 'Ingrid Larsen Andersen'
 ]
-const dreIdadesValidas = [18, 19, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50, 52, 55, 58, 60, 65]
+const dreIdadesValidas = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 const dreNacionalidades = [
   'Brasileira', 'Argentina', 'Boliviana', 'Colombiana', 'Peruana',
   'Paraguaia', 'Uruguaia', 'Venezuelana', 'Chilena', 'Haitiana',

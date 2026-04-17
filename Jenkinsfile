@@ -29,33 +29,36 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                        withCredentials([file(credentialsId: "cypress_env_gipe", variable: 'env')]){
-                            sh '''
-                                touch testes/ui/.env
-                                cp "$env" "testes/ui/.env"
-                                docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                                docker run \
-                                    --rm \
-                                    -v "$WORKSPACE/testes/ui:/app" \
-                                    -w /app \
-                                    registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                    sh -c "rm -rf allure-results && \
-                                        npm install && \
-                                        npm install cypress-cloud@1.13.1 \
-                                        @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                        npx cypress-cloud run \
-                                                --parallel \
-                                                --browser chrome \
-                                                --headed true \
-                                                --record \
-                                                --key somekey \
-                                                --reporter mocha-allure-reporter \
-                                                --reporter-options reportDir=allure-results \
-                                                --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                        chown 1001:1001 * -R && \
-                                        chmod 777 * -R"
-                            '''
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                            withCredentials([file(credentialsId: "cypress_env_gipe", variable: 'env')]){
+                                sh '''
+                                    touch testes/ui/.env
+                                    cp "$env" "testes/ui/.env"
+                                    docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                                    docker run \
+                                        --rm \
+                                        -e CI=true \
+                                        -v "$WORKSPACE/testes/ui:/app" \
+                                        -w /app \
+                                        registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                                        sh -c "rm -rf allure-results && \
+                                            npm install && \
+                                            npm install cypress-cloud@1.13.1 \
+                                            @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                            npx cypress-cloud run \
+                                                    --parallel \
+                                                    --browser chrome \
+                                                    --headed true \
+                                                    --record \
+                                                    --key somekey \
+                                                    --reporter mocha-allure-reporter \
+                                                    --reporter-options reportDir=allure-results \
+                                                    --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} ; \
+                                            chown 1001:1001 * -R || true ; \
+                                            chmod 777 * -R || true"
+                                '''
+                            }
                         }
                     }
                     echo "Testes Cypress finalizados."
@@ -100,6 +103,7 @@ pipeline {
                         docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
                         docker run \
                             --rm \
+                            -e CI=true \
                             -v "$WORKSPACE:/app" \
                             -w /app \
                             registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
