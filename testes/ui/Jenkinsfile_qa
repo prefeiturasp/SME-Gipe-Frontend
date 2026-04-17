@@ -128,10 +128,10 @@ pipeline {
             }
         }
 
-        success  { sendTelegram("<b>SUCESSO</b>")   }
-        unstable { sendTelegram("<b>INSTAVEL</b>")  }
-        failure  { sendTelegram("<b>FALHA</b>\n")   }
-        aborted  { sendTelegram("<b>CANCELADO</b>\n") }
+        success  { sendTelegram("<b>SUCESSO! ✅</b>")    }
+        unstable { sendTelegram("<b>INSTAVEL ⚠️</b>")  }
+        failure  { sendTelegram("<b>FALHA ❌</b>")      }
+        aborted  { sendTelegram("<b>CANCELADO 🚫</b>") }
     }
 }
 
