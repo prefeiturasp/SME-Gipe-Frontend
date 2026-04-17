@@ -2,16 +2,9 @@ import { z } from "zod";
 
 export const formSchema = z
     .object({
-        acionamentoSegurancaPublica: z
-            .enum(["Sim", "Não"], {
-                required_error: "Campo obrigatório",
-            })
-            .optional(),
-        interlocucaoSupervisaoEscolar: z
-            .enum(["Sim", "Não"], {
-                required_error: "Campo obrigatório",
-            })
-            .optional(),
+        quaisOrgaosAcionadosDre: z
+            .array(z.string())
+            .min(1, "Selecione pelo menos um órgão"),
         numeroProcedimentoSEI: z
             .enum(["Sim", "Não"], {
                 required_error: "Campo obrigatório",
