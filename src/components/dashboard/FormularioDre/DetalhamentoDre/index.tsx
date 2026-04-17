@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -46,10 +47,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            acionamentoSegurancaPublica:
-                formData.acionamentoSegurancaPublica ?? undefined,
-            interlocucaoSupervisaoEscolar:
-                formData.interlocucaoSupervisaoEscolar ?? undefined,
+            quaisOrgaosAcionadosDre: formData.quaisOrgaosAcionadosDre ?? [],
             numeroProcedimentoSEI: formData.numeroProcedimentoSEI ?? undefined,
             numeroProcedimentoSEITexto:
                 formData.numeroProcedimentoSEITexto ?? "",
@@ -65,10 +63,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                 body: {
                     unidade_codigo_eol: formData.unidadeEducacional!,
                     dre_codigo_eol: formData.dre!,
-                    acionamento_seguranca_publica:
-                        data.acionamentoSegurancaPublica === "Sim",
-                    interlocucao_supervisao_escolar:
-                        data.interlocucaoSupervisaoEscolar === "Sim",
+                    quais_orgaos_acionados_dre: data.quaisOrgaosAcionadosDre,
                     nr_processo_sei:
                         data.numeroProcedimentoSEI === "Sim"
                             ? data.numeroProcedimentoSEITexto
@@ -132,16 +127,77 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             Continuação da ocorrência
                         </h2>
                         <div className="flex flex-col gap-6">
-                            <RadioForm
+                            <FormField
                                 control={form.control}
-                                name="acionamentoSegurancaPublica"
-                                label="A ronda escolar foi acionada?*"
-                            />
-
-                            <RadioForm
-                                control={form.control}
-                                name="interlocucaoSupervisaoEscolar"
-                                label="A supervisão escolar foi comunicada?*"
+                                name="quaisOrgaosAcionadosDre"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Quais órgãos foram acionados pela
+                                            DRE?*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <div className="flex flex-col space-y-2 pt-2">
+                                                {(
+                                                    [
+                                                        {
+                                                            value: "comunicacao_supervisao_tecnica_saude",
+                                                            label: "Comunicação com Supervisão Técnica de Saúde",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_assistencia_social",
+                                                            label: "Comunicação com Assistência Social",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_gcm_ronda_escolar",
+                                                            label: "Comunicação com GCM/Ronda Escolar",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_gipe",
+                                                            label: "Comunicação com GIPE",
+                                                        },
+                                                    ] as const
+                                                ).map((option) => (
+                                                    <label
+                                                        key={option.value}
+                                                        className="flex items-center space-x-2 w-fit cursor-pointer"
+                                                    >
+                                                        <Checkbox
+                                                            checked={field.value?.includes(
+                                                                option.value,
+                                                            )}
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) => {
+                                                                const updated =
+                                                                    new Set(
+                                                                        field.value,
+                                                                    );
+                                                                if (checked)
+                                                                    updated.add(
+                                                                        option.value,
+                                                                    );
+                                                                else
+                                                                    updated.delete(
+                                                                        option.value,
+                                                                    );
+                                                                field.onChange(
+                                                                    Array.from(
+                                                                        updated,
+                                                                    ),
+                                                                );
+                                                            }}
+                                                        />
+                                                        <span className="text-sm text-[#42474a]">
+                                                            {option.label}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
 
                             <RadioForm
