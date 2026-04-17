@@ -1,5 +1,5 @@
 #language: pt
- @skip @api @api_gipe_principais
+ @api @api_gipe_principais
 Funcionalidade: API GIPE - Testes Principais
   Como usuário do sistema GIPE
   Quero validar os principais endpoints da API

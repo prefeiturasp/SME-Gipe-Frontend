@@ -18,7 +18,7 @@ Cenário: Consultar Unidades
   Então visualizo a página de Gestão de Unidades Educacionais
   E visualizo as abas "Unidades Educacionais ativas" e "Unidades Educacionais inativas"
 
-@skip @cadastro_unidade_indireta
+@cadastro_unidade_indireta
 Cenário: Cadastrar nova unidade (indireta)
   Quando acesso o menu de Gestão
   E clica na opção "Gestão de unidades Educacionais"

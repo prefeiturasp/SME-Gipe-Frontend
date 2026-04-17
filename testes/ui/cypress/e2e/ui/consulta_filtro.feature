@@ -1,6 +1,6 @@
 # language: pt
 
-@skip @consulta_filtro @smoke @regression
+@consulta_filtro @smoke @regression
 Funcionalidade: Consulta por Filtro
   Como usuário autorizado do sistema GIPE
   Eu quero filtrar ocorrencia
@@ -28,7 +28,7 @@ Funcionalidade: Consulta por Filtro
     Então o usuário valida a existencia do botão "Filtrar" do painel
     E clica no botão "Filtrar" do painel para Completa consulta
 
-  @consulta @filtro @tipo_ocorrencia
+  @filtro @tipo_ocorrencia
   Cenário: Consulta por Tipo de Ocorrencia
     Dado que o usuário valida o texto "Histórico de ocorrência registradas"
     E o usuário valida e clica no botão "Filtrar"

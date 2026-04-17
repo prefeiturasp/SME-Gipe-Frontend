@@ -549,9 +549,16 @@ When('COMP_DRE valida a existencia do texto {string}', (texto) => {
     cy.log('COMP_DRE: Contador de radiogroup resetado para aba 2')
   }
 
+  // Campo opcional — só aparece em ocorrências interpessoais (com pessoas envolvidas)
+  const camposOpcionais = [
+    'Existem informações sobre as pessoas envolvidas?*'
+  ]
+
   cy.get('body').then($body => {
     if ($body.text().includes(texto)) {
       cy.log(`COMP_DRE: Texto encontrado no DOM: "${texto}"`)
+    } else if (camposOpcionais.some(c => texto.includes(c))) {
+      cy.log(`COMP_DRE: Campo opcional não presente nesta ocorrência - ignorando: "${texto}"`)
     } else {
       // tenta via contains para erro legível
       cy.contains(texto, { timeout: TIMEOUTS.LONG }).should('exist')

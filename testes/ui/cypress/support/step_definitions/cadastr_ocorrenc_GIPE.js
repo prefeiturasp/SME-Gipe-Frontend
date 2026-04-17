@@ -68,6 +68,7 @@ const aba3CamposInput = aba3CamposInputXPath
 // ==================== DADOS PARA TESTES ====================
 
 const nomesAgressores = [
+  // Brasileiros
   'João da Silva Santos',
   'Maria Oliveira Costa',
   'Pedro Henrique Almeida',
@@ -82,12 +83,29 @@ const nomesAgressores = [
   'Camila Alves Mendes',
   'Diego Santos Ferreira',
   'Patrícia Lima Gomes',
-  'Marcos Vinícius Dias'
+  'Marcos Vinícius Dias',
+  // Origem Africana
+  'Amara Diallo Kouyaté',
+  'Fatou Balde Sow',
+  'Kofi Asante Mensah',
+  'Nia Okonkwo Adeyemi',
+  'Seun Abiodun Balogun',
+  // Origem Árabe
+  'Yasmin Khalil Haddad',
+  'Omar Nasser Saleh',
+  'Laila Farid Mansour',
+  'Karim Aziz Rachid',
+  'Nour Hamdan Aoun',
+  // Origem Europeia
+  'Sophie Müller Wagner',
+  'Luca Rossi Ferrari',
+  'Elena Dubois Moreau',
+  'Aleksander Kowalski Wiśniewski',
+  'Ingrid Larsen Andersen'
 ]
 
 const idadesValidas = [
-  18, 19, 20, 22, 25, 28, 30, 32, 35, 38,
-  40, 42, 45, 48, 50, 52, 55, 58, 60, 65
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 ]
 
 const nacionalidades = [

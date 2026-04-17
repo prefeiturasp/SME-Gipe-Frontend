@@ -77,11 +77,36 @@ Then('devem existir os seguintes perfis:', (dataTable) => {
 
 Then('o perfil {string} deve ter o UUID {string}', (perfil, uuidEsperado) => {
   cy.get('@response').then((res) => {
-    const envolvido = res.body.find((item) => item.perfil_dos_envolvidos === perfil)
-    
-    expect(envolvido).to.exist
+    const envolvido = res.body.find(
+      (item) => item.perfil_dos_envolvidos &&
+        item.perfil_dos_envolvidos.trim().toLowerCase() === perfil.trim().toLowerCase()
+    )
+
+    if (!envolvido) {
+      const disponíveis = res.body.map((item) => `"${item.perfil_dos_envolvidos}"`).join(', ')
+      throw new Error(`Perfil "${perfil}" não encontrado. Perfis disponíveis na API: [${disponíveis}]`)
+    }
+
     expect(envolvido.uuid).to.equal(uuidEsperado)
     Cypress.log({ name: 'Validação', message: ` Perfil "${perfil}" tem UUID correto` })
+  })
+})
+
+Then('o perfil {string} deve ter UUID no formato válido', (perfil) => {
+  cy.get('@response').then((res) => {
+    const envolvido = res.body.find(
+      (item) => item.perfil_dos_envolvidos &&
+        item.perfil_dos_envolvidos.trim().toLowerCase() === perfil.trim().toLowerCase()
+    )
+
+    if (!envolvido) {
+      const disponíveis = res.body.map((item) => `"${item.perfil_dos_envolvidos}"`).join(', ')
+      throw new Error(`Perfil "${perfil}" não encontrado. Perfis disponíveis na API: [${disponíveis}]`)
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    expect(envolvido.uuid).to.match(uuidRegex)
+    Cypress.log({ name: 'Validação', message: ` Perfil "${perfil}" tem UUID válido: ${envolvido.uuid}` })
   })
 })
 

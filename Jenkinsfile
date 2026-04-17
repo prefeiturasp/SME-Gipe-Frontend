@@ -38,6 +38,7 @@ pipeline {
                                     docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
                                     docker run \
                                         --rm \
+                                        -e CI=true \
                                         -v "$WORKSPACE/testes/ui:/app" \
                                         -w /app \
                                         registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
@@ -102,6 +103,7 @@ pipeline {
                         docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
                         docker run \
                             --rm \
+                            -e CI=true \
                             -v "$WORKSPACE:/app" \
                             -w /app \
                             registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
