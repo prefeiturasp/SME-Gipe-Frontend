@@ -1,5 +1,4 @@
 import '@shelex/cypress-allure-plugin'
-import "cypress-cloud/support"
 import './commands'  // ⭐ Comandos customizados
 import './commands_ui/commands_login'
 import './commands_ui/commands_cadastro'

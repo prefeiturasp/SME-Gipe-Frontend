@@ -1,94 +1,59 @@
 pipeline {
-    agent {
-        label 'cypress-node'
+    environment {
+        branchname         = env.BRANCH_NAME.toLowerCase()
+        kubeconfig         = getKubeconf(env.branchname)
+        registryCredential = 'jenkins_registry'
+        namespace          = "${env.branchname == 'development' ? 'gipe-dev' : env.branchname == 'release' ? 'gipe-hom' : env.branchname == 'release-r2' ? 'gipe-hom2' : 'sme-gipe'}"
     }
 
-    triggers {
-        cron('30 20 * * 0-5')
+    agent {
+        kubernetes {
+            label 'builder'
+            defaultContainer 'builder'
+        }
     }
 
     options {
-        ansiColor('xterm')
-        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20'))
+        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '5'))
         disableConcurrentBuilds()
         skipDefaultCheckout()
     }
 
-    environment {
-        ALLURE_PATH = 'testes/ui/allure-results'
-        WORKSPACE_DIR = "${env.WORKSPACE}"
-    }
-
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+        stage('CheckOut') {
+            steps { checkout scm }
         }
 
-        stage('Executar') {
+        stage('Build') {
+            when { anyOf { branch 'master'; branch 'main'; branch "story/*"; branch 'development'; branch 'release'; branch 'homolog'; } }
             steps {
                 script {
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                            withCredentials([file(credentialsId: "cypress_env_gipe", variable: 'env')]){
-                                sh '''
-                                    touch testes/ui/.env
-                                    cp "$env" "testes/ui/.env"
-                                    docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                                    docker run \
-                                        --rm \
-                                        -e CI=true \
-                                        -v "$WORKSPACE/testes/ui:/app" \
-                                        -w /app \
-                                        registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                        sh -c "rm -rf allure-results && \
-                                            npm install && \
-                                            npm install cypress-cloud@1.13.1 \
-                                            @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                            npx cypress-cloud run \
-                                                    --parallel \
-                                                    --browser chrome \
-                                                    --headed true \
-                                                    --record \
-                                                    --key somekey \
-                                                    --reporter mocha-allure-reporter \
-                                                    --reporter-options reportDir=allure-results \
-                                                    --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} ; \
-                                            chown 1001:1001 * -R || true ; \
-                                            chmod 777 * -R || true"
-                                '''
-                            }
-                        }
+                    imagename1  = "registry.sme.prefeitura.sp.gov.br/${env.branchname}/sme-gipe-frontend"
+                    dockerImage1 = docker.build(imagename1, "-f Dockerfile .")
+                    docker.withRegistry('https://registry.sme.prefeitura.sp.gov.br', registryCredential) {
+                        dockerImage1.push()
                     }
-                    echo "Testes Cypress finalizados."
-                    def logText = currentBuild.rawBuild.getLog(20).join('\n')
-                    def match = logText =~ /Recorded Run:\s*(https?:\/\/\S+)/
-                    if (match) {
-                        env.CYPRESS_RUN_URL = match[0][1]
-                    }
+                    sh "docker rmi $imagename1"
                 }
             }
         }
 
-        stage('Gerar Relatorio Allure') {
+        stage('Deploy') {
+            when { anyOf { branch 'master'; branch 'main'; branch 'development'; branch 'release'; branch 'homolog'; } }
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                        def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
-
-                        if (hasResults) {
-                            echo "Gerando relatorio Allure..."
-                            sh """
-                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
-                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH; \
-                                allure generate ${ALLURE_PATH} --clean --output testes/ui/allure-report; \
-                                cd testes/ui; \
-                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
-                            """
-                        } else {
-                            echo "Nenhum resultado Allure encontrado em ${ALLURE_PATH}."
+                    if (env.branchname == 'main' || env.branchname == 'master') {
+                        withCredentials([string(credentialsId: 'aprovadores-sgp', variable: 'aprovadores')]) {
+                            timeout(time: 24, unit: "HOURS") {
+                                input message: 'Deseja realizar o deploy?', ok: 'SIM', submitter: "${aprovadores}"
+                            }
                         }
+                    }
+                    withCredentials([file(credentialsId: "${kubeconfig}", variable: 'config')]) {
+                        sh('if [ -f '+"$home"+'/.kube/config ];then rm -f '+"$home"+'/.kube/config; fi')
+                        sh('cp $config '+"$home"+'/.kube/config')
+                        sh "kubectl rollout restart deployment sme-gipe-frontend -n ${namespace}"
+                        sh('rm -f '+"$home"+'/.kube/config')
                     }
                 }
             }
@@ -97,59 +62,15 @@ pipeline {
 
     post {
         always {
-            script {
-                withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                    sh '''
-                        docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                        docker run \
-                            --rm \
-                            -e CI=true \
-                            -v "$WORKSPACE:/app" \
-                            -w /app \
-                            registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                            sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
-                    '''
-                }
-                if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-                    allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
-                } else {
-                    echo "Resultados do Allure nao encontrados ou vazios, plugin nao sera acionado."
-                }
-
-                def zipExists = sh(script: "ls testes/ui/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
-                if (zipExists) {
-                    archiveArtifacts artifacts: 'testes/ui/allure-results-*.zip', fingerprint: true
-                } else {
-                    echo "Nenhum .zip de Allure encontrado para arquivamento."
-                }
-            }
+            sh('if [ -f '+"$home"+'/.kube/config ];then rm -f '+"$home"+'/.kube/config; fi')
         }
-
-        success { sendTelegram("<b>SUCESSO</b>") }
-        unstable { sendTelegram("<b>INSTAVEL</b>") }
-        failure { sendTelegram("<b>FALHA</b>\n") }
-        aborted { sendTelegram("<b>CANCELADO</b>\n") }
     }
 }
 
-
-def sendTelegram(message) {
-    def messageTemplate = (
-        "<b>Job Name:</b> <a href='${JOB_URL}'>${JOB_NAME}</a>\n\n" +
-        "<b>Status:</b> ${message}\n" +
-        "<b>Build Number:</b> ${BUILD_DISPLAY_NAME}\n" +
-        "<b>Dashboard Link:</b> <a href='${env.CYPRESS_RUN_URL}'>Resultados no dashboard</a>\n" +
-        "<b>Log:</b> <a href='${env.BUILD_URL}console'>Ver console output</a>"
-    )
-    def encodedMessage = URLEncoder.encode(messageTemplate, "UTF-8")
-
-    withCredentials([string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
-    string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')]) {
-        response = httpRequest (consoleLogResponseBody: true,
-            contentType: 'APPLICATION_JSON',
-            httpMode: 'GET',
-            url: 'https://api.telegram.org/bot'+"$TOKEN"+'/sendMessage?text='+encodedMessage+'&chat_id='+"$CHAT_ID"+'&parse_mode='+"HTML"+'&disable_web_page_preview=true',
-            validResponseCodes: '200')
-        return response
-    }
+def getKubeconf(branchName) {
+    if ("main".equals(branchName))        { return "config_prd";     }
+    else if ("master".equals(branchName)) { return "config_prd";     }
+    else if ("homolog".equals(branchName)){ return "config_release"; }
+    else if ("release".equals(branchName)){ return "config_release"; }
+    else if ("development".equals(branchName)) { return "config_release"; }
 }

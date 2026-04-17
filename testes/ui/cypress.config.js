@@ -113,6 +113,7 @@ module.exports = defineConfig({
       AUTH_TOKEN: process.env.AUTH_TOKEN,
       API_USERNAME: process.env.RF_GIPE,
       API_PASSWORD: process.env.SENHA_GIPE,
+      CI: !!(process.env.JENKINS_HOME || process.env.CI || process.env.CI_BUILD_ID),
       
       GIPE_ESTUDANTES_BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br',
       DISPOSITIVO: 'WEB',
@@ -130,9 +131,14 @@ module.exports = defineConfig({
       TEMPO_RESPOSTA_ALUNO: 30
     },
 
-    setupNodeEvents(on, config) {
+    async setupNodeEvents(on, config) {
+      // 1o — Allure
       allureWriter(on, config)
+
+      // 2o — Cucumber
       on('file:preprocessor', cucumber())
+
+      // 3o — Tasks customizadas
       on('task', {
         lerArquivoSeguro(caminho) {
           try {
@@ -148,11 +154,14 @@ module.exports = defineConfig({
           }
         }
       })
-      return cloudPlugin(on, config).then((enhancedConfig) => {
-        enhancedConfig.env = enhancedConfig.env || {}
-        enhancedConfig.env.db = dbConfig
-        return enhancedConfig
-      })
+
+      // 4o — ENV customizadas (ANTES do cloudPlugin)
+      config.env = config.env || {}
+      config.env.db = dbConfig
+
+      // 5o — Cypress Cloud (SEMPRE POR ULTIMO)
+      const enhancedConfig = await cloudPlugin(on, config)
+      return enhancedConfig
     },
   },
 })

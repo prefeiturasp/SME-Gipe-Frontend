@@ -42,3 +42,7 @@ next-env.d.ts
 
 # local scripts
 /scripts/
+
+# prompts locais de referencia
+prompt-*.md
+testes/ui/prompt-*.md
