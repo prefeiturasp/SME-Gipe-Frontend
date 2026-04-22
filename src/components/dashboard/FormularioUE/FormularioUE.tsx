@@ -327,6 +327,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     "Sim",
                 ocorrencia_acompanhada_pelo:
                     informacoesAdicionaisData.acompanhadoNAAPA,
+                nr_processo_sei:
+                    informacoesAdicionaisData.numeroProcedimentoSEI === "Sim"
+                        ? informacoesAdicionaisData.numeroProcedimentoSEITexto
+                        : "",
             }),
         };
     };
