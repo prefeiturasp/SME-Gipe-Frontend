@@ -1068,6 +1068,35 @@ describe("FormularioUE", () => {
             });
         });
 
+        it("deve incluir numeroProcedimentoSEITexto em nr_processo_sei quando numeroProcedimentoSEI é 'Sim'", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            mockInfoAdicionaisGetData.mockReturnValue({
+                pessoasAgressoras: [{ nome: "João", idade: "15" }],
+                motivoOcorrencia: "Bullying",
+                notificadoConselhoTutelar: "Sim",
+                acompanhadoNAAPA: ["naapa"],
+                numeroProcedimentoSEI: "Sim",
+                numeroProcedimentoSEITexto: "1234.5678/9012345-6",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.nr_processo_sei).toBe("1234.5678/9012345-6");
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
         it("deve mapear pessoasAgressoras corretamente convertendo idade para número", async () => {
             mockStoreState.formData = {
                 tipoOcorrencia: "Não",

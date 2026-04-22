@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { NumeroProcedimentoSEI } from "@/components/dashboard/shared/NumeroProcedimentoSEI";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import Envolvidos from "./Envolvidos";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 export type InformacoesAdicionaisProps = {
@@ -79,10 +80,14 @@ const InformacoesAdicionais = forwardRef<
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
             acompanhadoNAAPA: formData.acompanhadoNAAPA ?? [],
+            numeroProcedimentoSEI: formData.numeroProcedimentoSEI ?? undefined,
+            numeroProcedimentoSEITexto:
+                formData.numeroProcedimentoSEITexto ?? "",
         },
     });
 
     const { isValid } = form.formState;
+    const numeroProcedimentoSEI = form.watch("numeroProcedimentoSEI");
 
     // Expõe métodos para o componente pai via ref
     useImperativeHandle(ref, () => ({
@@ -111,6 +116,7 @@ const InformacoesAdicionais = forwardRef<
                     "acompanhadoNAAPA",
                 ])
             ) {
+                setFormData(data);
                 onNext?.();
                 return;
             }
@@ -141,6 +147,10 @@ const InformacoesAdicionais = forwardRef<
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
                         ocorrencia_acompanhada_pelo: data.acompanhadoNAAPA,
+                        nr_processo_sei:
+                            data.numeroProcedimentoSEI === "Sim"
+                                ? data.numeroProcedimentoSEITexto
+                                : "",
                     },
                 },
                 {
@@ -212,53 +222,11 @@ const InformacoesAdicionais = forwardRef<
                         )}
                     />
 
-                    <FormField
+                    <RadioSimNao
                         control={form.control}
                         name="notificadoConselhoTutelar"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    A ocorrência foi notificada ao CT (Conselho
-                                    Tutelar)?*
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                            disabled={disabled}
-                                            className="flex flex-col space-y-2"
-                                        >
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Sim" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Sim
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Não" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Não
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                        label="A ocorrência foi notificada ao CT (Conselho Tutelar)?*"
+                        disabled={disabled}
                     />
 
                     <FormField
@@ -267,7 +235,7 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência está sendo acompanhada pelo:
+                                    A ocorrência está sendo acompanhada por:
                                 </FormLabel>
                                 <div className="pt-2 flex flex-col space-y-2">
                                     {(
@@ -282,6 +250,10 @@ const InformacoesAdicionais = forwardRef<
                                                 label: "Supervisão Escolar",
                                             },
                                             { value: "cefai", label: "CEFAI" },
+                                            {
+                                                value: "vara_da_infancia",
+                                                label: "Vara da infância",
+                                            },
                                         ] as const
                                     ).map((option) => (
                                         <label
@@ -327,6 +299,21 @@ const InformacoesAdicionais = forwardRef<
                             </FormItem>
                         )}
                     />
+
+                    <RadioSimNao
+                        control={form.control}
+                        name="numeroProcedimentoSEI"
+                        label="Foi aberto um processo SEI?"
+                        disabled={disabled}
+                    />
+
+                    {numeroProcedimentoSEI === "Sim" && (
+                        <NumeroProcedimentoSEI
+                            control={form.control}
+                            name="numeroProcedimentoSEITexto"
+                            disabled={disabled}
+                        />
+                    )}
 
                     {showButtons && (
                         <div className="flex justify-end gap-2">

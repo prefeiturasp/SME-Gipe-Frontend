@@ -203,5 +203,9 @@ export function transformOcorrenciaToFormData(
         }),
         ...(possuiInfoAgressorVitima && { possuiInfoAgressorVitima }),
         ...infoAdicionais,
+        numeroProcedimentoSEI: ocorrencia.nr_processo_sei
+            ? ("Sim" as const)
+            : ("Não" as const),
+        numeroProcedimentoSEITexto: ocorrencia.nr_processo_sei ?? "",
     };
 }

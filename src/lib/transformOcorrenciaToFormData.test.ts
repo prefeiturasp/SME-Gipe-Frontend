@@ -504,4 +504,44 @@ describe("transformOcorrenciaToFormData", () => {
             });
         });
     });
+
+    describe("nr_processo_sei", () => {
+        it("deve mapear nr_processo_sei com valor para numeroProcedimentoSEI 'Sim' e texto preenchido", () => {
+            const ocorrencia: OcorrenciaDetalheAPI = {
+                ...baseOcorrencia,
+                nr_processo_sei: "1234.5678/9012345-6",
+            };
+
+            const result = transformOcorrenciaToFormData(ocorrencia);
+
+            expect(result.numeroProcedimentoSEI).toBe("Sim");
+            expect(result.numeroProcedimentoSEITexto).toBe(
+                "1234.5678/9012345-6",
+            );
+        });
+
+        it("deve mapear nr_processo_sei vazio para numeroProcedimentoSEI 'Não' e texto vazio", () => {
+            const ocorrencia: OcorrenciaDetalheAPI = {
+                ...baseOcorrencia,
+                nr_processo_sei: "",
+            };
+
+            const result = transformOcorrenciaToFormData(ocorrencia);
+
+            expect(result.numeroProcedimentoSEI).toBe("Não");
+            expect(result.numeroProcedimentoSEITexto).toBe("");
+        });
+
+        it("deve mapear nr_processo_sei undefined para numeroProcedimentoSEI 'Não' e texto vazio", () => {
+            const ocorrencia: OcorrenciaDetalheAPI = {
+                ...baseOcorrencia,
+                nr_processo_sei: undefined,
+            };
+
+            const result = transformOcorrenciaToFormData(ocorrencia);
+
+            expect(result.numeroProcedimentoSEI).toBe("Não");
+            expect(result.numeroProcedimentoSEITexto).toBe("");
+        });
+    });
 });

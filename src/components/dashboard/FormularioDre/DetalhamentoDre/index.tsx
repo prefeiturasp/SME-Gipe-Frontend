@@ -1,5 +1,7 @@
 "use client";
 
+import { NumeroProcedimentoSEI } from "@/components/dashboard/shared/NumeroProcedimentoSEI";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -11,7 +13,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { InputMask } from "@/components/ui/input";
 import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
@@ -24,7 +25,6 @@ import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
-import { RadioForm } from "./RadioForm";
 import { formSchema, FormularioDreData } from "./schema";
 
 export type DetalhamentoDreProps = {
@@ -200,33 +200,16 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                                 )}
                             />
 
-                            <RadioForm
+                            <RadioSimNao
                                 control={form.control}
                                 name="numeroProcedimentoSEI"
                                 label="Há um número do processo SEI?*"
                             />
 
                             {numeroProcedimentoSEI === "Sim" && (
-                                <FormField
+                                <NumeroProcedimentoSEI
                                     control={form.control}
                                     name="numeroProcedimentoSEITexto"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Número do processo SEI*
-                                            </FormLabel>
-                                            <FormControl>
-                                                <InputMask
-                                                    maskProps={{
-                                                        mask: "9999.9999/9999999-9",
-                                                    }}
-                                                    placeholder="Exemplo: 1234.5678/9012345-6"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
                                 />
                             )}
                         </div>
