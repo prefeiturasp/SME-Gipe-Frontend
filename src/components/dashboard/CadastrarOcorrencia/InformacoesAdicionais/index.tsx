@@ -10,9 +10,8 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { InputMask } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { NumeroProcedimentoSEI } from "@/components/dashboard/shared/NumeroProcedimentoSEI";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
@@ -21,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import Envolvidos from "./Envolvidos";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
 
 export type InformacoesAdicionaisProps = {
@@ -222,53 +222,11 @@ const InformacoesAdicionais = forwardRef<
                         )}
                     />
 
-                    <FormField
+                    <RadioSimNao
                         control={form.control}
                         name="notificadoConselhoTutelar"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    A ocorrência foi notificada ao CT (Conselho
-                                    Tutelar)?*
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                            disabled={disabled}
-                                            className="flex flex-col space-y-2"
-                                        >
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Sim" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Sim
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Não" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Não
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                        label="A ocorrência foi notificada ao CT (Conselho Tutelar)?*"
+                        disabled={disabled}
                     />
 
                     <FormField
@@ -342,76 +300,18 @@ const InformacoesAdicionais = forwardRef<
                         )}
                     />
 
-                    <FormField
+                    <RadioSimNao
                         control={form.control}
                         name="numeroProcedimentoSEI"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Foi aberto um processo SEI?
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                            disabled={disabled}
-                                            className="flex flex-col space-y-2"
-                                        >
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Sim" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Sim
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Não" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Não
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                        label="Foi aberto um processo SEI?"
+                        disabled={disabled}
                     />
 
                     {numeroProcedimentoSEI === "Sim" && (
-                        <FormField
+                        <NumeroProcedimentoSEI
                             control={form.control}
                             name="numeroProcedimentoSEITexto"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        Número do processo SEI*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <InputMask
-                                            maskProps={{
-                                                mask: "9999.9999/9999999-9",
-                                            }}
-                                            placeholder="Exemplo: 1234.5678/9012345-6"
-                                            disabled={disabled}
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            disabled={disabled}
                         />
                     )}
 
