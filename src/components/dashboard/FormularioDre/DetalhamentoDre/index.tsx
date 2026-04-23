@@ -24,15 +24,25 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import { DRE_QUESTION_COUNT } from "../../CadastrarOcorrencia/questionNumberingUtils";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
 import { formSchema, FormularioDreData } from "./schema";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
     readonly onNext?: () => void;
+    readonly startingQuestionNumber?: number;
 };
 
-export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
+export function DetalhamentoDre({
+    onPrevious,
+    onNext,
+    startingQuestionNumber,
+}: DetalhamentoDreProps) {
+    const qn = (offset: number) =>
+        startingQuestionNumber == null
+            ? ""
+            : `${startingQuestionNumber + offset}. `;
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
@@ -133,8 +143,8 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Quais órgãos foram acionados pela
-                                            DRE?*
+                                            {qn(0)}Quais órgãos foram acionados
+                                            pela DRE?*
                                         </FormLabel>
                                         <FormControl>
                                             <div className="flex flex-col space-y-2 pt-2">
@@ -203,7 +213,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             <RadioSimNao
                                 control={form.control}
                                 name="numeroProcedimentoSEI"
-                                label="Há um número do processo SEI?*"
+                                label={`${qn(1)}Há um número do processo SEI?*`}
                             />
 
                             {numeroProcedimentoSEI === "Sim" && (
@@ -218,7 +228,14 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
             </Form>
 
             <QuadroBranco>
-                <Anexos showButtons={false} />
+                <Anexos
+                    showButtons={false}
+                    startingQuestionNumber={
+                        startingQuestionNumber == null
+                            ? undefined
+                            : startingQuestionNumber + DRE_QUESTION_COUNT
+                    }
+                />
 
                 <div className="flex justify-end gap-2">
                     <Button

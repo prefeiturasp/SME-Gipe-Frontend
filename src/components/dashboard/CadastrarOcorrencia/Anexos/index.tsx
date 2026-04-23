@@ -39,6 +39,7 @@ export type AnexosProps = {
     showButtons?: boolean;
     modoVisualizacao?: boolean;
     disabled?: boolean;
+    startingQuestionNumber?: number;
 };
 
 export default function Anexos({
@@ -47,7 +48,12 @@ export default function Anexos({
     showButtons = true,
     modoVisualizacao,
     disabled,
+    startingQuestionNumber,
 }: Readonly<AnexosProps>) {
+    const qn = (offset: number) =>
+        startingQuestionNumber == null
+            ? ""
+            : `${startingQuestionNumber + offset}. `;
     const { formData, setFormData, ocorrenciaUuid } = useOcorrenciaFormStore();
     const user = useUserStore((state) => state.user);
     const { isAssistenteOuDiretor } = useUserPermissions();
@@ -216,7 +222,7 @@ export default function Anexos({
                                     render={() => (
                                         <FormItem>
                                             <FormLabel disabled={disabled}>
-                                                Selecione o arquivo*
+                                                {qn(0)}Selecione o arquivo*
                                             </FormLabel>
                                             <div className="flex">
                                                 <FormControl>
@@ -269,7 +275,7 @@ export default function Anexos({
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
                                             <FormLabel disabled={disabled}>
-                                                Tipo do documento*
+                                                {qn(1)}Tipo do documento*
                                             </FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}

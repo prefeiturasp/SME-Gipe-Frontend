@@ -32,6 +32,7 @@ export type SecaoFurtoERouboProps = {
     showButtons?: boolean;
     onFormChange?: (data: Partial<SecaoFurtoERouboData>) => void;
     disabled?: boolean;
+    startingQuestionNumber?: number;
 };
 
 export type SecaoFurtoERouboRef = {
@@ -48,6 +49,7 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             showButtons = true,
             onFormChange,
             disabled = false,
+            startingQuestionNumber,
         },
         ref,
     ) => {
@@ -192,6 +194,9 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
+                                        {startingQuestionNumber == null
+                                            ? ""
+                                            : `${startingQuestionNumber}. `}
                                         Qual o tipo de ocorrência?*
                                     </FormLabel>
                                     <FormControl>
@@ -218,6 +223,11 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             control={form.control}
                             name="descricao"
                             disabled={disabled}
+                            questionNumber={
+                                startingQuestionNumber == null
+                                    ? undefined
+                                    : startingQuestionNumber + 1
+                            }
                         />
 
                         <FormField
@@ -226,6 +236,9 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
+                                        {startingQuestionNumber == null
+                                            ? ""
+                                            : `${startingQuestionNumber + 2}. `}
                                         Unidade Educacional é contemplada pelo
                                         Smart Sampa?*
                                     </FormLabel>
