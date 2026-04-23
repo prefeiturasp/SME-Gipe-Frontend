@@ -1,5 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import Anexos from "./Anexos";
+import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
+import SecaoInicial from "./SecaoInicial";
+import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
 import StepRenderer from "./StepRenderer";
 
 vi.mock("./SecaoInicial", () => ({
@@ -78,7 +82,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(screen.getByText("Mock SecaoInicial")).toBeInTheDocument();
@@ -92,7 +96,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
@@ -110,14 +114,14 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(
-                screen.getByText("Mock SecaoFurtoERoubo")
+                screen.getByText("Mock SecaoFurtoERoubo"),
             ).toBeInTheDocument();
             expect(
-                screen.queryByText("Mock SecaoNaoFurtoERoubo")
+                screen.queryByText("Mock SecaoNaoFurtoERoubo"),
             ).not.toBeInTheDocument();
         });
 
@@ -129,14 +133,14 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(
-                screen.getByText("Mock SecaoNaoFurtoERoubo")
+                screen.getByText("Mock SecaoNaoFurtoERoubo"),
             ).toBeInTheDocument();
             expect(
-                screen.queryByText("Mock SecaoFurtoERoubo")
+                screen.queryByText("Mock SecaoFurtoERoubo"),
             ).not.toBeInTheDocument();
         });
 
@@ -148,7 +152,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
@@ -166,7 +170,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
@@ -186,14 +190,14 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(
-                screen.getByText("Mock InformacoesAdicionais")
+                screen.getByText("Mock InformacoesAdicionais"),
             ).toBeInTheDocument();
             expect(
-                screen.queryByText("Mock SecaoFinal")
+                screen.queryByText("Mock SecaoFinal"),
             ).not.toBeInTheDocument();
         });
 
@@ -205,12 +209,12 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
             expect(
-                screen.queryByText("Mock InformacoesAdicionais")
+                screen.queryByText("Mock InformacoesAdicionais"),
             ).not.toBeInTheDocument();
         });
 
@@ -222,7 +226,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
@@ -242,7 +246,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(screen.getByText("Mock SecaoFinal")).toBeInTheDocument();
@@ -256,7 +260,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
@@ -270,7 +274,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Próximo" }));
@@ -290,7 +294,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(screen.getByText("Mock Anexos")).toBeInTheDocument();
@@ -308,7 +312,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Finalizar" }));
@@ -326,7 +330,7 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={true}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             fireEvent.click(screen.getByRole("button", { name: "Anterior" }));
@@ -344,10 +348,80 @@ describe("StepRenderer - Renderização de Componentes", () => {
                     hasAgressorVitimaInfo={false}
                     onNext={mockOnNext}
                     onPrevious={mockOnPrevious}
-                />
+                />,
             );
 
             expect(container.textContent).toBe("");
+        });
+    });
+
+    describe("startingQuestionNumber passado para componentes", () => {
+        it("deve passar startingQuestionNumber=1 para SecaoInicial no step 1", () => {
+            render(
+                <StepRenderer
+                    currentStep={1}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            expect(vi.mocked(SecaoInicial)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 1 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve passar startingQuestionNumber=5 para SecaoNaoFurtoERoubo no step 2 (não furto/roubo)", () => {
+            render(
+                <StepRenderer
+                    currentStep={2}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            expect(vi.mocked(SecaoNaoFurtoERoubo)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 5 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve passar startingQuestionNumber=5 para SecaoFurtoERoubo no step 2 (furto/roubo)", () => {
+            render(
+                <StepRenderer
+                    currentStep={2}
+                    isFurtoRoubo={true}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            expect(vi.mocked(SecaoFurtoERoubo)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 5 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve passar startingQuestionNumber=12 para Anexos no step 5 (não furto/roubo, sem agressor, 1 pessoa)", () => {
+            render(
+                <StepRenderer
+                    currentStep={5}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            expect(vi.mocked(Anexos)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 12 }),
+                expect.anything(),
+            );
         });
     });
 });

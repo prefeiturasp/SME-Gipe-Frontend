@@ -45,9 +45,11 @@ const EMPTY_PESSOA = {
 function Wrapper({
     defaultValues,
     disabled,
+    startingQuestionNumber,
 }: Readonly<{
     defaultValues?: InformacoesAdicionaisData["pessoasAgressoras"];
     disabled?: boolean;
+    startingQuestionNumber?: number;
 }>) {
     const form = useForm<InformacoesAdicionaisData>({
         resolver: zodResolver(formSchema),
@@ -68,6 +70,7 @@ function Wrapper({
                         control={form.control}
                         disabled={disabled}
                         categoriasDisponiveis={mockCategorias}
+                        startingQuestionNumber={startingQuestionNumber}
                     />
                 </form>
             </FormProvider>
@@ -216,5 +219,48 @@ describe("Envolvidos", () => {
 
         expect(idadeInput).toHaveAttribute("min", "0");
         expect(idadeInput).toHaveAttribute("max", "12");
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '9.' no campo nome quando startingQuestionNumber=9", () => {
+            render(<Wrapper startingQuestionNumber={9} />);
+
+            expect(
+                screen.getByText(/^9\. Qual o nome da pessoa\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '10.' no campo idade quando startingQuestionNumber=9", () => {
+            render(<Wrapper startingQuestionNumber={9} />);
+
+            expect(
+                screen.getByText(/^10\. Qual a idade\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '17.' para campos da segunda pessoa (startingQuestionNumber=9, 2 pessoas)", async () => {
+            const user = userEvent.setup();
+            render(<Wrapper startingQuestionNumber={9} />);
+
+            await user.click(
+                screen.getByRole("button", { name: /Adicionar pessoa/i }),
+            );
+
+            const nomeLabels = screen.getAllByText(
+                /\. Qual o nome da pessoa\?\*/,
+            );
+            expect(nomeLabels).toHaveLength(2);
+            expect(nomeLabels[1]).toHaveTextContent(
+                "18. Qual o nome da pessoa?*",
+            );
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            render(<Wrapper />);
+
+            expect(
+                screen.queryByText(/^\d+\. Qual o nome da pessoa/),
+            ).not.toBeInTheDocument();
+        });
     });
 });

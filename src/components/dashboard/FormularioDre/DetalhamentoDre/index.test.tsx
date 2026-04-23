@@ -725,4 +725,40 @@ describe("DetalhamentoDre", () => {
             expect(mockOnNext).not.toHaveBeenCalled();
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '12.' no campo órgãos acionados quando startingQuestionNumber=12", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(
+                    /^12\. Quais órgãos foram acionados pela DRE\?\*/,
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '13.' no campo processo SEI quando startingQuestionNumber=12", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^13\. Há um número do processo SEI\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderComponent();
+
+            expect(
+                screen.queryByText(/^\d+\. Quais órgãos foram acionados/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

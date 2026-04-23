@@ -818,4 +818,64 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
         expect(screen.queryAllByRole("radio")).toHaveLength(0);
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '16.' no campo arma/ataque quando startingQuestionNumber=16", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoGipe startingQuestionNumber={16} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^16\. Envolve arma ou ataque\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '17.' no campo ameaça quando startingQuestionNumber=16", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoGipe startingQuestionNumber={16} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(
+                    /^17\. Ameaça foi realizada de qual maneira\?\*/,
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '18.' no campo tipo da ocorrência quando startingQuestionNumber=16", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoGipe startingQuestionNumber={16} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^18\. Qual o tipo da ocorrência\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '19.' no campo encaminhamentos quando startingQuestionNumber=16", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoGipe startingQuestionNumber={16} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^19\. Encaminhamentos\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderComponent();
+
+            expect(
+                screen.queryByText(/^\d+\. Envolve arma ou ataque/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

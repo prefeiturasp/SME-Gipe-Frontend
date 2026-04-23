@@ -1453,4 +1453,44 @@ describe("Anexos", () => {
             ).toBeInTheDocument();
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '10.' no campo arquivo quando startingQuestionNumber=10", () => {
+            renderWithProvider(
+                <Anexos
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={10}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^10\. Selecione o arquivo\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '11.' no campo tipo do documento quando startingQuestionNumber=10", () => {
+            renderWithProvider(
+                <Anexos
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={10}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^11\. Tipo do documento\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderWithProvider(
+                <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. Selecione o arquivo/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

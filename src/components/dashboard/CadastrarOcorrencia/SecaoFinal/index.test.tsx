@@ -1174,4 +1174,61 @@ describe("SecaoFinal", () => {
             });
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '8.' no campo declarante quando startingQuestionNumber=8", () => {
+            renderWithClient(
+                <SecaoFinal
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={true}
+                    startingQuestionNumber={8}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^8\. Quem é o declarante\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '9.' no campo segurança pública quando startingQuestionNumber=8", () => {
+            renderWithClient(
+                <SecaoFinal
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={true}
+                    startingQuestionNumber={8}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^9\. A segurança pública foi comunicada\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '11.' no campo protocolo no fluxo interpessoal quando startingQuestionNumber=9", () => {
+            renderWithClient(
+                <SecaoFinal
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                    isPatrimonial={false}
+                    startingQuestionNumber={9}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^11\. Qual protocolo acionado\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderWithClient(
+                <SecaoFinal onNext={mockOnNext} onPrevious={mockOnPrevious} />,
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. Quem é o declarante/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });
