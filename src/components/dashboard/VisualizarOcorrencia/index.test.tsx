@@ -1,3 +1,4 @@
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -5,6 +6,13 @@ import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
 import FormularioDre from "../FormularioDre";
 import FormularioGipe from "../FormularioGipe";
 import VisualizarOcorrencia from "./index";
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: vi.fn((selector) => {
+        const state = { formData: {} };
+        return typeof selector === "function" ? selector(state) : state;
+    }),
+}));
 
 let mockOnNext: (() => void) | undefined;
 let mockOnPrevious: (() => void) | undefined;
@@ -255,6 +263,31 @@ describe("VisualizarOcorrencia", () => {
             expect(screen.getByTestId("formulario-gipe")).toBeInTheDocument();
             expect(vi.mocked(FormularioGipe)).toHaveBeenLastCalledWith(
                 expect.objectContaining({ startingQuestionNumber: 18 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve calcular dreStart a partir de pessoasAgressoras definidas no store", async () => {
+            vi.mocked(useOcorrenciaFormStore).mockImplementationOnce(
+                (selector) => {
+                    const state = {
+                        formData: { pessoasAgressoras: [{}] },
+                    } as unknown as ReturnType<
+                        typeof useOcorrenciaFormStore.getState
+                    >;
+                    return typeof selector === "function"
+                        ? selector(state)
+                        : state;
+                },
+            );
+
+            const user = userEvent.setup();
+            renderWithClient(<VisualizarOcorrencia />);
+
+            await user.click(screen.getByText("Próximo"));
+
+            expect(vi.mocked(FormularioDre)).toHaveBeenLastCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 14 }),
                 expect.anything(),
             );
         });

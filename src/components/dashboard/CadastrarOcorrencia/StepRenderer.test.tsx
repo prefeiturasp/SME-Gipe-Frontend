@@ -1,3 +1,4 @@
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Anexos from "./Anexos";
@@ -5,6 +6,13 @@ import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
 import SecaoInicial from "./SecaoInicial";
 import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
 import StepRenderer from "./StepRenderer";
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: vi.fn((selector) => {
+        const state = { formData: {} };
+        return typeof selector === "function" ? selector(state) : state;
+    }),
+}));
 
 vi.mock("./SecaoInicial", () => ({
     default: vi.fn(({ onSuccess }) => (
@@ -408,6 +416,36 @@ describe("StepRenderer - Renderização de Componentes", () => {
         });
 
         it("deve passar startingQuestionNumber=12 para Anexos no step 5 (não furto/roubo, sem agressor, 1 pessoa)", () => {
+            render(
+                <StepRenderer
+                    currentStep={5}
+                    isFurtoRoubo={false}
+                    hasAgressorVitimaInfo={false}
+                    onNext={mockOnNext}
+                    onPrevious={mockOnPrevious}
+                />,
+            );
+
+            expect(vi.mocked(Anexos)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 12 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve usar pessoasAgressoras.length do store quando definido", () => {
+            vi.mocked(useOcorrenciaFormStore).mockImplementationOnce(
+                (selector) => {
+                    const state = {
+                        formData: { pessoasAgressoras: [{}] },
+                    } as unknown as ReturnType<
+                        typeof useOcorrenciaFormStore.getState
+                    >;
+                    return typeof selector === "function"
+                        ? selector(state)
+                        : state;
+                },
+            );
+
             render(
                 <StepRenderer
                     currentStep={5}

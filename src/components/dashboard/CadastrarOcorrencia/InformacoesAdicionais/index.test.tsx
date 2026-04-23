@@ -1171,5 +1171,23 @@ describe("InformacoesAdicionais", () => {
                 screen.queryByText(/^\d+\. O que motivou a ocorrência/),
             ).not.toBeInTheDocument();
         });
+
+        it("deve chamar onPersonCountChange com o número de pessoas quando fornecido", async () => {
+            const mockOnPersonCountChange = vi.fn();
+
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        onPersonCountChange={mockOnPersonCountChange}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(() => {
+                expect(mockOnPersonCountChange).toHaveBeenCalledWith(1);
+            });
+        });
     });
 });
