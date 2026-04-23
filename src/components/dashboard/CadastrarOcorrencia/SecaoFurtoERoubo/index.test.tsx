@@ -1142,123 +1142,6 @@ describe("SecaoFurtoERoubo", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
-
-        it("deve retornar false via validateOutros quando 'Outra' está selecionada e descrição está vazia", async () => {
-            vi.mocked(
-                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
-            ).mockReturnValue({
-                formData: {
-                    tiposOcorrencia: ["outra-uuid-1234"],
-                    descricaoTipoOcorrencia: "",
-                },
-                savedFormData: {},
-                setFormData: mockSetFormData,
-                setSavedFormData: vi.fn(),
-                ocorrenciaUuid: null,
-                clearFormData: mockClearFormData,
-            } as never);
-
-            vi.spyOn(
-                useTiposOcorrenciaHook,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: [
-                    ...mockTiposOcorrencia,
-                    { uuid: "outra-uuid-1234", nome: "Outra" },
-                ],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const ref = React.createRef<SecaoFurtoERouboRef>();
-            render(
-                <SecaoFurtoERoubo
-                    ref={ref}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />,
-                { wrapper: createWrapper() },
-            );
-
-            await waitFor(() => {
-                const result = ref.current?.validateOutros();
-                expect(result).toBe(false);
-            });
-
-            expect(
-                screen.getByText("Descreva qual o tipo de ocorrência."),
-            ).toBeInTheDocument();
-        });
-
-        it("deve retornar false via validateOutros quando 'Outra' está selecionada e descrição contém apenas espaços", async () => {
-            vi.mocked(
-                useOcorrenciaFormStoreModule.useOcorrenciaFormStore,
-            ).mockReturnValue({
-                formData: {
-                    tiposOcorrencia: ["outra-uuid-1234"],
-                    descricaoTipoOcorrencia: "   ",
-                },
-                savedFormData: {},
-                setFormData: mockSetFormData,
-                setSavedFormData: vi.fn(),
-                ocorrenciaUuid: null,
-                clearFormData: mockClearFormData,
-            } as never);
-
-            vi.spyOn(
-                useTiposOcorrenciaHook,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: [
-                    ...mockTiposOcorrencia,
-                    { uuid: "outra-uuid-1234", nome: "Outra" },
-                ],
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-
-            const ref = React.createRef<SecaoFurtoERouboRef>();
-            render(
-                <SecaoFurtoERoubo
-                    ref={ref}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />,
-                { wrapper: createWrapper() },
-            );
-
-            await waitFor(() => {
-                const result = ref.current?.validateOutros();
-                expect(result).toBe(false);
-            });
-
-            expect(
-                screen.getByText("Descreva qual o tipo de ocorrência."),
-            ).toBeInTheDocument();
-        });
-
-        it("deve retornar true via validateOutros quando nenhuma opção 'Outra/Outros' está selecionada", async () => {
-            const ref = React.createRef<SecaoFurtoERouboRef>();
-            render(
-                <SecaoFurtoERoubo
-                    ref={ref}
-                    onNext={mockOnNext}
-                    onPrevious={mockOnPrevious}
-                />,
-                { wrapper: createWrapper() },
-            );
-
-            await waitFor(() => {
-                const result = ref.current?.validateOutros();
-                expect(result).toBe(true);
-            });
-
-            expect(
-                screen.queryByText("Descreva qual o tipo de ocorrência."),
-            ).not.toBeInTheDocument();
-        });
     });
 
     describe("onFormChange callback", () => {
@@ -1495,29 +1378,8 @@ describe("SecaoFurtoERoubo", () => {
         expect(textarea).toHaveValue("");
     });
 
-    describe("campo descricaoTipoOcorrencia (opção Outra)", () => {
-        const mockTiposComOutra = [
-            ...mockTiposOcorrencia,
-            {
-                uuid: "outra-uuid-1234",
-                nome: "Outra",
-            },
-        ];
-
-        beforeEach(() => {
-            vi.spyOn(
-                useTiposOcorrenciaHook,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: mockTiposComOutra,
-                isLoading: false,
-                isError: false,
-                error: null,
-            } as never);
-        });
-
-        it("deve exibir campo de descrição do tipo quando 'Outra' está selecionada", async () => {
-            const user = userEvent.setup();
+    describe("Alert de ajuda e modal de tipos de ocorrência", () => {
+        it("deve renderizar o alert de ajuda abaixo do campo de tipos de ocorrência", () => {
             render(
                 <SecaoFurtoERoubo
                     onPrevious={mockOnPrevious}
@@ -1525,26 +1387,17 @@ describe("SecaoFurtoERoubo", () => {
                 />,
                 { wrapper: createWrapper() },
             );
-
-            const selectButton = screen.getByRole("button", {
-                name: /Selecione os tipos de ocorrência/i,
-            });
-            await user.click(selectButton);
-
-            const opcaoOutra = await screen.findByRole("option", {
-                name: /outra/i,
-            });
-            await user.click(opcaoOutra);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência*"),
-                ).toBeInTheDocument();
-            });
+            expect(
+                screen.getByText(
+                    /Precisa de ajuda para entender os tipos de ocorrência\?/i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            ).toBeInTheDocument();
         });
 
-        it("deve exibir erro ao submeter com 'Outra' selecionada e descrição do tipo vazia", async () => {
-            const user = userEvent.setup();
+        it("deve abrir o modal ao clicar em 'Clique aqui'", async () => {
             render(
                 <SecaoFurtoERoubo
                     onPrevious={mockOnPrevious}
@@ -1552,50 +1405,13 @@ describe("SecaoFurtoERoubo", () => {
                 />,
                 { wrapper: createWrapper() },
             );
-
-            const selectButton = screen.getByRole("button", {
-                name: /Selecione os tipos de ocorrência/i,
-            });
-            await user.click(selectButton);
-            const opcaoOutra = await screen.findByRole("option", {
-                name: /outra/i,
-            });
-            await user.click(opcaoOutra);
-
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoOcorrencia = textareas[textareas.length - 1];
-            await user.type(
-                descricaoOcorrencia,
-                "Descrição detalhada da ocorrência com mais de dez caracteres",
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
             );
-
-            const radioNao = screen.getByRole("radio", { name: /não/i });
-            await user.click(radioNao);
-
-            await waitFor(() => {
-                const btnProximo = screen.getByRole("button", {
-                    name: /próximo/i,
-                });
-                expect(btnProximo).not.toBeDisabled();
-            });
-
-            const btnProximo = screen.getByRole("button", {
-                name: /próximo/i,
-            });
-            await user.click(btnProximo);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockOnNext).not.toHaveBeenCalled();
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
         });
 
-        it("deve submeter com sucesso quando 'Outra' selecionada e descrição do tipo preenchida", async () => {
-            const user = userEvent.setup();
+        it("deve fechar o modal ao clicar no botão Fechar", async () => {
             render(
                 <SecaoFurtoERoubo
                     onPrevious={mockOnPrevious}
@@ -1603,95 +1419,17 @@ describe("SecaoFurtoERoubo", () => {
                 />,
                 { wrapper: createWrapper() },
             );
-
-            const selectButton = screen.getByRole("button", {
-                name: /Selecione os tipos de ocorrência/i,
-            });
-            await user.click(selectButton);
-            const opcaoOutra = await screen.findByRole("option", {
-                name: /outra/i,
-            });
-            await user.click(opcaoOutra);
-
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+            await userEvent.click(
+                screen.getByRole("button", { name: /^fechar$/i }),
+            );
             await waitFor(() => {
                 expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência*"),
-                ).toBeInTheDocument();
-            });
-
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoTipo = textareas[0];
-            await user.type(descricaoTipo, "Tipo personalizado de ocorrência");
-
-            const descricaoOcorrencia = textareas[textareas.length - 1];
-            await user.type(
-                descricaoOcorrencia,
-                "Descrição detalhada da ocorrência com mais de dez caracteres",
-            );
-
-            const radioNao = screen.getByRole("radio", { name: /não/i });
-            await user.click(radioNao);
-
-            await waitFor(() => {
-                const btnProximo = screen.getByRole("button", {
-                    name: /próximo/i,
-                });
-                expect(btnProximo).not.toBeDisabled();
-            });
-
-            const btnProximo = screen.getByRole("button", {
-                name: /próximo/i,
-            });
-            await user.click(btnProximo);
-
-            await waitFor(() => {
-                expect(mockOnNext).toHaveBeenCalledTimes(1);
-            });
-        });
-
-        it("deve limpar descricaoTipoOcorrencia ao desmarcar 'Outra'", async () => {
-            const user = userEvent.setup();
-            const refObj = React.createRef<SecaoFurtoERouboRef>();
-
-            render(
-                <SecaoFurtoERoubo
-                    ref={refObj}
-                    onPrevious={mockOnPrevious}
-                    onNext={mockOnNext}
-                />,
-                { wrapper: createWrapper() },
-            );
-
-            const selectButton = screen.getByRole("button", {
-                name: /Selecione os tipos de ocorrência/i,
-            });
-            await user.click(selectButton);
-            const opcaoOutra = await screen.findByRole("option", {
-                name: /outra/i,
-            });
-            await user.click(opcaoOutra);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência*"),
-                ).toBeInTheDocument();
-            });
-
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoTipo = textareas[0];
-            await user.type(descricaoTipo, "Tipo personalizado");
-
-            await user.click(selectButton);
-            const opcaoOutraDesmarcar = await screen.findByRole("option", {
-                name: /outra/i,
-            });
-            await user.click(opcaoOutraDesmarcar);
-
-            await waitFor(() => {
-                const formData = refObj.current?.getFormData();
-                expect(formData?.descricaoTipoOcorrencia).toBe("");
+                    screen.queryByText("Tipos de ocorrência"),
+                ).not.toBeInTheDocument();
             });
         });
     });

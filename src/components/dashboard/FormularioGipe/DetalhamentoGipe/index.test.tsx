@@ -1,5 +1,4 @@
 import * as useCategoriasDisponiveisGipeModule from "@/hooks/useCategoriasDisponiveisGipe";
-import * as useEnvolvidosModule from "@/hooks/useEnvolvidos";
 import * as useTiposOcorrenciaModule from "@/hooks/useTiposOcorrencia";
 import * as useOcorrenciaFormStoreModule from "@/stores/useOcorrenciaFormStore";
 import * as useUserStoreModule from "@/stores/useUserStore";
@@ -68,12 +67,6 @@ vi.mock("@/stores/useUserStore", () => ({
     }),
 }));
 
-const mockEnvolvidos = [
-    { uuid: "env1", perfil_dos_envolvidos: "Estudante" },
-    { uuid: "env2", perfil_dos_envolvidos: "Professor" },
-    { uuid: "env3", perfil_dos_envolvidos: "Responsável" },
-];
-
 const mockCategoriasGipe = {
     envolve_arma_ou_ataque: [
         { value: "sim", label: "Sim" },
@@ -83,16 +76,6 @@ const mockCategoriasGipe = {
         { value: "presencialmente", label: "Presencialmente" },
         { value: "virtualmente", label: "Virtualmente" },
     ],
-    motivo_ocorrencia: [
-        { value: "bullying", label: "Bullying" },
-        { value: "cyberbullying", label: "Cyberbullying" },
-        { value: "racismo", label: "Racismo" },
-    ],
-    etapa_escolar: [
-        { value: "alfabetizacao", label: "Alfabetização (1º ao 3º ano)" },
-        { value: "interdisciplinar", label: "Interdisciplinar (4º ao 6º ano)" },
-        { value: "autoral", label: "Autoral (7º ao 9º ano)" },
-    ],
 };
 
 const mockTiposOcorrencia = [
@@ -100,13 +83,6 @@ const mockTiposOcorrencia = [
     { uuid: "tipo2", nome: "Tipo B" },
     { uuid: "tipo3", nome: "Tipo C" },
 ];
-
-vi.mock("@/hooks/useEnvolvidos", () => ({
-    useEnvolvidos: () => ({
-        data: mockEnvolvidos,
-        isLoading: false,
-    }),
-}));
 
 vi.mock("@/hooks/useCategoriasDisponiveisGipe", () => ({
     useCategoriasDisponiveisGipe: () => ({
@@ -267,31 +243,19 @@ describe("DetalhamentoGipe", () => {
             screen.getByText(/ameaça foi realizada de qual maneira\?\*/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/quem são os envolvidos\?\*/i),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/o que motivou a ocorrência\?\*/i),
-        ).toBeInTheDocument();
-        expect(
             screen.getByText(/qual o tipo da ocorrência\?\*/i),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/qual a etapa escolar\?\*/i),
         ).toBeInTheDocument();
         expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
     });
 
-    it("deve renderizar 3 QuadroBranco distintos", () => {
+    it("deve renderizar 2 QuadroBrancos distintos", () => {
         renderComponent();
 
         expect(
             screen.getByText(/envolve arma ou ataque\?/i),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/quem são os envolvidos\?/i),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/Há informações sobre as interações virtuais/i),
+            screen.getByText(/qual o tipo da ocorrência\?/i),
         ).toBeInTheDocument();
     });
 
@@ -334,51 +298,6 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve retornar array vazio para envolvidosOptions quando envolvidos é undefined", () => {
-        vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
-            data: undefined,
-            isLoading: false,
-        } as never);
-
-        renderComponent();
-
-        expect(
-            screen.getByText(/quem são os envolvidos\?/i),
-        ).toBeInTheDocument();
-    });
-
-    it("deve retornar array vazio para motivacaoOptions quando categorias.motivo_ocorrencia é undefined", () => {
-        vi.spyOn(
-            useCategoriasDisponiveisGipeModule,
-            "useCategoriasDisponiveisGipe",
-        ).mockReturnValue({
-            data: { motivo_ocorrencia: undefined },
-            isLoading: false,
-        } as never);
-
-        renderComponent();
-
-        expect(
-            screen.getByText(/o que motivou a ocorrência\?/i),
-        ).toBeInTheDocument();
-    });
-
-    it("deve retornar array vazio para motivacaoOptions quando categorias é undefined", () => {
-        vi.spyOn(
-            useCategoriasDisponiveisGipeModule,
-            "useCategoriasDisponiveisGipe",
-        ).mockReturnValue({
-            data: undefined,
-            isLoading: false,
-        } as never);
-
-        renderComponent();
-
-        expect(
-            screen.getByText(/o que motivou a ocorrência\?/i),
-        ).toBeInTheDocument();
-    });
-
     it("deve retornar array vazio para tiposOcorrenciaOptions quando tiposOcorrencia é undefined", () => {
         vi.spyOn(
             useTiposOcorrenciaModule,
@@ -395,24 +314,6 @@ describe("DetalhamentoGipe", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve mapear corretamente os envolvidos para options", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(/quem são os envolvidos\?/i),
-        ).toBeInTheDocument();
-        expect(mockEnvolvidos).toHaveLength(3);
-    });
-
-    it("deve mapear corretamente as categorias para motivacaoOptions", () => {
-        renderComponent();
-
-        expect(
-            screen.getByText(/o que motivou a ocorrência\?/i),
-        ).toBeInTheDocument();
-        expect(mockCategoriasGipe.motivo_ocorrencia).toHaveLength(3);
-    });
-
     it("deve chamar a mutation corretamente quando os callbacks são executados", () => {
         mockAtualizarOcorrenciaGipe.mockImplementation((params, options) => {
             expect(params.uuid).toBe("test-uuid-gipe-123");
@@ -420,13 +321,7 @@ describe("DetalhamentoGipe", () => {
             expect(params.body).toHaveProperty("dre_codigo_eol", "654321");
             expect(params.body).toHaveProperty("envolve_arma_ataque");
             expect(params.body).toHaveProperty("ameaca_realizada_qual_maneira");
-            expect(params.body).toHaveProperty("envolvido");
-            expect(params.body).toHaveProperty("motivacao_ocorrencia");
             expect(params.body).toHaveProperty("tipos_ocorrencia");
-            expect(params.body).toHaveProperty("etapa_escolar");
-            expect(params.body).toHaveProperty(
-                "info_sobre_interacoes_virtuais_pessoa_agressora",
-            );
             expect(params.body).toHaveProperty("encaminhamentos_gipe");
 
             options.onSuccess({ success: true });
@@ -522,11 +417,7 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidos: ["env1"],
-            motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            etapaEscolar: "alfabetizacao",
-            informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
 
@@ -569,11 +460,7 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidos: ["env1"],
-            motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            etapaEscolar: "alfabetizacao",
-            informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
 
@@ -618,11 +505,7 @@ describe("DetalhamentoGipe", () => {
             ...mockFormData,
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidos: ["env1"],
-            motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            etapaEscolar: "alfabetizacao",
-            informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
 
@@ -669,11 +552,7 @@ describe("DetalhamentoGipe", () => {
             status: "finalizada",
             envolveArmaOuAtaque: "sim",
             ameacaRealizada: "presencialmente",
-            envolvidos: ["env1"],
-            motivoOcorrencia: ["bullying"],
             tiposOcorrencia: ["tipo1"],
-            etapaEscolar: "alfabetizacao",
-            informacoesInteracoesVirtuais: "",
             encaminhamentos: "Encaminhamentos do GIPE",
         };
 
@@ -868,468 +747,75 @@ describe("DetalhamentoGipe", () => {
         );
     });
 
-    describe("Validação do handleSubmit", () => {
-        it("deve mostrar erro quando 'Outros' está selecionado em envolvidos e descrição está vazia", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
-                data: [
-                    ...mockEnvolvidos,
-                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env-outro"],
-                    descricaoEnvolvidos: "",
-                    motivoOcorrencia: ["bullying"],
-                    tiposOcorrencia: ["tipo1"],
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
+    describe("Alert de ajuda e modal de tipos de ocorrência", () => {
+        it("deve renderizar o alert de ajuda abaixo do campo de tipos de ocorrência", () => {
             renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva quem são os envolvidos."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+            expect(
+                screen.getByText(
+                    /Precisa de ajuda para entender os tipos de ocorrência\?/i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            ).toBeInTheDocument();
         });
 
-        it("deve mostrar erro quando 'Outros' está selecionado em motivo e descrição está vazia", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useCategoriasDisponiveisGipeModule,
-                "useCategoriasDisponiveisGipe",
-            ).mockReturnValue({
-                data: {
-                    ...mockCategoriasGipe,
-                    motivo_ocorrencia: [
-                        ...mockCategoriasGipe.motivo_ocorrencia,
-                        { value: "outros-motivo", label: "Outros" },
-                    ],
-                },
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env1"],
-                    motivoOcorrencia: ["outros-motivo"],
-                    descricaoMotivoOcorrencia: "",
-                    tiposOcorrencia: ["tipo1"],
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
+        it("deve abrir o modal ao clicar em 'Clique aqui'", async () => {
             renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva o que motivou a ocorrência."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
         });
 
-        it("deve mostrar erro quando 'Outros' está selecionado em tipos de ocorrência e descrição está vazia", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useTiposOcorrenciaModule,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: [
-                    ...mockTiposOcorrencia,
-                    { uuid: "tipo-outros", nome: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env1"],
-                    motivoOcorrencia: ["bullying"],
-                    tiposOcorrencia: ["tipo-outros"],
-                    descricaoTipoOcorrencia: "",
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
+        it("deve fechar o modal ao clicar no botão Fechar", async () => {
             renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
+            await userEvent.click(
+                screen.getByRole("button", { name: /clique aqui/i }),
+            );
+            expect(screen.getByText("Tipos de ocorrência")).toBeInTheDocument();
+            await userEvent.click(
+                screen.getByRole("button", { name: /^fechar$/i }),
+            );
             await waitFor(() => {
                 expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência."),
-                ).toBeInTheDocument();
+                    screen.queryByText("Tipos de ocorrência"),
+                ).not.toBeInTheDocument();
             });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
-        });
-
-        it("deve mostrar erro quando 'Outros' está selecionado em envolvidos e descrição contém apenas espaços", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
-                data: [
-                    ...mockEnvolvidos,
-                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env-outro"],
-                    descricaoEnvolvidos: "   ",
-                    motivoOcorrencia: ["bullying"],
-                    tiposOcorrencia: ["tipo1"],
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
-            renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva quem são os envolvidos."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
-        });
-
-        it("deve mostrar erro quando 'Outros' está selecionado em motivo e descrição contém apenas espaços", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useCategoriasDisponiveisGipeModule,
-                "useCategoriasDisponiveisGipe",
-            ).mockReturnValue({
-                data: {
-                    ...mockCategoriasGipe,
-                    motivo_ocorrencia: [
-                        ...mockCategoriasGipe.motivo_ocorrencia,
-                        { value: "outros-motivo", label: "Outros" },
-                    ],
-                },
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env1"],
-                    motivoOcorrencia: ["outros-motivo"],
-                    descricaoMotivoOcorrencia: "   ",
-                    tiposOcorrencia: ["tipo1"],
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
-            renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva o que motivou a ocorrência."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
-        });
-
-        it("deve mostrar erro quando 'Outros' está selecionado em tipos de ocorrência e descrição contém apenas espaços", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useTiposOcorrenciaModule,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: [
-                    ...mockTiposOcorrencia,
-                    { uuid: "tipo-outros", nome: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolveArmaOuAtaque: "sim",
-                    ameacaRealizada: "presencialmente",
-                    envolvidos: ["env1"],
-                    motivoOcorrencia: ["bullying"],
-                    tiposOcorrencia: ["tipo-outros"],
-                    descricaoTipoOcorrencia: "   ",
-                    etapaEscolar: "alfabetizacao",
-                    informacoesInteracoesVirtuais: "",
-                    encaminhamentos: "Encaminhamentos do GIPE",
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
-            renderComponent();
-
-            const botaoSalvar = screen.getByRole("button", {
-                name: /Finalizar/i,
-            });
-            await waitFor(() => {
-                expect(botaoSalvar).not.toBeDisabled();
-            });
-
-            await user.click(botaoSalvar);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência."),
-                ).toBeInTheDocument();
-            });
-
-            expect(mockAtualizarOcorrenciaGipe).not.toHaveBeenCalled();
         });
     });
 
-    describe("campos de descrição com opção Outros", () => {
-        it("deve exibir e preencher campo descricaoEnvolvidos quando 'Outros' está selecionado", async () => {
-            const user = userEvent.setup();
+    it("deve usar array vazio para envolveArmaOuAtaqueOptions quando categoriasGipe é undefined", () => {
+        vi.spyOn(
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe",
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
 
-            vi.spyOn(useEnvolvidosModule, "useEnvolvidos").mockReturnValue({
-                data: [
-                    ...mockEnvolvidos,
-                    { uuid: "env-outro", perfil_dos_envolvidos: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
+        renderComponent();
 
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    envolvidos: ["env-outro"],
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
+        expect(
+            screen.getByText(/envolve arma ou ataque\?\*/i),
+        ).toBeInTheDocument();
+        expect(screen.queryAllByRole("radio")).toHaveLength(0);
+    });
 
-            renderComponent();
+    it("deve usar array vazio para ameacaRealizadaOptions quando categoriasGipe é undefined", () => {
+        vi.spyOn(
+            useCategoriasDisponiveisGipeModule,
+            "useCategoriasDisponiveisGipe",
+        ).mockReturnValue({
+            data: undefined,
+            isLoading: false,
+        } as never);
 
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva quem são os envolvidos*"),
-                ).toBeInTheDocument();
-            });
+        renderComponent();
 
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoEnvolvidos = textareas[0];
-            await user.type(descricaoEnvolvidos, "Envolvidos personalizados");
-
-            expect(descricaoEnvolvidos).toHaveValue(
-                "Envolvidos personalizados",
-            );
-        });
-
-        it("deve exibir e preencher campo descricaoMotivoOcorrencia quando 'Outros' está selecionado", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useCategoriasDisponiveisGipeModule,
-                "useCategoriasDisponiveisGipe",
-            ).mockReturnValue({
-                data: {
-                    ...mockCategoriasGipe,
-                    motivo_ocorrencia: [
-                        ...mockCategoriasGipe.motivo_ocorrencia,
-                        { value: "outros-motivo", label: "Outros" },
-                    ],
-                },
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    motivoOcorrencia: ["outros-motivo"],
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
-            renderComponent();
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva o que motivou a ocorrência*"),
-                ).toBeInTheDocument();
-            });
-
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoMotivo = textareas[0];
-            await user.type(descricaoMotivo, "Motivo personalizado");
-
-            expect(descricaoMotivo).toHaveValue("Motivo personalizado");
-        });
-
-        it("deve exibir e preencher campo descricaoTipoOcorrencia quando 'Outros' está selecionado", async () => {
-            const user = userEvent.setup();
-
-            vi.spyOn(
-                useTiposOcorrenciaModule,
-                "useTiposOcorrencia",
-            ).mockReturnValue({
-                data: [
-                    ...mockTiposOcorrencia,
-                    { uuid: "tipo-outros", nome: "Outros" },
-                ],
-                isLoading: false,
-            } as never);
-
-            vi.spyOn(
-                useOcorrenciaFormStoreModule,
-                "useOcorrenciaFormStore",
-            ).mockReturnValue({
-                formData: {
-                    ...mockFormData,
-                    tipoOcorrencia: "Não",
-                    tiposOcorrencia: ["tipo-outros"],
-                },
-                setFormData: mockSetFormData,
-                ocorrenciaUuid: "test-uuid-gipe-123",
-            } as never);
-
-            renderComponent();
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva qual o tipo de ocorrência*"),
-                ).toBeInTheDocument();
-            });
-
-            const textareas =
-                screen.getAllByPlaceholderText("Descreva aqui...");
-            const descricaoTipo = textareas[0];
-            await user.type(descricaoTipo, "Tipo personalizado");
-
-            expect(descricaoTipo).toHaveValue("Tipo personalizado");
-        });
+        expect(
+            screen.getByText(/ameaça foi realizada de qual maneira\?\*/i),
+        ).toBeInTheDocument();
+        expect(screen.queryAllByRole("radio")).toHaveLength(0);
     });
 });

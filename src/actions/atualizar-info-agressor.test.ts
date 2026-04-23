@@ -32,13 +32,13 @@ describe("atualizarInfoAgressor action", () => {
                 frequencia_escolar: "transferido_estadual",
                 interacao_ambiente_escolar:
                     "Como é a interação da pessoa agressora no ambiente escolar?",
+                nacionalidade: "Brasileira",
+                pessoa_com_deficiencia: false,
             },
         ],
         motivacao_ocorrencia: ["homofobia", "racismo"],
-        motivacao_ocorrencia_outros: "Motivação livre",
-        redes_protecao_acompanhamento: "CRAS, NAAPA",
         notificado_conselho_tutelar: true,
-        acompanhado_naapa: false,
+        ocorrencia_acompanhada_pelo: "naapa",
     };
     const mockAuthToken = "test-token";
 
@@ -65,14 +65,14 @@ describe("atualizarInfoAgressor action", () => {
                         frequencia_escolar: "transferido_estadual",
                         interacao_ambiente_escolar:
                             "Como é a interação da pessoa agressora no ambiente escolar?",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
                 motivacao_ocorrencia_display: "Homofobia, Racismo",
-                motivacao_ocorrencia_outros: "Motivação livre",
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: "naapa",
             },
         };
         vi.mocked(apiIntercorrencias.put).mockResolvedValue(mockResponse);
@@ -226,10 +226,8 @@ describe("atualizarInfoAgressor action", () => {
                     }),
                 ],
                 motivacao_ocorrencia: ["homofobia", "racismo"],
-                motivacao_ocorrencia_outros: "Motivação livre",
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: "naapa",
             }),
             expect.any(Object),
         );

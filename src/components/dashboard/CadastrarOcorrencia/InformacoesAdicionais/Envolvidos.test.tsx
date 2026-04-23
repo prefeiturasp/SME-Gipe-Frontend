@@ -38,6 +38,8 @@ const EMPTY_PESSOA = {
     etapaEscolar: "",
     frequenciaEscolar: "",
     interacaoAmbienteEscolar: "",
+    nacionalidade: "",
+    pessoaComDeficiencia: "",
 };
 
 function Wrapper({
@@ -53,7 +55,6 @@ function Wrapper({
         defaultValues: {
             pessoasAgressoras: defaultValues ?? [EMPTY_PESSOA],
             motivoOcorrencia: [],
-            redesProtecao: "",
             notificadoConselhoTutelar: undefined,
             acompanhadoNAAPA: undefined,
         },
@@ -79,13 +80,13 @@ describe("Envolvidos", () => {
         render(<Wrapper />);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i),
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i),
         ).toHaveLength(1);
         expect(screen.getAllByLabelText(/Qual a idade\?/i)).toHaveLength(1);
         expect(screen.getAllByText(/Qual o gênero\?/i)).toHaveLength(1);
-        expect(
-            screen.getAllByText(/Qual o grupo étnico-racial\?/i),
-        ).toHaveLength(1);
+        expect(screen.getAllByText(/Raça\/cor auto declarada/i)).toHaveLength(
+            1,
+        );
         expect(screen.getAllByText(/Qual a etapa escolar\?/i)).toHaveLength(1);
         expect(
             screen.getAllByText(/Qual a frequência escolar\?/i),
@@ -113,7 +114,7 @@ describe("Envolvidos", () => {
         await user.click(addButton);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i),
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i),
         ).toHaveLength(2);
         expect(screen.getAllByLabelText(/Qual a idade\?/i)).toHaveLength(2);
     });
@@ -138,7 +139,7 @@ describe("Envolvidos", () => {
         );
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i),
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i),
         ).toHaveLength(2);
 
         const removeButtons = screen.getAllByRole("button", {
@@ -147,7 +148,7 @@ describe("Envolvidos", () => {
         await user.click(removeButtons[0]);
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i),
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i),
         ).toHaveLength(1);
     });
 
@@ -163,7 +164,7 @@ describe("Envolvidos", () => {
         render(<Wrapper disabled={true} />);
 
         const nomeInput = screen.getAllByLabelText(
-            /nome da pessoa envolvida/i,
+            /Qual o nome da pessoa\?/i,
         )[0];
         const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
         const addButton = screen.getByRole("button", {
@@ -194,11 +195,26 @@ describe("Envolvidos", () => {
         );
 
         const nomeInput = screen.getAllByLabelText(
-            /nome da pessoa envolvida/i,
+            /Qual o nome da pessoa\?/i,
         )[0];
         const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
 
         expect(nomeInput).toHaveValue("Gabriel Araujo de Almeida");
         expect(idadeInput).toHaveValue(14);
+    });
+
+    it("deve definir min=0 e max=12 no input de idade ao ativar o switch de meses", async () => {
+        const user = userEvent.setup();
+        render(<Wrapper />);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        expect(idadeInput).toHaveAttribute("min", "1");
+        expect(idadeInput).not.toHaveAttribute("max");
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        expect(idadeInput).toHaveAttribute("min", "0");
+        expect(idadeInput).toHaveAttribute("max", "12");
     });
 });

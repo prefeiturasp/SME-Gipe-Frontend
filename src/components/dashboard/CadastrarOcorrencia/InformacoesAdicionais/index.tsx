@@ -1,7 +1,6 @@
 "use client";
-import type { MultiSelectOption } from "@/components/MultiSelectWithOther";
-import { MultiSelectWithOther } from "@/components/MultiSelectWithOther";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -11,14 +10,14 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import Envolvidos from "./Envolvidos";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
@@ -34,7 +33,6 @@ export type InformacoesAdicionaisRef = {
     getFormData: () => InformacoesAdicionaisData;
     submitForm: () => Promise<boolean>;
     getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
-    validateOutros: () => boolean;
 };
 
 const InformacoesAdicionais = forwardRef<
@@ -66,46 +64,23 @@ const InformacoesAdicionais = forwardRef<
                 : [
                       {
                           nome: "",
+                          idadeEmMeses: false,
                           idade: "",
                           genero: "",
                           grupoEtnicoRacial: "",
                           etapaEscolar: "",
                           frequenciaEscolar: "",
                           interacaoAmbienteEscolar: "",
+                          nacionalidade: "",
+                          pessoaComDeficiencia: "",
                       },
                   ],
             motivoOcorrencia: formData.motivoOcorrencia ?? [],
-            descricaoMotivoOcorrencia: formData.descricaoMotivoOcorrencia ?? "",
-            redesProtecao: formData.redesProtecao ?? "",
             notificadoConselhoTutelar:
                 formData.notificadoConselhoTutelar ?? undefined,
-            acompanhadoNAAPA: formData.acompanhadoNAAPA ?? undefined,
+            acompanhadoNAAPA: formData.acompanhadoNAAPA ?? [],
         },
     });
-
-    const shouldShowDescricao = useCallback(
-        (selectedValues: string[], options: MultiSelectOption[]) =>
-            options.some(
-                (opt) =>
-                    selectedValues.includes(opt.value) &&
-                    ["outra", "outros"].includes(opt.label.toLowerCase()),
-            ),
-        [],
-    );
-
-    const motivoSelecionado = form.watch("motivoOcorrencia");
-    const showDescricaoMotivo = shouldShowDescricao(
-        motivoSelecionado,
-        motivoOcorrenciaOptions,
-    );
-
-    useEffect(() => {
-        if (!isLoadingCategoriasDisponiveis && !showDescricaoMotivo) {
-            form.setValue("descricaoMotivoOcorrencia", "", {
-                shouldValidate: true,
-            });
-        }
-    }, [isLoadingCategoriasDisponiveis, showDescricaoMotivo, form]);
 
     const { isValid } = form.formState;
 
@@ -121,41 +96,10 @@ const InformacoesAdicionais = forwardRef<
             return true;
         },
         getFormInstance: () => form,
-        validateOutros: () => {
-            const data = form.getValues();
-            if (
-                shouldShowDescricao(
-                    data.motivoOcorrencia,
-                    motivoOcorrenciaOptions,
-                ) &&
-                (!data.descricaoMotivoOcorrencia ||
-                    data.descricaoMotivoOcorrencia.trim().length === 0)
-            ) {
-                form.setError("descricaoMotivoOcorrencia", {
-                    message: "Descreva o que motivou a ocorrência.",
-                });
-                return false;
-            }
-            return true;
-        },
     }));
 
     // Função de submit isolada para ser chamada programaticamente
     const handleSubmit = async (data: InformacoesAdicionaisData) => {
-        if (
-            shouldShowDescricao(
-                data.motivoOcorrencia,
-                motivoOcorrenciaOptions,
-            ) &&
-            (!data.descricaoMotivoOcorrencia ||
-                data.descricaoMotivoOcorrencia.trim().length === 0)
-        ) {
-            form.setError("descricaoMotivoOcorrencia", {
-                message: "Descreva o que motivou a ocorrência.",
-            });
-            return;
-        }
-
         const currentValues = form.getValues();
 
         if (ocorrenciaUuid) {
@@ -163,8 +107,6 @@ const InformacoesAdicionais = forwardRef<
                 !hasFormDataChanged(currentValues, savedFormData, [
                     "pessoasAgressoras",
                     "motivoOcorrencia",
-                    "descricaoMotivoOcorrencia",
-                    "redesProtecao",
                     "notificadoConselhoTutelar",
                     "acompanhadoNAAPA",
                 ])
@@ -183,21 +125,22 @@ const InformacoesAdicionais = forwardRef<
                             (pessoa) => ({
                                 nome: pessoa.nome,
                                 idade: Number.parseInt(pessoa.idade),
+                                idade_em_meses: pessoa.idadeEmMeses ?? false,
                                 genero: pessoa.genero,
                                 grupo_etnico_racial: pessoa.grupoEtnicoRacial,
                                 etapa_escolar: pessoa.etapaEscolar,
                                 frequencia_escolar: pessoa.frequenciaEscolar,
                                 interacao_ambiente_escolar:
                                     pessoa.interacaoAmbienteEscolar,
+                                nacionalidade: pessoa.nacionalidade,
+                                pessoa_com_deficiencia:
+                                    pessoa.pessoaComDeficiencia === "Sim",
                             }),
                         ),
                         motivacao_ocorrencia: data.motivoOcorrencia,
-                        motivacao_ocorrencia_outros:
-                            data.descricaoMotivoOcorrencia,
-                        redes_protecao_acompanhamento: data.redesProtecao,
                         notificado_conselho_tutelar:
                             data.notificadoConselhoTutelar === "Sim",
-                        acompanhado_naapa: data.acompanhadoNAAPA === "Sim",
+                        ocorrencia_acompanhada_pelo: data.acompanhadoNAAPA,
                     },
                 },
                 {
@@ -249,9 +192,11 @@ const InformacoesAdicionais = forwardRef<
                         name="motivoOcorrencia"
                         render={({ field }) => (
                             <FormItem>
+                                <FormLabel disabled={disabled}>
+                                    O que motivou a ocorrência?*
+                                </FormLabel>
                                 <FormControl>
-                                    <MultiSelectWithOther
-                                        label="O que motivou a ocorrência?*"
+                                    <MultiSelect
                                         disabled={
                                             disabled ||
                                             isLoadingCategoriasDisponiveis
@@ -260,51 +205,6 @@ const InformacoesAdicionais = forwardRef<
                                         value={field.value}
                                         onChange={field.onChange}
                                         placeholder="Selecione"
-                                        shouldShowTextField={
-                                            shouldShowDescricao
-                                        }
-                                        hint="Se necessário, selecione mais de uma opção"
-                                        textFieldLabel="Descreva o que motivou a ocorrência*"
-                                        textFieldPlaceholder="Descreva aqui..."
-                                        textFieldValue={form.watch(
-                                            "descricaoMotivoOcorrencia",
-                                        )}
-                                        onTextFieldChange={(val) =>
-                                            form.setValue(
-                                                "descricaoMotivoOcorrencia",
-                                                val,
-                                                {
-                                                    shouldValidate: true,
-                                                },
-                                            )
-                                        }
-                                        textFieldError={
-                                            form.formState.errors
-                                                .descricaoMotivoOcorrencia
-                                                ?.message
-                                        }
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="redesProtecao"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel disabled={disabled}>
-                                    Quais órgãos da rede de proteção já
-                                    acompanham o estudante?*
-                                </FormLabel>
-                                <FormControl>
-                                    <Textarea
-                                        disabled={disabled}
-                                        placeholder="Digite aqui..."
-                                        className="min-h-[100px]"
-                                        {...field}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -318,8 +218,8 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência foi notificada ao Conselho
-                                    Tutelar?*
+                                    A ocorrência foi notificada ao CT (Conselho
+                                    Tutelar)?*
                                 </FormLabel>
                                 <FormControl>
                                     <div className="pt-2">
@@ -367,43 +267,62 @@ const InformacoesAdicionais = forwardRef<
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel disabled={disabled}>
-                                    A ocorrência é acompanhada pelo NAAPA?*
+                                    A ocorrência está sendo acompanhada pelo:
                                 </FormLabel>
-                                <FormControl>
-                                    <div className="pt-2">
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                            disabled={disabled}
-                                            className="flex flex-col space-y-2"
+                                <div className="pt-2 flex flex-col space-y-2">
+                                    {(
+                                        [
+                                            { value: "naapa", label: "NAAPA" },
+                                            {
+                                                value: "comissao_mediacao_conflitos",
+                                                label: "Comissão de Mediação de Conflitos",
+                                            },
+                                            {
+                                                value: "supervisao_escolar",
+                                                label: "Supervisão Escolar",
+                                            },
+                                            { value: "cefai", label: "CEFAI" },
+                                        ] as const
+                                    ).map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className="flex items-center space-x-2 w-fit cursor-pointer"
                                         >
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Sim" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
+                                            <Checkbox
+                                                checked={field.value?.includes(
+                                                    option.value,
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                    const updated = new Set(
+                                                        field.value,
+                                                    );
+                                                    if (checked) {
+                                                        updated.add(
+                                                            option.value,
+                                                        );
+                                                    } else {
+                                                        updated.delete(
+                                                            option.value,
+                                                        );
                                                     }
-                                                >
-                                                    Sim
-                                                </span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                <RadioGroupItem value="Não" />
-                                                <span
-                                                    className={
-                                                        disabled
-                                                            ? "text-sm text-[#B0B0B0]"
-                                                            : "text-sm text-[#42474a]"
-                                                    }
-                                                >
-                                                    Não
-                                                </span>
-                                            </label>
-                                        </RadioGroup>
-                                    </div>
-                                </FormControl>
+                                                    field.onChange(
+                                                        Array.from(updated),
+                                                    );
+                                                }}
+                                                disabled={disabled}
+                                            />
+                                            <span
+                                                className={
+                                                    disabled
+                                                        ? "text-sm text-[#B0B0B0]"
+                                                        : "text-sm text-[#42474a]"
+                                                }
+                                            >
+                                                {option.label}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )}

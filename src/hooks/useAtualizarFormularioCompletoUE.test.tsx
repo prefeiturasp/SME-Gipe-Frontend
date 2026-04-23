@@ -33,10 +33,10 @@ describe("useAtualizarFormularioCompletoUE", () => {
         tipos_ocorrencia: ["uuid-tipo-1"],
         descricao_ocorrencia: "Descrição teste",
         smart_sampa_situacao: "nao",
-        envolvido: "uuid-envolvido",
+        envolvido: ["uuid-envolvido"],
         tem_info_agressor_ou_vitima: "sim",
         declarante: "uuid-declarante",
-        comunicacao_seguranca_publica: "sim_gcm",
+        comunicacao_seguranca_publica: "sim",
         protocolo_acionado: "ameaca",
     };
 

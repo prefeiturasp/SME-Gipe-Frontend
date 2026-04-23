@@ -33,17 +33,11 @@ function getValidSmartSampa(rawSmartSampa?: string): SimNao | undefined {
  * Converte valor de comunicação com segurança pública para formato do formulário
  */
 function getComunicacaoSeguranca(
-    comunicacao?: "sim_gcm" | "sim_pm" | "sim_dc" | "sim_cbm" | "nao",
+    comunicacao?: "sim" | "nao",
 ): string | undefined {
-    const comunicacaoMap: Record<string, string> = {
-        sim_gcm: "Sim, com a GCM",
-        sim_pm: "Sim, com a PM",
-        sim_dc: "Sim, com a Defesa civil",
-        sim_cbm: "Sim, com o Bombeiro",
-        nao: "Não",
-    };
-
-    return comunicacao ? comunicacaoMap[comunicacao] : undefined;
+    if (!comunicacao) return undefined;
+    if (comunicacao === "nao") return "Não";
+    return "Sim";
 }
 
 /**
@@ -88,12 +82,17 @@ function extractDadosPessoaisAgressor(ocorrencia: OcorrenciaDetalheAPI) {
             pessoasAgressoras: ocorrencia.pessoas_agressoras.map((pessoa) => ({
                 nome: pessoa.nome,
                 idade: String(pessoa.idade),
+                idadeEmMeses: pessoa.idade_em_meses ?? false,
                 genero: pessoa.genero || "",
                 grupoEtnicoRacial: pessoa.grupo_etnico_racial || "",
                 etapaEscolar: pessoa.etapa_escolar || "",
                 frequenciaEscolar: pessoa.frequencia_escolar || "",
                 interacaoAmbienteEscolar:
                     pessoa.interacao_ambiente_escolar || "",
+                nacionalidade: pessoa.nacionalidade || "",
+                pessoaComDeficiencia: pessoa.pessoa_com_deficiencia
+                    ? "Sim"
+                    : "Não",
             })),
         }),
     };
@@ -106,7 +105,6 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
     const notificadoConselhoTutelar = getBooleanAsSimNao(
         ocorrencia.notificado_conselho_tutelar,
     );
-    const acompanhadoNAAPA = getBooleanAsSimNao(ocorrencia.acompanhado_naapa);
     const motivoOcorrencia = ocorrencia.motivacao_ocorrencia_display?.map(
         (item) => item.value,
     );
@@ -115,14 +113,10 @@ function extractDadosEscolaresAgressor(ocorrencia: OcorrenciaDetalheAPI) {
         ...(motivoOcorrencia && {
             motivoOcorrencia,
         }),
-        ...(ocorrencia.motivacao_ocorrencia_outros && {
-            descricaoMotivoOcorrencia: ocorrencia.motivacao_ocorrencia_outros,
-        }),
-        ...(ocorrencia.redes_protecao_acompanhamento && {
-            redesProtecao: ocorrencia.redes_protecao_acompanhamento,
-        }),
         ...(notificadoConselhoTutelar && { notificadoConselhoTutelar }),
-        ...(acompanhadoNAAPA && { acompanhadoNAAPA }),
+        ...(ocorrencia.ocorrencia_acompanhada_pelo?.length && {
+            acompanhadoNAAPA: ocorrencia.ocorrencia_acompanhada_pelo,
+        }),
     };
 }
 
@@ -134,6 +128,19 @@ function extractInfoAdicionais(ocorrencia: OcorrenciaDetalheAPI) {
         ...extractDadosPessoaisAgressor(ocorrencia),
         ...extractDadosEscolaresAgressor(ocorrencia),
     };
+}
+
+/**
+ * Retorna o horário a ser exibido no formulário considerando se a ocorrência
+ * foi registrada fora do horário de funcionamento da UE.
+ * Nesse caso, o horário padrão "00:00" é utilizado.
+ */
+function resolveHoraOcorrencia(
+    horaExtracted: string,
+    foraHorario?: boolean,
+): string {
+    if (foraHorario) return "00:00";
+    return horaExtracted;
 }
 
 /**
@@ -167,19 +174,21 @@ export function transformOcorrenciaToFormData(
 
     return {
         dataOcorrencia,
-        horaOcorrencia,
+        horaOcorrencia: resolveHoraOcorrencia(
+            horaOcorrencia,
+            ocorrencia.fora_horario_funcionamento_ue,
+        ),
         dre: ocorrencia.dre_codigo_eol,
         unidadeEducacional: ocorrencia.unidade_codigo_eol,
         tipoOcorrencia,
+        foraHorarioFuncionamento:
+            ocorrencia.fora_horario_funcionamento_ue ?? false,
         ...(ocorrencia.status && { status: ocorrencia.status }),
         ...(ocorrencia.nome_dre && { nomeDre: ocorrencia.nome_dre }),
         ...(ocorrencia.nome_unidade && {
             nomeUnidade: ocorrencia.nome_unidade,
         }),
         ...(tiposOcorrencia && { tiposOcorrencia }),
-        ...(ocorrencia.tipos_ocorrencia_outros && {
-            descricaoTipoOcorrencia: ocorrencia.tipos_ocorrencia_outros,
-        }),
         ...(ocorrencia.descricao_ocorrencia && {
             descricao: ocorrencia.descricao_ocorrencia,
         }),
@@ -191,9 +200,6 @@ export function transformOcorrenciaToFormData(
         ...(protocoloAcionado && { protocoloAcionado }),
         ...(ocorrencia.envolvido?.length && {
             envolvidos: ocorrencia.envolvido.map((env) => env.uuid),
-        }),
-        ...(ocorrencia.envolvido_outros && {
-            descricaoEnvolvidos: ocorrencia.envolvido_outros,
         }),
         ...(possuiInfoAgressorVitima && { possuiInfoAgressorVitima }),
         ...infoAdicionais,

@@ -89,28 +89,6 @@ describe("transformOcorrenciaToFormData", () => {
         expect(result.tiposOcorrencia).toEqual(["tipo-1", "tipo-2"]);
     });
 
-    it("deve incluir descricaoTipoOcorrencia quando tipos_ocorrencia_outros estiver presente", () => {
-        const ocorrencia: OcorrenciaDetalheAPI = {
-            ...baseOcorrencia,
-            tipos_ocorrencia_outros: "Tipo livre de ocorrência",
-        };
-
-        const result = transformOcorrenciaToFormData(ocorrencia);
-
-        expect(result.descricaoTipoOcorrencia).toBe("Tipo livre de ocorrência");
-    });
-
-    it("deve incluir descricaoEnvolvidos quando envolvido_outros estiver presente", () => {
-        const ocorrencia: OcorrenciaDetalheAPI = {
-            ...baseOcorrencia,
-            envolvido_outros: "Responsável pelo aluno",
-        };
-
-        const result = transformOcorrenciaToFormData(ocorrencia);
-
-        expect(result.descricaoEnvolvidos).toBe("Responsável pelo aluno");
-    });
-
     it("deve incluir descrição quando presente", () => {
         const ocorrencia: OcorrenciaDetalheAPI = {
             ...baseOcorrencia,
@@ -182,10 +160,7 @@ describe("transformOcorrenciaToFormData", () => {
 
     it("deve converter comunicacao_seguranca_publica corretamente", () => {
         const testCases = [
-            { input: "sim_gcm" as const, expected: "Sim, com a GCM" },
-            { input: "sim_pm" as const, expected: "Sim, com a PM" },
-            { input: "sim_dc" as const, expected: "Sim, com a Defesa civil" },
-            { input: "sim_cbm" as const, expected: "Sim, com o Bombeiro" },
+            { input: "sim" as const, expected: "Sim" },
             { input: "nao" as const, expected: "Não" },
         ];
 
@@ -269,7 +244,7 @@ describe("transformOcorrenciaToFormData", () => {
                 uuid: "declarante-uuid",
                 declarante: "João Silva",
             },
-            comunicacao_seguranca_publica: "sim_gcm",
+            comunicacao_seguranca_publica: "sim",
             protocolo_acionado: "ameaca",
             envolvido: [
                 {
@@ -292,11 +267,23 @@ describe("transformOcorrenciaToFormData", () => {
             descricao: "Descrição da ocorrência",
             smartSampa: "Sim",
             declarante: "declarante-uuid",
-            comunicacaoSeguranca: "Sim, com a GCM",
+            comunicacaoSeguranca: "Sim",
             protocoloAcionado: "Ameaça",
             envolvidos: ["envolvido-uuid"],
             possuiInfoAgressorVitima: "Sim",
         });
+    });
+
+    it("deve definir horaOcorrencia como '00:00' quando fora_horario_funcionamento_ue é true", () => {
+        const ocorrencia: OcorrenciaDetalheAPI = {
+            ...baseOcorrencia,
+            fora_horario_funcionamento_ue: true,
+        };
+
+        const result = transformOcorrenciaToFormData(ocorrencia);
+
+        expect(result.horaOcorrencia).toBe("00:00");
+        expect(result.foraHorarioFuncionamento).toBe(true);
     });
 
     describe("Informações Adicionais - Dados Pessoais do Agressor", () => {
@@ -312,6 +299,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "ensino_fundamental_2",
                         frequencia_escolar: "regular",
                         interacao_ambiente_escolar: "Boa interação",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: true,
                     },
                 ],
             };
@@ -322,11 +311,14 @@ describe("transformOcorrenciaToFormData", () => {
                 {
                     nome: "João Silva",
                     idade: "25",
+                    idadeEmMeses: false,
                     genero: "masculino",
                     grupoEtnicoRacial: "branco",
                     etapaEscolar: "ensino_fundamental_2",
                     frequenciaEscolar: "regular",
                     interacaoAmbienteEscolar: "Boa interação",
+                    nacionalidade: "Brasileira",
+                    pessoaComDeficiencia: "Sim",
                 },
             ]);
         });
@@ -343,6 +335,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "ensino_medio",
                         frequencia_escolar: "regular",
                         interacao_ambiente_escolar: "Boa interação",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
             };
@@ -364,6 +358,8 @@ describe("transformOcorrenciaToFormData", () => {
                         etapa_escolar: "",
                         frequencia_escolar: "",
                         interacao_ambiente_escolar: "",
+                        nacionalidade: "",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
             };
@@ -390,26 +386,15 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.motivoOcorrencia).toEqual(["homofobia", "racismo"]);
         });
 
-        it("deve incluir descricaoMotivoOcorrencia quando motivacao_ocorrencia_outros estiver presente", () => {
+        it("deve incluir ocorrencia_acompanhada_pelo quando presente", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                motivacao_ocorrencia_outros: "Motivação livre",
+                ocorrencia_acompanhada_pelo: ["naapa"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.descricaoMotivoOcorrencia).toBe("Motivação livre");
-        });
-
-        it("deve incluir redes de proteção quando presente", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.redesProtecao).toBe("CRAS, NAAPA");
+            expect(result.acompanhadoNAAPA).toEqual(["naapa"]);
         });
 
         it("deve converter notificado_conselho_tutelar para 'Sim' quando true", () => {
@@ -434,26 +419,28 @@ describe("transformOcorrenciaToFormData", () => {
             expect(result.notificadoConselhoTutelar).toBe("Não");
         });
 
-        it("deve converter acompanhado_naapa para 'Sim' quando true", () => {
+        it("deve converter acompanhado_naapa para o valor de ocorrencia_acompanhada_pelo", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                acompanhado_naapa: true,
+                ocorrencia_acompanhada_pelo: ["comissao_mediacao_conflitos"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("Sim");
+            expect(result.acompanhadoNAAPA).toEqual([
+                "comissao_mediacao_conflitos",
+            ]);
         });
 
-        it("deve converter acompanhado_naapa para 'Não' quando false", () => {
+        it("não deve incluir acompanhadoNAAPA quando ocorrencia_acompanhada_pelo é undefined", () => {
             const ocorrencia: OcorrenciaDetalheAPI = {
                 ...baseOcorrencia,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: undefined,
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
 
-            expect(result.acompanhadoNAAPA).toBe("Não");
+            expect(result.acompanhadoNAAPA).toBeUndefined();
         });
 
         it("não deve incluir notificadoConselhoTutelar quando undefined", () => {
@@ -465,17 +452,6 @@ describe("transformOcorrenciaToFormData", () => {
             const result = transformOcorrenciaToFormData(ocorrencia);
 
             expect(result.notificadoConselhoTutelar).toBeUndefined();
-        });
-
-        it("não deve incluir acompanhadoNAAPA quando undefined", () => {
-            const ocorrencia: OcorrenciaDetalheAPI = {
-                ...baseOcorrencia,
-                acompanhado_naapa: undefined,
-            };
-
-            const result = transformOcorrenciaToFormData(ocorrencia);
-
-            expect(result.acompanhadoNAAPA).toBeUndefined();
         });
     });
 
@@ -493,15 +469,16 @@ describe("transformOcorrenciaToFormData", () => {
                         frequencia_escolar: "transferido_estadual",
                         interacao_ambiente_escolar:
                             "Como é a interação da pessoa agressora no ambiente escolar?",
+                        nacionalidade: "Brasileira",
+                        pessoa_com_deficiencia: false,
                     },
                 ],
                 motivacao_ocorrencia_display: [
                     { value: "homofobia", label: "Homofobia" },
                     { value: "racismo", label: "Racismo" },
                 ],
-                redes_protecao_acompanhamento: "CRAS, NAAPA",
                 notificado_conselho_tutelar: true,
-                acompanhado_naapa: false,
+                ocorrencia_acompanhada_pelo: ["naapa"],
             };
 
             const result = transformOcorrenciaToFormData(ocorrencia);
@@ -517,12 +494,13 @@ describe("transformOcorrenciaToFormData", () => {
                         frequenciaEscolar: "transferido_estadual",
                         interacaoAmbienteEscolar:
                             "Como é a interação da pessoa agressora no ambiente escolar?",
+                        nacionalidade: "Brasileira",
+                        pessoaComDeficiencia: "Não",
                     },
                 ],
                 motivoOcorrencia: ["homofobia", "racismo"],
-                redesProtecao: "CRAS, NAAPA",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: ["naapa"],
             });
         });
     });

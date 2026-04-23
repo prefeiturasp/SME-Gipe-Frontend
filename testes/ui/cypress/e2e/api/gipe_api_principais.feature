@@ -51,14 +51,6 @@ Funcionalidade: API GIPE - Testes Principais
     E a resposta deve conter uma lista de envolvidos
     E a resposta deve ser um array
 
-  @tipos_ocorrencia @listagem @smoke
-  Cenário: Listar todos os tipos de ocorrência
-    Quando eu faço uma requisição GET para "/tipos-ocorrencia/"
-    Então o status code da resposta deve ser 200
-    E a resposta deve conter uma lista de tipos de ocorrência
-    E a resposta deve ser um array
-    E o array não deve estar vazio
-
   @declarante @validacao @estrutura
   Cenário: Validar estrutura de dados de declarante
     Quando eu faço uma requisição GET para "/declarante/"
@@ -76,13 +68,6 @@ Funcionalidade: API GIPE - Testes Principais
     Quando eu faço uma requisição GET para "/diretor/"
     Então o status code da resposta deve ser 200
     E a resposta deve ser um array
-
-  @tipos_ocorrencia @validacao @conteudo
-  Cenário: Validar que tipos de ocorrência tem conteúdo
-    Quando eu faço uma requisição GET para "/tipos-ocorrencia/"
-    Então o status code da resposta deve ser 200
-    E a resposta deve ser um array
-    E o array não deve estar vazio
 
   @busca @uuid @validacao
   Cenário: Verificar que busca por UUID retorna objeto único

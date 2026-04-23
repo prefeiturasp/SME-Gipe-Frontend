@@ -43,7 +43,7 @@ describe("InformacoesAdicionais", () => {
         const motivoLabel = options?.motivoLabel ?? /Bullying/i;
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
@@ -58,7 +58,7 @@ describe("InformacoesAdicionais", () => {
         );
 
         const grupoTrigger = screen.getByRole("combobox", {
-            name: /Qual o grupo étnico-racial\?/i,
+            name: /Raça\/cor auto declarada/i,
         });
         await user.click(grupoTrigger);
         await user.click(await screen.findByRole("option", { name: /Pardo/i }));
@@ -87,13 +87,21 @@ describe("InformacoesAdicionais", () => {
             "Boa interação",
         );
         await user.type(
-            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-            "CRAS, NAAPA",
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
         );
 
-        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        const deficienciaTrigger = screen.getByRole("combobox", {
+            name: /Pessoa com deficiência\?/i,
+        });
+        await user.click(deficienciaTrigger);
+        await user.click(await screen.findByRole("option", { name: /^Sim$/i }));
+
+        const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
-        await user.click(radioSim[1]);
+
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -164,15 +172,13 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         expect(
-            screen.getAllByLabelText(/nome da pessoa envolvida/i).length,
+            screen.getAllByLabelText(/Qual o nome da pessoa\?/i).length,
         ).toBeGreaterThanOrEqual(1);
         expect(
             screen.getByText(/O que motivou a ocorrência/i),
         ).toBeInTheDocument();
-        expect(
-            screen.getByText(/notificada ao Conselho Tutelar/i),
-        ).toBeInTheDocument();
-        expect(screen.getByText(/acompanhada pelo NAAPA/i)).toBeInTheDocument();
+        expect(screen.getByText(/notificada ao CT/i)).toBeInTheDocument();
+        expect(screen.getByText(/acompanhada pelo:/i)).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
@@ -209,10 +215,8 @@ describe("InformacoesAdicionais", () => {
                     },
                 ],
                 motivoOcorrencia: ["outros"],
-                descricaoMotivoOcorrencia: "Motivação livre",
-                redesProtecao: "CRAS",
                 notificadoConselhoTutelar: "Sim",
-                acompanhadoNAAPA: "Não",
+                acompanhadoNAAPA: ["naapa"],
             },
             setFormData: mockSetFormData,
         });
@@ -220,12 +224,11 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         expect(nomesInputs[0]).toHaveValue("João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
         expect(idadesInputs[0]).toHaveValue(25);
-        expect(screen.getByDisplayValue("Motivação livre")).toBeInTheDocument();
     });
 
     it("deve validar campos obrigatórios", async () => {
@@ -236,43 +239,89 @@ describe("InformacoesAdicionais", () => {
         expect(proximoButton).toBeDisabled();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
 
         expect(proximoButton).toBeDisabled();
     });
 
-    it("deve exibir mensagem de ajuda para motivo de ocorrência", () => {
-        renderComponent();
-        expect(
-            screen.getByText(/Se necessário, selecione mais de uma opção/i),
-        ).toBeInTheDocument();
-    });
-
-    it("deve exibir campo de descrição ao selecionar Outros em motivo de ocorrência", async () => {
-        const user = userEvent.setup();
-        renderComponent();
-
-        const motivoButton = screen.getByRole("button", { name: /Selecione/i });
-        await user.click(motivoButton);
-        await user.click(await screen.findByText(/Outros/i));
-
-        expect(
-            screen.getByText(/Descreva o que motivou a ocorrência/i),
-        ).toBeInTheDocument();
-    });
-
     it("deve selecionar opções de radio buttons", async () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const radioNao = screen.getAllByRole("radio", { name: /Não/i });
-        await user.click(radioNao[0]);
-        await user.click(radioNao[1]);
+        const radioNao = screen.getByRole("radio", { name: /Não/i });
+        await user.click(radioNao);
 
-        expect(radioNao[0]).toBeChecked();
-        expect(radioNao[1]).toBeChecked();
+        expect(radioNao).toBeChecked();
+
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
+    });
+
+    it("deve alterar o placeholder da idade ao ativar o switch de criança menor de 1 ano", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos anos...",
+        );
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        expect(idadeInput).toHaveAttribute(
+            "placeholder",
+            "Digite quantos meses...",
+        );
+    });
+
+    it("deve aceitar idade 0 meses quando switch de criança menor de 1 ano está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "0");
+
+        expect(
+            screen.queryByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).not.toBeInTheDocument();
+    });
+
+    it("deve exibir erro ao digitar idade maior que 12 meses quando switch está ativo", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const switchIdade = screen.getByRole("switch");
+        await user.click(switchIdade);
+
+        const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
+        await user.clear(idadeInput);
+        await user.type(idadeInput, "13");
+        await user.tab();
+
+        expect(
+            await screen.findByText(/A idade em meses deve ser entre 0 e 12/i),
+        ).toBeInTheDocument();
+    });
+
+    it("deve desmarcar checkbox de acompanhamento e remover do array", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkboxNAAPA = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).toBeChecked();
+
+        await user.click(checkboxNAAPA);
+        expect(checkboxNAAPA).not.toBeChecked();
     });
 
     it("deve chamar onNext e setFormData ao submeter formulário válido", async () => {
@@ -280,7 +329,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomesInputs = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         );
         await user.type(nomesInputs[0], "João Silva");
         const idadesInputs = screen.getAllByLabelText(/Qual a idade\?/i);
@@ -295,7 +344,7 @@ describe("InformacoesAdicionais", () => {
         );
 
         const grupoTrigger = screen.getByRole("combobox", {
-            name: /Qual o grupo étnico-racial\?/i,
+            name: /Raça\/cor auto declarada/i,
         });
         await user.click(grupoTrigger);
         await user.click(await screen.findByRole("option", { name: /Pardo/i }));
@@ -324,13 +373,21 @@ describe("InformacoesAdicionais", () => {
             "Boa interação com todos",
         );
         await user.type(
-            screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-            "CRAS e Conselho Tutelar",
+            screen.getByPlaceholderText(/Digite a nacionalidade/i),
+            "Brasileira",
         );
 
-        const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
+        const deficienciaTrigger2 = screen.getByRole("combobox", {
+            name: /Pessoa com deficiência\?/i,
+        });
+        await user.click(deficienciaTrigger2);
+        await user.click(await screen.findByRole("option", { name: /^Sim$/i }));
+
+        const radioSim = screen.getAllByRole("radio", { name: /^Sim$/i });
         await user.click(radioSim[0]);
-        await user.click(radioSim[1]);
+
+        const radioNAAPA2 = screen.getByRole("checkbox", { name: /NAAPA/i });
+        await user.click(radioNAAPA2);
 
         const motivoButton = screen.getByRole("button", { name: /Selecione/i });
         await user.click(motivoButton);
@@ -427,38 +484,7 @@ describe("InformacoesAdicionais", () => {
                             ],
                             motivacao_ocorrencia: ["bullying"],
                             notificado_conselho_tutelar: true,
-                            acompanhado_naapa: true,
-                        }),
-                    }),
-                    expect.any(Object),
-                );
-            });
-        });
-
-        it("deve enviar motivacao_ocorrencia_outros ao submeter com a opção Outros", async () => {
-            const user = userEvent.setup();
-
-            mockMutate.mockImplementation((_, options) => {
-                options?.onSuccess?.({ success: true });
-            });
-
-            renderComponent();
-            await preencherFormularioCompleto(user, {
-                motivoLabel: /Outros/i,
-                descricaoMotivo: "Motivação livre",
-            });
-
-            const proximoButton = screen.getByRole("button", {
-                name: /Próximo/i,
-            });
-            await user.click(proximoButton);
-
-            await waitFor(() => {
-                expect(mockMutate).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        body: expect.objectContaining({
-                            motivacao_ocorrencia: ["outros"],
-                            motivacao_ocorrencia_outros: "Motivação livre",
+                            ocorrencia_acompanhada_pelo: ["naapa"],
                         }),
                     }),
                     expect.any(Object),
@@ -584,18 +610,20 @@ describe("InformacoesAdicionais", () => {
                     pessoasAgressoras: [
                         {
                             nome: "João Silva",
+                            idadeEmMeses: false,
                             idade: "25",
                             genero: "masculino",
                             grupoEtnicoRacial: "pardo",
                             etapaEscolar: "ensino_fundamental_2",
                             frequenciaEscolar: "regular",
                             interacaoAmbienteEscolar: "Boa interação",
+                            nacionalidade: "Brasileira",
+                            pessoaComDeficiencia: "Sim",
                         },
                     ],
                     motivoOcorrencia: ["bullying"],
-                    redesProtecao: "CRAS, NAAPA",
                     notificadoConselhoTutelar: "Sim",
-                    acompanhadoNAAPA: "Sim",
+                    acompanhadoNAAPA: ["naapa"],
                 },
                 setFormData: mockSetFormData,
                 setSavedFormData: mockSetSavedFormData,
@@ -634,7 +662,6 @@ describe("InformacoesAdicionais", () => {
 
             expect(formData).toHaveProperty("pessoasAgressoras");
             expect(formData).toHaveProperty("motivoOcorrencia");
-            expect(formData).toHaveProperty("redesProtecao");
             expect(formData).toHaveProperty("notificadoConselhoTutelar");
             expect(formData).toHaveProperty("acompanhadoNAAPA");
         });
@@ -698,9 +725,7 @@ describe("InformacoesAdicionais", () => {
             );
 
             await user.type(
-                screen.getAllByLabelText(
-                    /Qual o nome da pessoa envolvida\?/i,
-                )[0],
+                screen.getAllByLabelText(/Qual o nome da pessoa\?/i)[0],
                 "João Silva",
             );
             await user.type(
@@ -717,7 +742,7 @@ describe("InformacoesAdicionais", () => {
             );
 
             const grupoTrigger = screen.getByRole("combobox", {
-                name: /Qual o grupo étnico-racial\?/i,
+                name: /Raça\/cor auto declarada/i,
             });
             await user.click(grupoTrigger);
             await user.click(
@@ -750,13 +775,27 @@ describe("InformacoesAdicionais", () => {
                 "Boa interação",
             );
             await user.type(
-                screen.getByLabelText(/Quais órgãos da rede de proteção/i),
-                "CRAS, NAAPA",
+                screen.getByPlaceholderText(/Digite a nacionalidade/i),
+                "Brasileira",
             );
 
-            const radioSim = screen.getAllByRole("radio", { name: /Sim/i });
-            await user.click(radioSim[0]);
-            await user.click(radioSim[1]);
+            const deficienciaTrigger3 = screen.getByRole("combobox", {
+                name: /Pessoa com deficiência\?/i,
+            });
+            await user.click(deficienciaTrigger3);
+            await user.click(
+                await screen.findByRole("option", { name: /^Sim$/i }),
+            );
+
+            const radioSimSubmit = screen.getAllByRole("radio", {
+                name: /^Sim$/i,
+            });
+            await user.click(radioSimSubmit[0]);
+
+            const radioNAAPA3 = screen.getByRole("checkbox", {
+                name: /NAAPA/i,
+            });
+            await user.click(radioNAAPA3);
 
             const motivoButton = screen.getByRole("button", {
                 name: /Selecione/i,
@@ -770,6 +809,77 @@ describe("InformacoesAdicionais", () => {
             });
 
             expect(mockMutate).toHaveBeenCalled();
+        });
+
+        it("deve usar false como fallback para idadeEmMeses não definido ao submeter via ref", async () => {
+            const mockMutateLocal = vi.fn((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    pessoasAgressoras: [
+                        {
+                            nome: "João Silva",
+                            idade: "25",
+                            genero: "masculino",
+                            grupoEtnicoRacial: "pardo",
+                            etapaEscolar: "ensino_fundamental_2",
+                            frequenciaEscolar: "regular",
+                            interacaoAmbienteEscolar: "Boa interação",
+                            nacionalidade: "Brasileira",
+                            pessoaComDeficiencia: "Sim",
+                            // idadeEmMeses intencionalmente omitido (undefined)
+                        },
+                    ],
+                    motivoOcorrencia: ["bullying"],
+                    notificadoConselhoTutelar: "Sim",
+                    acompanhadoNAAPA: ["naapa"],
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            vi.spyOn(
+                useAtualizarInfoAgressorHook,
+                "useAtualizarInfoAgressor",
+            ).mockReturnValue({
+                mutate: mockMutateLocal,
+                isPending: false,
+            } as never);
+
+            const ref = React.createRef<InformacoesAdicionaisRef>();
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        ref={ref}
+                        onNext={mockOnNext}
+                        onPrevious={mockOnPrevious}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(async () => {
+                const result = await ref.current?.submitForm();
+                expect(result).toBe(true);
+            });
+
+            expect(mockMutateLocal).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        pessoas_agressoras: [
+                            expect.objectContaining({
+                                idade_em_meses: false,
+                            }),
+                        ],
+                    }),
+                }),
+                expect.any(Object),
+            );
         });
 
         it("deve retornar false ao submeter via submitForm quando dados são inválidos", async () => {
@@ -791,112 +901,6 @@ describe("InformacoesAdicionais", () => {
 
             expect(mockOnNext).not.toHaveBeenCalled();
         });
-
-        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição está vazia", async () => {
-            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
-                formData: {
-                    motivoOcorrencia: ["outros"],
-                    descricaoMotivoOcorrencia: "",
-                },
-                savedFormData: {},
-                setFormData: mockSetFormData,
-                setSavedFormData: mockSetSavedFormData,
-                ocorrenciaUuid: null,
-            });
-
-            const ref = React.createRef<InformacoesAdicionaisRef>();
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <InformacoesAdicionais
-                        ref={ref}
-                        onNext={mockOnNext}
-                        onPrevious={mockOnPrevious}
-                    />
-                </QueryClientProvider>,
-            );
-
-            const result = ref.current?.validateOutros();
-            expect(result).toBe(false);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Descreva o que motivou a ocorrência."),
-                ).toBeInTheDocument();
-            });
-        });
-
-        it("deve retornar false via validateOutros quando 'Outros' está selecionado e descrição contém apenas espaços", () => {
-            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
-                formData: {
-                    motivoOcorrencia: ["outros"],
-                    descricaoMotivoOcorrencia: "   ",
-                },
-                savedFormData: {},
-                setFormData: mockSetFormData,
-                setSavedFormData: mockSetSavedFormData,
-                ocorrenciaUuid: null,
-            });
-
-            const ref = React.createRef<InformacoesAdicionaisRef>();
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <InformacoesAdicionais
-                        ref={ref}
-                        onNext={mockOnNext}
-                        onPrevious={mockOnPrevious}
-                    />
-                </QueryClientProvider>,
-            );
-
-            const result = ref.current?.validateOutros();
-            expect(result).toBe(false);
-        });
-
-        it("deve retornar true via validateOutros quando 'Outros' não está selecionado", () => {
-            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
-                formData: {
-                    motivoOcorrencia: ["bullying"],
-                    descricaoMotivoOcorrencia: "",
-                },
-                savedFormData: {},
-                setFormData: mockSetFormData,
-                setSavedFormData: mockSetSavedFormData,
-                ocorrenciaUuid: null,
-            });
-
-            const ref = React.createRef<InformacoesAdicionaisRef>();
-            render(
-                <QueryClientProvider client={queryClient}>
-                    <InformacoesAdicionais
-                        ref={ref}
-                        onNext={mockOnNext}
-                        onPrevious={mockOnPrevious}
-                    />
-                </QueryClientProvider>,
-            );
-
-            const result = ref.current?.validateOutros();
-            expect(result).toBe(true);
-        });
-    });
-
-    it("deve mostrar erro no handleSubmit quando 'Outros' está selecionado em motivo e descrição está vazia", async () => {
-        const user = userEvent.setup();
-
-        renderComponent();
-        await preencherFormularioCompleto(user, { motivoLabel: /Outros/i });
-
-        const proximoButton = screen.getByRole("button", { name: /Próximo/i });
-        await user.click(proximoButton);
-
-        await waitFor(() => {
-            expect(
-                screen.getByText("Descreva o que motivou a ocorrência."),
-            ).toBeInTheDocument();
-        });
-
-        expect(mockMutate).not.toHaveBeenCalled();
-        expect(mockOnNext).not.toHaveBeenCalled();
     });
 
     it("deve desabilitar todos os campos quando disabled=true", async () => {
@@ -915,7 +919,7 @@ describe("InformacoesAdicionais", () => {
         renderComponent();
 
         const nomeInput = screen.getAllByLabelText(
-            /Qual o nome da pessoa envolvida\?/i,
+            /Qual o nome da pessoa\?/i,
         )[0];
         const idadeInput = screen.getAllByLabelText(/Qual a idade\?/i)[0];
         expect(nomeInput).toBeDisabled();

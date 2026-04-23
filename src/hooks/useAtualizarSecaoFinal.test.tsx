@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAtualizarSecaoFinal } from "./useAtualizarSecaoFinal";
 import * as atualizarSecaoFinalModule from "@/actions/atualizar-secao-final";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAtualizarSecaoFinal } from "./useAtualizarSecaoFinal";
 
 vi.mock("@/actions/atualizar-secao-final", () => ({
     atualizarSecaoFinal: vi.fn(),
@@ -34,7 +34,7 @@ describe("useAtualizarSecaoFinal", () => {
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-01",
                 declarante: "declarante-uuid",
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
             },
         };
@@ -49,7 +49,7 @@ describe("useAtualizarSecaoFinal", () => {
                     uuid: "declarante-uuid",
                     declarante: "Diretor",
                 },
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
                 status_display: "Em andamento",
                 status_extra: "Pendente",
@@ -57,7 +57,7 @@ describe("useAtualizarSecaoFinal", () => {
         };
 
         vi.mocked(
-            atualizarSecaoFinalModule.atualizarSecaoFinal
+            atualizarSecaoFinalModule.atualizarSecaoFinal,
         ).mockResolvedValue(mockResponse as never);
 
         const { result } = renderHook(() => useAtualizarSecaoFinal(), {
@@ -71,7 +71,7 @@ describe("useAtualizarSecaoFinal", () => {
         });
 
         expect(
-            atualizarSecaoFinalModule.atualizarSecaoFinal
+            atualizarSecaoFinalModule.atualizarSecaoFinal,
         ).toHaveBeenCalledWith(mockParams);
         expect(result.current.data).toEqual(mockResponse);
     });
@@ -83,7 +83,7 @@ describe("useAtualizarSecaoFinal", () => {
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-01",
                 declarante: "declarante-uuid",
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
             },
         };
@@ -91,7 +91,7 @@ describe("useAtualizarSecaoFinal", () => {
         const mockError = new Error("Erro ao atualizar");
 
         vi.mocked(
-            atualizarSecaoFinalModule.atualizarSecaoFinal
+            atualizarSecaoFinalModule.atualizarSecaoFinal,
         ).mockRejectedValue(mockError);
 
         const { result } = renderHook(() => useAtualizarSecaoFinal(), {
@@ -114,7 +114,7 @@ describe("useAtualizarSecaoFinal", () => {
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-01",
                 declarante: "declarante-uuid",
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
             },
         };
@@ -125,11 +125,11 @@ describe("useAtualizarSecaoFinal", () => {
         };
 
         const delayedPromise = new Promise((resolve) =>
-            setTimeout(() => resolve(mockSuccessResponse), 100)
+            setTimeout(() => resolve(mockSuccessResponse), 100),
         );
 
         vi.mocked(
-            atualizarSecaoFinalModule.atualizarSecaoFinal
+            atualizarSecaoFinalModule.atualizarSecaoFinal,
         ).mockReturnValue(delayedPromise as never);
 
         const { result } = renderHook(() => useAtualizarSecaoFinal(), {
@@ -154,7 +154,7 @@ describe("useAtualizarSecaoFinal", () => {
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-01",
                 declarante: "declarante-uuid",
-                comunicacao_seguranca_publica: "sim_gcm",
+                comunicacao_seguranca_publica: "sim",
                 protocolo_acionado: "ameaca",
             },
         };
@@ -165,7 +165,7 @@ describe("useAtualizarSecaoFinal", () => {
         };
 
         vi.mocked(
-            atualizarSecaoFinalModule.atualizarSecaoFinal
+            atualizarSecaoFinalModule.atualizarSecaoFinal,
         ).mockResolvedValue(mockErrorResponse as never);
 
         const { result } = renderHook(() => useAtualizarSecaoFinal(), {

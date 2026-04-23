@@ -13,7 +13,7 @@ class Complement_DRE_Localizadores {
    * @returns {string} XPath do botão
    */
   btn_nova_ocorrencia() {
-    return '/html/body/div[1]/div/div[2]/main/div/div[2]/div/a';
+    return '//a[contains(@href, "cadastrar-ocorrencia") or contains(normalize-space(.), "Nova Ocorr")]';
   }
 
   // ==================== ABA 1: INFORMAÇÕES BÁSICAS ====================
