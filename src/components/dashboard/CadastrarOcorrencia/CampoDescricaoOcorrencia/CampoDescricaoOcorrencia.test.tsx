@@ -12,9 +12,11 @@ type FormTeste = {
 function Wrapper({
     disabled = false,
     defaultValues = { descricao: "" },
+    questionNumber,
 }: Readonly<{
     disabled?: boolean;
     defaultValues?: FormTeste;
+    questionNumber?: number;
 }>) {
     const form = useForm<FormTeste>({ defaultValues });
     return (
@@ -23,6 +25,7 @@ function Wrapper({
                 control={form.control}
                 name="descricao"
                 disabled={disabled}
+                questionNumber={questionNumber}
             />
         </Form>
     );
@@ -88,5 +91,31 @@ describe("CampoDescricaoOcorrencia", () => {
 
         const textarea = screen.getByPlaceholderText("Descreva aqui...");
         expect(textarea).toHaveValue("Valor inicial");
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo numérico no label quando questionNumber é fornecido", () => {
+            render(<Wrapper questionNumber={5} />);
+
+            expect(
+                screen.getByText("5. Descreva a ocorrência*"),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir label sem prefixo quando questionNumber não é fornecido", () => {
+            render(<Wrapper />);
+
+            expect(
+                screen.getByText("Descreva a ocorrência*"),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo correto para número 1", () => {
+            render(<Wrapper questionNumber={1} />);
+
+            expect(
+                screen.getByText("1. Descreva a ocorrência*"),
+            ).toBeInTheDocument();
+        });
     });
 });

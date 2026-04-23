@@ -1122,4 +1122,72 @@ describe("InformacoesAdicionais", () => {
         await user.type(nomeInput, "Teste");
         expect(nomeInput).toHaveValue("");
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '18.' no campo motivo quando startingQuestionNumber=9 e 1 pessoa", () => {
+            // Com 1 pessoa: fixedQStart = 9 + 1*9 = 18
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        startingQuestionNumber={9}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^18\. O que motivou a ocorrência\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '19.' no campo Conselho Tutelar quando startingQuestionNumber=9 e 1 pessoa", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        startingQuestionNumber={9}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^19\. A ocorrência foi notificada ao CT/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. O que motivou a ocorrência/),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve chamar onPersonCountChange com o número de pessoas quando fornecido", async () => {
+            const mockOnPersonCountChange = vi.fn();
+
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        onPersonCountChange={mockOnPersonCountChange}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(() => {
+                expect(mockOnPersonCountChange).toHaveBeenCalledWith(1);
+            });
+        });
+    });
 });

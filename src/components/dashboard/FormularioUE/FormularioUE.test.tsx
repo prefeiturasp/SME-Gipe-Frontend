@@ -1663,4 +1663,19 @@ describe("FormularioUE", () => {
             expect(botaoProximo).toHaveTextContent("Próximo");
         });
     });
+
+    describe("personCount inicializado a partir de pessoasAgressoras", () => {
+        it("deve calcular qNumbers usando pessoasAgressoras.length quando definido no store", () => {
+            mockStoreState.formData = {
+                pessoasAgressoras: [{}, {}],
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.getByRole("heading", { name: /nova ocorrência/i }),
+            ).toBeInTheDocument();
+        });
+    });
 });

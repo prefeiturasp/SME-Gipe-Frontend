@@ -1,8 +1,18 @@
-import { screen, cleanup } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
-import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
-import VisualizarOcorrencia from "./index";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithClient } from "../CadastrarOcorrencia/__tests__/helpers";
+import FormularioDre from "../FormularioDre";
+import FormularioGipe from "../FormularioGipe";
+import VisualizarOcorrencia from "./index";
+
+vi.mock("@/stores/useOcorrenciaFormStore", () => ({
+    useOcorrenciaFormStore: vi.fn((selector) => {
+        const state = { formData: {} };
+        return typeof selector === "function" ? selector(state) : state;
+    }),
+}));
 
 let mockOnNext: (() => void) | undefined;
 let mockOnPrevious: (() => void) | undefined;
@@ -61,6 +71,18 @@ vi.mock("../FormularioGipe/DetalhamentoGipe", () => ({
     }),
 }));
 
+vi.mock("../FormularioGipe", () => ({
+    default: vi.fn(({ onPrevious }) => {
+        mockOnPrevious = onPrevious;
+        return (
+            <div data-testid="formulario-gipe">
+                <h1>Detalhamento GIPE</h1>
+                <button onClick={onPrevious}>Anterior</button>
+            </div>
+        );
+    }),
+}));
+
 describe("VisualizarOcorrencia", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -90,8 +112,8 @@ describe("VisualizarOcorrencia", () => {
         expect(screen.getByTestId("formulario-dre")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
-            )
+                "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -214,5 +236,60 @@ describe("VisualizarOcorrencia", () => {
 
         await user.click(screen.getByText("Anterior"));
         expect(screen.getByTestId("formulario-ue")).toBeInTheDocument();
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve passar startingQuestionNumber correto para FormularioDre", async () => {
+            const user = userEvent.setup();
+            renderWithClient(<VisualizarOcorrencia />);
+
+            await user.click(screen.getByText("Próximo"));
+
+            expect(screen.getByTestId("formulario-dre")).toBeInTheDocument();
+            expect(vi.mocked(FormularioDre)).toHaveBeenLastCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 14 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve passar startingQuestionNumber correto para FormularioGipe", async () => {
+            const user = userEvent.setup();
+            renderWithClient(<VisualizarOcorrencia />);
+
+            await user.click(screen.getByText("Próximo"));
+            const botoesProximo = screen.getAllByText("Próximo");
+            await user.click(botoesProximo[0]);
+
+            expect(screen.getByTestId("formulario-gipe")).toBeInTheDocument();
+            expect(vi.mocked(FormularioGipe)).toHaveBeenLastCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 18 }),
+                expect.anything(),
+            );
+        });
+
+        it("deve calcular dreStart a partir de pessoasAgressoras definidas no store", async () => {
+            vi.mocked(useOcorrenciaFormStore).mockImplementationOnce(
+                (selector) => {
+                    const state = {
+                        formData: { pessoasAgressoras: [{}] },
+                    } as unknown as ReturnType<
+                        typeof useOcorrenciaFormStore.getState
+                    >;
+                    return typeof selector === "function"
+                        ? selector(state)
+                        : state;
+                },
+            );
+
+            const user = userEvent.setup();
+            renderWithClient(<VisualizarOcorrencia />);
+
+            await user.click(screen.getByText("Próximo"));
+
+            expect(vi.mocked(FormularioDre)).toHaveBeenLastCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 14 }),
+                expect.anything(),
+            );
+        });
     });
 });

@@ -12,11 +12,12 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Anexos from "../CadastrarOcorrencia/Anexos";
 import InformacoesAdicionais, {
     InformacoesAdicionaisRef,
 } from "../CadastrarOcorrencia/InformacoesAdicionais";
+import { computeStartingNumbers } from "../CadastrarOcorrencia/questionNumberingUtils";
 import SecaoFinal, { SecaoFinalRef } from "../CadastrarOcorrencia/SecaoFinal";
 import SecaoFurtoERoubo, {
     SecaoFurtoERouboRef,
@@ -75,6 +76,21 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     // Valores reativos baseados nos estados locais
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    // Controla a quantidade de pessoas em InformacoesAdicionais para numeração dinâmica
+    const [personCount, setPersonCount] = useState<number>(
+        formData.pessoasAgressoras?.length ?? 1,
+    );
+
+    const qNumbers = useMemo(
+        () =>
+            computeStartingNumbers(
+                isFurtoRoubo,
+                hasAgressorVitimaInfo,
+                personCount,
+            ),
+        [isFurtoRoubo, hasAgressorVitimaInfo, personCount],
+    );
 
     // Usa estado local (reativo) para buscar tipos corretos ao trocar o radio
     const tipoFormulario = isFurtoRoubo ? "PATRIMONIAL" : "GERAL";
@@ -454,6 +470,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             onFormChange={handleSecaoInicialChange}
                             disabled={isReadOnly}
+                            startingQuestionNumber={qNumbers.secaoInicial}
                         />
                     </div>
 
@@ -464,6 +481,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 showButtons={false}
                                 onFormChange={handleSecaoFurtoChange}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={qNumbers.step2}
                             />
                         ) : (
                             <SecaoNaoFurtoERoubo
@@ -471,6 +489,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 showButtons={false}
                                 onFormChange={handleSecaoNaoFurtoChange}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={qNumbers.step2}
                             />
                         )}
                     </div>
@@ -481,6 +500,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 ref={informacoesAdicionaisRef}
                                 showButtons={false}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={
+                                    qNumbers.informacoesAdicionais
+                                }
+                                onPersonCountChange={setPersonCount}
                             />
                         </div>
                     )}
@@ -491,6 +514,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             disabled={isReadOnly}
                             isPatrimonial={isFurtoRoubo}
+                            startingQuestionNumber={qNumbers.secaoFinal}
                         />
                     </div>
 
@@ -499,6 +523,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             modoVisualizacao
                             disabled={isReadOnly}
+                            startingQuestionNumber={qNumbers.anexos}
                         />
                     </div>
 

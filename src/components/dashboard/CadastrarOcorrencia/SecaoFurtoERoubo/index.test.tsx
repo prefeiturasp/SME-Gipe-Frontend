@@ -1433,4 +1433,52 @@ describe("SecaoFurtoERoubo", () => {
             });
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '5.' no campo de tipo quando startingQuestionNumber=5", () => {
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={5}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.getByText(/^5\. Qual o tipo de ocorrência\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '7.' no campo Smart Sampa quando startingQuestionNumber=5", () => {
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={5}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.getByText(
+                    /^7\. Unidade Educacional é contemplada pelo Smart Sampa\?\*/,
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            render(
+                <SecaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. Qual o tipo de ocorrência/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

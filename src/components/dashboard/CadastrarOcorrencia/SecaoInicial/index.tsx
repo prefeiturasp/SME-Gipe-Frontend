@@ -39,6 +39,7 @@ export type SecaoInicialProps = {
     showButtons?: boolean;
     onFormChange?: (data: Partial<SecaoInicialData>) => void;
     disabled?: boolean;
+    startingQuestionNumber?: number;
 };
 
 export type SecaoInicialRef = {
@@ -49,7 +50,13 @@ export type SecaoInicialRef = {
 
 const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
     (
-        { onSuccess, showButtons = true, onFormChange, disabled = false },
+        {
+            onSuccess,
+            showButtons = true,
+            onFormChange,
+            disabled = false,
+            startingQuestionNumber,
+        },
         ref,
     ) => {
         const user = useUserStore((state) => state.user);
@@ -238,6 +245,11 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
         const unidadeNome =
             formData.nomeUnidade ?? user?.unidades[0]?.ue?.nome ?? "";
 
+        const qn = (offset: number) =>
+            startingQuestionNumber == null
+                ? ""
+                : `${startingQuestionNumber + offset}. `;
+
         const dresOptions =
             dresData?.map((dre: UnidadeEducacional) => ({
                 value: dre.codigo_eol,
@@ -310,7 +322,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
-                                            Quando a ocorrência aconteceu?*
+                                            {qn(0)}Quando a ocorrência
+                                            aconteceu?*
                                         </FormLabel>
                                         <FormControl>
                                             <DateTimeInput
@@ -396,7 +409,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={isDreDisabled}>
-                                            Qual a DRE?*
+                                            {qn(1)}Qual a DRE?*
                                         </FormLabel>
                                         <Select
                                             key={field.value}
@@ -465,7 +478,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={isUeDisabled}>
-                                            Qual a Unidade Educacional?*
+                                            {qn(2)}Qual a Unidade Educacional?*
                                         </FormLabel>
                                         <Select
                                             key={field.value}
@@ -535,7 +548,7 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
-                                        A ocorrência é:
+                                        {qn(3)}A ocorrência é:
                                     </FormLabel>
                                     <FormControl>
                                         <div className="pt-2">
