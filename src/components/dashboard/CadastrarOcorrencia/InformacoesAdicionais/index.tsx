@@ -153,8 +153,8 @@ const InformacoesAdicionais = forwardRef<
                         uuid: ocorrenciaUuid,
                         body: {
                             unidade_codigo_eol:
-                                formData.unidadeEducacional || "",
-                            dre_codigo_eol: formData.dre || "",
+                                formData.unidadeEducacional ?? "",
+                            dre_codigo_eol: formData.dre ?? "",
                             pessoas_agressoras: data.pessoasAgressoras.map(
                                 (pessoa) => ({
                                     nome: pessoa.nome,
