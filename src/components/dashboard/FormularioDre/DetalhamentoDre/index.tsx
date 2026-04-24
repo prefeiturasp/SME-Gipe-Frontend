@@ -24,7 +24,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
-import { DRE_QUESTION_COUNT } from "../../CadastrarOcorrencia/questionNumberingUtils";
+import {
+    ANEXOS_COUNT,
+    DRE_QUESTION_COUNT,
+} from "../../CadastrarOcorrencia/questionNumberingUtils";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
 import { formSchema, FormularioDreData } from "./schema";
 
@@ -236,6 +239,24 @@ export function DetalhamentoDre({
                             : startingQuestionNumber + DRE_QUESTION_COUNT
                     }
                 />
+
+                {isPontoFocal && formData.status === "finalizada" && (
+                    <div className="mt-4">
+                        <p className="text-sm font-bold text-[#42474a] mb-1">
+                            {qn(DRE_QUESTION_COUNT + ANEXOS_COUNT)}
+                            Encaminhamentos*
+                        </p>
+                        <p className="text-sm text-[#42474a] mb-2">
+                            São informações após a análise feita pelo GIPE.
+                        </p>
+                        <textarea
+                            readOnly
+                            value={formData.encaminhamentos ?? ""}
+                            onChange={() => {}}
+                            className="flex min-h-[80px] w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium rounded-[4px] resize-none"
+                        />
+                    </div>
+                )}
 
                 <div className="flex justify-end gap-2">
                     <Button
