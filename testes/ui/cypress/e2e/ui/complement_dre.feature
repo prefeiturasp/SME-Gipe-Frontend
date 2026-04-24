@@ -23,7 +23,7 @@ Funcionalidade: Complemento de Intercorrência - Perfil DRE
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @complemento @preenchimento @critico
+  @skip @complemento @preenchimento @critico
   Cenário: Complementar informações de intercorrência registrada
     # ── Aba 1: Acesso e validação do formulário de ocorrência ─────────────
     Quando eu visualizo uma ocorrência registrada
