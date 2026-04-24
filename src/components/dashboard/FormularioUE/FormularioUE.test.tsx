@@ -1,5 +1,5 @@
 import { toast } from "@/components/ui/headless-toast";
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { forwardRef, useImperativeHandle } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,6 +40,10 @@ const hookStates = {
     isAssistenteOuDiretor: false,
 };
 
+const mockAnexosData: { results: { uuid: string }[] } = {
+    results: [{ uuid: "mock-anexo-1" }],
+};
+
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         push: mockRouterPush,
@@ -71,6 +75,12 @@ vi.mock("@/hooks/useTiposOcorrencia", () => ({
             { uuid: "Agressão", nome: "Agressão" },
         ],
         isLoading: false,
+    }),
+}));
+
+vi.mock("@/hooks/useObterAnexos", () => ({
+    useObterAnexos: () => ({
+        data: mockAnexosData,
     }),
 }));
 
@@ -302,6 +312,8 @@ describe("FormularioUE", () => {
         hookStates.isPending = false;
         hookStates.isAssistenteOuDiretor = false;
 
+        mockAnexosData.results = [{ uuid: "mock-anexo-1" }];
+
         mockSecaoInicialTrigger.mockResolvedValue(true);
         mockSecaoFurtoTrigger.mockResolvedValue(true);
         mockSecaoNaoFurtoTrigger.mockResolvedValue(true);
@@ -442,6 +454,69 @@ describe("FormularioUE", () => {
 
             expect(
                 screen.queryByText("Mock InformacoesAdicionais"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir campo Encaminhamentos quando é assistente/diretor e status é 'finalizada'", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = {
+                status: "finalizada",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).toBeInTheDocument();
+            const textarea = screen.getByDisplayValue(
+                "Encaminhamento feito pelo GIPE",
+            );
+            expect(textarea).toBeInTheDocument();
+            fireEvent.change(textarea, { target: { value: "novo" } });
+        });
+
+        it("deve exibir campo Encaminhamentos vazio quando encaminhamentos não está definido", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = { status: "finalizada" };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando não é assistente/diretor", () => {
+            hookStates.isAssistenteOuDiretor = false;
+            mockStoreState.formData = {
+                status: "finalizada",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando status não é 'finalizada'", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = {
+                status: "enviado_para_gipe",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
             ).not.toBeInTheDocument();
         });
     });
@@ -754,6 +829,40 @@ describe("FormularioUE", () => {
                 expect(mockToast).toHaveBeenCalledWith({
                     title: "Erro ao validar Seção Final",
                     description: "Verifique os campos e tente novamente.",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("deve mostrar erro quando não há anexos", async () => {
+            mockAnexosData.results = [];
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Anexo obrigatório",
+                    description:
+                        "É necessário anexar pelo menos um documento para continuar.",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("deve mostrar erro quando results de anexos é undefined", async () => {
+            (mockAnexosData as Record<string, unknown>).results = undefined;
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Anexo obrigatório",
+                    description:
+                        "É necessário anexar pelo menos um documento para continuar.",
                     variant: "error",
                 });
             });
