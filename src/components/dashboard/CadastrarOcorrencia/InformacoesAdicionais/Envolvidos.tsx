@@ -338,7 +338,7 @@ function PessoaRow({
                             <FormLabel disabled={disabled}>
                                 <span className="flex items-center gap-1">
                                     {qp(7)}Nacionalidade*
-                                    <InfoTooltip content="A nacionalidade se refere ao país ao qual a pessoa pertence." />
+                                    <InfoTooltip content="A nacionalidade se refere ao país ao qual a pessoa nasceu." />
                                 </span>
                             </FormLabel>
                             <FormControl>

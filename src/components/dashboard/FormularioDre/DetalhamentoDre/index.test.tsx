@@ -1,6 +1,6 @@
 import * as useUserStoreModule from "@/stores/useUserStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DetalhamentoDre } from "./index";
@@ -759,6 +759,69 @@ describe("DetalhamentoDre", () => {
             expect(
                 screen.queryByText(/^\d+\. Quais órgãos foram acionados/),
             ).not.toBeInTheDocument();
+        });
+    });
+
+    describe("campo Encaminhamentos", () => {
+        it("deve exibir campo Encaminhamentos quando é ponto focal e status é 'finalizada'", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "finalizada";
+            (mockFormData as Record<string, unknown>).encaminhamentos =
+                "Texto de encaminhamento do GIPE";
+
+            renderComponent();
+
+            expect(screen.getByText(/encaminhamentos/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).toBeInTheDocument();
+            const textarea = screen.getByDisplayValue(
+                "Texto de encaminhamento do GIPE",
+            );
+            expect(textarea).toBeInTheDocument();
+            fireEvent.change(textarea, { target: { value: "novo valor" } });
+        });
+
+        it("não deve exibir campo Encaminhamentos quando não é ponto focal", () => {
+            mockIsPontoFocal.mockReturnValue(false);
+            mockFormData.status = "finalizada";
+
+            renderComponent();
+
+            expect(
+                screen.queryByDisplayValue("Texto de encaminhamento do GIPE"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando status não é 'finalizada'", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "enviado_para_dre";
+
+            renderComponent();
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir campo Encaminhamentos com numeração correta quando startingQuestionNumber é fornecido", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "finalizada";
+            delete (mockFormData as Record<string, unknown>).encaminhamentos;
+
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/16\. Encaminhamentos\*/),
+            ).toBeInTheDocument();
         });
     });
 });

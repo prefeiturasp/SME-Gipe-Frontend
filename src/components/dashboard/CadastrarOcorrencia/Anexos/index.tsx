@@ -378,9 +378,18 @@ export default function Anexos({
                                     type="submit"
                                     variant="submit"
                                     disabled={isFinalizando}
-                                    onClick={() =>
-                                        setOpenModalFinalizarEtapa(true)
-                                    }
+                                    onClick={() => {
+                                        if (!anexosData?.results?.length) {
+                                            toast({
+                                                variant: "error",
+                                                title: "Anexo obrigatório",
+                                                description:
+                                                    "É necessário anexar pelo menos um documento para continuar.",
+                                            });
+                                            return;
+                                        }
+                                        setOpenModalFinalizarEtapa(true);
+                                    }}
                                 >
                                     {isFinalizando && (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
