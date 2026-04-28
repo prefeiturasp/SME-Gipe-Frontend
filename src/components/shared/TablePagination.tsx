@@ -76,7 +76,7 @@ export default function TablePagination({
                     if (item === "...") {
                         return (
                             <span
-                                key={`ellipsis-${i}`}
+                                key={`ellipsis-after-${pageNumbers[i - 1]}`}
                                 className="flex items-center justify-center w-[32px] h-[32px] text-sm text-[#42474a]"
                                 aria-hidden="true"
                             >
