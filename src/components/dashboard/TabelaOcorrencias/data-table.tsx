@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-table";
 
 import Alert from "@/assets/icons/Alert";
-import { Button } from "@/components/ui/button";
+import TablePagination from "@/components/shared/TablePagination";
 import {
     Table,
     TableBody,
@@ -22,17 +22,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Ocorrencia } from "@/types/ocorrencia";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useOcorrenciasColumns } from "./useOcorrenciasColumns";
 
 export function resolveColId<TData, TValue>(
-    node: Header<TData, TValue> | Cell<TData, TValue>
+    node: Header<TData, TValue> | Cell<TData, TValue>,
 ) {
     return node?.column?.id ?? node?.id;
 }
 
 export function hasColumnFlag<TData, TValue>(
-    node: Header<TData, TValue> | Cell<TData, TValue>
+    node: Header<TData, TValue> | Cell<TData, TValue>,
 ) {
     return node?.column ? "true" : "false";
 }
@@ -69,18 +68,18 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                                             key={header.id}
                                             data-testid={`th-${colId}`}
                                             data-has-column={hasColumnFlag(
-                                                header
+                                                header,
                                             )}
                                             className={cn(
                                                 "px-2 text-[#42474a] text-left",
                                                 isAction
                                                     ? "w-[49px] min-w-[49px] max-w-[49px] whitespace-nowrap"
-                                                    : ""
+                                                    : "",
                                             )}
                                         >
                                             {flexRender(
                                                 header.column?.columnDef.header,
-                                                header.getContext()
+                                                header.getContext(),
                                             )}
                                         </TableHead>
                                     );
@@ -104,27 +103,27 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                                                 key={cell.id}
                                                 data-testid={`td-${colId}`}
                                                 data-has-column={hasColumnFlag(
-                                                    cell
+                                                    cell,
                                                 )}
                                                 className={cn(
                                                     "px-2 text-sm text-gray-800",
                                                     isAction
                                                         ? "w-[49px] min-w-[49px] max-w-[49px] px-0"
-                                                        : ""
+                                                        : "",
                                                 )}
                                             >
                                                 {isAction ? (
                                                     flexRender(
                                                         cell.column.columnDef
                                                             .cell,
-                                                        cell.getContext()
+                                                        cell.getContext(),
                                                     )
                                                 ) : (
                                                     <div className="line-clamp-2">
                                                         {flexRender(
                                                             cell.column
                                                                 .columnDef.cell,
-                                                            cell.getContext()
+                                                            cell.getContext(),
                                                         )}
                                                     </div>
                                                 )}
@@ -159,49 +158,13 @@ export function DataTable({ data }: Readonly<{ data: Ocorrencia[] }>) {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-center space-x-2 py-4">
-                <Button
-                    variant="pagination"
-                    size="icon"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                    className="w-[32px] h-[32px]"
-                    data-testid="prev-page-button"
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                <div className="flex space-x-1">
-                    {table.getPageCount() > 0 &&
-                        [...Array(table.getPageCount())].map((_, index) => (
-                            <Button
-                                key={`page-${index + 1}`}
-                                variant={
-                                    table.getState().pagination.pageIndex ===
-                                    index
-                                        ? "paginationActive"
-                                        : "pagination"
-                                }
-                                size="sm"
-                                className="w-[32px] h-[32px]"
-                                onClick={() => table.setPageIndex(index)}
-                            >
-                                {index + 1}
-                            </Button>
-                        ))}
-                </div>
-
-                <Button
-                    variant="pagination"
-                    size="icon"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                    className="w-[32px] h-[32px]"
-                    data-testid="next-page-button"
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
+            <TablePagination
+                pageIndex={table.getState().pagination.pageIndex}
+                pageCount={Math.max(table.getPageCount(), 1)}
+                onPageChange={(index) => table.setPageIndex(index)}
+                canPreviousPage={table.getCanPreviousPage()}
+                canNextPage={table.getCanNextPage()}
+            />
         </div>
     );
 }
