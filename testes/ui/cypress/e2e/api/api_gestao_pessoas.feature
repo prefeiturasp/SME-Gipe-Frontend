@@ -1,5 +1,5 @@
 #language: pt
- @skip @api @gestao_pessoas
+ @api @gestao_pessoas
 Funcionalidade: API Gestão de Pessoas - Gestão de Usuários
   Como Gestão de Usuário
   Quero visualizar a lista de Usuários Ativos

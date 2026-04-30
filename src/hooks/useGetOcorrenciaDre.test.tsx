@@ -1,8 +1,8 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
-import { useGetOcorrenciaDre } from "./useGetOcorrenciaDre";
 import { obterOcorrenciaDre } from "@/actions/obter-ocorrencia-dre";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { useGetOcorrenciaDre } from "./useGetOcorrenciaDre";
 
 vi.mock("@/actions/obter-ocorrencia-dre");
 
@@ -42,16 +42,10 @@ describe("useGetOcorrenciaDre", () => {
             uuid: "dre-123-ocorrencia-456",
             unidade_codigo_eol: "123456",
             dre_codigo_eol: "108300",
-            acionamento_seguranca_publica: true,
-            interlocucao_sts: false,
-            info_complementar_sts: "Informações adicionais STS",
-            interlocucao_cpca: true,
-            info_complementar_cpca: "Informações adicionais CPCA",
-            interlocucao_supervisao_escolar: false,
-            info_complementar_supervisao_escolar:
-                "Informações adicionais Supervisão Escolar",
-            interlocucao_naapa: true,
-            info_complementar_naapa: "Informações adicionais NAAPA",
+            quais_orgaos_acionados_dre: [
+                "comunicacao_gcm_ronda_escolar",
+                "comunicacao_gipe",
+            ],
         };
         obterOcorrenciaDreMock.mockResolvedValue({
             success: true,
@@ -106,5 +100,4 @@ describe("useGetOcorrenciaDre", () => {
         expect(result.current.error).toBeInstanceOf(Error);
         expect((result.current.error as Error).message).toBe("Network Error");
     });
-
 });

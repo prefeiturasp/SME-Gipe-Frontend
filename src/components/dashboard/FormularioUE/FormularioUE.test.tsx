@@ -1,5 +1,5 @@
 import { toast } from "@/components/ui/headless-toast";
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { forwardRef, useImperativeHandle } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,6 +40,10 @@ const hookStates = {
     isAssistenteOuDiretor: false,
 };
 
+const mockAnexosData: { results: { uuid: string }[] } = {
+    results: [{ uuid: "mock-anexo-1" }],
+};
+
 vi.mock("next/navigation", () => ({
     useRouter: () => ({
         push: mockRouterPush,
@@ -71,6 +75,12 @@ vi.mock("@/hooks/useTiposOcorrencia", () => ({
             { uuid: "Agressão", nome: "Agressão" },
         ],
         isLoading: false,
+    }),
+}));
+
+vi.mock("@/hooks/useObterAnexos", () => ({
+    useObterAnexos: () => ({
+        data: mockAnexosData,
     }),
 }));
 
@@ -302,6 +312,8 @@ describe("FormularioUE", () => {
         hookStates.isPending = false;
         hookStates.isAssistenteOuDiretor = false;
 
+        mockAnexosData.results = [{ uuid: "mock-anexo-1" }];
+
         mockSecaoInicialTrigger.mockResolvedValue(true);
         mockSecaoFurtoTrigger.mockResolvedValue(true);
         mockSecaoNaoFurtoTrigger.mockResolvedValue(true);
@@ -442,6 +454,69 @@ describe("FormularioUE", () => {
 
             expect(
                 screen.queryByText("Mock InformacoesAdicionais"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir campo Encaminhamentos quando é assistente/diretor e status é 'finalizada'", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = {
+                status: "finalizada",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).toBeInTheDocument();
+            const textarea = screen.getByDisplayValue(
+                "Encaminhamento feito pelo GIPE",
+            );
+            expect(textarea).toBeInTheDocument();
+            fireEvent.change(textarea, { target: { value: "novo" } });
+        });
+
+        it("deve exibir campo Encaminhamentos vazio quando encaminhamentos não está definido", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = { status: "finalizada" };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(screen.getByText(/encaminhamentos\*/i)).toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando não é assistente/diretor", () => {
+            hookStates.isAssistenteOuDiretor = false;
+            mockStoreState.formData = {
+                status: "finalizada",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando status não é 'finalizada'", () => {
+            hookStates.isAssistenteOuDiretor = true;
+            mockStoreState.formData = {
+                status: "enviado_para_gipe",
+                encaminhamentos: "Encaminhamento feito pelo GIPE",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
             ).not.toBeInTheDocument();
         });
     });
@@ -758,6 +833,40 @@ describe("FormularioUE", () => {
                 });
             });
         });
+
+        it("deve mostrar erro quando não há anexos", async () => {
+            mockAnexosData.results = [];
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Anexo obrigatório",
+                    description:
+                        "É necessário anexar pelo menos um documento para continuar.",
+                    variant: "error",
+                });
+            });
+        });
+
+        it("deve mostrar erro quando results de anexos é undefined", async () => {
+            (mockAnexosData as Record<string, unknown>).results = undefined;
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockToast).toHaveBeenCalledWith({
+                    title: "Anexo obrigatório",
+                    description:
+                        "É necessário anexar pelo menos um documento para continuar.",
+                    variant: "error",
+                });
+            });
+        });
     });
 
     describe("handleSaveAll - Casos de erro", () => {
@@ -1056,6 +1165,35 @@ describe("FormularioUE", () => {
                     notificado_conselho_tutelar: true,
                     ocorrencia_acompanhada_pelo: ["naapa"],
                 });
+            });
+
+            renderWithClient(<FormularioUE />);
+
+            const botaoProximo = screen.getByText("Próximo");
+            await userEvent.click(botaoProximo);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalled();
+            });
+        });
+
+        it("deve incluir numeroProcedimentoSEITexto em nr_processo_sei quando numeroProcedimentoSEI é 'Sim'", async () => {
+            mockStoreState.formData = {
+                tipoOcorrencia: "Não",
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            mockInfoAdicionaisGetData.mockReturnValue({
+                pessoasAgressoras: [{ nome: "João", idade: "15" }],
+                motivoOcorrencia: "Bullying",
+                notificadoConselhoTutelar: "Sim",
+                acompanhadoNAAPA: ["naapa"],
+                numeroProcedimentoSEI: "Sim",
+                numeroProcedimentoSEITexto: "1234.5678/9012345-6",
+            });
+
+            mockMutate.mockImplementation((data) => {
+                expect(data.body.nr_processo_sei).toBe("1234.5678/9012345-6");
             });
 
             renderWithClient(<FormularioUE />);
@@ -1632,6 +1770,21 @@ describe("FormularioUE", () => {
 
             expect(botaoProximo).toBeInTheDocument();
             expect(botaoProximo).toHaveTextContent("Próximo");
+        });
+    });
+
+    describe("personCount inicializado a partir de pessoasAgressoras", () => {
+        it("deve calcular qNumbers usando pessoasAgressoras.length quando definido no store", () => {
+            mockStoreState.formData = {
+                pessoasAgressoras: [{}, {}],
+                possuiInfoAgressorVitima: "Sim",
+            };
+
+            renderWithClient(<FormularioUE />);
+
+            expect(
+                screen.getByRole("heading", { name: /nova ocorrência/i }),
+            ).toBeInTheDocument();
         });
     });
 });

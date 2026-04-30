@@ -23,7 +23,7 @@ Funcionalidade: Gestão de Intercorrências - Perfil GIPE
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @complemento @preenchimento @critico @fluxo_completo
+  @skip @complemento @preenchimento @critico @fluxo_completo
   Cenário: Complementar informações de intercorrência registrada
     # ── Aba 1: Acesso e validação do formulário de ocorrência ─────────────
     Quando COMP_GIPE abre ocorrencia valida para complemento

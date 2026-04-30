@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/table";
 
 import Editar from "@/assets/icons/Editar";
+import TablePagination from "@/components/shared/TablePagination";
 import { Button } from "@/components/ui/button";
 import { Usuario } from "@/types/usuarios";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 type TabelaUsuariosProps = {
@@ -135,53 +135,13 @@ export default function TabelaUsuarios({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-center space-x-2 py-4">
-                <Button
-                    variant="pagination"
-                    size="icon"
-                    onClick={() =>
-                        setPageIndex((prev) => Math.max(prev - 1, 0))
-                    }
-                    disabled={!canPreviousPage}
-                    className="w-[32px] h-[32px]"
-                    data-testid="prev-page-button"
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                <div className="flex space-x-1">
-                    {Array.from({ length: pageCount }).map((_, index) => (
-                        <Button
-                            key={`page-${index + 1}`}
-                            variant={
-                                pageIndex === index
-                                    ? "paginationActive"
-                                    : "pagination"
-                            }
-                            size="sm"
-                            className="w-[32px] h-[32px]"
-                            onClick={() => setPageIndex(index)}
-                        >
-                            {index + 1}
-                        </Button>
-                    ))}
-                </div>
-
-                <Button
-                    variant="pagination"
-                    size="icon"
-                    onClick={() =>
-                        setPageIndex((prev) =>
-                            Math.min(prev + 1, pageCount - 1)
-                        )
-                    }
-                    disabled={!canNextPage}
-                    className="w-[32px] h-[32px]"
-                    data-testid="next-page-button"
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
+            <TablePagination
+                pageIndex={pageIndex}
+                pageCount={pageCount}
+                onPageChange={setPageIndex}
+                canPreviousPage={canPreviousPage}
+                canNextPage={canNextPage}
+            />
         </>
     );
 }

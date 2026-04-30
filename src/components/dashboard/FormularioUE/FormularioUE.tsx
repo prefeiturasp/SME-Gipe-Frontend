@@ -5,6 +5,7 @@ import { Stepper } from "@/components/stepper/Stepper";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/headless-toast";
 import { useAtualizarFormularioCompletoUE } from "@/hooks/useAtualizarFormularioCompletoUE";
+import { useObterAnexos } from "@/hooks/useObterAnexos";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
@@ -12,11 +13,15 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { FormularioCompletoUEBody } from "@/types/formulario-completo-ue";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Anexos from "../CadastrarOcorrencia/Anexos";
 import InformacoesAdicionais, {
     InformacoesAdicionaisRef,
 } from "../CadastrarOcorrencia/InformacoesAdicionais";
+import {
+    ANEXOS_COUNT,
+    computeStartingNumbers,
+} from "../CadastrarOcorrencia/questionNumberingUtils";
 import SecaoFinal, { SecaoFinalRef } from "../CadastrarOcorrencia/SecaoFinal";
 import SecaoFurtoERoubo, {
     SecaoFurtoERouboRef,
@@ -52,6 +57,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     const { mutate: atualizarFormularioCompletoUE, isPending } =
         useAtualizarFormularioCompletoUE();
 
+    const { data: anexosData } = useObterAnexos({
+        intercorrenciaUuid: ocorrenciaUuid ?? "",
+    });
+
     // Refs para acessar os métodos dos formulários
     const secaoInicialRef = useRef<SecaoInicialRef>(null);
     const secaoFurtoERouboRef = useRef<SecaoFurtoERouboRef>(null);
@@ -75,6 +84,21 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
     // Valores reativos baseados nos estados locais
     const isFurtoRoubo = currentTipoOcorrencia === "Sim";
     const hasAgressorVitimaInfo = currentPossuiInfoAgressor === "Sim";
+
+    // Controla a quantidade de pessoas em InformacoesAdicionais para numeração dinâmica
+    const [personCount, setPersonCount] = useState<number>(
+        formData.pessoasAgressoras?.length ?? 1,
+    );
+
+    const qNumbers = useMemo(
+        () =>
+            computeStartingNumbers(
+                isFurtoRoubo,
+                hasAgressorVitimaInfo,
+                personCount,
+            ),
+        [isFurtoRoubo, hasAgressorVitimaInfo, personCount],
+    );
 
     // Usa estado local (reativo) para buscar tipos corretos ao trocar o radio
     const tipoFormulario = isFurtoRoubo ? "PATRIMONIAL" : "GERAL";
@@ -222,11 +246,24 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
         return !!valid;
     };
 
+    const validateAnexos = () => {
+        const totalAnexos = anexosData?.results?.length ?? 0;
+        if (totalAnexos < 1) {
+            showValidationError(
+                "Anexo obrigatório",
+                "É necessário anexar pelo menos um documento para continuar.",
+            );
+            return false;
+        }
+        return true;
+    };
+
     const validateAllForms = async () => {
         if (!(await validateSecaoInicial())) return false;
         if (!(await validateSecaoTipo())) return false;
         if (!(await validateInformacoesAdicionais())) return false;
         if (!(await validateSecaoFinal())) return false;
+        if (!validateAnexos()) return false;
         return true;
     };
 
@@ -327,6 +364,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                     "Sim",
                 ocorrencia_acompanhada_pelo:
                     informacoesAdicionaisData.acompanhadoNAAPA,
+                nr_processo_sei:
+                    informacoesAdicionaisData.numeroProcedimentoSEI === "Sim"
+                        ? informacoesAdicionaisData.numeroProcedimentoSEITexto
+                        : "",
             }),
         };
     };
@@ -450,6 +491,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             onFormChange={handleSecaoInicialChange}
                             disabled={isReadOnly}
+                            startingQuestionNumber={qNumbers.secaoInicial}
                         />
                     </div>
 
@@ -460,6 +502,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 showButtons={false}
                                 onFormChange={handleSecaoFurtoChange}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={qNumbers.step2}
                             />
                         ) : (
                             <SecaoNaoFurtoERoubo
@@ -467,6 +510,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 showButtons={false}
                                 onFormChange={handleSecaoNaoFurtoChange}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={qNumbers.step2}
                             />
                         )}
                     </div>
@@ -477,6 +521,10 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                                 ref={informacoesAdicionaisRef}
                                 showButtons={false}
                                 disabled={isReadOnly}
+                                startingQuestionNumber={
+                                    qNumbers.informacoesAdicionais
+                                }
+                                onPersonCountChange={setPersonCount}
                             />
                         </div>
                     )}
@@ -487,6 +535,7 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             disabled={isReadOnly}
                             isPatrimonial={isFurtoRoubo}
+                            startingQuestionNumber={qNumbers.secaoFinal}
                         />
                     </div>
 
@@ -495,8 +544,29 @@ export function FormularioUE({ onNext }: FormularioUEProps) {
                             showButtons={false}
                             modoVisualizacao
                             disabled={isReadOnly}
+                            startingQuestionNumber={qNumbers.anexos}
                         />
                     </div>
+
+                    {isAssistenteOuDiretor &&
+                        formData.status === "finalizada" && (
+                            <div className="mt-4">
+                                <p className="text-sm font-bold text-[#42474a] mb-1">
+                                    {qNumbers.anexos + ANEXOS_COUNT}.
+                                    Encaminhamentos*
+                                </p>
+                                <p className="text-sm text-[#42474a] mb-2">
+                                    São informações após a análise feita pelo
+                                    GIPE.
+                                </p>
+                                <textarea
+                                    readOnly
+                                    value={formData.encaminhamentos ?? ""}
+                                    onChange={() => {}}
+                                    className="flex min-h-[80px] w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium rounded-[4px] resize-none"
+                                />
+                            </div>
+                        )}
 
                     <div className="flex justify-end gap-2 mt-4">
                         {!isAssistenteOuDiretor && (

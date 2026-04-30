@@ -18,6 +18,7 @@ export type InfoAgressorBody = {
     motivacao_ocorrencia: string[];
     notificado_conselho_tutelar: boolean;
     ocorrencia_acompanhada_pelo: string[];
+    nr_processo_sei?: string;
 };
 
 export type InfoAgressorResponse = {

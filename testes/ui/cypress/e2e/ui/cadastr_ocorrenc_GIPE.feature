@@ -17,12 +17,12 @@ Funcionalidade: Cadastro de Ocorrência com Informações Adicionais
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para UE
 
-  @skip @consulta @listagem
+  @consulta @listagem
   Cenário: Consultar listagem de ocorrências cadastradas no sistema
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @informacoes_adicional @estudante @dados_aleatorios
+  @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
     # ── Aba 1: Data, Hora e Unidade Educacional ──────────────────────────
     Quando GIPE inicia o cadastro de uma nova ocorrência

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DetalhamentoGipe } from "./DetalhamentoGipe/index";
 import FormularioGipePage from "./index";
 
 const mockReset = vi.fn();
@@ -131,5 +132,21 @@ describe("FormularioGipePage", () => {
 
         const botaoVoltar = screen.getByRole("button", { name: /voltar/i });
         expect(botaoVoltar).toBeInTheDocument();
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve passar startingQuestionNumber para DetalhamentoGipe", () => {
+            renderWithClient(
+                <FormularioGipePage
+                    onPrevious={mockOnPrevious}
+                    startingQuestionNumber={16}
+                />,
+            );
+
+            expect(vi.mocked(DetalhamentoGipe)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 16 }),
+                expect.anything(),
+            );
+        });
     });
 });

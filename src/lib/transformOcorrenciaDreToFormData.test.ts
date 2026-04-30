@@ -12,22 +12,26 @@ describe("transformOcorrenciaDreToFormData", () => {
             status: "em_preenchimento_dre",
             status_display: "Em preenchimento DRE",
             status_extra: "",
-            acionamento_seguranca_publica: true,
-            interlocucao_supervisao_escolar: true,
+            quais_orgaos_acionados_dre: [
+                "comunicacao_supervisao_tecnica_saude",
+                "comunicacao_gipe",
+            ],
             nr_processo_sei: "1234.5678/9012345-6",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
-            acionamentoSegurancaPublica: "Sim",
-            interlocucaoSupervisaoEscolar: "Sim",
+            quaisOrgaosAcionadosDre: [
+                "comunicacao_supervisao_tecnica_saude",
+                "comunicacao_gipe",
+            ],
             numeroProcedimentoSEI: "Sim",
             numeroProcedimentoSEITexto: "1234.5678/9012345-6",
         });
     });
 
-    it("deve transformar dados da DRE com campos booleanos como false e sem SEI", () => {
+    it("deve transformar dados da DRE com array vazio de órgãos e sem SEI", () => {
         const ocorrenciaDre: OcorrenciaDreResponse = {
             id: 1,
             uuid: "test-uuid",
@@ -36,21 +40,19 @@ describe("transformOcorrenciaDreToFormData", () => {
             status: "em_preenchimento_dre",
             status_display: "Em preenchimento DRE",
             status_extra: "",
-            acionamento_seguranca_publica: false,
-            interlocucao_supervisao_escolar: false,
+            quais_orgaos_acionados_dre: [],
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
-            acionamentoSegurancaPublica: "Não",
-            interlocucaoSupervisaoEscolar: "Não",
+            quaisOrgaosAcionadosDre: [],
             numeroProcedimentoSEI: "Não",
             numeroProcedimentoSEITexto: "",
         });
     });
 
-    it("deve transformar dados com mix de true e false e SEI preenchido", () => {
+    it("deve transformar dados com órgãos selecionados e SEI preenchido", () => {
         const ocorrenciaDre: OcorrenciaDreResponse = {
             id: 1,
             uuid: "test-uuid",
@@ -59,16 +61,14 @@ describe("transformOcorrenciaDreToFormData", () => {
             status: "em_preenchimento_dre",
             status_display: "Em preenchimento DRE",
             status_extra: "",
-            acionamento_seguranca_publica: true,
-            interlocucao_supervisao_escolar: false,
+            quais_orgaos_acionados_dre: ["comunicacao_gcm_ronda_escolar"],
             nr_processo_sei: "9876.5432/1234567-8",
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);
 
         expect(result).toEqual({
-            acionamentoSegurancaPublica: "Sim",
-            interlocucaoSupervisaoEscolar: "Não",
+            quaisOrgaosAcionadosDre: ["comunicacao_gcm_ronda_escolar"],
             numeroProcedimentoSEI: "Sim",
             numeroProcedimentoSEITexto: "9876.5432/1234567-8",
         });
@@ -83,8 +83,7 @@ describe("transformOcorrenciaDreToFormData", () => {
             status: "em_preenchimento_dre",
             status_display: "Em preenchimento DRE",
             status_extra: "",
-            acionamento_seguranca_publica: true,
-            interlocucao_supervisao_escolar: true,
+            quais_orgaos_acionados_dre: ["comunicacao_gipe"],
         };
 
         const result = transformOcorrenciaDreToFormData(ocorrenciaDre);

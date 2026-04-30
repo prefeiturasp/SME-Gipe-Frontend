@@ -1320,4 +1320,64 @@ describe("SecaoInicial", () => {
             ).toBeInTheDocument();
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '1.' no primeiro campo quando startingQuestionNumber=1", () => {
+            renderWithClient(
+                <SecaoInicial
+                    onSuccess={() => {}}
+                    startingQuestionNumber={1}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^1\. Quando a ocorrência/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '2.' no campo de DRE quando startingQuestionNumber=1", () => {
+            renderWithClient(
+                <SecaoInicial
+                    onSuccess={() => {}}
+                    startingQuestionNumber={1}
+                />,
+            );
+
+            expect(screen.getByText("2. Qual a DRE?*")).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '3.' no campo de UE quando startingQuestionNumber=1", () => {
+            renderWithClient(
+                <SecaoInicial
+                    onSuccess={() => {}}
+                    startingQuestionNumber={1}
+                />,
+            );
+
+            expect(
+                screen.getByText("3. Qual a Unidade Educacional?*"),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '4.' no campo de tipo quando startingQuestionNumber=1", () => {
+            renderWithClient(
+                <SecaoInicial
+                    onSuccess={() => {}}
+                    startingQuestionNumber={1}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^4\. A ocorrência é:/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderWithClient(<SecaoInicial onSuccess={() => {}} />);
+
+            expect(
+                screen.queryByText(/^\d+\. Quando a ocorrência/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

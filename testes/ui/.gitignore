@@ -79,6 +79,7 @@ token.json
 *.pem
 *.key
 credentials.json
+JENKINS-CREDENTIALS.md
 
 # ========================================
 # EVIDÊNCIAS E RESULTADOS DE HOMOLOGAÇÃO

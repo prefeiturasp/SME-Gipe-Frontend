@@ -26,15 +26,24 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import { GIPE_QUESTION_COUNT } from "../../CadastrarOcorrencia/questionNumberingUtils";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
 import { RadioForm } from "./RadioForm";
 import { formSchema, FormularioGipeData } from "./schema";
 
 export type DetalhamentoGipeProps = {
     readonly onPrevious?: () => void;
+    readonly startingQuestionNumber?: number;
 };
 
-export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
+export function DetalhamentoGipe({
+    onPrevious,
+    startingQuestionNumber,
+}: DetalhamentoGipeProps) {
+    const qn = (offset: number) =>
+        startingQuestionNumber == null
+            ? ""
+            : `${startingQuestionNumber + offset}. `;
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
@@ -166,14 +175,14 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                             <RadioForm
                                 control={form.control}
                                 name="envolveArmaOuAtaque"
-                                label="Envolve arma ou ataque?*"
+                                label={`${qn(0)}Envolve arma ou ataque?*`}
                                 options={envolveArmaOuAtaqueOptions}
                             />
 
                             <RadioForm
                                 control={form.control}
                                 name="ameacaRealizada"
-                                label="Ameaça foi realizada de qual maneira?*"
+                                label={`${qn(1)}Ameaça foi realizada de qual maneira?*`}
                                 options={ameacaRealizadaOptions}
                             />
                         </div>
@@ -187,7 +196,7 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 render={({ field }) => (
                                     <FormItem className="col-span-1 md:col-span-2">
                                         <FormLabel>
-                                            Qual o tipo da ocorrência?*
+                                            {qn(2)}Qual o tipo da ocorrência?*
                                         </FormLabel>
                                         <FormControl>
                                             <MultiSelect
@@ -218,7 +227,9 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
                                 name="encaminhamentos"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Encaminhamentos*</FormLabel>
+                                        <FormLabel>
+                                            {qn(3)}Encaminhamentos*
+                                        </FormLabel>
                                         <p className="text-sm text-[#42474a] mb-2">
                                             São informações após a análise feita
                                             pelo GIPE.
@@ -240,7 +251,14 @@ export function DetalhamentoGipe({ onPrevious }: DetalhamentoGipeProps) {
             </Form>
 
             <QuadroBranco>
-                <Anexos showButtons={false} />
+                <Anexos
+                    showButtons={false}
+                    startingQuestionNumber={
+                        startingQuestionNumber == null
+                            ? undefined
+                            : startingQuestionNumber + GIPE_QUESTION_COUNT
+                    }
+                />
 
                 <div className="flex justify-end gap-2">
                     <Button

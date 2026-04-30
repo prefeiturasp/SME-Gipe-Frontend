@@ -31,6 +31,7 @@ export type FormularioCompletoUEBody = {
         | "comissao_mediacao_conflitos"
         | "supervisao_escolar"
         | "cefai"
+        | "vara_da_infancia"
     )[];
 };
 

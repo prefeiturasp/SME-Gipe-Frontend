@@ -1,6 +1,6 @@
 import * as useUserStoreModule from "@/stores/useUserStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DetalhamentoDre } from "./index";
@@ -100,15 +100,11 @@ describe("DetalhamentoDre", () => {
         ).toBeInTheDocument();
     });
 
-    it("deve renderizar todos os campos de radio button", () => {
+    it("deve renderizar os campos de checkbox e radio button", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/a ronda escolar foi acionada/i),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText(/a supervis\u00e3o escolar foi comunicada/i),
+            screen.getByText(/quais órgãos foram acionados pela dre/i),
         ).toBeInTheDocument();
 
         expect(
@@ -154,7 +150,7 @@ describe("DetalhamentoDre", () => {
         expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
 
-    it("deve habilitar o botão Próximo quando todos os campos obrigatórios forem preenchidos com 'Não'", async () => {
+    it("deve habilitar o botão Próximo quando todos os campos obrigatórios forem preenchidos", async () => {
         const user = userEvent.setup();
         renderComponent();
 
@@ -164,22 +160,66 @@ describe("DetalhamentoDre", () => {
 
         expect(botaoProximo).toBeDisabled();
 
-        const radiosSeguranca = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
-        await user.click(radiosSeguranca[1]);
-        await user.click(radiosSeguranca[3]);
-        await user.click(radiosSeguranca[5]);
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
 
         await waitFor(() => {
             expect(botaoProximo).not.toBeDisabled();
         });
     });
 
-    it("deve ter 3 grupos de radio buttons (cada um com Sim/Não)", () => {
+    it("deve ter 4 checkboxes de órgãos e 1 grupo de radio buttons (Sim/Não)", () => {
         renderComponent();
 
+        const checkboxes = screen.getAllByRole("checkbox");
+        expect(checkboxes).toHaveLength(4);
+
         const radios = screen.getAllByRole("radio");
-        expect(radios).toHaveLength(6);
+        expect(radios).toHaveLength(2);
+    });
+
+    it("deve remover órgão ao desmarcar checkbox previamente marcado", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
+        await user.click(checkboxes[1]);
+
+        await user.click(checkboxes[0]);
+
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
+
+        mockAtualizarOcorrenciaDre.mockImplementation((params, options) => {
+            options.onSuccess({ success: true });
+        });
+
+        const botaoProximo = screen.getByRole("button", {
+            name: /próximo/i,
+        });
+
+        await waitFor(() => {
+            expect(botaoProximo).not.toBeDisabled();
+        });
+
+        await user.click(botaoProximo);
+
+        await waitFor(() => {
+            expect(mockAtualizarOcorrenciaDre).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    body: expect.objectContaining({
+                        quais_orgaos_acionados_dre: [
+                            "comunicacao_assistencia_social",
+                        ],
+                    }),
+                }),
+                expect.any(Object),
+            );
+        });
     });
 
     it("deve renderizar o formulário dentro de um componente Form", () => {
@@ -204,14 +244,11 @@ describe("DetalhamentoDre", () => {
         );
     });
 
-    it("deve organizar os campos em 1 QuadroBranco principal com os 3 radios", () => {
+    it("deve organizar os campos com checkboxes de órgãos e radio de SEI", () => {
         renderComponent();
 
         expect(
-            screen.getByText(/ronda escolar foi acionada/i),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/supervis\u00e3o escolar foi comunicada/i),
+            screen.getByText(/quais órgãos foram acionados pela dre/i),
         ).toBeInTheDocument();
         expect(
             screen.getByText(/n\u00famero do processo sei/i),
@@ -222,11 +259,11 @@ describe("DetalhamentoDre", () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
+        const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         await waitFor(() => {
             const botaoProximo = screen.getByRole("button", {
@@ -240,11 +277,11 @@ describe("DetalhamentoDre", () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
-        await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[4]);
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[0]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -271,11 +308,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
-        await user.click(radios[0]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
+        const radios = screen.getAllByRole("radio");
+        await user.click(radios[1]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -294,8 +331,9 @@ describe("DetalhamentoDre", () => {
                     body: {
                         unidade_codigo_eol: "123456",
                         dre_codigo_eol: "654321",
-                        acionamento_seguranca_publica: true,
-                        interlocucao_supervisao_escolar: false,
+                        quais_orgaos_acionados_dre: [
+                            "comunicacao_supervisao_tecnica_saude",
+                        ],
                         nr_processo_sei: "",
                     },
                 },
@@ -317,11 +355,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
+        const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -351,11 +389,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
+        const radios = screen.getAllByRole("radio");
         await user.click(radios[0]);
-        await user.click(radios[3]);
-        await user.click(radios[4]);
 
         const input = screen.getByPlaceholderText(/exemplo: 1234/i);
         await user.type(input, "1234567890123456");
@@ -391,11 +429,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
+        const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -426,11 +464,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
-        const radios = screen.getAllByRole("radio");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
+        const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -444,8 +482,9 @@ describe("DetalhamentoDre", () => {
 
         await waitFor(() => {
             expect(mockSetFormData).toHaveBeenCalledWith({
-                acionamentoSegurancaPublica: "Não",
-                interlocucaoSupervisaoEscolar: "Não",
+                quaisOrgaosAcionadosDre: [
+                    "comunicacao_supervisao_tecnica_saude",
+                ],
                 numeroProcedimentoSEI: "Não",
                 numeroProcedimentoSEITexto: "",
             });
@@ -458,8 +497,8 @@ describe("DetalhamentoDre", () => {
 
         renderComponent(mockOnPrevious);
 
-        const radios = screen.getAllByRole("radio");
-        await user.click(radios[0]);
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
 
         const botaoAnterior = screen.getByRole("button", { name: /anterior/i });
         await user.click(botaoAnterior);
@@ -551,10 +590,11 @@ describe("DetalhamentoDre", () => {
 
         renderComponent();
 
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
+
         const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoSalvar = screen.getByRole("button", {
             name: /finalizar e enviar/i,
@@ -587,10 +627,11 @@ describe("DetalhamentoDre", () => {
             </QueryClientProvider>,
         );
 
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
+
         const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoSalvar = screen.getByRole("button", {
             name: /finalizar e enviar/i,
@@ -624,10 +665,11 @@ describe("DetalhamentoDre", () => {
             </QueryClientProvider>,
         );
 
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
+
         const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoProximo = screen.getByRole("button", {
             name: /próximo/i,
@@ -661,10 +703,11 @@ describe("DetalhamentoDre", () => {
             </QueryClientProvider>,
         );
 
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[0]);
+
         const radios = screen.getAllByRole("radio");
         await user.click(radios[1]);
-        await user.click(radios[3]);
-        await user.click(radios[5]);
 
         const botaoFinalizar = screen.getByRole("button", {
             name: /finalizar/i,
@@ -680,6 +723,105 @@ describe("DetalhamentoDre", () => {
             expect(mockAtualizarOcorrenciaDre).toHaveBeenCalled();
             expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
             expect(mockOnNext).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '12.' no campo órgãos acionados quando startingQuestionNumber=12", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(
+                    /^12\. Quais órgãos foram acionados pela DRE\?\*/,
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '13.' no campo processo SEI quando startingQuestionNumber=12", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^13\. Há um número do processo SEI\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderComponent();
+
+            expect(
+                screen.queryByText(/^\d+\. Quais órgãos foram acionados/),
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    describe("campo Encaminhamentos", () => {
+        it("deve exibir campo Encaminhamentos quando é ponto focal e status é 'finalizada'", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "finalizada";
+            (mockFormData as Record<string, unknown>).encaminhamentos =
+                "Texto de encaminhamento do GIPE";
+
+            renderComponent();
+
+            expect(screen.getByText(/encaminhamentos/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).toBeInTheDocument();
+            const textarea = screen.getByDisplayValue(
+                "Texto de encaminhamento do GIPE",
+            );
+            expect(textarea).toBeInTheDocument();
+            fireEvent.change(textarea, { target: { value: "novo valor" } });
+        });
+
+        it("não deve exibir campo Encaminhamentos quando não é ponto focal", () => {
+            mockIsPontoFocal.mockReturnValue(false);
+            mockFormData.status = "finalizada";
+
+            renderComponent();
+
+            expect(
+                screen.queryByDisplayValue("Texto de encaminhamento do GIPE"),
+            ).not.toBeInTheDocument();
+        });
+
+        it("não deve exibir campo Encaminhamentos quando status não é 'finalizada'", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "enviado_para_dre";
+
+            renderComponent();
+
+            expect(
+                screen.queryByText(
+                    /são informações após a análise feita pelo gipe/i,
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir campo Encaminhamentos com numeração correta quando startingQuestionNumber é fornecido", () => {
+            mockIsPontoFocal.mockReturnValue(true);
+            mockFormData.status = "finalizada";
+            delete (mockFormData as Record<string, unknown>).encaminhamentos;
+
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <DetalhamentoDre startingQuestionNumber={12} />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/16\. Encaminhamentos\*/),
+            ).toBeInTheDocument();
         });
     });
 });

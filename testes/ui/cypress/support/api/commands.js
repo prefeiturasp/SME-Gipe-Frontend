@@ -45,15 +45,18 @@ Cypress.Commands.add('api_obter_token_via_ui', () => {
   
   cy.wait(3000);
   
+  const username = Cypress.env('RF_GIPE') || Cypress.env('RF_VALIDO');
+  const password = Cypress.env('SENHA_GIPE') || Cypress.env('SENHA_VALIDA');
+
   cy.get('input[placeholder="Digite um RF ou CPF"]', { timeout: 15000 })
     .should('be.visible')
     .clear()
-    .type(CREDENTIALS.valid.username);
+    .type(username);
   
   cy.get('input[placeholder="Digite sua senha"]', { timeout: 15000 })
     .should('be.visible')
     .clear()
-    .type(CREDENTIALS.valid.password);
+    .type(password);
   
   cy.get('button')
     .filter((_, el) => el.innerText && el.innerText.trim() === 'Acessar')
@@ -88,20 +91,25 @@ Cypress.Commands.add('api_obter_token_via_ui', () => {
 
 Cypress.Commands.add('api_carregar_token_arquivo', () => {
   Cypress.log({ name: 'Token', message: 'Carregando token do arquivo' });
-  
-  return cy.readFile('token.json', { timeout: 5000, failOnStatusCode: false })
-    .then((data) => {
+
+  return cy.task('lerArquivoSeguro', 'token.json', { log: false }).then((conteudo) => {
+    if (!conteudo) {
+      Cypress.log({ name: 'Token', message: 'token.json nao encontrado' });
+      return null;
+    }
+    try {
+      const data = JSON.parse(conteudo);
       if (data && data.token) {
         Cypress.log({ name: 'Token', message: `Token carregado: ${data.token.substring(0, 50)}...` });
         Cypress.log({ name: 'Token', message: `Capturado em: ${data.capturedAt}` });
         return data.token;
       }
-      Cypress.log({ name: 'Token', message: 'Token nao encontrado no arquivo' });
-      return null;
-    }, (error) => {
-      Cypress.log({ name: 'Token', message: `Erro ao carregar: ${error.message}` });
-      return null;
-    });
+    } catch (e) {
+      Cypress.log({ name: 'Token', message: `Erro ao parsear token.json: ${e.message}` });
+    }
+    Cypress.log({ name: 'Token', message: 'Token nao encontrado no arquivo' });
+    return null;
+  });
 });
 
 Cypress.Commands.add('api_login', (username, password) => {

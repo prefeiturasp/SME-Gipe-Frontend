@@ -7,8 +7,10 @@ import { DetalhamentoGipe } from "./DetalhamentoGipe/index";
 
 export default function FormularioGipePage({
     onPrevious,
+    startingQuestionNumber,
 }: Readonly<{
     onPrevious: () => void;
+    startingQuestionNumber?: number;
 }>) {
     const reset = useOcorrenciaFormStore((state) => state.reset);
     const ocorrenciaUuid = useOcorrenciaFormStore(
@@ -30,7 +32,10 @@ export default function FormularioGipePage({
                 title="Detalhes da Intercorrência - Gestão de Intercorrências de Proteção Escolar (GIPE)"
                 onClickBack={handleClickBack}
             />
-            <DetalhamentoGipe onPrevious={onPrevious} />
+            <DetalhamentoGipe
+                onPrevious={onPrevious}
+                startingQuestionNumber={startingQuestionNumber}
+            />
         </div>
     );
 }

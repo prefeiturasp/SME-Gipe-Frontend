@@ -52,7 +52,9 @@ export type OcorrenciaDetalheAPI = {
         | "comissao_mediacao_conflitos"
         | "supervisao_escolar"
         | "cefai"
+        | "vara_da_infancia"
     )[];
+    nr_processo_sei?: string;
 };
 
 export async function obterOcorrencia(

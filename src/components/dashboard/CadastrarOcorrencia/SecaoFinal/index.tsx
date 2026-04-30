@@ -35,6 +35,7 @@ export type SecaoFinalProps = {
     showButtons?: boolean;
     disabled?: boolean;
     isPatrimonial?: boolean;
+    startingQuestionNumber?: number;
 };
 
 export type SecaoFinalRef = {
@@ -51,6 +52,7 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
             showButtons = true,
             disabled = false,
             isPatrimonial: isPatrimonialProp,
+            startingQuestionNumber,
         },
         ref,
     ) => {
@@ -191,6 +193,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
+                                            {startingQuestionNumber == null
+                                                ? ""
+                                                : `${startingQuestionNumber}. `}
                                             Quem é o declarante?*
                                         </FormLabel>
                                         <Select
@@ -234,6 +239,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
+                                            {startingQuestionNumber == null
+                                                ? ""
+                                                : `${startingQuestionNumber + 1}. `}
                                             A segurança pública foi comunicada?*
                                         </FormLabel>
                                         <Select
@@ -266,6 +274,9 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel disabled={disabled}>
+                                                {startingQuestionNumber == null
+                                                    ? ""
+                                                    : `${startingQuestionNumber + 2}. `}
                                                 Qual protocolo acionado?*
                                             </FormLabel>
                                             <Select
