@@ -5,6 +5,8 @@ import './commands_ui/commands_cadastro'
 import 'cypress-xpath'
 import 'cypress-plugin-tab'
 
+require('events').EventEmitter.defaultMaxListeners = 30
+
 // Suprime erros de ResizeObserver que são do app React (não do teste)
 Cypress.on('uncaught:exception', (err) => {
   if (err.message.includes('ResizeObserver loop')) {

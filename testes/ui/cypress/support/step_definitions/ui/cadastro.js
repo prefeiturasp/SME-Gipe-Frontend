@@ -1,5 +1,5 @@
 import { Given, When, Then, Before, After } from 'cypress-cucumber-preprocessor/steps';
-import Cadastro_Localizadores from '../locators/cadastro_locators';
+import Cadastro_Localizadores from '../../locators/cadastro_locators';
 
 const loc = new Cadastro_Localizadores();
 

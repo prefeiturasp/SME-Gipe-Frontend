@@ -1,5 +1,5 @@
 import { Given, When, Then, Before, After } from 'cypress-cucumber-preprocessor/steps'
-import Login_Gipe_Localizadores from '../locators/login_locators'
+import Login_Gipe_Localizadores from '../../locators/login_locators'
 
 const locators_login = new Login_Gipe_Localizadores()
 
@@ -912,6 +912,38 @@ Then('COMP_GIPE clica no botão {string}', (textoBotao) => {
   cy.wait(3000)
 })
 
+// ── Aba 2: Órgãos acionados pela DRE ────────────────────────────────────────
+When('COMP_GIPE seleciona aleatoriamente orgaos acionados pela DRE', () => {
+  const opcoes = [
+    'Comunicação com Supervisão Técnica de Saúde',
+    'Comunicação com Assistência Social',
+    'Comunicação com GCM/Ronda Escolar',
+    'Comunicação com GIPE',
+  ]
+
+  cy.wait(1000)
+  cy.contains('label', /Quais órgãos foram acionados/i, { timeout: TIMEOUTS.LONG })
+    .should('be.visible')
+
+  // Verifica se algum checkbox já está marcado (DRE já preencheu em execução anterior).
+  // Clicar num checkbox já marcado o desmarcaria, invalidando o formulário.
+  cy.get('body').then($body => {
+    const jaMarcados = $body.find('button[role="checkbox"][data-state="checked"]').length
+    if (jaMarcados > 0) {
+      cy.log(`COMP_GIPE: ✓ Órgãos já marcados (${jaMarcados}) — pulando seleção`)
+    } else {
+      const quantidade = Math.floor(Math.random() * opcoes.length) + 1
+      const selecionadas = [...opcoes].sort(() => Math.random() - 0.5).slice(0, quantidade)
+      selecionadas.forEach(opcao => {
+        cy.contains('label', opcao, { timeout: TIMEOUTS.LONG })
+          .scrollIntoView().should('be.visible').click({ force: true })
+        cy.wait(300)
+      })
+    }
+  })
+  cy.wait(1000)
+})
+
 // Contador por índice para selecionar radiogroups em ordem (ronda=0, supervisão=1).
 // Todos os grupos carregam com valor padrão, impossibilitando detectar quais foram respondidos.
 When('COMP_GIPE seleciona Sim ou Não de forma aleatoria', () => {
@@ -958,35 +990,51 @@ When('COMP_GIPE seleciona Sim ou Não para SEI e preenche numero quando necessar
 
   cy.wait(500)
 
-  // O grupo SEI é sempre o último (.last()). Ronda=0 e Supervisão=1 já foram clicados.
+  // Verifica se o SEI já foi respondido (DRE pode ter preenchido em execução anterior).
   cy.get('[role="radiogroup"]').last().then($group => {
-    const $span = Cypress.$($group)
-      .find('span.text-sm')
-      .filter((_, el) => el.textContent.trim() === opcao)
-      .first()
+    const $checked = Cypress.$($group).find('button[role="radio"][data-state="checked"]')
 
-    if ($span.length > 0) {
-      cy.wrap($span).scrollIntoView().click({ force: true })
-      cy.log(`COMP_GIPE: ✓ Clicou "${opcao}" no grupo SEI`)
+    if ($checked.length > 0) {
+      const valorAtual = Cypress.$($checked).attr('value') || ''
+      cy.log(`COMP_GIPE: SEI já respondido como "${valorAtual}" — verificando preenchimento`)
+      if (valorAtual === 'Sim') {
+        cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])').last().then($input => {
+          if (!$input.val()) {
+            const numeroSEI = numerosSEI[Math.floor(Math.random() * numerosSEI.length)]
+            cy.log(`COMP_GIPE: Número SEI vazio — preenchendo com: ${numeroSEI}`)
+            cy.wrap($input).scrollIntoView().type(numeroSEI, { delay: 30 })
+          } else {
+            cy.log(`COMP_GIPE: ✓ Número SEI já preenchido`)
+          }
+        })
+      }
     } else {
-      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+      const $span = Cypress.$($group)
+        .find('span.text-sm')
+        .filter((_, el) => el.textContent.trim() === opcao)
+        .first()
+
+      if ($span.length > 0) {
+        cy.wrap($span).scrollIntoView().click({ force: true })
+        cy.log(`COMP_GIPE: ✓ Clicou "${opcao}" no grupo SEI`)
+      } else {
+        cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+      }
+
+      cy.wait(800)
+
+      if (opcao === 'Sim') {
+        const seiIdx = Math.floor(Math.random() * numerosSEI.length)
+        const numeroSEI = numerosSEI[seiIdx]
+        cy.log(`COMP_GIPE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
+        cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
+          .last().scrollIntoView().type(numeroSEI, { delay: 30 })
+        cy.wait(500)
+      } else {
+        cy.log('COMP_GIPE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
+      }
     }
   })
-
-  cy.wait(800)
-
-  if (opcao === 'Sim') {
-    const seiIdx = Math.floor(Math.random() * numerosSEI.length)
-    const numeroSEI = numerosSEI[seiIdx]
-    cy.log(`COMP_GIPE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
-    cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
-      .last()
-      .scrollIntoView()
-      .type(numeroSEI, { delay: 30 })
-    cy.wait(500)
-  } else {
-    cy.log('COMP_GIPE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
-  }
 
   cy.wait(1000)
 })

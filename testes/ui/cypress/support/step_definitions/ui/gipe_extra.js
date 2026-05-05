@@ -1,7 +1,7 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import Login_Gipe_Localizadores from '../locators/login_locators'
-import Cadastro_ocorrencias_Localizadores from '../locators/cadastro_ocorrencias_locators'
-import Gestao_Unidade_Localizadores from '../locators/gestao_unidade_locators'
+import Login_Gipe_Localizadores from '../../locators/login_locators'
+import Cadastro_ocorrencias_Localizadores from '../../locators/cadastro_ocorrencias_locators'
+import Gestao_Unidade_Localizadores from '../../locators/gestao_unidade_locators'
 
 const locators_login = new Login_Gipe_Localizadores()
 const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()

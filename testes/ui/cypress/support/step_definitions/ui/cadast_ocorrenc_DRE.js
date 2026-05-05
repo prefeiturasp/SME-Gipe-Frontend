@@ -1,5 +1,5 @@
 import { Given, When, Then, Before, After } from 'cypress-cucumber-preprocessor/steps'
-import CadastroOcorrenciaDreLocalizadores from '../locators/cadast_ocorrenc_dre_locators'
+import CadastroOcorrenciaDreLocalizadores from '../../locators/cadast_ocorrenc_dre_locators'
 
 // ============================================================
 // STEP DEFINITIONS - Cadastro de Ocorrência DRE
@@ -384,7 +384,7 @@ When('DRE seleciona o tipo Interpessoal da ocorrência', () => {
 
 When('DRE avança para a próxima aba', () => {
   cy.wait(2000)
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 20000 })
+  cy.get('button[type="submit"]', { timeout: 20000 })
     .should('be.visible').should('not.be.disabled')
     .first().scrollIntoView().click({ force: true })
   cy.wait(3000)
@@ -552,25 +552,106 @@ When('DRE abre e seleciona as motivações aleatoriamente', () => {
   cy.wait(1000)
 })
 
-When('DRE informa de forma aleatoria se o Conselho Tutelar foi acionado', () => {
-  cy.wait(1500)
+// ── Pergunta 19: Conselho Tutelar ─────────────────────────────────────────
+When('DRE valida pergunta 19 Conselho Tutelar', () => {
+  cy.wait(1000)
+  cy.contains('label', /Conselho Tutelar/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('DRE seleciona aleatoriamente resposta para Conselho Tutelar', () => {
+  cy.wait(1000)
   const opcoes = ['Sim', 'Não']
   const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
   cy.contains('label', /Conselho Tutelar/i, { timeout: 15000 }).should('be.visible')
-    .parent().contains('span', escolha)
+    .closest('fieldset, div')
+    .find(`button[role="radio"][value="${escolha}"]`, { timeout: 10000 })
     .scrollIntoView().should('be.visible').click({ force: true })
   cy.wait(1000)
 })
 
-When('DRE seleciona de forma aleatoria o acompanhamento da ocorrência', () => {
-  const opcoes = ['NAAPA', 'Comissão de Mediação de Conflitos', 'Supervisão Escolar', 'CEFAI']
+// ── Pergunta 20: Acompanhamento ────────────────────────────────────────────
+When('DRE valida pergunta 20 acompanhamento da ocorrência', () => {
+  cy.wait(1000)
+  cy.contains('label', /acompanhada por/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('DRE seleciona aleatoriamente opcao de acompanhamento da ocorrência', () => {
+  const opcoes = ['NAAPA', 'Comissão de Mediação de Conflitos', 'Supervisão Escolar', 'CEFAI', 'Vara da infância']
   const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
   cy.wait(1500)
-  cy.contains('label', /acompanhada pelo/i, { timeout: 15000 }).should('be.visible')
-    .closest('fieldset, div[class*="space-y"], div[class*="form"]')
+  cy.contains('label', /acompanhada por/i, { timeout: 15000 }).should('be.visible')
+    .closest('fieldset, div[class*="space-y"], div')
     .contains('span', escolha)
     .scrollIntoView().should('be.visible').click({ force: true })
   cy.wait(1000)
+})
+
+// ── Pergunta 21: Processo SEI ──────────────────────────────────────────────
+When('DRE valida pergunta 21 processo SEI', () => {
+  cy.wait(1000)
+  cy.contains('label', /processo SEI/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('DRE seleciona aleatoriamente resposta para processo SEI', () => {
+  const numerosSEI = [
+    '731020001',
+    '731020002',
+    '731020003',
+    '731020004',
+    '731020005',
+    '731020006',
+    '731020007',
+    '731020008',
+    '731020009',
+    '731020010',
+    '731020011',
+    '731020012',
+    '731020013',
+    '731020014',
+    '731020015',
+    '731020016',
+    '731020017',
+    '731020018',
+    '731020019',
+    '731020020',
+    '731025001',
+    '731025002',
+    '731025003',
+    '731025004',
+    '731025005',
+    '731025006',
+    '731025007',
+    '731025008',
+    '731025009',
+    '731025010',
+    '731025011',
+    '731025012',
+    '731025013',
+    '731025014',
+    '731025015',
+  ]
+
+  cy.wait(1000)
+  const opcoes = ['Sim', 'Não']
+  const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
+
+  cy.contains('label', /processo SEI/i, { timeout: 15000 })
+    .closest('fieldset, div')
+    .find(`button[role="radio"][value="${escolha}"]`, { timeout: 10000 })
+    .scrollIntoView().should('be.visible').click({ force: true })
+  cy.wait(1000)
+
+  // Se escolheu Sim, preenche o número do processo SEI
+  if (escolha === 'Sim') {
+    const numeroAleatorio = numerosSEI[Math.floor(Math.random() * numerosSEI.length)]
+    cy.get('input[id*="form-item"]', { timeout: 10000 })
+      .filter(':visible')
+      .last()
+      .should('be.enabled')
+      .clear({ force: true })
+      .type(numeroAleatorio, { delay: 80, force: true })
+    cy.wait(500)
+  }
 })
 
 // ── Aba 4 ────────────────────────────────────────────────────────
@@ -643,7 +724,7 @@ When('DRE seleciona protocolo aleatoriamente', () => {
 
 Then('DRE clica em proximo para anexos', () => {
   cy.wait(3000)
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 30000 })
+  cy.get('button[type="submit"]', { timeout: 30000 })
     .first().should('be.visible').should('not.be.disabled')
     .scrollIntoView().click({ force: true })
   cy.wait(3000)

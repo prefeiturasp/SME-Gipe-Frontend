@@ -1,6 +1,6 @@
 import { Given, When } from 'cypress-cucumber-preprocessor/steps'
-import Login_Gipe_Localizadores from '../locators/login_locators'
-import Alterar_Senha_Localizadores from '../locators/alterar_senha_locators';
+import Login_Gipe_Localizadores from '../../locators/login_locators'
+import Alterar_Senha_Localizadores from '../../locators/alterar_senha_locators';
 
 const locators = new Login_Gipe_Localizadores()
 const locators_alterar_senha = new Alterar_Senha_Localizadores()
