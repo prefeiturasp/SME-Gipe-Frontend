@@ -1,5 +1,5 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import ConsultaFiltroLocalizadores from '../locators/consulta_filtro_locators'
+import ConsultaFiltroLocalizadores from '../../locators/consulta_filtro_locators'
 
 const locators = new ConsultaFiltroLocalizadores()
 

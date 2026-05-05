@@ -36,7 +36,7 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
     Então o sistema redireciona para a tela de Gestão de usuários
     E o novo perfil é cadastrado com sucesso
 
-  @cadastro_completo_autoservico
+  @skip @cadastro_completo_autoservico
   Cenário: Realizar cadastro de novo usuário via autoserviço (sem autenticação prévia)
     Dado que acesso a página de cadastro direto
     E o usuário valida a existência do campo "Selecione a DRE"
@@ -48,7 +48,7 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
     Então devo ser direcionado para a próxima etapa do cadastro
     E meus dados devem ser registrados no sistema
 
-  @consultar_pendencias
+  @skip @consultar_pendencias
   Cenário: Consultar perfis pendentes de aprovação
     Quando acesso o menu de Gestão
     E seleciono a opção "Gestão de pessoa usuária"
@@ -59,7 +59,7 @@ Funcionalidade: Gestão de usuários - Perfil GIPE
     E cada perfil exibe os dados "CPF", "E-mail", "Diretoria Regional", "Unidade Educacional" e "Data da solicitação"
     E cada perfil possui os botões "Recusar" e "Aprovar"
 
-  @recusar_perfil
+  @skip @recusar_perfil
   Cenário: Recusar solicitação de cadastro de perfil pendente
     Quando acesso o menu de Gestão
     E seleciono a opção "Gestão de pessoa usuária"

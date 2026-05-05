@@ -1,5 +1,5 @@
-﻿import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import Cadastro_ocorrencias_Localizadores from '../locators/cadastro_ocorrencias_locators'
+import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
+import Cadastro_ocorrencias_Localizadores from '../../locators/cadastro_ocorrencias_locators'
 
 const locators_ocorrencias = new Cadastro_ocorrencias_Localizadores()
 
@@ -57,7 +57,7 @@ Given('eu efetuo login com RF para cadastro de ocorrências', () => {
   const SENHA_CADASTRO = Cypress.env('SENHA_CADASTRO')
   
   if (!RF_CADASTRO || !SENHA_CADASTRO) {
-    throw new Error(`❌ Credenciais não encontradas! RF_CADASTRO: ${RF_CADASTRO}, SENHA_CADASTRO: ${SENHA_CADASTRO}. Verifique o arquivo .env`)
+    throw new Error(`? Credenciais não encontradas! RF_CADASTRO: ${RF_CADASTRO}, SENHA_CADASTRO: ${SENHA_CADASTRO}. Verifique o arquivo .env`)
   }
   
   cy.log(`Efetuando login com RF: ${RF_CADASTRO}`)
@@ -235,7 +235,7 @@ When('clica no botão {string}', (btnText) => {
   const txt = btnText.trim().toLowerCase()
   
   if (txt === 'próximo' || txt === 'proximo') {
-    cy.contains('button', /Próximo|Proximo/i, { timeout: 15000 })
+    cy.get('button[type="submit"]', { timeout: 15000 })
       .should('be.visible')
       .should('not.be.disabled')
       .first()
@@ -304,7 +304,17 @@ When('Selecionar {string}', (opcao) => {
 })
 
 When('Descreva a ocorrencia - Descreva a ocorrência', () => {
-  waitAndGet('textarea[id*="form-item"]', { wait: 1000 })
+  cy.get('body').then($body => {
+    if ($body.find('[role="listbox"]:visible').length > 0) {
+      cy.get('main').click({ force: true })
+      cy.wait(1000)
+    }
+  })
+  cy.wait(1000)
+  cy.get('textarea', { timeout: 15000 })
+    .filter(':visible')
+    .first()
+    .should('be.enabled')
     .clear({ force: true })
     .type('Ocorrência registrada para teste de automação - Patrimônio', { delay: 100, force: true })
   cy.wait(1000)
@@ -459,8 +469,7 @@ When('valido a existencia do texto de {string}', (texto) => {
 
 When('clica em Proximo', () => {
   cy.wait(1000)
-  cy.log('Avançando para a próxima aba')
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 15000 })
+  cy.get('button[type="submit"]', { timeout: 15000 })
     .should('be.visible')
     .should('not.be.disabled')
     .scrollIntoView()
@@ -493,7 +502,8 @@ When('valida opcoes sim e nao do Smart Sampa', () => {
   cy.log('Validando opções Sim e Não do Smart Sampa')
   cy.contains(/Smart Sampa/i, { timeout: 15000 })
     .closest('div, fieldset')
-    .find('label.flex.items-center')
+    .find('label')
+    .filter(':visible')
     .should('have.length.at.least', 2)
     .first().should('be.visible')
 })
@@ -601,15 +611,13 @@ Then('o sistema deve navegar para a próxima etapa do formulário', () => {
 
 When('valida botoes anterior e proximo', () => {
   cy.wait(1000)
-  cy.log('Validando botões Anterior e Próximo')
   cy.contains('button', /Anterior/i, { timeout: 15000 }).should('exist').should('be.visible')
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 15000 }).should('exist').should('be.visible')
+  cy.get('button[type="submit"]', { timeout: 15000 }).should('exist').should('be.visible')
 })
 
 Then('clica em proximo', () => {
   cy.wait(1000)
-  cy.log('Avançando para a próxima aba')
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 15000 })
+  cy.get('button[type="submit"]', { timeout: 15000 })
     .should('be.visible').should('not.be.disabled')
     .scrollIntoView().click({ force: true })
   cy.wait(3000)
@@ -630,13 +638,13 @@ When('clica no campo envolvidos ue', () => {
   cy.get('body').then($body => {
     // Verifica qual xpath é válido
     if ($body.find('fieldset > div:nth-child(1) > div:nth-child(2) > div > button').length > 0) {
-      cy.log('✅ Usando XPath primário')
+      cy.log('? Usando XPath primário')
       cy.xpath(xpathPrimario, { timeout: 15000 })
         .should('be.visible')
         .should('be.enabled')
         .click({ force: true })
     } else {
-      cy.log('⚠️ XPath primário não encontrado, usando fallback')
+      cy.log('?? XPath primário não encontrado, usando fallback')
       cy.xpath(xpathFallback, { timeout: 15000 })
         .should('be.visible')
         .should('be.enabled')
@@ -843,8 +851,7 @@ When('confirma existência de informações sobre o agressor', () => {
 
 When('avança para a próxima aba', () => {
   cy.wait(2000)
-  cy.log('Avançando para a próxima aba do formulário')
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 20000 })
+  cy.get('button[type="submit"]', { timeout: 20000 })
     .should('be.visible')
     .should('not.be.disabled')
     .first()

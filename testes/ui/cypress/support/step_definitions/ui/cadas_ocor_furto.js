@@ -1,5 +1,5 @@
 import { When, Then } from 'cypress-cucumber-preprocessor/steps'
-import CadastroUeLocalizadores from '../locators/cadastro_ue_locators'
+import CadastroUeLocalizadores from '../../locators/cadastro_ue_locators'
 
 const locators = new CadastroUeLocalizadores()
 
@@ -75,11 +75,13 @@ When('FURTO seleciona o tipo Patrimonia da ocorrência', () => {
 
 When('FURTO avança para a próxima aba', () => {
   cy.wait(2000)
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 20000 })
+  cy.get('button[type="submit"]', { timeout: 20000 })
     .should('be.visible').should('not.be.disabled')
     .first().scrollIntoView().click({ force: true })
   cy.wait(3000)
 })
+
+// ── Aba 2: Detalhes da Ocorrência ────────────────────────────────────────────
 
 When('Ocorren_FURTO localiza o button {string}', (textoBotao) => {
   cy.wait(2000)
