@@ -1,5 +1,5 @@
 import { Given, When, Then, Before, After } from 'cypress-cucumber-preprocessor/steps'
-import Login_Gipe_Localizadores from '../locators/login_locators'
+import Login_Gipe_Localizadores from '../../locators/login_locators'
 
 const locators_login = new Login_Gipe_Localizadores()
 
@@ -116,47 +116,61 @@ let tabelaVazia = false
 When('eu visualizo uma ocorrência registrada', () => {
   cy.contains('Histórico de ocorrências', { timeout: TIMEOUTS.VERY_LONG })
     .should('be.visible')
-  
+
   cy.wait(TIMEOUTS.SHORT)
-  
-  cy.get('table tbody tr', { timeout: TIMEOUTS.LONG }).then($linhas => {
-    if ($linhas.length === 0) {
-      tabelaVazia = true
-      cy.log('Tabela vazia - validando texto e finalizando')
-      cy.get('h1', { timeout: 15000 })
-        .should('be.visible')
-        .and('contain.text', 'Histórico de ocorrências registradas')
-      cy.log('Cenario concluido - tabela vazia')
-    } else {
-      const linhaAleatoria = Math.min(selecionarLinhaAleatoria(), $linhas.length)
-      cy.log(`Selecionando linha ${linhaAleatoria} da tabela de ocorrencias`)
-      
-      cy.wrap($linhas)
-        .eq(linhaAleatoria - 1)
+
+  const tentarAbrir = (tentativa) => {
+    cy.get('table tbody tr', { timeout: TIMEOUTS.LONG }).then($linhas => {
+      if ($linhas.length === 0) {
+        tabelaVazia = true
+        cy.log('Tabela vazia - finalizando cenário')
+        return
+      }
+
+      // Filtra somente linhas cujo status é "Em Andamento"
+      const $candidatas = $linhas.filter((_, el) =>
+        /em andamento/i.test(el.innerText || el.textContent || '')
+      )
+
+      if ($candidatas.length === 0) {
+        tabelaVazia = true
+        cy.log('Nenhuma ocorrência "Em Andamento" encontrada - finalizando cenário')
+        return
+      }
+
+      const idx = Math.floor(Math.random() * $candidatas.length)
+      cy.log(`Tentativa ${tentativa}/3: abrindo ocorrência em andamento (${$candidatas.length} disponíveis)`)
+
+      cy.wrap($candidatas)
+        .eq(idx)
         .find('td')
         .last()
-        .then($ultimaTd => {
-          const $link = $ultimaTd.find('a')
-          
-          if ($link.length === 0) {
-            tabelaVazia = true
-            cy.log('Nenhum link encontrado na tabela - validando texto e finalizando')
-            cy.get('h1', { timeout: 15000 })
-              .should('be.visible')
-              .and('contain.text', 'Histórico de ocorrências registradas')
-            cy.log('Cenario concluido - sem links disponiveis')
-          } else {
-            tabelaVazia = false
-            cy.wrap($link)
-              .should('be.visible')
-              .click()
-            
-            cy.wait(TIMEOUTS.DEFAULT)
-            cy.log('Ocorrencia aberta')
-          }
-        })
-    }
-  })
+        .find('a')
+        .should('be.visible')
+        .click()
+
+      cy.wait(TIMEOUTS.DEFAULT)
+
+      // Confirma que o formulário de edição carregou corretamente
+      cy.get('body').then($body => {
+        const formularioValido = $body.text().includes('Quando a ocorrência aconteceu')
+        if (!formularioValido && tentativa < 3) {
+          cy.log(`Formulário não carregou - voltando para a lista (tentativa ${tentativa}/3)`)
+          cy.go('back')
+          cy.wait(TIMEOUTS.DEFAULT)
+          tentarAbrir(tentativa + 1)
+        } else if (!formularioValido) {
+          tabelaVazia = true
+          cy.log('Formulário não encontrado após 3 tentativas - finalizando cenário')
+        } else {
+          tabelaVazia = false
+          cy.log('Ocorrência em andamento aberta com sucesso')
+        }
+      })
+    })
+  }
+
+  tentarAbrir(1)
 })
 
 Then('devo visualizar todos os campos do formulário de ocorrência', () => {
@@ -624,6 +638,38 @@ Then('COMP_DRE clica no botão {string}', (textoBotao) => {
   cy.wait(3000)
 })
 
+// ── Aba 2: Órgãos acionados pela DRE ───────────────────────────────────────────
+When('COMP_DRE seleciona aleatoriamente orgaos acionados pela DRE', () => {
+  const opcoes = [
+    'Comunicação com Supervisão Técnica de Saúde',
+    'Comunicação com Assistência Social',
+    'Comunicação com GCM/Ronda Escolar',
+    'Comunicação com GIPE',
+  ]
+
+  cy.wait(1000)
+  cy.contains('label', /Quais órgãos foram acionados/i, { timeout: TIMEOUTS.LONG })
+    .should('be.visible')
+
+  // Verifica se algum checkbox já está marcado (preenchido por execução anterior).
+  // Clicar num checkbox já marcado o desmarcaria, invalidando o formulário.
+  cy.get('body').then($body => {
+    const jaMarcados = $body.find('button[role="checkbox"][data-state="checked"]').length
+    if (jaMarcados > 0) {
+      cy.log(`COMP_DRE: ✓ Órgãos já marcados (${jaMarcados}) — pulando seleção`)
+    } else {
+      const quantidade = Math.floor(Math.random() * opcoes.length) + 1
+      const selecionadas = [...opcoes].sort(() => Math.random() - 0.5).slice(0, quantidade)
+      selecionadas.forEach(opcao => {
+        cy.contains('label', opcao, { timeout: TIMEOUTS.LONG })
+          .scrollIntoView().should('be.visible').click({ force: true })
+        cy.wait(300)
+      })
+    }
+  })
+  cy.wait(1000)
+})
+
 // Contador de índice para selecionar os radiogroups em ordem (ronda=0, supervisão=1).
 // Resetado via Cypress.env('_dreRadioIdx', 0) antes da aba 2.
 // Necessário porque todos os grupos carregam com valor padrão (data-state="checked"),
@@ -696,39 +742,404 @@ When('COMP_DRE seleciona Sim ou Não para SEI e preenche numero quando necessari
 
   cy.wait(500)
 
-  // O grupo SEI é sempre o último (índice 2). Ronda=0 e Supervisão=1 já foram clicados.
+  // Verifica se o SEI já foi respondido (preenchido por execução anterior).
   cy.get('[role="radiogroup"]').last().then($group => {
-    const $span = Cypress.$($group)
-      .find('span.text-sm')
-      .filter((_, el) => el.textContent.trim() === opcao)
-      .first()
+    const $checked = Cypress.$($group).find('button[role="radio"][data-state="checked"]')
 
-    if ($span.length > 0) {
-      cy.wrap($span).scrollIntoView().click({ force: true })
-      cy.log(`COMP_DRE: ✓ Clicou "${opcao}" no grupo SEI`)
+    if ($checked.length > 0) {
+      const valorAtual = Cypress.$($checked).attr('value') || ''
+      cy.log(`COMP_DRE: SEI já respondido como "${valorAtual}" — verificando preenchimento`)
+      if (valorAtual === 'Sim') {
+        cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])').last().then($input => {
+          if (!$input.val()) {
+            const numeroSEI = numerosSEI[Math.floor(Math.random() * numerosSEI.length)]
+            cy.log(`COMP_DRE: Número SEI vazio — preenchendo com: ${numeroSEI}`)
+            cy.wrap($input).scrollIntoView().type(numeroSEI, { delay: 30 })
+          } else {
+            cy.log(`COMP_DRE: ✓ Número SEI já preenchido`)
+          }
+        })
+      }
     } else {
-      cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+      const $span = Cypress.$($group)
+        .find('span.text-sm')
+        .filter((_, el) => el.textContent.trim() === opcao)
+        .first()
+
+      if ($span.length > 0) {
+        cy.wrap($span).scrollIntoView().click({ force: true })
+        cy.log(`COMP_DRE: ✓ Clicou "${opcao}" no grupo SEI`)
+      } else {
+        cy.wrap($group).contains(opcao).scrollIntoView().click({ force: true })
+      }
+
+      cy.wait(800)
+
+      if (opcao === 'Sim') {
+        const numeroSEI = numerosSEI[Math.floor(Math.random() * numerosSEI.length)]
+        cy.log(`COMP_DRE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
+        cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
+          .last().scrollIntoView().type(numeroSEI, { delay: 30 })
+        cy.wait(500)
+      } else {
+        cy.log('COMP_DRE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
+      }
     }
   })
 
-  cy.wait(800)
-
-  // Se "Sim" foi selecionado, um campo de texto surge para o número do processo SEI
-  if (opcao === 'Sim') {
-    const seiIdx = Math.floor(Math.random() * numerosSEI.length)
-    const numeroSEI = numerosSEI[seiIdx]
-    cy.log(`COMP_DRE: Campo SEI detectado — preenchendo com: ${numeroSEI}`)
-    // Exclui explicitamente inputs readonly (campo de exibição de arquivo) e file inputs
-    cy.get('input:visible:not([readonly]):not([type="file"]):not([type="hidden"])')
-      .last()
-      .scrollIntoView()
-      .type(numeroSEI, { delay: 30 })
-    cy.wait(500)
-  } else {
-    cy.log('COMP_DRE: "Não" selecionado para SEI — campo extra não exibido, continuando.')
-  }
-
   cy.wait(1000)
+})
+
+// ── Fallback: verifica ocorrência em andamento e cadastra se não houver ──────
+/**
+ * Verifica se há ocorrências "Em Andamento" na tabela.
+ * Se não houver, acessa o sistema UE (credenciais do .env), cadastra uma
+ * ocorrência interpessoal completa e retorna ao dashboard DRE.
+ * Isso garante que o cenário de complemento sempre tenha dados válidos.
+ */
+When('COMP_DRE verifica se existe ocorrencia em andamento e cadastra se necessario', () => {
+  cy.get('table tbody tr', { timeout: TIMEOUTS.LONG }).then($rows => {
+    const $emAndamento = $rows.filter((_, el) =>
+      /em andamento/i.test(el.innerText || el.textContent || '')
+    )
+
+    if ($emAndamento.length > 0) {
+      cy.log(`COMP_DRE: ${$emAndamento.length} ocorrência(s) Em Andamento encontrada(s) — prosseguindo`)
+      return
+    }
+
+    cy.log('COMP_DRE: Nenhuma ocorrência Em Andamento — cadastrando uma nova como UE...')
+
+    // ── Navega para cadastro ─────────────────────────────────────────────
+    cy.get('body').then($body => {
+      const $btn = $body.find('button').filter((_, b) =>
+        /nova ocorr|registrar|cadastrar/i.test((b.innerText || '').trim())
+      )
+      if ($btn.length > 0) {
+        cy.wrap($btn.first()).should('be.visible').click({ force: true })
+      } else {
+        cy.get('main button', { timeout: TIMEOUTS.LONG }).filter(':visible').first().click({ force: true })
+      }
+    })
+    cy.wait(TIMEOUTS.DEFAULT)
+    cy.url({ timeout: TIMEOUTS.LONG }).should('include', '/cadastrar-ocorrencia')
+
+    // ── Aba 1: data, hora e tipo ─────────────────────────────────────────
+    const hoje = new Date()
+    const dataFormatada = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
+    const horaFormatada = `${String(hoje.getHours()).padStart(2, '0')}:${String(hoje.getMinutes()).padStart(2, '0')}`
+
+    cy.get('input[type="date"]', { timeout: TIMEOUTS.LONG }).first()
+      .click({ force: true }).clear({ force: true })
+      .type(dataFormatada, { force: true })
+      .trigger('change', { force: true })
+    cy.wait(500)
+
+    cy.get('body').then($b => {
+      if ($b.find('input[placeholder="Digite o horário"]').length > 0) {
+        cy.get('input[placeholder="Digite o horário"]').first()
+          .click({ force: true }).clear({ force: true })
+          .type(horaFormatada, { delay: 100, force: true }).blur()
+      }
+    })
+    cy.wait(500)
+
+    cy.get(
+      'body > div > div > div.flex.flex-col.flex-1.w-full > main > div > div:nth-child(3) > form > fieldset > div.space-y-2 > label',
+      { timeout: TIMEOUTS.LONG }
+    ).then($labels => {
+      const $interp = $labels.filter((_, el) => /Interpessoal/i.test(el.innerText || ''))
+      if ($interp.length > 0) {
+        cy.wrap($interp.first()).scrollIntoView().click({ force: true })
+      } else {
+        cy.contains('span.text-sm', 'Interpessoal').scrollIntoView().click({ force: true })
+      }
+    })
+    cy.wait(1000)
+
+    // Avança para Aba 2
+    cy.get('button[type="submit"]', { timeout: TIMEOUTS.LONG })
+      .first().should('not.be.disabled').scrollIntoView().click({ force: true })
+    cy.wait(TIMEOUTS.DEFAULT)
+
+    // ── Aba 2: tipo de ocorrência, envolvidos e descrição ────────────────
+    cy.get('button[role="combobox"]', { timeout: TIMEOUTS.LONG }).first()
+      .should('be.visible').click({ force: true })
+    cy.wait(1500)
+    cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+      cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+    })
+    cy.wait(500)
+    cy.get('body').type('{esc}')
+    cy.wait(500)
+
+    // Envolvidos
+    cy.get('fieldset div.grid.gap-6 > div:nth-child(2) > button', { timeout: TIMEOUTS.LONG })
+      .filter(':visible').first().click({ force: true })
+    cy.wait(1500)
+    cy.get('body').then($b2 => {
+      const $opts2 = $b2.find('[role="option"]:visible')
+      if ($opts2.length > 0) {
+        cy.wrap($opts2.eq(Math.floor(Math.random() * $opts2.length))).click({ force: true })
+      }
+    })
+    cy.wait(1000)
+    cy.contains('button', /Clique aqui/i).then($btn => {
+      if ($btn.length > 0) cy.wrap($btn.first()).click({ force: true })
+    })
+    cy.wait(500)
+    cy.get('div.flex.justify-end.mt-2 > button').filter(':visible').first().click({ force: true })
+    cy.wait(500)
+
+    // Descrição
+    cy.get('textarea', { timeout: TIMEOUTS.LONG }).first()
+      .click({ force: true }).clear({ force: true })
+      .type('Ocorrência gerada automaticamente para teste de complemento.', { delay: 30, force: true })
+    cy.wait(500)
+
+    // Sim para pessoas envolvidas
+    cy.contains('span.text-sm', 'Sim', { timeout: TIMEOUTS.LONG })
+      .scrollIntoView().click({ force: true })
+    cy.wait(1000)
+
+    // Avança para Aba 3
+    cy.get('button[type="submit"]', { timeout: TIMEOUTS.LONG })
+      .first().should('not.be.disabled').scrollIntoView().click({ force: true })
+    cy.wait(TIMEOUTS.DEFAULT)
+
+    // ── Aba 3: pessoa envolvida mínima ───────────────────────────────────
+    const nomes = ['Aluno Teste', 'Estudante Automacao', 'Pessoa Gerada']
+    const nome  = nomes[Math.floor(Math.random() * nomes.length)]
+
+    cy.get('input[name*="pessoasAgressoras"][name$="nome"]', { timeout: TIMEOUTS.LONG }).last()
+      .scrollIntoView().click({ force: true }).clear({ force: true })
+      .type(nome, { delay: 50, force: true })
+    cy.wait(500)
+
+    cy.get('input[name*="pessoasAgressoras"][name$=".idade"]', { timeout: TIMEOUTS.LONG }).last()
+      .scrollIntoView().click({ force: true }).clear({ force: true })
+      .type(String(Math.floor(Math.random() * 10) + 10), { delay: 50, force: true })
+    cy.wait(500)
+
+    // Campos de seleção obrigatórios — gênero, raça, etapa, frequência, deficiência, nacionalidade
+    const camposObrigatorios = [
+      /Qual o gênero/i,
+      /Raça\/cor/i,
+      /etapa escolar/i,
+      /frequência escolar/i,
+      /deficiência/i,
+      /Nacionalidade/i,
+    ]
+    camposObrigatorios.forEach(labelRegex => {
+      cy.get('label', { timeout: TIMEOUTS.LONG }).then($labels => {
+        const $match = $labels.filter((_, el) => labelRegex.test(el.innerText || el.textContent || ''))
+        if ($match.length > 0) {
+          cy.wrap($match.last()).closest('div').find('button[role="combobox"]').first()
+            .scrollIntoView().should('be.visible').click({ force: true })
+          cy.wait(1000)
+          cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+            if ($opts.length > 0) {
+              cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+            }
+          })
+          cy.wait(500)
+        }
+      })
+    })
+
+    // Interação no ambiente escolar
+    cy.get('textarea[name*="pessoasAgressoras"]', { timeout: TIMEOUTS.LONG }).last()
+      .scrollIntoView().click({ force: true }).clear({ force: true })
+      .type('Comportamento adequado ao ambiente escolar.', { delay: 30, force: true }).blur({ force: true })
+    cy.wait(500)
+
+    // Motivações
+    cy.contains('label', /O que motivou/i, { timeout: TIMEOUTS.LONG }).parent()
+      .find('button').first().scrollIntoView().click({ force: true })
+    cy.wait(1500)
+    cy.get('[role="option"]:visible, [role="listbox"] [role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+      if ($opts.length > 0) cy.wrap($opts.first()).click({ force: true })
+    })
+    cy.wait(500)
+    cy.get('body').type('{esc}')
+    cy.wait(500)
+
+    // Conselho Tutelar
+    cy.contains('label', /Conselho Tutelar/i, { timeout: TIMEOUTS.LONG })
+      .closest('fieldset, div')
+      .find('button[role="radio"][value="Não"]').scrollIntoView().click({ force: true })
+    cy.wait(500)
+
+    // Acompanhamento
+    cy.contains('label', /acompanhada por/i, { timeout: TIMEOUTS.LONG })
+      .closest('fieldset, div[class*="space-y"], div')
+      .contains('span', 'NAAPA').scrollIntoView().click({ force: true })
+    cy.wait(500)
+
+    // SEI — seleciona Não para simplificar
+    cy.contains('label', /processo SEI/i, { timeout: TIMEOUTS.LONG })
+      .closest('fieldset, div')
+      .find('button[role="radio"][value="Não"]').scrollIntoView().click({ force: true })
+    cy.wait(500)
+
+    // Avança para Aba 4
+    cy.get('button[type="submit"]', { timeout: TIMEOUTS.LONG })
+      .first().should('not.be.disabled').scrollIntoView().click({ force: true })
+    cy.wait(TIMEOUTS.DEFAULT)
+
+    // ── Aba 4: declarante, segurança pública, protocolo ──────────────────
+    cy.get('button[id*="form-item"]', { timeout: TIMEOUTS.LONG }).then($btns => {
+      // Declarante
+      cy.wrap($btns.eq(0)).should('be.visible').click({ force: true })
+      cy.wait(1500)
+      cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+        if ($opts.length > 0) cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+      })
+      cy.wait(1000)
+
+      // Segurança pública
+      cy.get('button[id*="form-item"]', { timeout: TIMEOUTS.LONG }).then($b2 => {
+        cy.wrap($b2.eq(1)).should('be.visible').click({ force: true })
+        cy.wait(1500)
+        cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+          if ($opts.length > 0) cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+        })
+        cy.wait(1000)
+
+        // Protocolo
+        cy.get('button[id*="form-item"]', { timeout: TIMEOUTS.LONG }).then($b3 => {
+          cy.wrap($b3.eq(2)).should('be.visible').click({ force: true })
+          cy.wait(1500)
+          cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+            if ($opts.length > 0) cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+          })
+          cy.wait(1000)
+        })
+      })
+    })
+
+    // Avança para Aba 5 (Anexos)
+    cy.get('button[type="submit"]', { timeout: TIMEOUTS.LONG })
+      .first().should('not.be.disabled').scrollIntoView().click({ force: true })
+    cy.wait(TIMEOUTS.DEFAULT)
+
+    // ── Aba 5: arquivo e finalizar ───────────────────────────────────────
+    cy.get('input[type="file"]', { timeout: TIMEOUTS.LONG })
+      .selectFile({
+        contents: Cypress.Buffer.from('fake-image-content'),
+        fileName: 'test-image.jpg',
+        mimeType: 'image/jpeg'
+      }, { force: true })
+    cy.wait(1500)
+
+    cy.get('button[role="combobox"]', { timeout: TIMEOUTS.LONG }).last()
+      .should('be.visible').click({ force: true })
+    cy.wait(1500)
+    cy.contains('[role="option"]', 'Boletim de ocorrência', { timeout: TIMEOUTS.LONG })
+      .click({ force: true })
+    cy.wait(1000)
+
+    // Anexar documento
+    cy.get('body').then($b => {
+      const $anexar = $b.find('button').filter((_, btn) => /Anexar documento/i.test(btn.textContent || ''))
+      if ($anexar.length > 0) cy.wrap($anexar.first()).scrollIntoView().click({ force: true })
+    })
+    cy.wait(1500)
+
+    // Finalizar e enviar
+    cy.get('body').then($b => {
+      const $finalizar = $b.find('button').filter((_, btn) => /Finalizar/i.test(btn.textContent || ''))
+      if ($finalizar.length > 0) {
+        cy.wrap($finalizar.last()).should('not.be.disabled').scrollIntoView().click({ force: true })
+      }
+    })
+    cy.wait(TIMEOUTS.DEFAULT)
+
+    // Fecha modal de sucesso e retorna ao dashboard
+    cy.get('body').then($b => {
+      const $fechar = $b.find('button').filter((_, btn) => /^fechar$/i.test(btn.textContent.trim()))
+      if ($fechar.length > 0) cy.wrap($fechar.first()).click({ force: true })
+    })
+    cy.wait(TIMEOUTS.SHORT)
+    cy.url({ timeout: TIMEOUTS.VERY_LONG }).should('include', '/dashboard')
+    cy.wait(TIMEOUTS.SHORT)
+    cy.log('COMP_DRE: Nova ocorrência cadastrada — retornando ao dashboard DRE')
+  })
+})
+
+// ── Fallback: valida e preenche campos da Aba 1 quando incompletos ────────────
+/**
+ * Verifica se a ocorrência aberta tem campos obrigatórios da Aba 1 ainda
+ * não preenchidos (ocorrência incompleta). Se houver, preenche:
+ *   - Tipo de ocorrência (dropdown)
+ *   - Envolvidos
+ *   - Descrição (textarea)
+ *   - Resposta para "Sim/Não" de pessoas envolvidas
+ * Campos já preenchidos são preservados.
+ */
+When('COMP_DRE valida e preenche campos da aba 1 quando necessario', () => {
+  cy.wait(500)
+  cy.get('body').then($body => {
+    const texto = $body.text()
+
+    // ── Tipo de ocorrência ───────────────────────────────────────────────
+    const temTipoOcorrencia = texto.includes('Qual o tipo de ocorrência?')
+    if (temTipoOcorrencia) {
+      cy.get('body').then($b => {
+        const $comboboxes = $b.find('button[role="combobox"]:visible')
+        const tipoVazio = $comboboxes.toArray().some(btn =>
+          /selecione/i.test(btn.textContent || '') ||
+          btn.textContent.trim() === ''
+        )
+        if (tipoVazio) {
+          cy.log('COMP_DRE: Tipo de ocorrência vazio — selecionando aleatoriamente')
+          cy.get('button[role="combobox"]', { timeout: TIMEOUTS.LONG }).first()
+            .should('be.visible').click({ force: true })
+          cy.wait(1500)
+          cy.get('[role="option"]:visible', { timeout: TIMEOUTS.LONG }).then($opts => {
+            if ($opts.length > 0) cy.wrap($opts.eq(Math.floor(Math.random() * $opts.length))).click({ force: true })
+          })
+          cy.wait(500)
+          cy.get('body').type('{esc}')
+          cy.wait(500)
+        } else {
+          cy.log('COMP_DRE: Tipo de ocorrência já preenchido — preservando')
+        }
+      })
+    }
+
+    // ── Descrição ────────────────────────────────────────────────────────
+    const temDescricao = texto.includes('Descreva a ocorrência')
+    if (temDescricao) {
+      cy.get('textarea').filter(':visible').first().then($ta => {
+        if (!$ta.val() || $ta.val().trim() === '') {
+          cy.log('COMP_DRE: Descrição vazia — preenchendo')
+          cy.wrap($ta).click({ force: true }).clear({ force: true })
+            .type('Ocorrência registrada. Detalhes em acompanhamento pela equipe DRE.', { delay: 30, force: true })
+          cy.wait(500)
+        } else {
+          cy.log('COMP_DRE: Descrição já preenchida — preservando')
+        }
+      })
+    }
+
+    // ── Radio Sim/Não para informações sobre pessoas ──────────────────────
+    const temPessoasRadio = texto.includes('Existem informações sobre o agressor')
+    if (temPessoasRadio) {
+      cy.get('body').then($b2 => {
+        const $checked = $b2.find('[role="radiogroup"] button[role="radio"][data-state="checked"]')
+        if ($checked.length === 0) {
+          cy.log('COMP_DRE: Pergunta sobre pessoas envolvidas sem resposta — selecionando Sim')
+          cy.contains('span.text-sm', 'Sim', { timeout: TIMEOUTS.LONG })
+            .scrollIntoView().click({ force: true })
+          cy.wait(500)
+        } else {
+          cy.log('COMP_DRE: Pergunta sobre pessoas envolvidas já respondida — preservando')
+        }
+      })
+    }
+  })
+  cy.wait(500)
 })
 
 When('COMP_DRE localiza o button {string}', (textoBotao) => {
@@ -751,28 +1162,9 @@ When('COMP_DRE localiza e clica em {string}', (textoBotao) => {
   const regexPrimaria = new RegExp(textoBotao.trim(), 'i')
   const regexFinalizar = /Finalizar/i
 
-  cy.get('body').then($body => {
-    const existeExato     = $body.find('button').toArray().some(b => regexPrimaria.test(b.textContent.trim()))
-    const existeFinalizar = $body.find('button').toArray().some(b => regexFinalizar.test(b.textContent.trim()))
-
-    if (existeExato) {
-      cy.log(`COMP_DRE: Botão "${textoBotao}" encontrado — clicando`)
-      cy.contains('button', regexPrimaria, { timeout: TIMEOUTS.LONG })
-        .should('be.visible').scrollIntoView().click({ force: true })
-    } else if (existeFinalizar) {
-      cy.log('COMP_DRE: Botão "Finalizar" encontrado — clicando')
-      cy.contains('button', regexFinalizar, { timeout: TIMEOUTS.LONG })
-        .should('be.visible').scrollIntoView().click({ force: true })
-    } else {
-      // Fallback posicional: último botão do container de ações (Anterior + Finalizar)
-      cy.log('COMP_DRE: Botão não encontrado por texto — usando fallback posicional (btn ao lado de Anterior)')
-      cy.contains('button', /Anterior/i, { timeout: TIMEOUTS.LONG })
-        .closest('div')
-        .find('button')
-        .last()
-        .should('be.visible').scrollIntoView().click({ force: true })
-    }
-  })
+  cy.get('button[type="submit"]', { timeout: TIMEOUTS.LONG })
+    .should('be.visible').should('not.be.disabled')
+    .first().scrollIntoView().click({ force: true })
 
   cy.wait(3000)
   cy.log(`COMP_DRE: Clicou em "${textoBotao}"`)

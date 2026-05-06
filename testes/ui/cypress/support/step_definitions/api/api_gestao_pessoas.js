@@ -1,4 +1,4 @@
-﻿/// <reference types="cypress" />
+/// <reference types="cypress" />
 
 /**
  * @fileoverview Step definitions para testes de API - Gestão de Pessoas
@@ -16,7 +16,7 @@ import {
   getUniqueValues,
   formatDuration,
   generateDataQualityReport
-} from '../utils/api_helpers';
+} from '../../utils/api_helpers';
 import { 
   USER_SCHEMA, 
   SENSITIVE_FIELDS, 
@@ -26,10 +26,10 @@ import {
   LIMITS,
   HTTP_STATUS,
   TIMEOUTS
-} from '../utils/api_constants';
-import { APIValidator, ValidationHelpers } from '../utils/api_validators';
+} from '../../utils/api_constants';
+import { APIValidator, ValidationHelpers } from '../../utils/api_validators';
 
-const { CREDENTIALS } = require('../api/config');
+const { CREDENTIALS } = require('../../api/config');
 
 // ============================================================================
 // HOOKS - Preparação e Limpeza

@@ -1,5 +1,5 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import Gestao_Pessoas_Localizadores from '../locators/gestao_pessoas_locators'
+import Gestao_Pessoas_Localizadores from '../../locators/gestao_pessoas_locators'
 
 const locators = new Gestao_Pessoas_Localizadores()
 

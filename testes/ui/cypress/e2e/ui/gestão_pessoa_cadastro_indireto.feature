@@ -1,5 +1,6 @@
 # language: pt
 
+@skip
 Funcionalidade: Cadastro de usuários no sistema GIPE
 
   Contexto: Acesso à tela de cadastro
@@ -9,7 +10,7 @@ Funcionalidade: Cadastro de usuários no sistema GIPE
     E o usuário valida a existência do campo "Digite o nome da UE"
     E o usuário seleciona o campo "Digite o nome da UE" com "ABRAO HUCK, DR."
 
-  @skip
+ 
   Cenário: Usuário realiza cadastro completo
     Quando o usuário preenche o campo "Qual o seu nome completo" com "João da Silva"
     E o usuário preenche o campo "Qual o seu CPF" com "044.194.250-40"

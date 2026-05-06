@@ -128,6 +128,11 @@ prompt-*.md
 *.tmp
 *.temp
 *_backup.*
+
+# ========================================
+# CENÁRIOS LOCAIS
+# ========================================
+cypress/e2e/ui/consulta_filtro_local.feature
 *_old.*
 *.backup
 .cache/
