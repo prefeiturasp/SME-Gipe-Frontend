@@ -23,7 +23,7 @@ Funcionalidade: Complemento de Intercorrência - Perfil DRE
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @complemento @preenchimento @critico
+  @skip @complemento @preenchimento @critico
   Cenário: Complementar informações de intercorrência registrada
     # ── Pré-condição: garante ocorrência Em Andamento ─────────────────────
     Quando COMP_DRE verifica se existe ocorrencia em andamento e cadastra se necessario

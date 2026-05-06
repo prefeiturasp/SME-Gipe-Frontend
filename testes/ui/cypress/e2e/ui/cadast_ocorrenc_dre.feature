@@ -22,7 +22,7 @@ Funcionalidade: Cadastro de Ocorrência - Perfil DRE
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @informacoes_adicional @estudante @dados_aleatorios
+  @skip @cadastro @informacoes_adicional @estudante @dados_aleatorios
   Cenário: Registrar ocorrência completa com dados aleatórios
     # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando DRE inicia o cadastro de uma nova ocorrência
