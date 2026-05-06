@@ -131,14 +131,10 @@ module.exports = defineConfig({
       TEMPO_RESPOSTA_ALUNO: 30
     },
 
-    async setupNodeEvents(on, config) {
-      // 1o — Allure
+    setupNodeEvents(on, config) {
       allureWriter(on, config)
-
-      // 2o — Cucumber
       on('file:preprocessor', cucumber())
 
-      // 3o — Tasks customizadas
       on('task', {
         lerArquivoSeguro(caminho) {
           try {
@@ -155,17 +151,11 @@ module.exports = defineConfig({
         }
       })
 
-      // 4o — ENV customizadas (ANTES do cloudPlugin)
-      config.env = config.env || {}
-      config.env.db = dbConfig
-
-      // 5o — Cypress Cloud (apenas em CI — o Jenkinsfile passa -e CI=true)
-      if (isCI) {
-        const enhancedConfig = await cloudPlugin(on, config)
+      return cloudPlugin(on, config).then((enhancedConfig) => {
+        enhancedConfig.env = enhancedConfig.env || {}
+        enhancedConfig.env.db = dbConfig
         return enhancedConfig
-      }
-
-      return config
+      })
     },
   },
 })
