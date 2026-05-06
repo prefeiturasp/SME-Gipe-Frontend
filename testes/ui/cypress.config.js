@@ -159,12 +159,9 @@ module.exports = defineConfig({
       config.env = config.env || {}
       config.env.db = dbConfig
 
-      // 5o — Cypress Cloud (apenas em CI/CD)
-      if (isCI) {
-        const enhancedConfig = await cloudPlugin(on, config)
-        return enhancedConfig
-      }
-      return config
+      // 5o — Cypress Cloud
+      const enhancedConfig = await cloudPlugin(on, config)
+      return enhancedConfig
     },
   },
 })

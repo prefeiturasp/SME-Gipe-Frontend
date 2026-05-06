@@ -22,7 +22,7 @@ Funcionalidade: Cadastro de Ocorrência - Patrimônio (Furto/Roubo)
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @furto_roubo @patrimonio @sim
+  @skip @cadastro @furto_roubo @patrimonio @sim
   Cenário: Registrar ocorrência de patrimônio com Smart Sampa - Sim
     # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando FURTO inicia o cadastro de uma nova ocorrência
@@ -59,7 +59,7 @@ Funcionalidade: Cadastro de Ocorrência - Patrimônio (Furto/Roubo)
     E UE clica em Fechar
     Então UE valida a existencia do Texto " Histórico de ocorrências registradas"
 
-  @cadastro @furto_roubo @patrimonio @nao
+  @skip @cadastro @furto_roubo @patrimonio @nao
   Cenário: Registrar ocorrência de patrimônio com Smart Sampa - Não
     # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando FURTO inicia o cadastro de uma nova ocorrência

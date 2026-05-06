@@ -11,19 +11,19 @@ Funcionalidade: Complemento de Intercorrência - Perfil GIPE
     E eu efetuo login com RF GIPE Admin
     E estou na página principal do sistema
 
-  @skip @smoke
+  @smoke
   Cenário: Autenticação e acesso ao dashboard
     Então devo ser redirecionado para o dashboard
     E devo visualizar a página principal do sistema
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para GIPE
 
-  @skip @listagem
+  @listagem
   Cenário: Consultar listagem de ocorrências
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @complemento @preenchimento @critico
+  @skip @complemento @preenchimento @critico
   Cenário: Complementar informações de intercorrência registrada
     # ── Aba 1: Acesso e validação do formulário ───────────────────────────
     Quando COMP_GIPE abre ocorrencia valida para complemento

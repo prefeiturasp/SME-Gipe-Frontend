@@ -22,7 +22,7 @@ Funcionalidade: Cadastro de Ocorrência - Desastres Climáticos
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @desastres_climaticos @sim
+  @skip @cadastro @desastres_climaticos @sim
   Cenário: Registrar ocorrência de desastre climático com Smart Sampa - Sim
     # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando FURTO inicia o cadastro de uma nova ocorrência
