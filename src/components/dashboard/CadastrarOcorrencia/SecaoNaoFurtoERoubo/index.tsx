@@ -1,8 +1,8 @@
 "use client";
 
+import { BotoesNavegacaoSecao } from "@/components/dashboard/CadastrarOcorrencia/BotoesNavegacaoSecao";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
-import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
@@ -16,12 +16,14 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
+import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
+import { useSyncTiposOcorrencia } from "@/hooks/useSyncTiposOcorrencia";
 import { useTiposOcorrencia } from "@/hooks/useTiposOcorrencia";
 import { filterValidTiposOcorrencia } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { forwardRef, useCallback } from "react";
+import { useForm } from "react-hook-form";
 import { formSchema, SecaoNaoFurtoERouboData } from "./schema";
 
 export type SecaoNaoFurtoERouboProps = {
@@ -33,11 +35,7 @@ export type SecaoNaoFurtoERouboProps = {
     startingQuestionNumber?: number;
 };
 
-export type SecaoNaoFurtoERouboRef = {
-    getFormData: () => SecaoNaoFurtoERouboData;
-    submitForm: () => Promise<boolean>;
-    getFormInstance: () => UseFormReturn<SecaoNaoFurtoERouboData>;
-};
+export type SecaoNaoFurtoERouboRef = SecaoBaseRef<SecaoNaoFurtoERouboData>;
 
 const SecaoNaoFurtoERoubo = forwardRef<
     SecaoNaoFurtoERouboRef,
@@ -90,41 +88,24 @@ const SecaoNaoFurtoERoubo = forwardRef<
 
         const { isValid } = form.formState;
 
-        // Sincroniza tiposOcorrencia: remove UUIDs que não pertencem ao tipo atual
-        useEffect(() => {
-            if (!isLoadingTipos && tiposOcorrencia) {
-                const current = form.getValues("tiposOcorrencia");
-                const filtered = filterValidTiposOcorrencia(
-                    current,
-                    tiposOcorrencia,
-                );
-                if (filtered.length !== current.length) {
-                    form.setValue("tiposOcorrencia", filtered, {
-                        shouldValidate: true,
-                    });
-                }
-            }
-        }, [isLoadingTipos, tiposOcorrencia, form]);
+        const getCurrentTipos = useCallback(
+            () => form.getValues("tiposOcorrencia"),
+            [form],
+        );
+        const setFilteredTipos = useCallback(
+            (filtered: string[]) =>
+                form.setValue("tiposOcorrencia", filtered, {
+                    shouldValidate: true,
+                }),
+            [form],
+        );
 
-        // Notifica mudanças em tempo real
-        const watchedValues = form.watch();
-        useEffect(() => {
-            onFormChange?.(watchedValues);
-        }, [watchedValues, onFormChange]);
-
-        // Expõe métodos para o componente pai via ref
-        useImperativeHandle(ref, () => ({
-            getFormData: () => form.getValues(),
-            submitForm: async () => {
-                const isValid = await form.trigger();
-                if (!isValid) return false;
-
-                const data = form.getValues();
-                await handleSubmit(data);
-                return true;
-            },
-            getFormInstance: () => form,
-        }));
+        useSyncTiposOcorrencia(
+            tiposOcorrencia,
+            isLoadingTipos,
+            getCurrentTipos,
+            setFilteredTipos,
+        );
 
         // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: SecaoNaoFurtoERouboData) => {
@@ -180,6 +161,13 @@ const SecaoNaoFurtoERoubo = forwardRef<
                 },
             );
         };
+
+        useSecaoFormBase({
+            form,
+            onFormChange,
+            handleSubmit,
+            ref,
+        });
 
         return (
             <Form {...form}>
@@ -300,29 +288,15 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             )}
                         />
 
-                        {showButtons && (
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="customOutline"
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData(form.getValues());
-                                        onPrevious?.();
-                                    }}
-                                >
-                                    Anterior
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    type="submit"
-                                    variant="submit"
-                                    disabled={!isValid || isPending}
-                                >
-                                    Próximo
-                                </Button>
-                            </div>
-                        )}
+                        <BotoesNavegacaoSecao
+                            showButtons={showButtons}
+                            isValid={isValid}
+                            isPending={isPending}
+                            onClickAnterior={() => {
+                                setFormData(form.getValues());
+                                onPrevious?.();
+                            }}
+                        />
                     </fieldset>
                 </form>
             </Form>
