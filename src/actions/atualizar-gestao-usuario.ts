@@ -3,10 +3,10 @@
 import {
     createAuthHeaders,
     getAuthToken,
+    handleActionError,
     validateAuthToken,
 } from "@/lib/actionUtils";
 import api from "@/lib/axios";
-import { AxiosError } from "axios";
 
 export type AtualizarGestaoUsuarioRequest = {
     username: string;
@@ -22,11 +22,6 @@ export type AtualizarGestaoUsuarioRequest = {
 export type AtualizarGestaoUsuarioResult = {
     success: boolean;
     error?: string;
-    field?: string;
-};
-
-type AtualizarGestaoUsuarioErrorResponse = {
-    detail?: string;
     field?: string;
 };
 
@@ -46,25 +41,6 @@ export async function atualizarGestaoUsuarioAction(
 
         return { success: true };
     } catch (err) {
-        const error = err as AxiosError<AtualizarGestaoUsuarioErrorResponse>;
-
-        let message = "Erro ao atualizar usuário";
-        let field: string | undefined;
-
-        if (error.response?.status === 401) {
-            message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        if (error.response?.data?.field) {
-            field = error.response.data.field;
-        }
-
-        return { success: false, error: message, field };
+        return handleActionError(err, "Erro ao atualizar usuário");
     }
 }

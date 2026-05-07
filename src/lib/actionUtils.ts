@@ -31,8 +31,8 @@ export function createAuthHeaders(token: string): Record<string, string> {
 export function handleActionError(
     err: unknown,
     defaultMessage: string,
-): { success: false; error: string } {
-    const error = err as AxiosError<{ detail?: string }>;
+): { success: false; error: string; field?: string } {
+    const error = err as AxiosError<{ detail?: string; field?: string }>;
     let message = defaultMessage;
 
     if (error.response?.status === 401) {
@@ -45,5 +45,6 @@ export function handleActionError(
         message = error.message;
     }
 
-    return { success: false, error: message };
+    const field = error.response?.data?.field;
+    return { success: false, error: message, ...(field && { field }) };
 }
