@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 export type ActionResult<T = void> =
     | (T extends void
-          ? { success: true; data?: undefined }
+          ? { success: true; data?: never }
           : { success: true; data: T })
     | { success: false; error: string; field?: string };
 
