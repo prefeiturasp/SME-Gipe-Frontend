@@ -3,6 +3,7 @@
 import { BotoesNavegacaoSecao } from "@/components/dashboard/CadastrarOcorrencia/BotoesNavegacaoSecao";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import {
     Form,
     FormControl,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAtualizarSecaoFurtoRoubo } from "@/hooks/useAtualizarSecaoFurtoRoubo";
 import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
 import { useSyncTiposOcorrencia } from "@/hooks/useSyncTiposOcorrencia";
@@ -169,6 +169,11 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
             ref,
         });
 
+        const labelSmartSampa =
+            startingQuestionNumber == null
+                ? "Unidade Educacional é contemplada pelo Smart Sampa?*"
+                : `${startingQuestionNumber + 2}. Unidade Educacional é contemplada pelo Smart Sampa?*`;
+
         return (
             <Form {...form}>
                 <form
@@ -218,44 +223,11 @@ const SecaoFurtoERoubo = forwardRef<SecaoFurtoERouboRef, SecaoFurtoERouboProps>(
                             }
                         />
 
-                        <FormField
+                        <RadioSimNao
                             control={form.control}
                             name="smartSampa"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        {startingQuestionNumber == null
-                                            ? ""
-                                            : `${startingQuestionNumber + 2}. `}
-                                        Unidade Educacional é contemplada pelo
-                                        Smart Sampa?*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <div className="pt-2">
-                                            <RadioGroup
-                                                onValueChange={field.onChange}
-                                                value={field.value ?? ""}
-                                                className="flex flex-col space-y-2"
-                                                disabled={disabled}
-                                            >
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="Sim" />
-                                                    <span className="text-sm text-[#42474a]">
-                                                        Sim
-                                                    </span>
-                                                </label>
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="Não" />
-                                                    <span className="text-sm text-[#42474a]">
-                                                        Não
-                                                    </span>
-                                                </label>
-                                            </RadioGroup>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            label={labelSmartSampa}
+                            disabled={disabled}
                         />
 
                         <BotoesNavegacaoSecao

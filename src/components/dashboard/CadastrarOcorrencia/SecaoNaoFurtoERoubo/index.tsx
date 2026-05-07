@@ -3,6 +3,7 @@
 import { BotoesNavegacaoSecao } from "@/components/dashboard/CadastrarOcorrencia/BotoesNavegacaoSecao";
 import { CampoDescricaoOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/CampoDescricaoOcorrencia";
 import { AlertTiposOcorrencia } from "@/components/dashboard/CadastrarOcorrencia/ModalTiposOcorrencia";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import {
     Form,
     FormControl,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAtualizarSecaoNaoFurtoRoubo } from "@/hooks/useAtualizarSecaoNaoFurtoRoubo";
 import { useEnvolvidos } from "@/hooks/useEnvolvidos";
 import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
@@ -169,6 +169,11 @@ const SecaoNaoFurtoERoubo = forwardRef<
             ref,
         });
 
+        const labelPossuiInfo =
+            startingQuestionNumber == null
+                ? "Existem informações sobre as pessoas envolvidas?*"
+                : `${startingQuestionNumber + 3}. Existem informações sobre as pessoas envolvidas?*`;
+
         return (
             <Form {...form}>
                 <form
@@ -248,44 +253,11 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             }
                         />
 
-                        <FormField
+                        <RadioSimNao
                             control={form.control}
                             name="possuiInfoAgressorVitima"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel disabled={disabled}>
-                                        {startingQuestionNumber == null
-                                            ? ""
-                                            : `${startingQuestionNumber + 3}. `}
-                                        Existem informações sobre as pessoas
-                                        envolvidas?*
-                                    </FormLabel>
-                                    <FormControl>
-                                        <div className="pt-2">
-                                            <RadioGroup
-                                                onValueChange={field.onChange}
-                                                value={field.value ?? ""}
-                                                className="flex flex-col space-y-2"
-                                                disabled={disabled}
-                                            >
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="Sim" />
-                                                    <span className="text-sm text-[#42474a]">
-                                                        Sim
-                                                    </span>
-                                                </label>
-                                                <label className="flex items-center space-x-2 w-fit cursor-pointer">
-                                                    <RadioGroupItem value="Não" />
-                                                    <span className="text-sm text-[#42474a]">
-                                                        Não
-                                                    </span>
-                                                </label>
-                                            </RadioGroup>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            label={labelPossuiInfo}
+                            disabled={disabled}
                         />
 
                         <BotoesNavegacaoSecao

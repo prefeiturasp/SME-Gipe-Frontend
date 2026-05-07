@@ -15,11 +15,12 @@ import { toast } from "@/components/ui/headless-toast";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useAtualizarInfoAgressor } from "@/hooks/useAtualizarInfoAgressor";
 import { useCategoriasDisponiveis } from "@/hooks/useCategoriasDisponiveis";
+import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
 import { hasFormDataChanged } from "@/lib/formUtils";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { forwardRef, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { FIELDS_PER_PERSON } from "../questionNumberingUtils";
 import Envolvidos from "./Envolvidos";
 import { formSchema, InformacoesAdicionaisData } from "./schema";
@@ -33,11 +34,7 @@ export type InformacoesAdicionaisProps = {
     onPersonCountChange?: (count: number) => void;
 };
 
-export type InformacoesAdicionaisRef = {
-    getFormData: () => InformacoesAdicionaisData;
-    submitForm: () => Promise<boolean>;
-    getFormInstance: () => UseFormReturn<InformacoesAdicionaisData>;
-};
+export type InformacoesAdicionaisRef = SecaoBaseRef<InformacoesAdicionaisData>;
 
 const InformacoesAdicionais = forwardRef<
     InformacoesAdicionaisRef,
@@ -115,20 +112,6 @@ const InformacoesAdicionais = forwardRef<
                 : startingQuestionNumber + pessoasCount * FIELDS_PER_PERSON;
         const qf = (offset: number) =>
             fixedQStart == null ? "" : `${fixedQStart + offset}. `;
-
-        // Expõe métodos para o componente pai via ref
-        useImperativeHandle(ref, () => ({
-            getFormData: () => form.getValues(),
-            submitForm: async () => {
-                const isValid = await form.trigger();
-                if (!isValid) return false;
-
-                const data = form.getValues();
-                await handleSubmit(data);
-                return true;
-            },
-            getFormInstance: () => form,
-        }));
 
         // Função de submit isolada para ser chamada programaticamente
         const handleSubmit = async (data: InformacoesAdicionaisData) => {
@@ -214,6 +197,8 @@ const InformacoesAdicionais = forwardRef<
                 onNext?.();
             }
         };
+
+        useSecaoFormBase({ form, handleSubmit, ref });
 
         return (
             <Form {...form}>
