@@ -1,13 +1,13 @@
-import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiAnexos from "@/lib/axios-anexos";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { getTiposDocumentoAction } from "./tipos-documentos";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios-anexos");
+vi.mock("@/lib/axios-anexos", () => ({ default: { get: vi.fn() } }));
 
 describe("getTiposDocumentoAction", () => {
     const mockCookies = cookies as Mock;
@@ -26,7 +26,7 @@ describe("getTiposDocumentoAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
     });
 

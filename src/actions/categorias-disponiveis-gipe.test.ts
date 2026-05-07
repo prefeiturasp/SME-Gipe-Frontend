@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { describe, expect, it, vi, type Mock } from "vitest";
 import { getCategoriasDisponiveisGipeAction } from "./categorias-disponiveis-gipe";
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
@@ -70,7 +70,9 @@ describe("getCategoriasDisponiveisGipeAction", () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error).toBe("Usuário não autenticado");
+            expect(result.error).toBe(
+                "Usuário não autenticado. Token não encontrado.",
+            );
         }
     });
 
@@ -104,7 +106,7 @@ describe("getCategoriasDisponiveisGipeAction", () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error).toBe("Categorias não encontradas");
+            expect(result.error).toBe("Erro ao buscar as categorias do GIPE");
         }
     });
 

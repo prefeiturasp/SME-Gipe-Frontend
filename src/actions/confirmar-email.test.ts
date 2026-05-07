@@ -1,71 +1,55 @@
-import {
-    describe,
-    it,
-    expect,
-    beforeEach,
-    afterAll,
-    vi,
-    type Mock,
-} from "vitest";
-import { confirmarEmailAction } from "./confirmar-email";
-import axios from "axios";
-import { cookies } from "next/headers";
+import api from "@/lib/axios";
 import type { ConfirmarEmailRequest } from "@/types/confirmar-email";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { confirmarEmailAction } from "./confirmar-email";
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { put: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-const axiosPutMock = axios.put as Mock;
+const apiPutMock = vi.mocked(api.put);
 const cookiesMock = cookies as Mock;
 
 describe("confirmarEmailAction", () => {
-    const originalEnv = process.env;
     const dados: ConfirmarEmailRequest = { code: "token" };
     const mockAuthToken = "mock-auth-token";
 
     beforeEach(() => {
         vi.resetAllMocks();
-        process.env = { ...originalEnv };
-    });
-
-    afterAll(() => {
-        process.env = originalEnv;
     });
 
     it("deve retornar sucesso quando o email for confirmado", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockResolvedValueOnce({
+        apiPutMock.mockResolvedValueOnce({
             data: { email: "novo@exemplo.com" },
-        });
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/alteracao-email/validar/token/",
+        expect(apiPutMock).toHaveBeenCalledWith(
+            "/alteracao-email/validar/token/",
             null,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
 
         expect(result).toEqual({ success: true, new_mail: "novo@exemplo.com" });
     });
 
     it("deve retornar erro se o token de autenticação não for encontrado", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue(undefined),
         });
 
         const result = await confirmarEmailAction(dados);
-        expect(axiosPutMock).not.toHaveBeenCalled();
+        expect(apiPutMock).not.toHaveBeenCalled();
         expect(result).toEqual({
             success: false,
             error: "Usuário não autenticado. Token não encontrado.",
@@ -73,11 +57,12 @@ describe("confirmarEmailAction", () => {
     });
 
     it("deve retornar erro 401 para sessão expirada", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockRejectedValueOnce({ response: { status: 401 } });
+        apiPutMock.mockRejectedValueOnce({
+            response: { status: 401 },
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 
@@ -89,11 +74,12 @@ describe("confirmarEmailAction", () => {
     });
 
     it("deve retornar erro 500 para erro interno do servidor", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockRejectedValueOnce({ response: { status: 500 } });
+        apiPutMock.mockRejectedValueOnce({
+            response: { status: 500 },
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 
@@ -105,13 +91,12 @@ describe("confirmarEmailAction", () => {
     });
 
     it("deve retornar erro com detail da API", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockRejectedValueOnce({
+        apiPutMock.mockRejectedValueOnce({
             response: { data: { detail: "Token inválido" } },
-        });
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 
@@ -123,11 +108,12 @@ describe("confirmarEmailAction", () => {
     });
 
     it("deve retornar erro com message genérica", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockRejectedValueOnce({ message: "Erro desconhecido" });
+        apiPutMock.mockRejectedValueOnce({
+            message: "Erro desconhecido",
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 
@@ -135,13 +121,12 @@ describe("confirmarEmailAction", () => {
     });
 
     it("deve retornar field quando a API envia o campo que causou erro", async () => {
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
         });
-        axiosPutMock.mockRejectedValueOnce({
+        apiPutMock.mockRejectedValueOnce({
             response: { data: { detail: "Código inválido", field: "code" } },
-        });
+        } as never);
 
         const result = await confirmarEmailAction(dados);
 

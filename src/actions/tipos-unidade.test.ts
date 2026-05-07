@@ -9,7 +9,7 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios");
+vi.mock("@/lib/axios", () => ({ default: { get: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
 const apiGetMock = api.get as Mock;
@@ -44,7 +44,7 @@ describe("getTiposUnidadeAction", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 
@@ -57,7 +57,7 @@ describe("getTiposUnidadeAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
         expect(apiGetMock).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe("getTiposUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 
@@ -93,13 +93,13 @@ describe("getTiposUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 
         expect(result).toEqual({
             success: false,
-            error: "Tipos de unidade não encontrados",
+            error: "Not Found",
         });
     });
 
@@ -113,7 +113,7 @@ describe("getTiposUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 
@@ -135,7 +135,7 @@ describe("getTiposUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 
@@ -150,7 +150,7 @@ describe("getTiposUnidadeAction", () => {
 
         const error = new Error(errorMessage);
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 
@@ -163,7 +163,7 @@ describe("getTiposUnidadeAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await getTiposUnidadeAction();
 

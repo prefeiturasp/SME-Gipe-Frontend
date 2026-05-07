@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import api from "@/lib/axios";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { obterUsuarioGestao } from "./obter-usuario-gestao";
-import axios from "axios";
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(() => ({
         get: vi.fn((key: string) =>
-            key === "auth_token" ? { value: "fake-token" } : undefined
+            key === "auth_token" ? { value: "fake-token" } : undefined,
         ),
     })),
 }));
@@ -34,18 +34,18 @@ describe("obterUsuarioGestao", () => {
         const nextHeaders = await import("next/headers");
         vi.mocked(nextHeaders.cookies).mockReturnValue({
             get: vi.fn((key: string) =>
-                key === "auth_token" ? { value: "fake-token" } : undefined
+                key === "auth_token" ? { value: "fake-token" } : undefined,
             ),
         } as never);
     });
 
     it("deve buscar usuário com sucesso", async () => {
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: mockUsuarioData,
         });
 
         const resultado = await obterUsuarioGestao(
-            "dde1bea9-1e91-4217-b1dc-656abb3d69b4"
+            "dde1bea9-1e91-4217-b1dc-656abb3d69b4",
         );
 
         expect(resultado.success).toBe(true);
@@ -55,15 +55,15 @@ describe("obterUsuarioGestao", () => {
             expect(resultado.data.cargo).toBe(3360);
         }
 
-        expect(axios.get).toHaveBeenCalledWith(
+        expect(api.get).toHaveBeenCalledWith(
             expect.stringContaining(
-                "/users/gestao-usuarios/dde1bea9-1e91-4217-b1dc-656abb3d69b4"
+                "/users/gestao-usuarios/dde1bea9-1e91-4217-b1dc-656abb3d69b4",
             ),
             expect.objectContaining({
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -78,13 +78,13 @@ describe("obterUsuarioGestao", () => {
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
             expect(resultado.error).toBe(
-                "Token de autenticação não encontrado"
+                "Usuário não autenticado. Token não encontrado.",
             );
         }
     });
 
     it("deve lidar com erro 401 (não autorizado)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 401,
             },
@@ -94,12 +94,14 @@ describe("obterUsuarioGestao", () => {
 
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
-            expect(resultado.error).toBe("Não autorizado");
+            expect(resultado.error).toBe(
+                "Não autorizado. Faça login novamente.",
+            );
         }
     });
 
     it("deve lidar com erro 404 (usuário não encontrado)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 404,
             },
@@ -109,12 +111,12 @@ describe("obterUsuarioGestao", () => {
 
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
-            expect(resultado.error).toBe("Usuário não encontrado");
+            expect(resultado.error).toBe("Erro ao buscar usuário");
         }
     });
 
     it("deve lidar com erro 500 (erro interno)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 500,
             },
@@ -129,7 +131,7 @@ describe("obterUsuarioGestao", () => {
     });
 
     it("deve lidar com mensagem de erro customizada da API", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 400,
                 data: {
@@ -147,7 +149,7 @@ describe("obterUsuarioGestao", () => {
     });
 
     it("deve lidar com error.message quando outros campos não existem", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             message: "Network Error",
         });
 
@@ -166,7 +168,7 @@ describe("obterUsuarioGestao", () => {
             username: "12345",
         };
 
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: usuarioDireta,
         });
 
