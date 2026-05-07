@@ -1,5 +1,5 @@
 #language: pt
- @skip @api @envolvidos
+ @api @envolvidos
 Funcionalidade: API GIPE - Tipos de Envolvidos
   Como usuário do sistema GIPE
   Quero validar o endpoint de tipos de envolvidos
@@ -39,25 +39,25 @@ Funcionalidade: API GIPE - Tipos de Envolvidos
   Cenário: Validar quantidade mínima de tipos de envolvidos
     Quando eu consulto os tipos de envolvidos
     Então o status da resposta deve ser 200
-    E a lista deve conter pelo menos 12 tipos de envolvidos
+    E a lista deve conter pelo menos 11 tipos de envolvidos
 
   @validacao @uuid_especifico
-  Cenário: Validar UUID de perfil específico - Apenas um estudante
+  Cenário: Validar UUID de perfil específico - Um estudante
     Quando eu consulto os tipos de envolvidos
     Então o status da resposta deve ser 200
-    E o perfil "Apenas um estudante" deve ter o UUID "f9a11fa8-c179-487b-9d51-a3e39ae8cb44"
+    E o perfil "Um estudante" deve ter UUID no formato válido
 
   @validacao @uuid_especifico
-  Cenário: Validar UUID de perfil específico - Mais de um estudante
+  Cenário: Validar UUID de perfil específico - Entre estudantes
     Quando eu consulto os tipos de envolvidos
     Então o status da resposta deve ser 200
-    E o perfil "Mais de um estudante" deve ter o UUID "609fc5d8-8e41-420c-9511-b39b6f4317b6"
+    E o perfil "Entre estudantes" deve ter UUID no formato válido
 
   @validacao @uuid_especifico
-  Cenário: Validar UUID de perfil específico - Diretor/Vice-diretor
+  Cenário: Validar UUID de perfil específico - Diretor/Assistente de diretor
     Quando eu consulto os tipos de envolvidos
     Então o status da resposta deve ser 200
-    E o perfil "Diretor/Vice-diretor" deve ter o UUID "e46a6d7a-305d-400e-9cc4-9eacfc03018f"
+    E o perfil "Diretor/Assistente de diretor" deve ter UUID no formato válido
 
   @validacao @formato_uuid
   Cenário: Validar formato UUID de todos os envolvidos

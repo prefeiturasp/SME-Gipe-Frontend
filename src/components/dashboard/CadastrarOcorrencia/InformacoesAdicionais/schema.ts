@@ -57,26 +57,46 @@ const pessoaAgressoraSchema = z
 
 export type PessoaAgressoraForm = z.infer<typeof pessoaAgressoraSchema>;
 
-export const formSchema = z.object({
-    pessoasAgressoras: z
-        .array(pessoaAgressoraSchema)
-        .min(1, "Adicione pelo menos uma pessoa envolvida"),
-    motivoOcorrencia: z
-        .array(z.string())
-        .min(1, "Selecione pelo menos um motivo"),
-    notificadoConselhoTutelar: z.enum(["Sim", "Não"], {
-        required_error: "Selecione uma opção",
-    }),
-    acompanhadoNAAPA: z
-        .array(
-            z.enum([
-                "naapa",
-                "comissao_mediacao_conflitos",
-                "supervisao_escolar",
-                "cefai",
-            ]),
-        )
-        .min(1, "Selecione pelo menos uma opção"),
-});
+export const formSchema = z
+    .object({
+        pessoasAgressoras: z
+            .array(pessoaAgressoraSchema)
+            .min(1, "Adicione pelo menos uma pessoa envolvida"),
+        motivoOcorrencia: z
+            .array(z.string())
+            .min(1, "Selecione pelo menos um motivo"),
+        notificadoConselhoTutelar: z.enum(["Sim", "Não"], {
+            required_error: "Selecione uma opção",
+        }),
+        acompanhadoNAAPA: z
+            .array(
+                z.enum([
+                    "naapa",
+                    "comissao_mediacao_conflitos",
+                    "supervisao_escolar",
+                    "cefai",
+                    "vara_da_infancia",
+                ]),
+            )
+            .min(1, "Selecione pelo menos uma opção"),
+        numeroProcedimentoSEI: z
+            .enum(["Sim", "Não"], { required_error: "Selecione uma opção" })
+            .optional(),
+        numeroProcedimentoSEITexto: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+        if (data.numeroProcedimentoSEI === "Sim") {
+            if (
+                !data.numeroProcedimentoSEITexto ||
+                data.numeroProcedimentoSEITexto.trim() === ""
+            ) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Campo obrigatório quando a resposta é 'Sim'",
+                    path: ["numeroProcedimentoSEITexto"],
+                });
+            }
+        }
+    });
 
 export type InformacoesAdicionaisData = z.infer<typeof formSchema>;

@@ -1,9 +1,11 @@
-import SecaoInicial from "./SecaoInicial";
-import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
-import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
-import SecaoFinal from "./SecaoFinal";
-import InformacoesAdicionais from "./InformacoesAdicionais";
+import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import Anexos from "./Anexos";
+import InformacoesAdicionais from "./InformacoesAdicionais";
+import { computeStartingNumbers } from "./questionNumberingUtils";
+import SecaoFinal from "./SecaoFinal";
+import SecaoFurtoERoubo from "./SecaoFurtoERoubo";
+import SecaoInicial from "./SecaoInicial";
+import SecaoNaoFurtoERoubo from "./SecaoNaoFurtoERoubo";
 
 type StepRendererProps = {
     currentStep: number;
@@ -26,6 +28,14 @@ export default function StepRenderer({
     onSecaoInicialChange,
     onSecaoNaoFurtoChange,
 }: Readonly<StepRendererProps>) {
+    const formData = useOcorrenciaFormStore((state) => state.formData);
+    const personCount = formData.pessoasAgressoras?.length ?? 1;
+
+    const qNumbers = computeStartingNumbers(
+        isFurtoRoubo,
+        hasAgressorVitimaInfo,
+        personCount,
+    );
     const getCurrentStepNumber = () => {
         if (currentStep === 1) return 1;
         if (currentStep === 2) return 2;
@@ -50,6 +60,7 @@ export default function StepRenderer({
                 <SecaoInicial
                     onSuccess={onNext}
                     onFormChange={onSecaoInicialChange}
+                    startingQuestionNumber={qNumbers.secaoInicial}
                 />
             ),
         },
@@ -57,7 +68,11 @@ export default function StepRenderer({
             step: 2,
             condition: isFurtoRoubo,
             component: (
-                <SecaoFurtoERoubo onNext={onNext} onPrevious={onPrevious} />
+                <SecaoFurtoERoubo
+                    onNext={onNext}
+                    onPrevious={onPrevious}
+                    startingQuestionNumber={qNumbers.step2}
+                />
             ),
         },
         {
@@ -68,6 +83,7 @@ export default function StepRenderer({
                     onNext={onNext}
                     onPrevious={onPrevious}
                     onFormChange={onSecaoNaoFurtoChange}
+                    startingQuestionNumber={qNumbers.step2}
                 />
             ),
         },
@@ -78,12 +94,19 @@ export default function StepRenderer({
                 <InformacoesAdicionais
                     onNext={onNext}
                     onPrevious={onPrevious}
+                    startingQuestionNumber={qNumbers.informacoesAdicionais}
                 />
             ),
         },
         {
             step: 4,
-            component: <SecaoFinal onNext={onNext} onPrevious={onPrevious} />,
+            component: (
+                <SecaoFinal
+                    onNext={onNext}
+                    onPrevious={onPrevious}
+                    startingQuestionNumber={qNumbers.secaoFinal}
+                />
+            ),
         },
         {
             step: 5,
@@ -93,6 +116,7 @@ export default function StepRenderer({
                         console.log("Ocorrência finalizada!");
                     }}
                     onPrevious={onPrevious}
+                    startingQuestionNumber={qNumbers.anexos}
                 />
             ),
         },
@@ -102,7 +126,7 @@ export default function StepRenderer({
     const stepConfig = stepComponents.find(
         (config) =>
             config.step === stepNumber &&
-            (config.condition === undefined || config.condition === true)
+            (config.condition === undefined || config.condition === true),
     );
 
     return stepConfig?.component || null;

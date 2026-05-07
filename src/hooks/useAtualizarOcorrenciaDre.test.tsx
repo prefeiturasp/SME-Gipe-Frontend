@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAtualizarOcorrenciaDre } from "./useAtualizarOcorrenciaDre";
 import * as atualizarOcorrenciaDreAction from "@/actions/atualizar-ocorrencia-dre";
 import { OcorrenciaDreBody } from "@/types/ocorrencia-dre";
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAtualizarOcorrenciaDre } from "./useAtualizarOcorrenciaDre";
 
 vi.mock("@/actions/atualizar-ocorrencia-dre");
 
@@ -32,50 +31,36 @@ describe("useAtualizarOcorrenciaDre", () => {
     const mockBody: OcorrenciaDreBody = {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-001",
-        acionamento_seguranca_publica: true,
-        interlocucao_sts: false,
-        info_complementar_sts: "Informações adicionais STS",
-        interlocucao_cpca: true,
-        info_complementar_cpca: "Informações adicionais CPCA",
-        interlocucao_supervisao_escolar: false,
-        info_complementar_supervisao_escolar:
-            "Informações adicionais Supervisão Escolar",
-        interlocucao_naapa: true,
-        info_complementar_naapa: "Informações adicionais NAAPA",
+        quais_orgaos_acionados_dre: [
+            "comunicacao_supervisao_tecnica_saude",
+            "comunicacao_gipe",
+        ],
     };
 
     const mockResponse = {
-            id: 1,
-            uuid: mockUuid,
-            status: "PENDENTE",
-            status_display: "Pendente",
-            status_extra: "Em andamento",
-            created_at: "2024-01-01T00:00:00Z",
-            updated_at: "2024-01-01T00:00:00Z",
-            unidade_codigo_eol: "123456",
-            dre_codigo_eol: "DRE-001",
-            acionamento_seguranca_publica: true,
-            interlocucao_sts: false,
-            info_complementar_sts: "Informações adicionais STS",
-            interlocucao_cpca: true,
-            info_complementar_cpca: "Informações adicionais CPCA",
-            interlocucao_supervisao_escolar: false,
-            info_complementar_supervisao_escolar:
-                "Informações adicionais Supervisão Escolar",
-            interlocucao_naapa: true,
-            info_complementar_naapa: "Informações adicionais NAAPA",
-        };
+        id: 1,
+        uuid: mockUuid,
+        status: "PENDENTE",
+        status_display: "Pendente",
+        status_extra: "Em andamento",
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+        unidade_codigo_eol: "123456",
+        dre_codigo_eol: "DRE-001",
+        quais_orgaos_acionados_dre: [
+            "comunicacao_supervisao_tecnica_saude",
+            "comunicacao_gipe",
+        ],
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it("deve atualizar a ocorrência DRE com sucesso", async () => {
-
-
         vi.spyOn(
             atualizarOcorrenciaDreAction,
-            "atualizarOcorrenciaDre"
+            "atualizarOcorrenciaDre",
         ).mockResolvedValue({
             success: true,
             data: mockResponse,
@@ -91,12 +76,12 @@ describe("useAtualizarOcorrenciaDre", () => {
                 onSuccess: (response) => {
                     expect(response).toEqual(mockResponse);
                 },
-            }
+            },
         );
 
         await waitFor(() => {
             expect(
-                atualizarOcorrenciaDreAction.atualizarOcorrenciaDre
+                atualizarOcorrenciaDreAction.atualizarOcorrenciaDre,
             ).toHaveBeenCalledWith(mockUuid, mockBody);
         });
     });
@@ -105,7 +90,7 @@ describe("useAtualizarOcorrenciaDre", () => {
         const errorMessage = "Erro ao atualizar ocorrência DRE";
         vi.spyOn(
             atualizarOcorrenciaDreAction,
-            "atualizarOcorrenciaDre"
+            "atualizarOcorrenciaDre",
         ).mockResolvedValue({
             success: false,
             error: errorMessage,
@@ -128,7 +113,7 @@ describe("useAtualizarOcorrenciaDre", () => {
     it("deve lidar com erro de rede", async () => {
         vi.spyOn(
             atualizarOcorrenciaDreAction,
-            "atualizarOcorrenciaDre"
+            "atualizarOcorrenciaDre",
         ).mockRejectedValue(new Error("Network Error"));
 
         const { result } = renderHook(() => useAtualizarOcorrenciaDre(), {
@@ -144,13 +129,12 @@ describe("useAtualizarOcorrenciaDre", () => {
     });
 
     it("deve chamar a mutation com os parâmetros corretos", async () => {
-        const spy = vi.spyOn(
-            atualizarOcorrenciaDreAction,
-            "atualizarOcorrenciaDre"
-        ).mockResolvedValue({
-            success: true,
-            data: mockResponse,
-        });
+        const spy = vi
+            .spyOn(atualizarOcorrenciaDreAction, "atualizarOcorrenciaDre")
+            .mockResolvedValue({
+                success: true,
+                data: mockResponse,
+            });
 
         const { result } = renderHook(() => useAtualizarOcorrenciaDre(), {
             wrapper: createWrapper(),

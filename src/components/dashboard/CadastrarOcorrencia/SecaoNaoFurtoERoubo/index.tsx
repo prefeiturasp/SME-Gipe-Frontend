@@ -30,6 +30,7 @@ export type SecaoNaoFurtoERouboProps = {
     showButtons?: boolean;
     onFormChange?: (data: Partial<SecaoNaoFurtoERouboData>) => void;
     disabled?: boolean;
+    startingQuestionNumber?: number;
 };
 
 export type SecaoNaoFurtoERouboRef = {
@@ -49,6 +50,7 @@ const SecaoNaoFurtoERoubo = forwardRef<
             showButtons = true,
             onFormChange,
             disabled = false,
+            startingQuestionNumber,
         },
         ref,
     ) => {
@@ -193,6 +195,9 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
+                                            {startingQuestionNumber == null
+                                                ? ""
+                                                : `${startingQuestionNumber}. `}
                                             Qual o tipo de ocorrência?*
                                         </FormLabel>
                                         <FormControl>
@@ -217,6 +222,9 @@ const SecaoNaoFurtoERoubo = forwardRef<
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel disabled={disabled}>
+                                            {startingQuestionNumber == null
+                                                ? ""
+                                                : `${startingQuestionNumber + 1}. `}
                                             Quem são os envolvidos?*
                                         </FormLabel>
                                         <FormControl>
@@ -245,6 +253,11 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             control={form.control}
                             name="descricao"
                             disabled={disabled}
+                            questionNumber={
+                                startingQuestionNumber == null
+                                    ? undefined
+                                    : startingQuestionNumber + 2
+                            }
                         />
 
                         <FormField
@@ -253,6 +266,9 @@ const SecaoNaoFurtoERoubo = forwardRef<
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel disabled={disabled}>
+                                        {startingQuestionNumber == null
+                                            ? ""
+                                            : `${startingQuestionNumber + 3}. `}
                                         Existem informações sobre as pessoas
                                         envolvidas?*
                                     </FormLabel>

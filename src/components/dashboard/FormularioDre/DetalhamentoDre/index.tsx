@@ -1,6 +1,9 @@
 "use client";
 
+import { NumeroProcedimentoSEI } from "@/components/dashboard/shared/NumeroProcedimentoSEI";
+import { RadioSimNao } from "@/components/dashboard/shared/RadioSimNao";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Form,
     FormControl,
@@ -10,7 +13,6 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/headless-toast";
-import { InputMask } from "@/components/ui/input";
 import { useAtualizarOcorrenciaDre } from "@/hooks/useAtualizarOcorrenciaDre";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
@@ -22,16 +24,28 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Anexos from "../../CadastrarOcorrencia/Anexos";
 import ModalFinalizarEtapa from "../../CadastrarOcorrencia/Anexos/ModalFinalizar/ModalFinalizar";
+import {
+    ANEXOS_COUNT,
+    DRE_QUESTION_COUNT,
+} from "../../CadastrarOcorrencia/questionNumberingUtils";
 import QuadroBranco from "../../QuadroBranco/QuadroBranco";
-import { RadioForm } from "./RadioForm";
 import { formSchema, FormularioDreData } from "./schema";
 
 export type DetalhamentoDreProps = {
     readonly onPrevious?: () => void;
     readonly onNext?: () => void;
+    readonly startingQuestionNumber?: number;
 };
 
-export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
+export function DetalhamentoDre({
+    onPrevious,
+    onNext,
+    startingQuestionNumber,
+}: DetalhamentoDreProps) {
+    const qn = (offset: number) =>
+        startingQuestionNumber == null
+            ? ""
+            : `${startingQuestionNumber + offset}. `;
     const [openModalFinalizarEtapa, setOpenModalFinalizarEtapa] =
         useState(false);
     const [isFinalizando, setIsFinalizando] = useState(false);
@@ -46,10 +60,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
         resolver: zodResolver(formSchema),
         mode: "onChange",
         defaultValues: {
-            acionamentoSegurancaPublica:
-                formData.acionamentoSegurancaPublica ?? undefined,
-            interlocucaoSupervisaoEscolar:
-                formData.interlocucaoSupervisaoEscolar ?? undefined,
+            quaisOrgaosAcionadosDre: formData.quaisOrgaosAcionadosDre ?? [],
             numeroProcedimentoSEI: formData.numeroProcedimentoSEI ?? undefined,
             numeroProcedimentoSEITexto:
                 formData.numeroProcedimentoSEITexto ?? "",
@@ -65,10 +76,7 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                 body: {
                     unidade_codigo_eol: formData.unidadeEducacional!,
                     dre_codigo_eol: formData.dre!,
-                    acionamento_seguranca_publica:
-                        data.acionamentoSegurancaPublica === "Sim",
-                    interlocucao_supervisao_escolar:
-                        data.interlocucaoSupervisaoEscolar === "Sim",
+                    quais_orgaos_acionados_dre: data.quaisOrgaosAcionadosDre,
                     nr_processo_sei:
                         data.numeroProcedimentoSEI === "Sim"
                             ? data.numeroProcedimentoSEITexto
@@ -132,45 +140,89 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
                             Continuação da ocorrência
                         </h2>
                         <div className="flex flex-col gap-6">
-                            <RadioForm
+                            <FormField
                                 control={form.control}
-                                name="acionamentoSegurancaPublica"
-                                label="A ronda escolar foi acionada?*"
+                                name="quaisOrgaosAcionadosDre"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            {qn(0)}Quais órgãos foram acionados
+                                            pela DRE?*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <div className="flex flex-col space-y-2 pt-2">
+                                                {(
+                                                    [
+                                                        {
+                                                            value: "comunicacao_supervisao_tecnica_saude",
+                                                            label: "Comunicação com Supervisão Técnica de Saúde",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_assistencia_social",
+                                                            label: "Comunicação com Assistência Social",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_gcm_ronda_escolar",
+                                                            label: "Comunicação com GCM/Ronda Escolar",
+                                                        },
+                                                        {
+                                                            value: "comunicacao_gipe",
+                                                            label: "Comunicação com GIPE",
+                                                        },
+                                                    ] as const
+                                                ).map((option) => (
+                                                    <label
+                                                        key={option.value}
+                                                        className="flex items-center space-x-2 w-fit cursor-pointer"
+                                                    >
+                                                        <Checkbox
+                                                            checked={field.value?.includes(
+                                                                option.value,
+                                                            )}
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) => {
+                                                                const updated =
+                                                                    new Set(
+                                                                        field.value,
+                                                                    );
+                                                                if (checked)
+                                                                    updated.add(
+                                                                        option.value,
+                                                                    );
+                                                                else
+                                                                    updated.delete(
+                                                                        option.value,
+                                                                    );
+                                                                field.onChange(
+                                                                    Array.from(
+                                                                        updated,
+                                                                    ),
+                                                                );
+                                                            }}
+                                                        />
+                                                        <span className="text-sm text-[#42474a]">
+                                                            {option.label}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
 
-                            <RadioForm
-                                control={form.control}
-                                name="interlocucaoSupervisaoEscolar"
-                                label="A supervisão escolar foi comunicada?*"
-                            />
-
-                            <RadioForm
+                            <RadioSimNao
                                 control={form.control}
                                 name="numeroProcedimentoSEI"
-                                label="Há um número do processo SEI?*"
+                                label={`${qn(1)}Há um número do processo SEI?*`}
                             />
 
                             {numeroProcedimentoSEI === "Sim" && (
-                                <FormField
+                                <NumeroProcedimentoSEI
                                     control={form.control}
                                     name="numeroProcedimentoSEITexto"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Número do processo SEI*
-                                            </FormLabel>
-                                            <FormControl>
-                                                <InputMask
-                                                    maskProps={{
-                                                        mask: "9999.9999/9999999-9",
-                                                    }}
-                                                    placeholder="Exemplo: 1234.5678/9012345-6"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
                                 />
                             )}
                         </div>
@@ -179,7 +231,32 @@ export function DetalhamentoDre({ onPrevious, onNext }: DetalhamentoDreProps) {
             </Form>
 
             <QuadroBranco>
-                <Anexos showButtons={false} />
+                <Anexos
+                    showButtons={false}
+                    startingQuestionNumber={
+                        startingQuestionNumber == null
+                            ? undefined
+                            : startingQuestionNumber + DRE_QUESTION_COUNT
+                    }
+                />
+
+                {isPontoFocal && formData.status === "finalizada" && (
+                    <div className="mt-4">
+                        <p className="text-sm font-bold text-[#42474a] mb-1">
+                            {qn(DRE_QUESTION_COUNT + ANEXOS_COUNT)}
+                            Encaminhamentos*
+                        </p>
+                        <p className="text-sm text-[#42474a] mb-2">
+                            São informações após a análise feita pelo GIPE.
+                        </p>
+                        <textarea
+                            readOnly
+                            value={formData.encaminhamentos ?? ""}
+                            onChange={() => {}}
+                            className="flex min-h-[80px] w-full border border-[#dadada] bg-background px-3 py-2 text-sm font-medium rounded-[4px] resize-none"
+                        />
+                    </div>
+                )}
 
                 <div className="flex justify-end gap-2">
                     <Button

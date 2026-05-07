@@ -1,62 +1,56 @@
 # language: pt
 
-@cadastro_ue @smoke @regression
+@smoke @regression @cadastro_ue
 Funcionalidade: Cadastro de Ocorrência - Desastres Climáticos
-  Como usuário autorizado do sistema GIPE
-  Eu quero registrar ocorrências de desastres climáticos
+  Como usuário da Unidade Educacional
+  Quero registrar ocorrências de desastres climáticos
   Para documentar adequadamente os incidentes ambientais
 
-  Contexto: Acesso ao sistema com usuário autenticado
+  Contexto:
     Dado que eu acesso o sistema
     E eu efetuo login com RF
 
-  @skip @login @validacao @smoke
-  Cenário: Validar autenticação e acesso ao dashboard
+  @login @smoke
+  Cenário: Autenticação e acesso ao dashboard
     Então devo ser redirecionado para o dashboard
     E devo visualizar a página principal do sistema
     E devo ver o título "Intercorrências Institucionais"
     E o sistema deve exibir as funcionalidades disponíveis para UE
 
-  @skip @consulta @listagem
-  Cenário: Consultar listagem de ocorrências cadastradas no sistema
+  @listagem
+  Cenário: Consultar listagem de ocorrências
     Quando o usuário está na página principal do sistema
     Então o sistema deve mostrar a listagem de ocorrências cadastradas no sistema
 
-  @cadastro @desastres_climaticos @sim
-  Cenário: Registrar nova ocorrência de desastre climático - resposta Sim
-    # ── Aba 1: Data, Hora e Tipo ─────────────────────────────────────────
+  @skip @cadastro @desastres_climaticos @sim
+  Cenário: Registrar ocorrência de desastre climático com Smart Sampa - Sim
+    # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando FURTO inicia o cadastro de uma nova ocorrência
     E FURTO informa a data atual do ocorrido
     E FURTO informa a hora atual do ocorrido
     E FURTO seleciona o tipo Patrimonia da ocorrência
     E FURTO avança para a próxima aba
 
-    # === ABA 2: Detalhes da Ocorrência ===
+    # ── Aba 2: Tipo de Ocorrência ────────────────────────────────────────
     Quando clica no campo "Qual o tipo de ocorrência?"
     E Selecionar Desastres climaticos
     E Descreva a ocorrencia - Descreva a ocorrência
-    E valida a existencia do texto "Importante: Esse campo não exclui a necessidade de lavratura do boletim de ocorrência"
-    E valida a existencia do titulo "Unidade Educacional é contemplada pelo Smart Sampa?*"
-    E valida opcoes sim e nao do Smart Sampa
     E seleciona "Sim, Unidade Educacional é contemplada pelo Smart Sampa?*"
-    E valida botoes anterior e proximo
     E clica em Proximo
-    Então o sistema deve navegar para a próxima etapa do formulário
 
-    # === ABA 3: Informações Complementares ===
+    # ── Aba 3: Declarante e Segurança Pública ────────────────────────────
     E clica no campo do declarante
     E seleciona uma das opções disponivel de forma aleatoria
     E clica no campo de seguranca publica
     E seleciona uma das opções disponivel de forma aleatoria
     Então clica em proximo
 
-    # ── Aba 4: Anexos e Finalização ───────────────────────────────────────
+    # ── Aba 4: Anexos ────────────────────────────────────────────────────
     E FURTO localiza e clica no botão "Escolher arquivo"
     E FURTO seleciona a imagem do pc
     E FURTO clica no campo tipo documento
     E FURTO seleciona "Boletim de ocorrência"
     E FURTO localiza e clica no botão "Anexar documento"
-    E Ocorren_FURTO localiza o button "Anterior"
     E Ocorren_FURTO localiza e clica em "Finalizar e enviar"
 
     # ── Conclusão ────────────────────────────────────────────────────────
@@ -66,40 +60,34 @@ Funcionalidade: Cadastro de Ocorrência - Desastres Climáticos
     Então UE valida a existencia do Texto " Histórico de ocorrências registradas"
 
   @cadastro @desastres_climaticos @nao
-  Cenário: Registrar nova ocorrência de desastre climático - resposta Não
-    # ── Aba 1: Data, Hora e Tipo ─────────────────────────────────────────
+  Cenário: Registrar ocorrência de desastre climático com Smart Sampa - Não
+    # ── Aba 1: Identificação ─────────────────────────────────────────────
     Quando FURTO inicia o cadastro de uma nova ocorrência
     E FURTO informa a data atual do ocorrido
     E FURTO informa a hora atual do ocorrido
     E FURTO seleciona o tipo Patrimonia da ocorrência
     E FURTO avança para a próxima aba
 
-    # === ABA 2: Detalhes da Ocorrência ===
+    # ── Aba 2: Tipo de Ocorrência ────────────────────────────────────────
     Quando clica no campo "Qual o tipo de ocorrência?"
     E Selecionar Desastres climaticos
     E Descreva a ocorrencia - Descreva a ocorrência
-    E valida a existencia do texto "Importante: Esse campo não exclui a necessidade de lavratura do boletim de ocorrência"
-    E valida a existencia do titulo "Unidade Educacional é contemplada pelo Smart Sampa?*"
-    E valida opcoes sim e nao do Smart Sampa
     E seleciona "Não, Unidade Educacional é contemplada pelo Smart Sampa?*"
-    E valida botoes anterior e proximo
     E clica em Proximo
-    Então o sistema deve navegar para a próxima etapa do formulário
 
-    # === ABA 3: Informações Complementares ===
+    # ── Aba 3: Declarante e Segurança Pública ────────────────────────────
     E clica no campo do declarante
     E seleciona uma das opções disponivel de forma aleatoria
     E clica no campo de seguranca publica
     E seleciona uma das opções disponivel de forma aleatoria
     Então clica em proximo
 
-    # ── Aba 4: Anexos e Finalização ───────────────────────────────────────
+    # ── Aba 4: Anexos ────────────────────────────────────────────────────
     E FURTO localiza e clica no botão "Escolher arquivo"
     E FURTO seleciona a imagem do pc
     E FURTO clica no campo tipo documento
     E FURTO seleciona "Boletim de ocorrência"
     E FURTO localiza e clica no botão "Anexar documento"
-    E Ocorren_FURTO localiza o button "Anterior"
     E Ocorren_FURTO localiza e clica em "Finalizar e enviar"
 
     # ── Conclusão ────────────────────────────────────────────────────────

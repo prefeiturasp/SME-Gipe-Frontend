@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DetalhamentoDre } from "./DetalhamentoDre";
 import FormularioDrePage from "./index";
 
 const mockReset = vi.fn();
@@ -63,7 +64,7 @@ const queryClient = new QueryClient();
 
 const renderWithClient = (ui: React.ReactElement) => {
     return render(
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
     );
 };
 
@@ -77,13 +78,13 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         expect(
             screen.getByText(
-                "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)"
-            )
+                "Detalhes da Intercorrência - Diretoria Regional de Educação (DRE)",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -92,7 +93,7 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         expect(screen.getByTestId("mock-detalhamento-dre")).toBeInTheDocument();
@@ -103,7 +104,7 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         const botaoAnterior = screen.getByText("Anterior (Mock)");
@@ -117,7 +118,7 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         const botaoVoltar = screen.getByText("Voltar");
@@ -137,7 +138,7 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         const botaoVoltar = screen.getByText("Voltar");
@@ -155,10 +156,27 @@ describe("FormularioDrePage", () => {
             <FormularioDrePage
                 onPrevious={mockOnPrevious}
                 onNext={mockOnNext}
-            />
+            />,
         );
 
         const botaoVoltar = screen.getByRole("button", { name: /voltar/i });
         expect(botaoVoltar).toBeInTheDocument();
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve passar startingQuestionNumber para DetalhamentoDre", () => {
+            renderWithClient(
+                <FormularioDrePage
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={12}
+                />,
+            );
+
+            expect(vi.mocked(DetalhamentoDre)).toHaveBeenCalledWith(
+                expect.objectContaining({ startingQuestionNumber: 12 }),
+                expect.anything(),
+            );
+        });
     });
 });

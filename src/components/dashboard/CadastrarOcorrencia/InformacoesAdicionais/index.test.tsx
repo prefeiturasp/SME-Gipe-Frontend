@@ -178,7 +178,7 @@ describe("InformacoesAdicionais", () => {
             screen.getByText(/O que motivou a ocorrência/i),
         ).toBeInTheDocument();
         expect(screen.getByText(/notificada ao CT/i)).toBeInTheDocument();
-        expect(screen.getByText(/acompanhada pelo:/i)).toBeInTheDocument();
+        expect(screen.getByText(/acompanhada por:/i)).toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: /Anterior/i }),
         ).toBeInTheDocument();
@@ -250,7 +250,7 @@ describe("InformacoesAdicionais", () => {
         const user = userEvent.setup();
         renderComponent();
 
-        const radioNao = screen.getByRole("radio", { name: /Não/i });
+        const radioNao = screen.getAllByRole("radio", { name: /Não/i })[0];
         await user.click(radioNao);
 
         expect(radioNao).toBeChecked();
@@ -310,6 +310,190 @@ describe("InformacoesAdicionais", () => {
         expect(
             await screen.findByText(/A idade em meses deve ser entre 0 e 12/i),
         ).toBeInTheDocument();
+    });
+
+    it("deve renderizar o checkbox Vara da infância", () => {
+        renderComponent();
+
+        expect(
+            screen.getByRole("checkbox", { name: /Vara da infância/i }),
+        ).toBeInTheDocument();
+    });
+
+    it("deve marcar e desmarcar o checkbox Vara da infância", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkbox = screen.getByRole("checkbox", {
+            name: /Vara da infância/i,
+        });
+        await user.click(checkbox);
+        expect(checkbox).toBeChecked();
+
+        await user.click(checkbox);
+        expect(checkbox).not.toBeChecked();
+    });
+
+    describe("Campo SEI", () => {
+        it("deve renderizar a pergunta 'Foi aberto um processo SEI?'", () => {
+            renderComponent();
+
+            expect(
+                screen.getByText(/Foi aberto um processo SEI\?/i),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir campo de texto SEI por padrão", () => {
+            renderComponent();
+
+            expect(
+                screen.queryByLabelText(/Número do processo SEI/i),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve exibir campo de texto SEI ao selecionar 'Sim'", async () => {
+            const user = userEvent.setup();
+            renderComponent();
+
+            const radios = screen.getAllByRole("radio", { name: /^Sim$/i });
+            await user.click(radios[radios.length - 1]);
+
+            expect(
+                await screen.findByLabelText(/Número do processo SEI/i),
+            ).toBeInTheDocument();
+        });
+
+        it("deve ocultar campo de texto SEI ao selecionar 'Não'", async () => {
+            const user = userEvent.setup();
+            renderComponent();
+
+            const radiosSim = screen.getAllByRole("radio", {
+                name: /^Sim$/i,
+            });
+            await user.click(radiosSim[radiosSim.length - 1]);
+
+            expect(
+                await screen.findByLabelText(/Número do processo SEI/i),
+            ).toBeInTheDocument();
+
+            const radiosNao = screen.getAllByRole("radio", {
+                name: /^Não$/i,
+            });
+            await user.click(radiosNao[radiosNao.length - 1]);
+
+            expect(
+                screen.queryByLabelText(/Número do processo SEI/i),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve carregar valor SEI 'Sim' do store e exibir campo de texto", () => {
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    numeroProcedimentoSEI: "Sim",
+                    numeroProcedimentoSEITexto: "1234.5678/9012345-6",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: null,
+            });
+
+            renderComponent();
+
+            expect(
+                screen.getByLabelText(/Número do processo SEI/i),
+            ).toBeInTheDocument();
+        });
+
+        it("deve incluir nr_processo_sei no body ao submeter com SEI 'Sim' preenchido", async () => {
+            const user = userEvent.setup();
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderComponent();
+            await preencherFormularioCompleto(user);
+
+            const radiosSim = screen.getAllByRole("radio", {
+                name: /^Sim$/i,
+            });
+            await user.click(radiosSim[radiosSim.length - 1]);
+
+            const inputSEI =
+                await screen.findByPlaceholderText(/Exemplo: 1234/i);
+            await user.type(inputSEI, "1234567890123456");
+
+            const proximoButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
+            await user.click(proximoButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            nr_processo_sei: expect.any(String),
+                        }),
+                    }),
+                    expect.any(Object),
+                );
+            });
+        });
+
+        it("deve enviar nr_processo_sei vazio ao submeter com SEI 'Não'", async () => {
+            const user = userEvent.setup();
+
+            vi.mocked(useOcorrenciaFormStore).mockReturnValue({
+                formData: {
+                    unidadeEducacional: "123456",
+                    dre: "DRE-001",
+                },
+                savedFormData: {},
+                setFormData: mockSetFormData,
+                setSavedFormData: mockSetSavedFormData,
+                ocorrenciaUuid: "test-uuid-123",
+            });
+
+            mockMutate.mockImplementation((_, options) => {
+                options?.onSuccess?.({ success: true });
+            });
+
+            renderComponent();
+            await preencherFormularioCompleto(user);
+
+            const radiosNao = screen.getAllByRole("radio", {
+                name: /^Não$/i,
+            });
+            await user.click(radiosNao[radiosNao.length - 1]);
+
+            const proximoButton = screen.getByRole("button", {
+                name: /Próximo/i,
+            });
+            await user.click(proximoButton);
+
+            await waitFor(() => {
+                expect(mockMutate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        body: expect.objectContaining({
+                            nr_processo_sei: "",
+                        }),
+                    }),
+                    expect.any(Object),
+                );
+            });
+        });
     });
 
     it("deve desmarcar checkbox de acompanhamento e remover do array", async () => {
@@ -937,5 +1121,73 @@ describe("InformacoesAdicionais", () => {
 
         await user.type(nomeInput, "Teste");
         expect(nomeInput).toHaveValue("");
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '18.' no campo motivo quando startingQuestionNumber=9 e 1 pessoa", () => {
+            // Com 1 pessoa: fixedQStart = 9 + 1*9 = 18
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        startingQuestionNumber={9}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^18\. O que motivou a ocorrência\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '19.' no campo Conselho Tutelar quando startingQuestionNumber=9 e 1 pessoa", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        startingQuestionNumber={9}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.getByText(/^19\. A ocorrência foi notificada ao CT/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                    />
+                </QueryClientProvider>,
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. O que motivou a ocorrência/),
+            ).not.toBeInTheDocument();
+        });
+
+        it("deve chamar onPersonCountChange com o número de pessoas quando fornecido", async () => {
+            const mockOnPersonCountChange = vi.fn();
+
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <InformacoesAdicionais
+                        onPrevious={mockOnPrevious}
+                        onNext={mockOnNext}
+                        onPersonCountChange={mockOnPersonCountChange}
+                    />
+                </QueryClientProvider>,
+            );
+
+            await waitFor(() => {
+                expect(mockOnPersonCountChange).toHaveBeenCalledWith(1);
+            });
+        });
     });
 });

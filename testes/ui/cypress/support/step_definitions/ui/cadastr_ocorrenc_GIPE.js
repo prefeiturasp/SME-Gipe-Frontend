@@ -1,5 +1,5 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import CadastrOcorrencGIPELocalizadores from '../locators/cadastr_ocorrenc_GIPE_locators'
+import CadastrOcorrencGIPELocalizadores from '../../locators/cadastr_ocorrenc_GIPE_locators'
 
 /**
  * ================================================================
@@ -68,6 +68,7 @@ const aba3CamposInput = aba3CamposInputXPath
 // ==================== DADOS PARA TESTES ====================
 
 const nomesAgressores = [
+  // Brasileiros
   'João da Silva Santos',
   'Maria Oliveira Costa',
   'Pedro Henrique Almeida',
@@ -82,12 +83,29 @@ const nomesAgressores = [
   'Camila Alves Mendes',
   'Diego Santos Ferreira',
   'Patrícia Lima Gomes',
-  'Marcos Vinícius Dias'
+  'Marcos Vinícius Dias',
+  // Origem Africana
+  'Amara Diallo Kouyaté',
+  'Fatou Balde Sow',
+  'Kofi Asante Mensah',
+  'Nia Okonkwo Adeyemi',
+  'Seun Abiodun Balogun',
+  // Origem Árabe
+  'Yasmin Khalil Haddad',
+  'Omar Nasser Saleh',
+  'Laila Farid Mansour',
+  'Karim Aziz Rachid',
+  'Nour Hamdan Aoun',
+  // Origem Europeia
+  'Sophie Müller Wagner',
+  'Luca Rossi Ferrari',
+  'Elena Dubois Moreau',
+  'Aleksander Kowalski Wiśniewski',
+  'Ingrid Larsen Andersen'
 ]
 
 const idadesValidas = [
-  18, 19, 20, 22, 25, 28, 30, 32, 35, 38,
-  40, 42, 45, 48, 50, 52, 55, 58, 60, 65
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 ]
 
 const nacionalidades = [
@@ -482,7 +500,7 @@ When('GIPE seleciona Sim para informações sobre pessoas envolvidas', () => {
 
 When('GIPE avança para a próxima aba', () => {
   cy.wait(2000)
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 20000 })
+  cy.get('button[type="submit"]', { timeout: 20000 })
     .should('be.visible')
     .should('not.be.disabled')
     .first()
@@ -633,28 +651,74 @@ When('GIPE Valida a existencia do texto {string}', (texto) => {
     .should('exist').should('be.visible')
 })
 
-When('GIPE informa de forma aleatoria se o Conselho Tutelar foi acionado', () => {
-  cy.wait(1500)
+// ── Pergunta 19: Conselho Tutelar ─────────────────────────────────────────
+When('GIPE valida pergunta 19 Conselho Tutelar', () => {
+  cy.wait(1000)
+  cy.contains('label', /Conselho Tutelar/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('GIPE seleciona aleatoriamente resposta para Conselho Tutelar', () => {
+  cy.wait(1000)
   const opcoes = ['Sim', 'Não']
   const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
-  cy.contains('label', /Conselho Tutelar/i, { timeout: 15000 })
-    .should('be.visible')
-    .parent()
+  cy.contains('label', /Conselho Tutelar/i, { timeout: 15000 }).should('be.visible')
+    .closest('fieldset, div')
+    .find(`button[role="radio"][value="${escolha}"]`, { timeout: 10000 })
+    .scrollIntoView().should('be.visible').click({ force: true })
+  cy.wait(1000)
+})
+
+// ── Pergunta 20: Acompanhamento ────────────────────────────────────────────
+When('GIPE valida pergunta 20 acompanhamento da ocorrência', () => {
+  cy.wait(1000)
+  cy.contains('label', /acompanhada por/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('GIPE seleciona aleatoriamente opcao de acompanhamento da ocorrência', () => {
+  const opcoes = ['NAAPA', 'Comissão de Mediação de Conflitos', 'Supervisão Escolar', 'CEFAI', 'Vara da infância']
+  const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
+  cy.wait(1500)
+  cy.contains('label', /acompanhada por/i, { timeout: 15000 }).should('be.visible')
+    .closest('fieldset, div[class*="space-y"], div')
     .contains('span', escolha)
     .scrollIntoView().should('be.visible').click({ force: true })
   cy.wait(1000)
 })
 
-When('GIPE seleciona de forma aleatoria o acompanhamento da ocorrência', () => {
-  const opcoes = ['NAAPA', 'Comissão de Mediação de Conflitos', 'Supervisão Escolar', 'CEFAI']
+// ── Pergunta 21: Processo SEI ──────────────────────────────────────────────
+When('GIPE valida pergunta 21 processo SEI', () => {
+  cy.wait(1000)
+  cy.contains('label', /processo SEI/i, { timeout: 15000 }).should('be.visible')
+})
+
+When('GIPE seleciona aleatoriamente resposta para processo SEI', () => {
+  const numerosSEI = [
+    '731020001', '731020002', '731020003', '731020004', '731020005',
+    '731020006', '731020007', '731020008', '731020009', '731020010',
+    '731020011', '731020012', '731020013', '731020014', '731020015',
+    '731020016', '731020017', '731020018', '731020019', '731020020',
+    '731025001', '731025002', '731025003', '731025004', '731025005',
+    '731025006', '731025007', '731025008', '731025009', '731025010',
+    '731025011', '731025012', '731025013', '731025014', '731025015',
+  ]
+  cy.wait(1000)
+  const opcoes = ['Sim', 'Não']
   const escolha = opcoes[Math.floor(Math.random() * opcoes.length)]
-  cy.wait(1500)
-  cy.contains('label', /acompanhada pelo/i, { timeout: 15000 })
-    .should('be.visible')
-    .closest('fieldset, div[class*="space-y"], div[class*="form"]')
-    .contains('span', escolha)
+  cy.contains('label', /processo SEI/i, { timeout: 15000 })
+    .closest('fieldset, div')
+    .find(`button[role="radio"][value="${escolha}"]`, { timeout: 10000 })
     .scrollIntoView().should('be.visible').click({ force: true })
   cy.wait(1000)
+  if (escolha === 'Sim') {
+    const numeroAleatorio = numerosSEI[Math.floor(Math.random() * numerosSEI.length)]
+    cy.get('input[id*="form-item"]', { timeout: 10000 })
+      .filter(':visible')
+      .last()
+      .should('be.enabled')
+      .clear({ force: true })
+      .type(numeroAleatorio, { delay: 80, force: true })
+    cy.wait(500)
+  }
 })
 
 /**
@@ -749,7 +813,7 @@ When('GIPE seleciona protocolo aleatoriamente', () => {
 Then('GIPE clica em proximo para anexos', () => {
   cy.wait(3000)
   cy.log('Avançando para aba de anexos')
-  cy.contains('button', /Próximo|Proximo/i, { timeout: 30000 })
+  cy.get('button[type="submit"]', { timeout: 30000 })
     .first()
     .should('be.visible')
     .should('not.be.disabled')

@@ -1,5 +1,5 @@
 import { Given, When, Then } from 'cypress-cucumber-preprocessor/steps'
-import Login_Gipe_Localizadores from '../locators/login_locators'
+import Login_Gipe_Localizadores from '../../locators/login_locators'
 
 const locators = new Login_Gipe_Localizadores()
 const TIMEOUT_PADRAO = 15000

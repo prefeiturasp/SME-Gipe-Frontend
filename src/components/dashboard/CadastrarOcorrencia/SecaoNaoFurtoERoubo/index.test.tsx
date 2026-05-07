@@ -1056,4 +1056,67 @@ describe("SecaoNaoFurtoERoubo", () => {
             });
         });
     });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '5.' no campo de tipo quando startingQuestionNumber=5", () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={5}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.getByText(/^5\. Qual o tipo de ocorrência\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '6.' no campo de envolvidos quando startingQuestionNumber=5", () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={5}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.getByText(/^6\. Quem são os envolvidos\?\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '8.' no campo possuiInfoAgressorVitima quando startingQuestionNumber=5", () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={5}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.getByText(
+                    /^8\. Existem informações sobre as pessoas envolvidas\?\*/,
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            render(
+                <SecaoNaoFurtoERoubo
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                />,
+                { wrapper: createWrapper() },
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. Qual o tipo de ocorrência/),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

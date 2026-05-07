@@ -26,6 +26,7 @@ type EnvolvidosProps = Readonly<{
     control: Control<InformacoesAdicionaisData>;
     disabled?: boolean;
     categoriasDisponiveis?: CategoriasDisponiveisAPI;
+    startingQuestionNumber?: number;
 }>;
 
 const EMPTY_PESSOA = {
@@ -48,6 +49,7 @@ type PessoaRowProps = Readonly<{
     categoriasDisponiveis?: CategoriasDisponiveisAPI;
     onRemove: (index: number) => void;
     showRemove: boolean;
+    personStartNumber?: number;
 }>;
 
 function PessoaRow({
@@ -57,6 +59,7 @@ function PessoaRow({
     categoriasDisponiveis,
     onRemove,
     showRemove,
+    personStartNumber,
 }: PessoaRowProps) {
     const idadeEmMeses = useWatch({
         control,
@@ -64,6 +67,8 @@ function PessoaRow({
         defaultValue: false,
     });
 
+    const qp = (offset: number) =>
+        personStartNumber == null ? "" : `${personStartNumber + offset}. `;
     return (
         <div className="rounded-sm border bg-[#F5F6F8] p-4 flex flex-col gap-4">
             <FormField
@@ -72,7 +77,7 @@ function PessoaRow({
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel disabled={disabled}>
-                            Qual o nome da pessoa?*
+                            {qp(0)}Qual o nome da pessoa?*
                         </FormLabel>
                         <FormControl>
                             <Input
@@ -93,7 +98,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Qual a idade?*
+                                {qp(1)}Qual a idade?*
                             </FormLabel>
                             <FormControl>
                                 <Input
@@ -157,7 +162,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Qual o gênero?*
+                                {qp(2)}Qual o gênero?*
                             </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
@@ -193,7 +198,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Raça/cor auto declarada*
+                                {qp(3)}Raça/cor auto declarada*
                             </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
@@ -229,7 +234,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Qual a etapa escolar?*
+                                {qp(4)}Qual a etapa escolar?*
                             </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
@@ -267,7 +272,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Qual a frequência escolar?*
+                                {qp(5)}Qual a frequência escolar?*
                             </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
@@ -303,7 +308,7 @@ function PessoaRow({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel disabled={disabled}>
-                                Pessoa com deficiência?*
+                                {qp(6)}Pessoa com deficiência?*
                             </FormLabel>
                             <Select
                                 onValueChange={field.onChange}
@@ -332,8 +337,8 @@ function PessoaRow({
                         <FormItem>
                             <FormLabel disabled={disabled}>
                                 <span className="flex items-center gap-1">
-                                    Nacionalidade*
-                                    <InfoTooltip content="A nacionalidade se refere ao país ao qual a pessoa pertence." />
+                                    {qp(7)}Nacionalidade*
+                                    <InfoTooltip content="A nacionalidade se refere ao país ao qual a pessoa nasceu." />
                                 </span>
                             </FormLabel>
                             <FormControl>
@@ -356,7 +361,8 @@ function PessoaRow({
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel disabled={disabled}>
-                            Como é a interação da pessoa no ambiente escolar?*
+                            {qp(8)}Como é a interação da pessoa no ambiente
+                            escolar?*
                         </FormLabel>
                         <FormControl>
                             <Textarea
@@ -394,6 +400,7 @@ export default function Envolvidos({
     control,
     disabled = false,
     categoriasDisponiveis,
+    startingQuestionNumber,
 }: EnvolvidosProps) {
     const { fields, append, remove } = useFieldArray({
         control,
@@ -411,6 +418,11 @@ export default function Envolvidos({
                     categoriasDisponiveis={categoriasDisponiveis}
                     onRemove={remove}
                     showRemove={index > 0}
+                    personStartNumber={
+                        startingQuestionNumber == null
+                            ? undefined
+                            : startingQuestionNumber + index * 9
+                    }
                 />
             ))}
 

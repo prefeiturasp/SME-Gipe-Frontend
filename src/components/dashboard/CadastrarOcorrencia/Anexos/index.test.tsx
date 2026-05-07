@@ -1219,6 +1219,21 @@ describe("Anexos", () => {
     });
 
     it("deve abrir o modal de sucesso ao clicar em 'Finalizar e enviar'", async () => {
+        vi.spyOn(useObterAnexosHook, "useObterAnexos").mockReturnValue({
+            data: {
+                results: [
+                    {
+                        uuid: "mock-anexo-1",
+                        nome_original: "documento.pdf",
+                    },
+                ],
+            },
+            refetch: mockRefetch,
+            isLoading: false,
+            isError: false,
+            isSuccess: true,
+        } as never);
+
         vi.spyOn(useFinalizarEtapaHook, "useFinalizarEtapa").mockReturnValue({
             mutateAsync: vi.fn().mockResolvedValue({
                 success: true,
@@ -1244,6 +1259,26 @@ describe("Anexos", () => {
             expect(
                 screen.getByText(/Ocorrência registrada com sucesso/i),
             ).toBeInTheDocument();
+        });
+    });
+
+    it("deve exibir erro ao tentar finalizar sem anexos", async () => {
+        renderWithProvider(
+            <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+        );
+
+        const botao = screen.getByRole("button", {
+            name: /Finalizar e enviar/i,
+        });
+        await userEvent.click(botao);
+
+        await waitFor(() => {
+            expect(mockToast).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Anexo obrigatório",
+                    variant: "error",
+                }),
+            );
         });
     });
 
@@ -1451,6 +1486,46 @@ describe("Anexos", () => {
             expect(
                 screen.getByText(/A imagem não deve conter pessoas/i),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe("numeração de perguntas", () => {
+        it("deve exibir prefixo '10.' no campo arquivo quando startingQuestionNumber=10", () => {
+            renderWithProvider(
+                <Anexos
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={10}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^10\. Selecione o arquivo\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("deve exibir prefixo '11.' no campo tipo do documento quando startingQuestionNumber=10", () => {
+            renderWithProvider(
+                <Anexos
+                    onPrevious={mockOnPrevious}
+                    onNext={mockOnNext}
+                    startingQuestionNumber={10}
+                />,
+            );
+
+            expect(
+                screen.getByText(/^11\. Tipo do documento\*/),
+            ).toBeInTheDocument();
+        });
+
+        it("não deve exibir prefixos quando startingQuestionNumber não é fornecido", () => {
+            renderWithProvider(
+                <Anexos onPrevious={mockOnPrevious} onNext={mockOnNext} />,
+            );
+
+            expect(
+                screen.queryByText(/^\d+\. Selecione o arquivo/),
+            ).not.toBeInTheDocument();
         });
     });
 });

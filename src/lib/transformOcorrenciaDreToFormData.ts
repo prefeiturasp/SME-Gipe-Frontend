@@ -4,13 +4,7 @@ export function transformOcorrenciaDreToFormData(
     ocorrenciaDre: OcorrenciaDreResponse,
 ) {
     return {
-        acionamentoSegurancaPublica: ocorrenciaDre.acionamento_seguranca_publica
-            ? ("Sim" as const)
-            : ("Não" as const),
-        interlocucaoSupervisaoEscolar:
-            ocorrenciaDre.interlocucao_supervisao_escolar
-                ? ("Sim" as const)
-                : ("Não" as const),
+        quaisOrgaosAcionadosDre: ocorrenciaDre.quais_orgaos_acionados_dre ?? [],
         numeroProcedimentoSEI: ocorrenciaDre.nr_processo_sei
             ? ("Sim" as const)
             : ("Não" as const),

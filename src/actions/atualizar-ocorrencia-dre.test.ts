@@ -1,13 +1,9 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { atualizarOcorrenciaDre } from "./atualizar-ocorrencia-dre";
-import {
-    OcorrenciaDreBody,
-
-} from "@/types/ocorrencia-dre";
+import { OcorrenciaDreBody } from "@/types/ocorrencia-dre";
 import { AxiosError, AxiosRequestHeaders } from "axios";
-
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { atualizarOcorrenciaDre } from "./atualizar-ocorrencia-dre";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -26,15 +22,10 @@ describe("atualizarOcorrenciaDre action", () => {
     const mockBody: OcorrenciaDreBody = {
         unidade_codigo_eol: "123456",
         dre_codigo_eol: "DRE-001",
-        acionamento_seguranca_publica: true,
-        interlocucao_sts: true,
-        info_complementar_sts: "Informações adicionais STS",
-        interlocucao_cpca: true,
-        info_complementar_cpca: "Informações adicionais CPCA",
-        interlocucao_supervisao_escolar: true,
-        info_complementar_supervisao_escolar: "Informações adicionais Supervisão Escolar",
-        interlocucao_naapa: true,
-        info_complementar_naapa: "Informações adicionais NAAPA",
+        quais_orgaos_acionados_dre: [
+            "comunicacao_supervisao_tecnica_saude",
+            "comunicacao_gipe",
+        ],
     };
     const mockAuthToken = "test-token";
 
@@ -51,15 +42,10 @@ describe("atualizarOcorrenciaDre action", () => {
                 uuid: mockUuid,
                 unidade_codigo_eol: "123456",
                 dre_codigo_eol: "DRE-001",
-                acionamento_seguranca_publica: true,
-                interlocucao_sts: true,
-                info_complementar_sts: "Informações adicionais STS",
-                interlocucao_cpca: true,
-                info_complementar_cpca: "Informações adicionais CPCA",
-                interlocucao_supervisao_escolar: true,
-                info_complementar_supervisao_escolar: "Informações adicionais Supervisão Escolar",
-                interlocucao_naapa: true,
-                info_complementar_naapa: "Informações adicionais NAAPA",
+                quais_orgaos_acionados_dre: [
+                    "comunicacao_supervisao_tecnica_saude",
+                    "comunicacao_gipe",
+                ],
             },
         };
 
@@ -74,7 +60,7 @@ describe("atualizarOcorrenciaDre action", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
 
         expect(result).toEqual({ success: true, data: mockResponse.data });
@@ -226,8 +212,7 @@ describe("atualizarOcorrenciaDre action", () => {
         expect(putMock).toHaveBeenCalledWith(
             `/dre/${mockUuid}/`,
             mockBody,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
-
 });

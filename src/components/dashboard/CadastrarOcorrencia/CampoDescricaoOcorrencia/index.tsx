@@ -15,13 +15,16 @@ interface CampoDescricaoOcorrenciaProps<T extends FieldValues> {
     control: Control<T>;
     name: Path<T>;
     disabled?: boolean;
+    questionNumber?: number;
 }
 
 export function CampoDescricaoOcorrencia<T extends FieldValues>({
     control,
     name,
     disabled = false,
+    questionNumber,
 }: Readonly<CampoDescricaoOcorrenciaProps<T>>) {
+    const prefix = questionNumber == null ? "" : `${questionNumber}. `;
     return (
         <FormField
             control={control}
@@ -29,7 +32,7 @@ export function CampoDescricaoOcorrencia<T extends FieldValues>({
             render={({ field }) => (
                 <FormItem>
                     <FormLabel disabled={disabled}>
-                        Descreva a ocorrência*
+                        {prefix}Descreva a ocorrência*
                     </FormLabel>
                     <p
                         className={`text-sm mt-1 mb-2 ${
