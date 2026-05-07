@@ -66,7 +66,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
-        uuid: unidadeUuid || "",
+        uuid: unidadeUuid ?? "",
         enabled: mode === "edit" && !!unidadeUuid,
     });
 
@@ -227,7 +227,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const { mutateAsync: cadastrarUnidade, isPending: isPendingCreate } =
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
-        useAtualizarUnidade(unidadeUuid || "");
+        useAtualizarUnidade(unidadeUuid ?? "");
     const { mutateAsync: consultarEolUnidade, isPending: isPendingConsultar } =
         useConsultarEolUnidade();
 
