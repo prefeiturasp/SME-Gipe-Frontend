@@ -2,25 +2,16 @@ import api from "@/lib/axios";
 import type { AxiosResponse } from "axios";
 import { AxiosError } from "axios";
 import { cookies } from "next/headers";
-import {
-    afterAll,
-    beforeEach,
-    describe,
-    expect,
-    it,
-    vi,
-    type Mock,
-} from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { consultarRfUsuarioAction } from "./consultar-rf-usuario";
 
-vi.mock("@/lib/axios");
+vi.mock("@/lib/axios", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 
 const apiGetMock = api.get as Mock;
 const cookiesMock = cookies as Mock;
 
 describe("consultarRfUsuarioAction", () => {
-    const originalEnv = process.env;
     const mockToken = "token-abc";
     const rf = "1234567";
     const mockResponse = {
@@ -34,11 +25,6 @@ describe("consultarRfUsuarioAction", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        process.env = { ...originalEnv };
-    });
-
-    afterAll(() => {
-        process.env = originalEnv;
     });
 
     it("deve retornar sucesso quando o RF for consultado com sucesso", async () => {
@@ -71,7 +57,7 @@ describe("consultarRfUsuarioAction", () => {
         expect(apiGetMock).not.toHaveBeenCalled();
         expect(result).toEqual({
             success: false,
-            error: "Token de autenticação não encontrado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
     });
 

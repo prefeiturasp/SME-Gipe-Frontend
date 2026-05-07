@@ -1,7 +1,13 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 
 export type ObterUsuarioGestaoResponse = {
     uuid: string;
@@ -26,52 +32,21 @@ export type ObterUsuarioGestaoResponse = {
     inativado_via_unidade: boolean | null;
 };
 
-export type ObterUsuarioGestaoResult =
-    | { success: true; data: ObterUsuarioGestaoResponse }
-    | { success: false; error: string };
-
 export async function obterUsuarioGestao(
-    uuid: string
-): Promise<ObterUsuarioGestaoResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    uuid: string,
+): Promise<ActionResult<ObterUsuarioGestaoResponse>> {
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
+
     try {
-        const cookieStore = cookies();
-        const token = cookieStore.get("auth_token")?.value;
-
-        if (!token) {
-            return {
-                success: false,
-                error: "Token de autenticação não encontrado",
-            };
-        }
-
-        const response = await axios.get<ObterUsuarioGestaoResponse>(
-            `${API_URL}/users/gestao-usuarios/${uuid}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            }
+        const response = await api.get<ObterUsuarioGestaoResponse>(
+            `/users/gestao-usuarios/${uuid}`,
+            { headers: createAuthHeaders(token) },
         );
-
         return { success: true, data: response.data };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-        let message = "Erro ao buscar usuário";
-
-        if (error.response?.status === 401) {
-            message = "Não autorizado";
-        } else if (error.response?.status === 404) {
-            message = "Usuário não encontrado";
-        } else if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao buscar usuário");
     }
 }

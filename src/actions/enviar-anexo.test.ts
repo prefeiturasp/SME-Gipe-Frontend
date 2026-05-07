@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { enviarAnexoAction } from "./enviar-anexo";
 import apiAnexos from "@/lib/axios-anexos";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { enviarAnexoAction } from "./enviar-anexo";
 
-vi.mock("@/lib/axios-anexos");
+vi.mock("@/lib/axios-anexos", () => ({ default: { post: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(() => ({
         get: vi.fn((key: string) =>
-            key === "auth_token" ? { value: "fake-token" } : undefined
+            key === "auth_token" ? { value: "fake-token" } : undefined,
         ),
     })),
 }));
@@ -17,7 +17,7 @@ describe("enviarAnexoAction", () => {
         const nextHeaders = await import("next/headers");
         vi.mocked(nextHeaders.cookies).mockReturnValue({
             get: vi.fn((key: string) =>
-                key === "auth_token" ? { value: "fake-token" } : undefined
+                key === "auth_token" ? { value: "fake-token" } : undefined,
             ),
         } as never);
     });
@@ -31,7 +31,7 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const mockResponse = {
@@ -54,7 +54,7 @@ describe("enviarAnexoAction", () => {
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -72,13 +72,15 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const resultado = await enviarAnexoAction(mockFormData);
 
         expect(resultado.success).toBe(false);
-        expect(resultado.error).toBe("Token de autenticação não encontrado");
+        expect(resultado.error).toBe(
+            "Usuário não autenticado. Token não encontrado.",
+        );
     });
 
     it("deve lidar com erro 401 (não autorizado)", async () => {
@@ -90,7 +92,7 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const mockError = {
@@ -104,7 +106,7 @@ describe("enviarAnexoAction", () => {
         const resultado = await enviarAnexoAction(mockFormData);
 
         expect(resultado.success).toBe(false);
-        expect(resultado.error).toBe("Não autorizado");
+        expect(resultado.error).toBe("Não autorizado. Faça login novamente.");
     });
 
     it("deve lidar com erro 500 (erro interno)", async () => {
@@ -116,7 +118,7 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const mockError = {
@@ -142,7 +144,7 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const mockError = {
@@ -171,7 +173,7 @@ describe("enviarAnexoAction", () => {
             "arquivo",
             new File(["conteúdo"], "teste.pdf", {
                 type: "application/pdf",
-            })
+            }),
         );
 
         const mockError = {

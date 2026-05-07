@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import api from "@/lib/axios";
+import { AxiosError, AxiosRequestHeaders, type Mock } from "axios";
 import { cookies } from "next/headers";
-import axios, { AxiosError, AxiosRequestHeaders } from "axios";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
     cadastroGestaoUsuarioAction,
@@ -11,10 +12,10 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { post: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
-const axiosPostMock = axios.post as Mock;
+const apiPostMock = vi.mocked(api.post);
 
 describe("cadastroGestaoUsuarioAction", () => {
     const mockAuthToken = "test-token-123";
@@ -31,7 +32,6 @@ describe("cadastroGestaoUsuarioAction", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
@@ -39,22 +39,21 @@ describe("cadastroGestaoUsuarioAction", () => {
     });
 
     it("deve cadastrar usuário com sucesso", async () => {
-        axiosPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
         expect(result).toEqual({ success: true });
 
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
-        expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/gestao-usuarios/",
+        expect(apiPostMock).toHaveBeenCalledWith(
+            "/users/gestao-usuarios/",
             dadosCadastro,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -67,10 +66,31 @@ describe("cadastroGestaoUsuarioAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Token de autenticação não encontrado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
-        expect(axiosPostMock).not.toHaveBeenCalled();
+        expect(apiPostMock).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar erro 401 (não autorizado)", async () => {
+        const error = new AxiosError("Unauthorized");
+        error.response = {
+            status: 401,
+            data: {},
+            statusText: "Unauthorized",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
+
+        apiPostMock.mockRejectedValue(error as never);
+
+        const result = await cadastroGestaoUsuarioAction(dadosCadastro);
+
+        expect(result).toEqual({
+            success: false,
+            error: "Não autorizado. Faça login novamente.",
+            field: undefined,
+        });
     });
 
     it("deve retornar erro 500 (erro interno do servidor)", async () => {
@@ -83,7 +103,7 @@ describe("cadastroGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
@@ -106,7 +126,7 @@ describe("cadastroGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
@@ -129,7 +149,7 @@ describe("cadastroGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
@@ -145,7 +165,7 @@ describe("cadastroGestaoUsuarioAction", () => {
 
         const error = new Error(errorMessage);
 
-        axiosPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
@@ -159,7 +179,7 @@ describe("cadastroGestaoUsuarioAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        axiosPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosCadastro);
 
@@ -181,15 +201,15 @@ describe("cadastroGestaoUsuarioAction", () => {
             is_app_admin: false,
         };
 
-        axiosPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosGIPE);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/gestao-usuarios/",
+        expect(apiPostMock).toHaveBeenCalledWith(
+            "/users/gestao-usuarios/",
             dadosGIPE,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 
@@ -204,20 +224,19 @@ describe("cadastroGestaoUsuarioAction", () => {
             is_app_admin: true,
         };
 
-        axiosPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosAdmin);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/gestao-usuarios/",
+        expect(apiPostMock).toHaveBeenCalledWith(
+            "/users/gestao-usuarios/",
             dadosAdmin,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -233,20 +252,19 @@ describe("cadastroGestaoUsuarioAction", () => {
             is_app_admin: false,
         };
 
-        axiosPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastroGestaoUsuarioAction(dadosIndireta);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPostMock).toHaveBeenCalledWith(
-            "https://api.exemplo.com/users/gestao-usuarios/",
+        expect(apiPostMock).toHaveBeenCalledWith(
+            "/users/gestao-usuarios/",
             dadosIndireta,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 });

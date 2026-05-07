@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/select";
 import { useAtualizarSecaoFinal } from "@/hooks/useAtualizarSecaoFinal";
 import { useDeclarantes } from "@/hooks/useDeclarantes";
+import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
 import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useImperativeHandle, useMemo } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { forwardRef, useMemo } from "react";
+import { useForm } from "react-hook-form";
 import {
     interpessoalSchema,
     patrimonialSchema,
@@ -38,11 +39,7 @@ export type SecaoFinalProps = {
     startingQuestionNumber?: number;
 };
 
-export type SecaoFinalRef = {
-    getFormData: () => SecaoFinalData;
-    submitForm: () => Promise<boolean>;
-    getFormInstance: () => UseFormReturn<SecaoFinalData>;
-};
+export type SecaoFinalRef = SecaoBaseRef<SecaoFinalData>;
 
 const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
     (
@@ -86,20 +83,6 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
         });
 
         const { isValid } = form.formState;
-
-        // Expõe métodos para o componente pai via ref
-        useImperativeHandle(ref, () => ({
-            getFormData: () => form.getValues(),
-            submitForm: async () => {
-                const isValid = await form.trigger();
-                if (!isValid) return false;
-
-                const data = form.getValues();
-                await handleSubmit(data);
-                return true;
-            },
-            getFormInstance: () => form,
-        }));
 
         const mapFormDataToApi = (data: SecaoFinalData) => {
             const comunicacaoMap: Record<string, string> = {
@@ -176,6 +159,8 @@ const SecaoFinal = forwardRef<SecaoFinalRef, SecaoFinalProps>(
                 },
             );
         };
+
+        useSecaoFormBase({ form, handleSubmit, ref });
 
         return (
             <Form {...form}>

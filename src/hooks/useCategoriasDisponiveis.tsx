@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import {
-    getCategoriasDisponiveisAction,
     CategoriasDisponiveisAPI,
+    getCategoriasDisponiveisAction,
 } from "@/actions/categorias-disponiveis";
+import { useQuery } from "@tanstack/react-query";
 
 export const useCategoriasDisponiveis = () => {
     return useQuery<CategoriasDisponiveisAPI>({

@@ -12,7 +12,7 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios");
+vi.mock("@/lib/axios", () => ({ default: { get: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
 const apiGetMock = api.get as Mock;
@@ -35,7 +35,7 @@ describe("consultarEolUnidadeAction", () => {
     });
 
     it("deve consultar código EOL com sucesso", async () => {
-        apiGetMock.mockResolvedValue({ data: mockResponse });
+        apiGetMock.mockResolvedValue({ data: mockResponse } as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -67,7 +67,7 @@ describe("consultarEolUnidadeAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
         expect(apiGetMock).not.toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe("consultarEolUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -106,7 +106,7 @@ describe("consultarEolUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -131,7 +131,7 @@ describe("consultarEolUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -149,7 +149,7 @@ describe("consultarEolUnidadeAction", () => {
 
         const error = new Error(errorMessage);
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -165,7 +165,7 @@ describe("consultarEolUnidadeAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        apiGetMock.mockRejectedValue(error);
+        apiGetMock.mockRejectedValue(error as never);
 
         const result = await consultarEolUnidadeAction(
             codigoEol,
@@ -186,7 +186,7 @@ describe("consultarEolUnidadeAction", () => {
             nome_unidade: "JOÃO DA SILVA, DR.",
         };
 
-        apiGetMock.mockResolvedValue({ data: mockResponseDiferente });
+        apiGetMock.mockResolvedValue({ data: mockResponseDiferente } as never);
 
         const result = await consultarEolUnidadeAction(
             codigoDiferente,

@@ -1,8 +1,13 @@
 "use server";
 
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
 import api from "@/lib/axios";
-import { AxiosError } from "axios";
-import { cookies } from "next/headers";
 
 type ConsultarRfUsuarioResponse = {
     cpf: string;
@@ -13,58 +18,25 @@ type ConsultarRfUsuarioResponse = {
     emailValido: boolean;
 };
 
-type ActionResult =
-    | {
-          success: true;
-          data: ConsultarRfUsuarioResponse;
-      }
-    | {
-          success: false;
-          error: string;
-          field?: string;
-      };
-
 export async function consultarRfUsuarioAction(
     rf: string,
-): Promise<ActionResult> {
-    const authToken = cookies().get("auth_token");
+): Promise<ActionResult<ConsultarRfUsuarioResponse>> {
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
 
-    if (!authToken?.value) {
-        return {
-            success: false,
-            error: "Token de autenticação não encontrado",
-        };
-    }
+    const token = getAuthToken()!;
 
     try {
         const response = await api.get<ConsultarRfUsuarioResponse>(
             `/users/gestao-usuarios/consultar-core-sso/`,
             {
                 params: { rf },
-                headers: {
-                    Authorization: `Bearer ${authToken.value}`,
-                },
+                headers: createAuthHeaders(token),
             },
         );
 
-        return {
-            success: true,
-            data: response.data,
-        };
+        return { success: true, data: response.data };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-        let message = "Erro ao buscar RF.";
-
-        if (error.response?.status === 401) {
-            message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao buscar RF.");
     }
 }

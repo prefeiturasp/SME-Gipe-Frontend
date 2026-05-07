@@ -1,8 +1,5 @@
+import { EnvolvidoAPI, getEnvolvidoAction } from "@/actions/envolvidos";
 import { useQuery } from "@tanstack/react-query";
-import {
-    getEnvolvidoAction,
-    EnvolvidoAPI,
-} from "@/actions/envolvidos";
 
 export const useEnvolvidos = () => {
     return useQuery<EnvolvidoAPI[]>({

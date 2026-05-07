@@ -1,8 +1,13 @@
 "use server";
 
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
 import api from "@/lib/axios";
-import { AxiosError } from "axios";
-import { cookies } from "next/headers";
 
 export type UnidadeCadastroPayload = {
     nome: string;
@@ -15,36 +20,19 @@ export type UnidadeCadastroPayload = {
 };
 
 export const cadastrarUnidadeAction = async (
-    payload: UnidadeCadastroPayload
-): Promise<{ success: true } | { success: false; error: string }> => {
-    const cookieStore = cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    payload: UnidadeCadastroPayload,
+): Promise<ActionResult> => {
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
 
-    if (!token) {
-        return { success: false, error: "Usuário não autenticado" };
-    }
+    const token = getAuthToken()!;
 
     try {
         await api.post("/unidades/gestao-unidades/", payload, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers: createAuthHeaders(token),
         });
         return { success: true };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-        let message = "Erro ao cadastrar unidade";
-
-        if (error.response?.status === 401) {
-            message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao cadastrar unidade");
     }
 };

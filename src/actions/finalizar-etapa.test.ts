@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { put: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
 
@@ -115,7 +115,7 @@ describe("finalizarEtapa action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência não encontrada.",
+            error: "Not found",
         });
     });
 
@@ -135,7 +135,7 @@ describe("finalizarEtapa action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Erro interno no servidor.",
+            error: "Erro interno no servidor",
         });
     });
 

@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useAtualizarSecaoInicial } from "@/hooks/useAtualizarSecaoInicial";
 import { useGetUnidades } from "@/hooks/useGetUnidades";
+import { useSecaoFormBase, type SecaoBaseRef } from "@/hooks/useSecaoFormBase";
 import { useSecaoInicial } from "@/hooks/useSecaoInicial";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { hasFormDataChanged } from "@/lib/formUtils";
@@ -30,8 +31,8 @@ import { useOcorrenciaFormStore } from "@/stores/useOcorrenciaFormStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { UnidadeEducacional } from "@/types/unidades";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { forwardRef, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { formSchema, SecaoInicialData } from "./schema";
 
 export type SecaoInicialProps = {
@@ -42,11 +43,7 @@ export type SecaoInicialProps = {
     startingQuestionNumber?: number;
 };
 
-export type SecaoInicialRef = {
-    getFormData: () => SecaoInicialData;
-    submitForm: () => Promise<boolean>;
-    getFormInstance: () => UseFormReturn<SecaoInicialData>;
-};
+export type SecaoInicialRef = SecaoBaseRef<SecaoInicialData>;
 
 const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
     (
@@ -150,24 +147,6 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
 
         const { isValid } = form.formState;
 
-        const watchedValues = form.watch();
-        useEffect(() => {
-            onFormChange?.(watchedValues);
-        }, [watchedValues, onFormChange]);
-
-        useImperativeHandle(ref, () => ({
-            getFormData: () => form.getValues(),
-            submitForm: async () => {
-                const isValid = await form.trigger();
-                if (!isValid) return false;
-
-                const data = form.getValues();
-                await handleSubmit(data);
-                return true;
-            },
-            getFormInstance: () => form,
-        }));
-
         const handleSubmit = async (data: SecaoInicialData) => {
             setFormData(data);
 
@@ -240,6 +219,8 @@ const SecaoInicial = forwardRef<SecaoInicialRef, SecaoInicialProps>(
                 onSuccess?.();
             }
         };
+
+        useSecaoFormBase({ form, onFormChange, handleSubmit, ref });
 
         const dreNome = formData.nomeDre ?? user?.unidades[0]?.dre?.nome ?? "";
         const unidadeNome =

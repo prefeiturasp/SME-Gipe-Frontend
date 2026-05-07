@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { obterAnexos } from "./obter-anexos";
 import apiAnexos from "@/lib/axios-anexos";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { obterAnexos } from "./obter-anexos";
 
-vi.mock("@/lib/axios-anexos");
+vi.mock("@/lib/axios-anexos", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(() => ({
         get: vi.fn((key: string) =>
-            key === "auth_token" ? { value: "fake-token" } : undefined
+            key === "auth_token" ? { value: "fake-token" } : undefined,
         ),
     })),
 }));
@@ -17,7 +17,7 @@ describe("obterAnexos", () => {
         const nextHeaders = await import("next/headers");
         vi.mocked(nextHeaders.cookies).mockReturnValue({
             get: vi.fn((key: string) =>
-                key === "auth_token" ? { value: "fake-token" } : undefined
+                key === "auth_token" ? { value: "fake-token" } : undefined,
             ),
         } as never);
     });
@@ -77,7 +77,7 @@ describe("obterAnexos", () => {
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -117,7 +117,7 @@ describe("obterAnexos", () => {
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
             expect(resultado.error).toBe(
-                "Token de autenticação não encontrado"
+                "Usuário não autenticado. Token não encontrado.",
             );
         }
     });
@@ -137,7 +137,9 @@ describe("obterAnexos", () => {
 
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
-            expect(resultado.error).toBe("Não autorizado");
+            expect(resultado.error).toBe(
+                "Não autorizado. Faça login novamente.",
+            );
         }
     });
 
@@ -233,7 +235,7 @@ describe("obterAnexos", () => {
         if (resultado.success) {
             expect(resultado.data.count).toBe(25);
             expect(resultado.data.next).toBe(
-                "https://api.example.com/anexos/?page=2"
+                "https://api.example.com/anexos/?page=2",
             );
             expect(resultado.data.previous).toBe(null);
         }
@@ -277,7 +279,7 @@ describe("obterAnexos", () => {
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -304,7 +306,7 @@ describe("obterAnexos", () => {
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -332,7 +334,7 @@ describe("obterAnexos", () => {
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 });

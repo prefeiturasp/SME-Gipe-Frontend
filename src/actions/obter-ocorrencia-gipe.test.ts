@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { obterOcorrenciaGipe } from "./obter-ocorrencia-gipe";
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
@@ -150,7 +150,7 @@ describe("obterOcorrenciaGipe", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência GIPE não encontrada",
+            error: "Ocorrência não encontrada",
         });
     });
 

@@ -3,15 +3,15 @@
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
-    DialogDescription,
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
-import { useExcluirAnexo } from "@/hooks/useExcluirAnexo";
 import { toast } from "@/components/ui/headless-toast";
+import { useExcluirAnexo } from "@/hooks/useExcluirAnexo";
 
 type ModalExcluirEtapaProps = {
     open: boolean;
@@ -25,7 +25,7 @@ export function ModalExcluir({
     onOpenChange,
     uuid,
     onSuccess,
-}: ModalExcluirEtapaProps) {
+}: Readonly<ModalExcluirEtapaProps>) {
     const { mutateAsync, isPending } = useExcluirAnexo();
 
     async function handleExcluir() {

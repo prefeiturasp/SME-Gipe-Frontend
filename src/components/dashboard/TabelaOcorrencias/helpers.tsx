@@ -1,9 +1,9 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Column, Row, Table } from "@tanstack/react-table";
 import React from "react";
 import SortMenu from "./SortMenu";
-import { Badge } from "@/components/ui/badge";
-import { Column, Table } from "@tanstack/react-table";
 
 export type SortOption = { id: string | number; label: string; desc: boolean };
 
@@ -26,7 +26,7 @@ export function getStatusSelectedId() {
 export function handleStatusSelect<TData = unknown>(
     opt: { id: string | number; desc: boolean },
     table: Table<TData>,
-    columnId: string
+    columnId: string,
 ) {
     statusSelectedId = String(opt.id);
 
@@ -70,6 +70,16 @@ export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
     return <Badge className={className}>{status}</Badge>;
 };
+
+export function alphaSortingFn<TData>(
+    rowA: Row<TData>,
+    rowB: Row<TData>,
+    columnId: string,
+): number {
+    const a = String(rowA.getValue(columnId)).toLowerCase();
+    const b = String(rowB.getValue(columnId)).toLowerCase();
+    return a.localeCompare(b);
+}
 
 type SortState = { id: string; desc?: boolean } | undefined;
 
