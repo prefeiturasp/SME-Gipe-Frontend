@@ -1,7 +1,12 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    validateAuthToken,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
+import { AxiosError } from "axios";
 
 export type AtualizarUnidadeRequest = {
     tipo_unidade: string;
@@ -26,30 +31,17 @@ type AtualizarUnidadeErrorResponse = {
 
 export async function atualizarUnidadeAction(
     uuid: string,
-    dadosAtualizacao: AtualizarUnidadeRequest
+    dadosAtualizacao: AtualizarUnidadeRequest,
 ): Promise<AtualizarUnidadeResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
+
     try {
-        const cookieStore = cookies();
-        const token = cookieStore.get("auth_token")?.value;
-
-        if (!token) {
-            return {
-                success: false,
-                error: "Token de autenticação não encontrado",
-            };
-        }
-
-        await axios.put(
-            `${API_URL}/unidades/gestao-unidades/${uuid}/`,
-            dadosAtualizacao,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            }
-        );
+        await api.put(`/unidades/gestao-unidades/${uuid}/`, dadosAtualizacao, {
+            headers: createAuthHeaders(token),
+        });
 
         return { success: true };
     } catch (err) {
@@ -58,7 +50,9 @@ export async function atualizarUnidadeAction(
         let message = "Erro ao atualizar unidade";
         let field: string | undefined;
 
-        if (error.response?.status === 500) {
+        if (error.response?.status === 401) {
+            message = "Não autorizado. Faça login novamente.";
+        } else if (error.response?.status === 500) {
             message = "Erro interno no servidor";
         } else if (error.response?.data?.detail) {
             message = error.response.data.detail;
