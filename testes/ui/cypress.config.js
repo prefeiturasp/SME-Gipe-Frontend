@@ -59,65 +59,48 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     experimentalRunAllSpecs: true,
     failOnStatusCode: false,
-    specPattern: 'cypress/e2e/**/*.{feature,cy.js,cy.jsx}',
+    // Ajuste: no Jenkins (CI), não roda as features da pasta api
+    specPattern: isCI
+      ? 'cypress/e2e/**/!(*api)/**/*.{feature,cy.js,cy.jsx}'
+      : 'cypress/e2e/**/*.{feature,cy.js,cy.jsx}',
     defaultCommandTimeout: 120000,
     requestTimeout: 120000,
     execTimeout: 120000,
     pageLoadTimeout: 300000,
     waitForAnimations: true,
     animationDistanceThreshold: 5,
-
     env: {
       TAGS: 'not @skip',
-      
-      // Perfil GIPE (Padrão)
       RF_VALIDO: process.env.RF_GIPE,
       SENHA_VALIDA: process.env.SENHA_GIPE,
       RF_GIPE: process.env.RF_GIPE,
       SENHA_GIPE: process.env.SENHA_GIPE,
-      
-      // Perfil GIPE Admin
       RF_GIPE_ADMIN: process.env.RF_GIPE_ADMIN,
       SENHA_GIPE_ADMIN: process.env.SENHA_GIPE_ADMIN,
-      
       RF_UE: process.env.RF_UE,
       SENHA_UE: process.env.SENHA_UE,
-      
-      // Perfil Cadastro
       RF_CADASTRO: process.env.RF_CADASTRO,
       SENHA_CADASTRO: process.env.SENHA_CADASTRO,
-      
-      // Perfil DRE
       RF_DRE: process.env.RF_DRE,
       SENHA_DRE: process.env.SENHA_DRE,
-      
-      // Perfil Carga
       CPF_CARGA: process.env.CPF_CARGA,
       SENHA_CARGA: process.env.SENHA_CARGA,
-      
-      // Credenciais Inválidas
       RF_INVALIDO: process.env.RF_INVALIDO,
       SENHA_INVALIDA: process.env.SENHA_INVALIDA,
-      
       ALUNO_RA: process.env.ALUNO_RA,
       DATA_NASC: process.env.DATA_NASC,
       EMAIL: process.env.EMAIL,
-      
       PROVA_TAI_ID: process.env.PROVA_TAI_ID,
       PROVA_TAEB_ID: process.env.PROVA_TAEB_ID,
       PROVA_TAM_ID: process.env.PROVA_TAM_ID,
-      
       ALUNO_UUID: process.env.ALUNO_UUID,
       ALUNO_ESCOLA_UUID: process.env.ALUNO_ESCOLA_UUID,
-      
       AUTH_TOKEN: process.env.AUTH_TOKEN,
       API_USERNAME: process.env.RF_GIPE,
       API_PASSWORD: process.env.SENHA_GIPE,
-      CI: !!(process.env.JENKINS_HOME || process.env.CI || process.env.CI_BUILD_ID),
-      
+      CI: isCI,
       GIPE_ESTUDANTES_BASE_URL: 'https://qa-gipe.sme.prefeitura.sp.gov.br',
       DISPOSITIVO: 'WEB',
-      
       QUESTAO_ID: 1,
       QUESTAO_LEGADO_ID: 1,
       ALTERNATIVA_ID: 96034121,
@@ -130,15 +113,9 @@ module.exports = defineConfig({
       DATA_HORA_RESPOSTA_TICKS: Date.now(),
       TEMPO_RESPOSTA_ALUNO: 30
     },
-
-    async setupNodeEvents(on, config) {
-      // 1o — Allure
+    setupNodeEvents(on, config) {
       allureWriter(on, config)
-
-      // 2o — Cucumber
       on('file:preprocessor', cucumber())
-
-      // 3o — Tasks customizadas
       on('task', {
         lerArquivoSeguro(caminho) {
           try {
@@ -154,18 +131,11 @@ module.exports = defineConfig({
           }
         }
       })
-
-      // 4o — ENV customizadas (ANTES do cloudPlugin)
-      config.env = config.env || {}
-      config.env.db = dbConfig
-
-      // 5o — Cypress Cloud (apenas em CI — o Jenkinsfile passa -e CI=true)
-      if (isCI) {
-        const enhancedConfig = await cloudPlugin(on, config)
+      return cloudPlugin(on, config).then((enhancedConfig) => {
+        enhancedConfig.env = enhancedConfig.env || {}
+        enhancedConfig.env.db = dbConfig
         return enhancedConfig
-      }
-
-      return config
+      })
     },
   },
 })
