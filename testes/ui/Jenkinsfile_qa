@@ -39,26 +39,27 @@ pipeline {
                                     docker run \
                                         --rm \
                                         -e TERM=xterm \
-                                        -e NODE_OPTIONS=--max-old-space-size=4096 \
                                         -e CI=true \
                                         -v "$WORKSPACE/testes/ui:/app" \
                                         -w /app \
                                         registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                        sh -c "rm -rf allure-results && \
+                                        sh -c "rm -rf allure-results allure-report && \
                                             npm install && \
-                                            npm install cypress@14.5.2 cypress-cloud@2.0.0-beta.1 \
-                                            @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                            npm install cypress@${CYPRESS_VERSION} cypress-cloud@${CYPRESS_CLOUD_VERSION} \
+                                            @shelex/cypress-allure-plugin@2.41.2 mocha-allure-reporter@1.4.0 crypto-js@4.1.1 --save-dev && \
                                             npx cypress-cloud run \
-                                                    --parallel \
-                                                    --browser chrome \
-                                                    --headed true \
-                                                    --record \
-                                                    --key somekey \
-                                                    --reporter mocha-allure-reporter \
-                                                    --reporter-options reportDir=allure-results \
-                                                    --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER} ; \
+                                                --parallel \
+                                                --browser chrome \
+                                                --headed true \
+                                                --record \
+                                                --key somekey \
+                                                --reporter mocha-allure-reporter \
+                                                --reporter-options reportDir=allure-results \
+                                                --ci-build-id SME-GIPE_JENKINS-BUILD-${BUILD_NUMBER}; \
+                                            TEST_EXIT=\$?; \
                                             chown 1001:1001 * -R || true ; \
-                                            chmod 777 * -R || true"
+                                            chmod 777 * -R || true ; \
+                                            exit \$TEST_EXIT"
                                 '''
                             }
                         }

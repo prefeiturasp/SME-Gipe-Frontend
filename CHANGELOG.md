@@ -5,7 +5,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
-## [Unreleased]
+### [0.1.1] - 2026-08-18
+
+### Changed
+- Atualizados os assets visuais da aplicação, incluindo os logotipos "logo-gipe" e "logo-prefeitura-sp"
 
 ---
 
