@@ -56,7 +56,7 @@ export function useCadastroUsuarioForm({
     const { mutate: cadastrarUsuario, isPending: isPendingCreate } =
         useCadastroGestaoUsuario();
     const { mutate: atualizarUsuario, isPending: isPendingUpdate } =
-        useAtualizarGestaoUsuario(usuarioUuid || "");
+        useAtualizarGestaoUsuario(usuarioUuid ?? "");
     const isPending = mode === "edit" ? isPendingUpdate : isPendingCreate;
     const { mutateAsync: consultarRfUsuario, isPending: isPendingConsultarRf } =
         useConsultarRfUsuario();
@@ -99,7 +99,7 @@ export function useCadastroUsuarioForm({
     );
 
     const { data: usuarioData } = useObterUsuarioGestao({
-        uuid: usuarioUuid || "",
+        uuid: usuarioUuid ?? "",
         enabled: mode === "edit" && !!usuarioUuid,
     });
 
@@ -169,7 +169,7 @@ export function useCadastroUsuarioForm({
                 rf: usuarioData.rede === "DIRETA" ? usuarioData.username : "",
                 cpf: usuarioData.cpf,
                 email: usuarioData.email,
-                dre: dreMatch?.uuid || "",
+                dre: dreMatch?.uuid ?? "",
                 ue: "",
                 isAdmin: usuarioData.is_app_admin,
             });
@@ -349,7 +349,7 @@ export function useCadastroUsuarioForm({
                         toast({
                             title: "Não conseguimos concluir a ação!",
                             description:
-                                response.error || "Erro ao atualizar usuário.",
+                                response.error ?? "Erro ao atualizar usuário.",
                             variant: "error",
                         });
                         return;
@@ -382,7 +382,7 @@ export function useCadastroUsuarioForm({
                         toast({
                             title: "Não conseguimos concluir a ação!",
                             description:
-                                response.error || "Erro ao cadastrar usuário.",
+                                response.error ?? "Erro ao cadastrar usuário.",
                             variant: "error",
                         });
                         return;

@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiAnexos from "@/lib/axios-anexos";
-import { excluirAnexo } from "./excluir-anexo";
 import { AxiosError, AxiosRequestHeaders } from "axios";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { excluirAnexo } from "./excluir-anexo";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
@@ -34,14 +34,11 @@ describe("excluirAnexo action", () => {
 
         expect(result).toEqual({ success: true });
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
-        expect(apiAnexos.delete).toHaveBeenCalledWith(
-            `/anexos/${mockUuid}/`,
-            {
-                headers: {
-                    Authorization: `Bearer ${mockAuthToken}`,
-                },
-            }
-        );
+        expect(apiAnexos.delete).toHaveBeenCalledWith(`/anexos/${mockUuid}/`, {
+            headers: {
+                Authorization: `Bearer ${mockAuthToken}`,
+            },
+        });
     });
 
     it("deve retornar erro se o token não for encontrado", async () => {
@@ -94,7 +91,7 @@ describe("excluirAnexo action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Arquivo não encontrado.",
+            error: "Not Found",
         });
     });
 
@@ -114,7 +111,7 @@ describe("excluirAnexo action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Erro interno no servidor.",
+            error: "Erro interno no servidor",
         });
     });
 

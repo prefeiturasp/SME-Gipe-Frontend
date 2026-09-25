@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { getTiposUnidadeAction, TipoUnidadeAPI } from "@/actions/tipos-unidade";
+import { useQuery } from "@tanstack/react-query";
 
 export function useTiposUnidade() {
     return useQuery<TipoUnidadeAPI[]>({

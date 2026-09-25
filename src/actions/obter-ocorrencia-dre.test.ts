@@ -4,7 +4,7 @@ import { obterOcorrenciaDre } from "./obter-ocorrencia-dre";
 import { cookies } from "next/headers";
 
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));

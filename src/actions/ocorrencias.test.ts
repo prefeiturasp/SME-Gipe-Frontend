@@ -1,13 +1,13 @@
-import { vi, describe, it, expect, beforeEach, type Mock } from "vitest";
-import { cookies } from "next/headers";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
+import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { getOcorrenciasAction } from "./ocorrencias";
 
 vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { get: vi.fn() } }));
 
 describe("getOcorrenciasAction", () => {
     const mockCookies = cookies as Mock;
@@ -25,7 +25,7 @@ describe("getOcorrenciasAction", () => {
         const result = await getOcorrenciasAction();
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
     });
 

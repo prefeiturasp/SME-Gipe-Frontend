@@ -1,7 +1,12 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 
 export type AtualizarUnidadeRequest = {
     tipo_unidade: string;
@@ -19,57 +24,22 @@ export type AtualizarUnidadeResult = {
     field?: string;
 };
 
-type AtualizarUnidadeErrorResponse = {
-    detail?: string;
-    field?: string;
-};
-
 export async function atualizarUnidadeAction(
     uuid: string,
-    dadosAtualizacao: AtualizarUnidadeRequest
+    dadosAtualizacao: AtualizarUnidadeRequest,
 ): Promise<AtualizarUnidadeResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
+
     try {
-        const cookieStore = cookies();
-        const token = cookieStore.get("auth_token")?.value;
-
-        if (!token) {
-            return {
-                success: false,
-                error: "Token de autenticação não encontrado",
-            };
-        }
-
-        await axios.put(
-            `${API_URL}/unidades/gestao-unidades/${uuid}/`,
-            dadosAtualizacao,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            }
-        );
+        await api.put(`/unidades/gestao-unidades/${uuid}/`, dadosAtualizacao, {
+            headers: createAuthHeaders(token),
+        });
 
         return { success: true };
     } catch (err) {
-        const error = err as AxiosError<AtualizarUnidadeErrorResponse>;
-
-        let message = "Erro ao atualizar unidade";
-        let field: string | undefined;
-
-        if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        if (error.response?.data?.field) {
-            field = error.response.data.field;
-        }
-
-        return { success: false, error: message, field };
+        return handleActionError(err, "Erro ao atualizar unidade");
     }
 }

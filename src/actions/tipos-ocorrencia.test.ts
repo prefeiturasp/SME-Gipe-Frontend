@@ -120,7 +120,7 @@ describe("getTiposOcorrenciaAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
         expect(mockGet).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe("getTiposOcorrenciaAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Tipos de ocorrência não encontrados",
+            error: "Not Found",
         });
     });
 

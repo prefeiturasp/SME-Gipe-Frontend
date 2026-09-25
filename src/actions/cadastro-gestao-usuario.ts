@@ -1,7 +1,12 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 
 export type CadastroGestaoUsuarioRequest = {
     username: string;
@@ -20,52 +25,21 @@ export type CadastroGestaoUsuarioResult = {
     field?: string;
 };
 
-type CadastroGestaoUsuarioErrorResponse = {
-    detail?: string;
-    field?: string;
-};
-
 export async function cadastroGestaoUsuarioAction(
-    dadosCadastro: CadastroGestaoUsuarioRequest
+    dadosCadastro: CadastroGestaoUsuarioRequest,
 ): Promise<CadastroGestaoUsuarioResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
+
     try {
-        const cookieStore = cookies();
-        const token = cookieStore.get("auth_token")?.value;
-
-        if (!token) {
-            return {
-                success: false,
-                error: "Token de autenticação não encontrado",
-            };
-        }
-
-        await axios.post(`${API_URL}/users/gestao-usuarios/`, dadosCadastro, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
+        await api.post("/users/gestao-usuarios/", dadosCadastro, {
+            headers: createAuthHeaders(token),
         });
 
         return { success: true };
     } catch (err) {
-        const error = err as AxiosError<CadastroGestaoUsuarioErrorResponse>;
-
-        let message = "Erro ao cadastrar usuário";
-        let field: string | undefined;
-
-        if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        if (error.response?.data?.field) {
-            field = error.response.data.field;
-        }
-
-        return { success: false, error: message, field };
+        return handleActionError(err, "Erro ao cadastrar usuário");
     }
 }

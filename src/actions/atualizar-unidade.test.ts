@@ -1,6 +1,7 @@
-import axios, { AxiosError, AxiosRequestHeaders } from "axios";
+import api from "@/lib/axios";
+import { AxiosError, AxiosRequestHeaders, type Mock } from "axios";
 import { cookies } from "next/headers";
-import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
     atualizarUnidadeAction,
@@ -11,10 +12,10 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { put: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
-const axiosPutMock = axios.put as Mock;
+const apiPutMock = vi.mocked(api.put);
 
 describe("atualizarUnidadeAction", () => {
     const mockAuthToken = "test-token-123";
@@ -31,7 +32,6 @@ describe("atualizarUnidadeAction", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
@@ -39,25 +39,24 @@ describe("atualizarUnidadeAction", () => {
     });
 
     it("deve atualizar unidade com sucesso", async () => {
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({ success: true });
 
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosAtualizacao,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -68,15 +67,39 @@ describe("atualizarUnidadeAction", () => {
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
             success: false,
-            error: "Token de autenticação não encontrado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
-        expect(axiosPutMock).not.toHaveBeenCalled();
+        expect(apiPutMock).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar erro 401 (não autorizado)", async () => {
+        const error = new AxiosError("Unauthorized");
+        error.response = {
+            status: 401,
+            data: {},
+            statusText: "Unauthorized",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
+
+        apiPutMock.mockRejectedValue(error as never);
+
+        const result = await atualizarUnidadeAction(
+            unidadeUuid,
+            dadosAtualizacao,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: "Não autorizado. Faça login novamente.",
+            field: undefined,
+        });
     });
 
     it("deve retornar erro 500 (erro interno do servidor)", async () => {
@@ -89,11 +112,11 @@ describe("atualizarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -115,11 +138,11 @@ describe("atualizarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -141,11 +164,11 @@ describe("atualizarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -160,11 +183,11 @@ describe("atualizarUnidadeAction", () => {
 
         const error = new Error(errorMessage);
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -177,11 +200,11 @@ describe("atualizarUnidadeAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarUnidadeAction(
             unidadeUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -202,15 +225,15 @@ describe("atualizarUnidadeAction", () => {
             ativa: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosCEI);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosCEI,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 
@@ -224,20 +247,19 @@ describe("atualizarUnidadeAction", () => {
             ativa: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosDRE);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosDRE,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -252,20 +274,19 @@ describe("atualizarUnidadeAction", () => {
             ativa: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosIndireta);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosIndireta,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -280,20 +301,19 @@ describe("atualizarUnidadeAction", () => {
             ativa: false,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosInativa);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosInativa,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -307,20 +327,19 @@ describe("atualizarUnidadeAction", () => {
             ativa: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosSemSigla);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosSemSigla,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -335,20 +354,19 @@ describe("atualizarUnidadeAction", () => {
             ativa: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarUnidadeAction(unidadeUuid, dadosCEU);
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/unidades/gestao-unidades/${unidadeUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/unidades/gestao-unidades/${unidadeUuid}/`,
             dadosCEU,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 });

@@ -1,8 +1,13 @@
 "use server";
 
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
-import { AxiosError } from "axios";
-import { cookies } from "next/headers";
 
 export type TipoOcorrenciaAPI = {
     uuid: string;
@@ -14,16 +19,11 @@ export type TipoFormulario = "PATRIMONIAL" | "GERAL" | "TODOS";
 
 export const getTiposOcorrenciaAction = async (
     tipoFormulario?: TipoFormulario,
-): Promise<
-    | { success: true; data: TipoOcorrenciaAPI[] }
-    | { success: false; error: string }
-> => {
-    const cookieStore = cookies();
-    const token = cookieStore.get("auth_token")?.value;
+): Promise<ActionResult<TipoOcorrenciaAPI[]>> => {
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
 
-    if (!token) {
-        return { success: false, error: "Usuário não autenticado" };
-    }
+    const token = getAuthToken()!;
 
     try {
         const url = tipoFormulario
@@ -33,29 +33,12 @@ export const getTiposOcorrenciaAction = async (
         const { data } = await apiIntercorrencias.get<TipoOcorrenciaAPI[]>(
             url,
             {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: createAuthHeaders(token),
             },
         );
 
         return { success: true, data };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-        let message = "Erro ao buscar tipos de ocorrência";
-
-        if (error.response?.status === 401) {
-            message = "Não autorizado. Faça login novamente.";
-        } else if (error.response?.status === 404) {
-            message = "Tipos de ocorrência não encontrados";
-        } else if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao buscar tipos de ocorrência");
     }
 };

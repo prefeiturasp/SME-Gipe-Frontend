@@ -1,12 +1,12 @@
-import axios from "axios";
+import api from "@/lib/axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { obterUnidadeGestao } from "./obter-unidade-gestao";
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { get: vi.fn() } }));
 vi.mock("next/headers", () => ({
     cookies: vi.fn(() => ({
         get: vi.fn((key: string) =>
-            key === "auth_token" ? { value: "fake-token" } : undefined
+            key === "auth_token" ? { value: "fake-token" } : undefined,
         ),
     })),
 }));
@@ -31,13 +31,13 @@ describe("obterUnidadeGestao", () => {
         const nextHeaders = await import("next/headers");
         vi.mocked(nextHeaders.cookies).mockReturnValue({
             get: vi.fn((key: string) =>
-                key === "auth_token" ? { value: "fake-token" } : undefined
+                key === "auth_token" ? { value: "fake-token" } : undefined,
             ),
         } as never);
     });
 
     it("deve buscar unidade com sucesso", async () => {
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: mockUnidadeData,
         });
 
@@ -50,15 +50,15 @@ describe("obterUnidadeGestao", () => {
             expect(resultado.data.tipo_unidade).toBe("EMEF");
         }
 
-        expect(axios.get).toHaveBeenCalledWith(
+        expect(api.get).toHaveBeenCalledWith(
             expect.stringContaining(
-                "/unidades/gestao-unidades/unidade-uuid-123/"
+                "/unidades/gestao-unidades/unidade-uuid-123/",
             ),
             expect.objectContaining({
                 headers: expect.objectContaining({
                     Authorization: "Bearer fake-token",
                 }),
-            })
+            }),
         );
     });
 
@@ -73,13 +73,13 @@ describe("obterUnidadeGestao", () => {
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
             expect(resultado.error).toBe(
-                "Token de autenticação não encontrado"
+                "Usuário não autenticado. Token não encontrado.",
             );
         }
     });
 
     it("deve lidar com erro 401 (não autorizado)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 401,
             },
@@ -89,12 +89,14 @@ describe("obterUnidadeGestao", () => {
 
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
-            expect(resultado.error).toBe("Não autorizado");
+            expect(resultado.error).toBe(
+                "Não autorizado. Faça login novamente.",
+            );
         }
     });
 
     it("deve lidar com erro 404 (unidade não encontrada)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 404,
             },
@@ -104,12 +106,12 @@ describe("obterUnidadeGestao", () => {
 
         expect(resultado.success).toBe(false);
         if (!resultado.success) {
-            expect(resultado.error).toBe("Unidade não encontrada");
+            expect(resultado.error).toBe("Erro ao buscar unidade");
         }
     });
 
     it("deve lidar com erro 500 (erro interno)", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 500,
             },
@@ -124,7 +126,7 @@ describe("obterUnidadeGestao", () => {
     });
 
     it("deve lidar com mensagem de erro customizada da API", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             response: {
                 status: 400,
                 data: {
@@ -142,7 +144,7 @@ describe("obterUnidadeGestao", () => {
     });
 
     it("deve lidar com error.message quando outros campos não existem", async () => {
-        vi.mocked(axios.get).mockRejectedValue({
+        vi.mocked(api.get).mockRejectedValue({
             message: "Network Error",
         });
 
@@ -163,7 +165,7 @@ describe("obterUnidadeGestao", () => {
             tipo_unidade_label: "CEI",
         };
 
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: unidadeIndireta,
         });
 
@@ -182,7 +184,7 @@ describe("obterUnidadeGestao", () => {
             ativa: false,
         };
 
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: unidadeInativa,
         });
 
@@ -202,7 +204,7 @@ describe("obterUnidadeGestao", () => {
             nome: "DRE BUTANTÃ",
         };
 
-        vi.mocked(axios.get).mockResolvedValue({
+        vi.mocked(api.get).mockResolvedValue({
             data: unidadeDRE,
         });
 

@@ -1,5 +1,5 @@
+import { DeclaranteAPI, getDeclarantesAction } from "@/actions/declarantes";
 import { useQuery } from "@tanstack/react-query";
-import { getDeclarantesAction, DeclaranteAPI } from "@/actions/declarantes";
 
 export const useDeclarantes = () => {
     return useQuery<DeclaranteAPI[]>({

@@ -1,40 +1,31 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 
-export const inativarGestaoUsuarioAction = async (uuid: string, motivo_inativacao: string): Promise<{ success: true } | { success: false; error: string }> => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+export const inativarGestaoUsuarioAction = async (
+    uuid: string,
+    motivo_inativacao: string,
+): Promise<ActionResult> => {
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
+
     try {
-        const cookieStore = cookies();
-        const authToken = cookieStore.get("auth_token")?.value;
-        if (!authToken) {
-            return {
-                success: false,
-                error: "Usuário não autenticado. Token não encontrado.",
-            };
-        }
-        await axios.post(
-            `${API_URL}/users/gestao-usuarios/${uuid}/inativar/`,
+        await api.post(
+            `/users/gestao-usuarios/${uuid}/inativar/`,
             { motivo_inativacao },
-            {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            }
+            { headers: createAuthHeaders(token) },
         );
         return { success: true };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-
-        let message = "Erro ao inativar usuário";
-        if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao inativar usuário");
     }
 };

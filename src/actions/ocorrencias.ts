@@ -1,40 +1,33 @@
 "use server";
 
+import {
+    createAuthHeaders,
+    getAuthToken,
+    handleActionError,
+    validateAuthToken,
+    type ActionResult,
+} from "@/lib/actionUtils";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { OcorrenciaAPI } from "@/types/ocorrencia";
-import { AxiosError } from "axios";
-import { cookies } from "next/headers";
 
 export const getOcorrenciasAction = async (): Promise<
-    { success: true; data: OcorrenciaAPI[] } | { success: false; error: string }
+    ActionResult<OcorrenciaAPI[]>
 > => {
-    const cookieStore = cookies();
-    const token = cookieStore.get("auth_token")?.value;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
 
-    if (!token) {
-        return { success: false, error: "Usuário não autenticado" };
-    }
-
-    const url = "/diretor/";
+    const token = getAuthToken()!;
 
     try {
-        const { data } = await apiIntercorrencias.get<OcorrenciaAPI[]>(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
+        const { data } = await apiIntercorrencias.get<OcorrenciaAPI[]>(
+            "/diretor/",
+            {
+                headers: createAuthHeaders(token),
             },
-        });
+        );
 
         return { success: true, data };
     } catch (err) {
-        const error = err as AxiosError<{ detail?: string }>;
-        let message = "Erro ao criar ocorrência";
-        if (error.response?.status === 500) {
-            message = "Erro interno no servidor";
-        } else if (error.response?.data?.detail) {
-            message = error.response.data.detail;
-        } else if (error.message) {
-            message = error.message;
-        }
-        return { success: false, error: message };
+        return handleActionError(err, "Erro ao criar ocorrência");
     }
 };

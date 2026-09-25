@@ -89,7 +89,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
     const loading = isReativacao ? isPendingReativar : isPendingInativar;
     const { data: usuarioData } = useObterUsuarioGestao({
-        uuid: usuarioUuid || "",
+        uuid: usuarioUuid ?? "",
     });
 
     return (

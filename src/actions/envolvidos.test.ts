@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getEnvolvidoAction } from "./envolvidos";
-import { getDeclarantesAction } from "./declarantes";
 import apiIntercorrencias from "@/lib/axios-intercorrencias";
 import { cookies } from "next/headers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getEnvolvidoAction } from "./envolvidos";
 
 vi.mock("@/lib/axios-intercorrencias", () => ({
     default: {
@@ -65,7 +64,7 @@ describe("getEnvolvidoAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
         expect(mockGet).not.toHaveBeenCalled();
@@ -109,7 +108,7 @@ describe("getEnvolvidoAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Envolvidos não encontrados",
+            error: "Not Found",
         });
     });
 

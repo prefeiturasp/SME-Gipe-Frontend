@@ -1,15 +1,6 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import {
-    SortHeader,
-    StatusBadge,
-    handleStatusSelect,
-    getStatusSelectedId,
-    getStatusPriority,
-} from "./helpers";
-import { Search } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
@@ -17,10 +8,20 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
-import { useMemo } from "react";
 import { Ocorrencia } from "@/types/ocorrencia";
-import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import {
+    SortHeader,
+    StatusBadge,
+    alphaSortingFn,
+    getStatusPriority,
+    getStatusSelectedId,
+    handleStatusSelect,
+} from "./helpers";
 
 export const useOcorrenciasColumns = () => {
     const { isGipe, isPontoFocal } = useUserPermissions();
@@ -120,11 +121,7 @@ export const useOcorrenciasColumns = () => {
                         }}
                     />
                 ),
-                sortingFn: (rowA, rowB, columnId) => {
-                    const a = String(rowA.getValue(columnId)).toLowerCase();
-                    const b = String(rowB.getValue(columnId)).toLowerCase();
-                    return a.localeCompare(b);
-                },
+                sortingFn: alphaSortingFn<Ocorrencia>,
             });
         }
 
@@ -154,11 +151,7 @@ export const useOcorrenciasColumns = () => {
                         }}
                     />
                 ),
-                sortingFn: (rowA, rowB, columnId) => {
-                    const a = String(rowA.getValue(columnId)).toLowerCase();
-                    const b = String(rowB.getValue(columnId)).toLowerCase();
-                    return a.localeCompare(b);
-                },
+                sortingFn: alphaSortingFn<Ocorrencia>,
             });
         }
 
@@ -187,11 +180,7 @@ export const useOcorrenciasColumns = () => {
                     }}
                 />
             ),
-            sortingFn: (rowA, rowB, columnId) => {
-                const a = String(rowA.getValue(columnId)).toLowerCase();
-                const b = String(rowB.getValue(columnId)).toLowerCase();
-                return a.localeCompare(b);
-            },
+            sortingFn: alphaSortingFn<Ocorrencia>,
         });
 
         dynamicColumns.push({

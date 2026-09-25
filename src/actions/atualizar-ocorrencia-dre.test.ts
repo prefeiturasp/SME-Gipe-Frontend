@@ -92,7 +92,7 @@ describe("atualizarOcorrenciaDre action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência não encontrada",
+            error: "Erro ao atualizar ocorrência DRE",
         });
     });
 
@@ -130,7 +130,7 @@ describe("atualizarOcorrenciaDre action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência não encontrada",
+            error: "Not Found",
         });
     });
 

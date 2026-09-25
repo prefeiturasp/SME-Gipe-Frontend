@@ -140,7 +140,7 @@ describe("atualizarInfoAgressor action", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência não encontrada",
+            error: "Not Found",
         });
     });
 

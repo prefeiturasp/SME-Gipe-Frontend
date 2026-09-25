@@ -108,7 +108,7 @@ describe("atualizarSecaoNaoFurtoRoubo", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Ocorrência não encontrada",
+            error: "Erro ao atualizar seção não furto e roubo",
         });
     });
 

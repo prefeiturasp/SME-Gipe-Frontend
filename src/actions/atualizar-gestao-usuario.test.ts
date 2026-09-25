@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import api from "@/lib/axios";
+import { AxiosError, AxiosRequestHeaders, type Mock } from "axios";
 import { cookies } from "next/headers";
-import axios, { AxiosError, AxiosRequestHeaders } from "axios";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
     atualizarGestaoUsuarioAction,
@@ -11,10 +12,10 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("axios");
+vi.mock("@/lib/axios", () => ({ default: { put: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
-const axiosPutMock = axios.put as Mock;
+const apiPutMock = vi.mocked(api.put);
 
 describe("atualizarGestaoUsuarioAction", () => {
     const mockAuthToken = "test-token-123";
@@ -32,7 +33,6 @@ describe("atualizarGestaoUsuarioAction", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env.NEXT_PUBLIC_API_URL = "https://api.exemplo.com";
 
         cookiesMock.mockReturnValue({
             get: vi.fn().mockReturnValue({ value: mockAuthToken }),
@@ -40,25 +40,24 @@ describe("atualizarGestaoUsuarioAction", () => {
     });
 
     it("deve atualizar usuário com sucesso", async () => {
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({ success: true });
 
         expect(cookies().get).toHaveBeenCalledWith("auth_token");
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/users/gestao-usuarios/${usuarioUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/users/gestao-usuarios/${usuarioUuid}/`,
             dadosAtualizacao,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -69,15 +68,39 @@ describe("atualizarGestaoUsuarioAction", () => {
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
             success: false,
-            error: "Token de autenticação não encontrado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
-        expect(axiosPutMock).not.toHaveBeenCalled();
+        expect(apiPutMock).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar erro 401 (não autorizado)", async () => {
+        const error = new AxiosError("Unauthorized");
+        error.response = {
+            status: 401,
+            data: {},
+            statusText: "Unauthorized",
+            headers: {},
+            config: { headers: {} as AxiosRequestHeaders },
+        };
+
+        apiPutMock.mockRejectedValue(error as never);
+
+        const result = await atualizarGestaoUsuarioAction(
+            usuarioUuid,
+            dadosAtualizacao,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: "Não autorizado. Faça login novamente.",
+            field: undefined,
+        });
     });
 
     it("deve retornar erro 500 (erro interno do servidor)", async () => {
@@ -90,11 +113,11 @@ describe("atualizarGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -116,11 +139,11 @@ describe("atualizarGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -142,11 +165,11 @@ describe("atualizarGestaoUsuarioAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -161,11 +184,11 @@ describe("atualizarGestaoUsuarioAction", () => {
 
         const error = new Error(errorMessage);
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -178,11 +201,11 @@ describe("atualizarGestaoUsuarioAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        axiosPutMock.mockRejectedValue(error);
+        apiPutMock.mockRejectedValue(error as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAtualizacao
+            dadosAtualizacao,
         );
 
         expect(result).toEqual({
@@ -203,18 +226,18 @@ describe("atualizarGestaoUsuarioAction", () => {
             is_app_admin: false,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosGIPE
+            dadosGIPE,
         );
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/users/gestao-usuarios/${usuarioUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/users/gestao-usuarios/${usuarioUuid}/`,
             dadosGIPE,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 
@@ -229,23 +252,22 @@ describe("atualizarGestaoUsuarioAction", () => {
             is_app_admin: true,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosAdmin
+            dadosAdmin,
         );
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/users/gestao-usuarios/${usuarioUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/users/gestao-usuarios/${usuarioUuid}/`,
             dadosAdmin,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 
@@ -261,23 +283,22 @@ describe("atualizarGestaoUsuarioAction", () => {
             is_app_admin: false,
         };
 
-        axiosPutMock.mockResolvedValue({});
+        apiPutMock.mockResolvedValue({} as never);
 
         const result = await atualizarGestaoUsuarioAction(
             usuarioUuid,
-            dadosIndireta
+            dadosIndireta,
         );
 
         expect(result).toEqual({ success: true });
-        expect(axiosPutMock).toHaveBeenCalledWith(
-            `https://api.exemplo.com/users/gestao-usuarios/${usuarioUuid}/`,
+        expect(apiPutMock).toHaveBeenCalledWith(
+            `/users/gestao-usuarios/${usuarioUuid}/`,
             dadosIndireta,
             {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-                withCredentials: true,
-            }
+            },
         );
     });
 });

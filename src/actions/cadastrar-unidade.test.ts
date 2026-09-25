@@ -12,7 +12,7 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios");
+vi.mock("@/lib/axios", () => ({ default: { post: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
 const apiPostMock = api.post as Mock;
@@ -38,7 +38,7 @@ describe("cadastrarUnidadeAction", () => {
     });
 
     it("deve cadastrar unidade com sucesso", async () => {
-        apiPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -52,7 +52,7 @@ describe("cadastrarUnidadeAction", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 
@@ -65,7 +65,7 @@ describe("cadastrarUnidadeAction", () => {
 
         expect(result).toEqual({
             success: false,
-            error: "Usuário não autenticado",
+            error: "Usuário não autenticado. Token não encontrado.",
         });
 
         expect(apiPostMock).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe("cadastrarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -101,7 +101,7 @@ describe("cadastrarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -123,7 +123,7 @@ describe("cadastrarUnidadeAction", () => {
             config: { headers: {} as AxiosRequestHeaders },
         };
 
-        apiPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -138,7 +138,7 @@ describe("cadastrarUnidadeAction", () => {
 
         const error = new Error(errorMessage);
 
-        apiPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -151,7 +151,7 @@ describe("cadastrarUnidadeAction", () => {
     it("deve retornar mensagem padrão caso nenhuma outra regra se aplique", async () => {
         const error = new AxiosError();
 
-        apiPostMock.mockRejectedValue(error);
+        apiPostMock.mockRejectedValue(error as never);
 
         const result = await cadastrarUnidadeAction(payload);
 
@@ -170,7 +170,7 @@ describe("cadastrarUnidadeAction", () => {
             ativa: true,
         };
 
-        apiPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastrarUnidadeAction(payloadSemOpcionais);
 
@@ -178,7 +178,7 @@ describe("cadastrarUnidadeAction", () => {
         expect(apiPostMock).toHaveBeenCalledWith(
             "/unidades/gestao-unidades/",
             payloadSemOpcionais,
-            expect.any(Object)
+            expect.any(Object),
         );
     });
 
@@ -193,7 +193,7 @@ describe("cadastrarUnidadeAction", () => {
             ativa: false,
         };
 
-        apiPostMock.mockResolvedValue({});
+        apiPostMock.mockResolvedValue({} as never);
 
         const result = await cadastrarUnidadeAction(payloadInativo);
 
@@ -205,7 +205,7 @@ describe("cadastrarUnidadeAction", () => {
                 headers: {
                     Authorization: `Bearer ${mockAuthToken}`,
                 },
-            }
+            },
         );
     });
 });

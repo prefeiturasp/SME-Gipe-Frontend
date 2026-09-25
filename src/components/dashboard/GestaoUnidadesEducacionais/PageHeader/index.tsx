@@ -34,7 +34,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     const router = useRouter();
 
     const { data: unidadeData } = useObterUnidadeGestao({
-        uuid: unidadeUuid || "",
+        uuid: unidadeUuid ?? "",
     });
 
     const { mutateAsync: inativarUnidade, isPending: isInativando } =

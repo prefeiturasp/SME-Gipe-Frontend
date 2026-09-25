@@ -30,7 +30,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import MensagemInativacao from "./MensagemInativacao";
 import { FormData, formSchema } from "./schema";
@@ -66,7 +66,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const montagemInicialRef = useRef(true);
 
     const { data: unidadeData } = useObterUnidadeGestao({
-        uuid: unidadeUuid || "",
+        uuid: unidadeUuid ?? "",
         enabled: mode === "edit" && !!unidadeUuid,
     });
 
@@ -109,6 +109,21 @@ export default function FormularioCadastroUnidadeEducacional({
     const tipoSelecionado = form.watch("tipo");
     const codigoEol = form.watch("codigoEol");
 
+    const resetDependentFields = useCallback(
+        (incluirTipo = true) => {
+            if (incluirTipo) form.setValue("tipo", "");
+            form.setValue("codigoEol", "");
+            form.setValue("nomeUnidadeEducacional", "");
+            form.setValue(
+                "diretoriaRegional",
+                isPontoFocal && userDreUuid ? userDreUuid : "",
+            );
+            form.setValue("siglaDre", "");
+            setConsultaEolRealizada(false);
+        },
+        [form, isPontoFocal, userDreUuid],
+    );
+
     const filteredTipoOptions = useMemo(() => {
         let opcoesFiltradas = tipoOptions;
 
@@ -138,17 +153,16 @@ export default function FormularioCadastroUnidadeEducacional({
             redeSelecionada &&
             !montagemInicialRef.current
         ) {
-            form.setValue("tipo", "");
-            form.setValue("codigoEol", "");
-            form.setValue("nomeUnidadeEducacional", "");
-            form.setValue(
-                "diretoriaRegional",
-                isPontoFocal && userDreUuid ? userDreUuid : "",
-            );
-            form.setValue("siglaDre", "");
-            setConsultaEolRealizada(false);
+            resetDependentFields();
         }
-    }, [redeSelecionada, mode, form, isPontoFocal, userDreUuid]);
+    }, [
+        redeSelecionada,
+        mode,
+        form,
+        isPontoFocal,
+        userDreUuid,
+        resetDependentFields,
+    ]);
 
     useEffect(() => {
         if (mode === "create" && redeSelecionada === "DIRETA") {
@@ -162,17 +176,17 @@ export default function FormularioCadastroUnidadeEducacional({
             tipoSelecionado &&
             !montagemInicialRef.current
         ) {
-            form.setValue("codigoEol", "");
-            form.setValue("nomeUnidadeEducacional", "");
-            form.setValue(
-                "diretoriaRegional",
-                isPontoFocal && userDreUuid ? userDreUuid : "",
-            );
-            form.setValue("siglaDre", "");
-            setConsultaEolRealizada(false);
+            resetDependentFields(false);
             setDrePreenchidaAutomaticamente(false);
         }
-    }, [tipoSelecionado, mode, form, isPontoFocal, userDreUuid]);
+    }, [
+        tipoSelecionado,
+        mode,
+        form,
+        isPontoFocal,
+        userDreUuid,
+        resetDependentFields,
+    ]);
 
     useEffect(() => {
         if (
@@ -227,7 +241,7 @@ export default function FormularioCadastroUnidadeEducacional({
     const { mutateAsync: cadastrarUnidade, isPending: isPendingCreate } =
         useCadastrarUnidade();
     const { mutateAsync: atualizarUnidade, isPending: isPendingUpdate } =
-        useAtualizarUnidade(unidadeUuid || "");
+        useAtualizarUnidade(unidadeUuid ?? "");
     const { mutateAsync: consultarEolUnidade, isPending: isPendingConsultar } =
         useConsultarEolUnidade();
 

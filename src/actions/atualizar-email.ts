@@ -1,33 +1,29 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    validateAuthToken,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 import type {
-    AtualizarEmailRequest,
     AtualizarEmailErrorResponse,
+    AtualizarEmailRequest,
     AtualizarEmailResult,
 } from "@/types/atualizar-email";
+import { AxiosError } from "axios";
 
 export async function atualizarEmailAction(
-    dados: AtualizarEmailRequest
+    dados: AtualizarEmailRequest,
 ): Promise<AtualizarEmailResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
 
     try {
-        const cookieStore = cookies();
-        const authToken = cookieStore.get("auth_token")?.value;
-
-        if (!authToken) {
-            return {
-                success: false,
-                error: "Usuário não autenticado. Token não encontrado.",
-            };
-        }
-
-        await axios.post(`${API_URL}/alteracao-email/solicitar/`, dados, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-            },
+        await api.post("/alteracao-email/solicitar/", dados, {
+            headers: createAuthHeaders(token),
         });
 
         return { success: true };

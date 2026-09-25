@@ -1,37 +1,31 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import {
+    createAuthHeaders,
+    getAuthToken,
+    validateAuthToken,
+} from "@/lib/actionUtils";
+import api from "@/lib/axios";
 import type {
-    ConfirmarEmailRequest,
     ConfirmarEmailErrorResponse,
+    ConfirmarEmailRequest,
     ConfirmarEmailResult,
 } from "@/types/confirmar-email";
+import { AxiosError } from "axios";
 
 export async function confirmarEmailAction(
-    code: ConfirmarEmailRequest
+    code: ConfirmarEmailRequest,
 ): Promise<ConfirmarEmailResult> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    const authError = validateAuthToken();
+    if (authError) return authError as { success: false; error: string };
+
+    const token = getAuthToken()!;
 
     try {
-        const cookieStore = cookies();
-        const authToken = cookieStore.get("auth_token")?.value;
-
-        if (!authToken) {
-            return {
-                success: false,
-                error: "Usuário não autenticado. Token não encontrado.",
-            };
-        }
-
-        const response = await axios.put(
-            `${API_URL}/alteracao-email/validar/${code.code}/`,
+        const response = await api.put(
+            `/alteracao-email/validar/${code.code}/`,
             null,
-            {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            }
+            { headers: createAuthHeaders(token) },
         );
 
         return { success: true, new_mail: response.data.email };

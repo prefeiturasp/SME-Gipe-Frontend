@@ -9,7 +9,7 @@ vi.mock("next/headers", () => ({
     cookies: vi.fn(),
 }));
 
-vi.mock("@/lib/axios-intercorrencias");
+vi.mock("@/lib/axios-intercorrencias", () => ({ default: { post: vi.fn() } }));
 
 const cookiesMock = cookies as Mock;
 
